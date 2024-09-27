@@ -11,6 +11,8 @@ import logging.handlers
 import os
 import pathlib
 from sarracenia.moth import Moth
+from sarracenia.featuredetection import features
+
 import signal
 import sys
 import threading
@@ -25,9 +27,12 @@ from urllib.parse import urlparse, urlunparse
 
 logger = logging.getLogger(__name__)
 
+if features['jsonlogs']['present']:
+    from pythonjsonlogger import jsonlogger
 
-class RedirectedTimedRotatingFileHandler(
-        logging.handlers.TimedRotatingFileHandler):
+
+class RedirectedTimedRotatingFileHandler(logging.handlers.TimedRotatingFileHandler):
+
     def doRollover(self):
         super().doRollover()
 
@@ -210,6 +215,15 @@ class instance:
                 handler.setFormatter(logging.Formatter(log_format))
 
                 logger.addHandler(handler)
+
+                if sarracenia.features['jsonlogs']['present'] and cfg_preparse.logJson:
+                    jsonHandler = RedirectedTimedRotatingFileHandler(
+                        logfilename.replace('.log','.json'),
+                        when=lr_when,
+                        interval=logRotateInterval,
+                        backupCount=cfg_preparse.logRotateCount)
+                    jsonHandler.setFormatter(jsonlogger.JsonFormatter(log_format))
+                    logger.addHandler(jsonHandler)
 
                 if hasattr(cfg_preparse, 'permLog'):
                     os.chmod(logfilename, cfg_preparse.permLog)
