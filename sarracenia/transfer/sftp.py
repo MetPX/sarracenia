@@ -93,6 +93,8 @@ class Sftp(Transfer):
 
     # cd forced
     def cd_forced(self, path):
+        """ try to cd to a directory. If the cd fails, create the directory
+        """
         logger.debug("sr_sftp cd_forced %o %s" % (self.o.permDirDefault, path))
 
         # try to go directly to path
@@ -102,6 +104,8 @@ class Sftp(Transfer):
             self.sftp.chdir(self.originalDir)
             self.sftp.chdir(path)
             alarm_cancel()
+            # cd was successful, no need to create the dir, just return
+            return
         except:
             pass
         finally:
