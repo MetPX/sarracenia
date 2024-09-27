@@ -324,141 +324,122 @@ class AMQP(Moth):
         """
         ebo = 1
 
-        while True:
-            
-            if self._stop_requested:
-                break
+        if self._stop_requested:
+            return
 
-            if 'broker' not in self.o or self.o['broker'] is None:
-                logger.critical( f"no broker given" )
-                break
+        if 'broker' not in self.o or self.o['broker'] is None:
+            logger.critical( f"no broker given" )
+            return
 
-            # It does not really matter how it fails, the recovery approach is always the same:
-            # tear the whole thing down, and start over.
-            try:
-                # from sr_consumer.build_connection...
-                if not self.__connect(self.o['broker']):
-                    logger.critical('could not connect')
-                    break
+        # It does not really matter how it fails, the recovery approach is always the same:
+        # tear the whole thing down, and start over.
+        try:
+            # from sr_consumer.build_connection...
+            if not self.__connect(self.o['broker']):
+                logger.critical('could not connect')
+                return
 
-                # only first/lead instance needs to declare a queue and bindings.
-                if 'no' in self.o and self.o['no'] >= 2:
-                    self.metricsConnect()
-                    return
-
-                #logger.info('getSetup connected to {}'.format(self.o['broker'].url.hostname) )
-
-                if self.o['prefetch'] != 0:
-                    # using global False because RabbitMQ Quorum Queues don't support Global QoS, issue #1233
-                    self.channel.basic_qos(0, self.o['prefetch'], False)
-
-                #FIXME: test self.first_setup and props['reset']... delete queue...
-                broker_str = self.o['broker'].url.geturl().replace(
-                    ':' + self.o['broker'].url.password + '@', '@')
-
-                # from Queue declare
-                msg_count = self._queueDeclare()
-                
-                if msg_count == -2: break
-
-                if self.o['queueBind'] and self.o['queueName']:
-                    for tup in self.o['bindings']:
-                        exchange, prefix, subtopic = tup
-                        topic = '.'.join(prefix + subtopic)
-                        if self.o['dry_run']:
-                            logger.info('binding (dry run) %s with %s to %s (as: %s)' % \
-                                ( self.o['queueName'], topic, exchange, broker_str ) )
-                        else:
-                            logger.info('binding %s with %s to %s (as: %s)' % \
-                                ( self.o['queueName'], topic, exchange, broker_str ) )
-                            if exchange:
-                                self.management_channel.queue_bind(self.o['queueName'], exchange,
-                                                topic)
-
-                # Setup Successfully Complete!
+            # only first/lead instance needs to declare a queue and bindings.
+            if 'no' in self.o and self.o['no'] >= 2:
                 self.metricsConnect()
-                logger.debug('getSetup ... Done!')
-                break
+                return
 
-            except Exception as err:
-                logger.error(
-                    f'connecting to: {self.o["queueName"]}, durable: {self.o["durable"]}, expire: {self.o["expire"]}, auto_delete={self.o["auto_delete"]}'
-                )
-                logger.error("AMQP getSetup failed to {} with {}".format(
-                    self.o['broker'].url.hostname, err))
-                logger.debug('Exception details: ', exc_info=True)
+            #logger.info('getSetup connected to {}'.format(self.o['broker'].url.hostname) )
 
-            if not self.o['message_strategy']['stubborn']: return
+            if self.o['prefetch'] != 0:
+                # using global False because RabbitMQ Quorum Queues don't support Global QoS, issue #1233
+                self.channel.basic_qos(0, self.o['prefetch'], False)
 
-            if ebo < 60: ebo *= 2
+            #FIXME: test self.first_setup and props['reset']... delete queue...
+            broker_str = self.o['broker'].url.geturl().replace(
+                ':' + self.o['broker'].url.password + '@', '@')
 
-            logger.info("Sleeping {} seconds ...".format(ebo))
-            interruptible_sleep(ebo, obj=self)
+            # from Queue declare
+            msg_count = self._queueDeclare()
+            
+            if msg_count == -2: return
+
+            if self.o['queueBind'] and self.o['queueName']:
+                for tup in self.o['bindings']:
+                    exchange, prefix, subtopic = tup
+                    topic = '.'.join(prefix + subtopic)
+                    if self.o['dry_run']:
+                        logger.info('binding (dry run) %s with %s to %s (as: %s)' % \
+                            ( self.o['queueName'], topic, exchange, broker_str ) )
+                    else:
+                        logger.info('binding %s with %s to %s (as: %s)' % \
+                            ( self.o['queueName'], topic, exchange, broker_str ) )
+                        if exchange:
+                            self.management_channel.queue_bind(self.o['queueName'], exchange,
+                                            topic)
+
+            # Setup Successfully Complete!
+            self.metricsConnect()
+            logger.debug('getSetup ... Done!')
+            return
+
+        except Exception as err:
+            logger.error(
+                f'connecting to: {self.o["queueName"]}, durable: {self.o["durable"]}, expire: {self.o["expire"]}, auto_delete={self.o["auto_delete"]}'
+            )
+            logger.error("AMQP getSetup failed to {} with {}".format(
+                self.o['broker'].url.hostname, err))
+            logger.debug('Exception details: ', exc_info=True)
 
     def putSetup(self) -> None:
 
         ebo = 1
 
-        while True:
+        # It does not really matter how it fails, the recovery approach is always the same:
+        # tear the whole thing down, and start over.
+        try:
+            if self._stop_requested:
+                return
 
-            # It does not really matter how it fails, the recovery approach is always the same:
-            # tear the whole thing down, and start over.
-            try:
-                if self._stop_requested:
-                    break
+            if self.o['broker'] is None:
+                logger.critical( f"no broker given" )
+                return
 
-                if self.o['broker'] is None:
-                    logger.critical( f"no broker given" )
-                    break
+            if not self.__connect(self.o['broker']):
+                logger.critical('could not connect')
+                return
 
-                if not self.__connect(self.o['broker']):
-                    logger.critical('could not connect')
-                    break
+            # transaction mode... confirms would be better...
+            self.channel.tx_select()
+            broker_str = self.o['broker'].url.geturl().replace(
+                ':' + self.o['broker'].url.password + '@', '@')
 
-                # transaction mode... confirms would be better...
-                self.channel.tx_select()
-                broker_str = self.o['broker'].url.geturl().replace(
-                    ':' + self.o['broker'].url.password + '@', '@')
+            #logger.debug('putSetup ... 1. connected to {}'.format(broker_str ) )
 
-                #logger.debug('putSetup ... 1. connected to {}'.format(broker_str ) )
+            if self.o['exchangeDeclare']:
+                logger.debug('putSetup ... 1. declaring {}'.format(
+                    self.o['exchange']))
+                if type(self.o['exchange']) is not list:
+                    self.o['exchange'] = [self.o['exchange']]
+                for x in self.o['exchange']:
+                    if self.o['dry_run']:
+                        logger.info('exchange declare (dry run): %s (as: %s)' %
+                                (x, broker_str))
+                    else:
+                        self.channel.exchange_declare(
+                            x,
+                            'topic',
+                            auto_delete=self.o['auto_delete'],
+                            durable=self.o['durable'])
+                        logger.info('exchange declared: %s (as: %s)' %
+                                (x, broker_str))
 
-                if self.o['exchangeDeclare']:
-                    logger.debug('putSetup ... 1. declaring {}'.format(
-                        self.o['exchange']))
-                    if type(self.o['exchange']) is not list:
-                        self.o['exchange'] = [self.o['exchange']]
-                    for x in self.o['exchange']:
-                        if self.o['dry_run']:
-                            logger.info('exchange declare (dry run): %s (as: %s)' %
-                                    (x, broker_str))
-                        else:
-                            self.channel.exchange_declare(
-                                x,
-                                'topic',
-                                auto_delete=self.o['auto_delete'],
-                                durable=self.o['durable'])
-                            logger.info('exchange declared: %s (as: %s)' %
-                                    (x, broker_str))
+            # Setup Successfully Complete!
+            self.metricsConnect()
+            logger.debug('putSetup ... Done!')
+            return
 
-                # Setup Successfully Complete!
-                self.metricsConnect()
-                logger.debug('putSetup ... Done!')
-                break
-
-            except Exception as err:
-                logger.error(
-                    "AMQP putSetup failed to connect or declare exchanges {}@{} on {}: {}"
-                    .format(self.o['exchange'], self.o['broker'].url.username,
-                            self.o['broker'].url.hostname, err))
-                logger.debug('Exception details: ', exc_info=True)
-
-            if not self.o['message_strategy']['stubborn']: return
-
-            if ebo < 60: ebo *= 2
-
-            self.close()
-            logger.info("Sleeping {} seconds ...".format(ebo))
-            interruptible_sleep(ebo, obj=self)
+        except Exception as err:
+            logger.error(
+                "AMQP putSetup failed to connect or declare exchanges {}@{} on {}: {}"
+                .format(self.o['exchange'], self.o['broker'].url.username,
+                        self.o['broker'].url.hostname, err))
+            logger.debug('Exception details: ', exc_info=True)
 
     def putCleanUp(self) -> None:
 
