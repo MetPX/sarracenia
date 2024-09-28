@@ -1,3 +1,9 @@
+metpx-sr3 (3.00.55post1) unstable; urgency=medium
+
+  * fix #1242 sftp creates directories when it should not.
+
+ -- peter <peter@bsqt.homeip.net>  Sat, 28 Sep 2024 00:51:47 -0400
+
 metpx-sr3 (3.00.55) unstable; urgency=medium
 
   * fix #1219 correct date conversion.
