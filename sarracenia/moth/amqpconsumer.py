@@ -71,6 +71,11 @@ class AMQPConsumer(AMQP):
 
     def getCleanUp(self) -> None:
         # TODO cancel consumer with basic_cancel(consumer_tag)?
+        try:
+            self.channel.basic_cancel(self._active_consumer_tag)
+        except Exception as e:
+            logger.warning(f"Failed to cancel consumer {self._active_consumer_tag} {e}")
+            logger.debug("Exception details:", exc_info=True)
         super().getCleanUp()
         self._active_consumer_tag = None
 
