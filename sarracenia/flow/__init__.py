@@ -1070,7 +1070,7 @@ class Flow:
                                          (m['fileOp']['rename']))
                         else:
                             self.reject(
-                                m, 304, "mask=%s strip=%s url=%s" %
+                                m, 404, "mask=%s strip=%s url=%s" %
                                 (str(mask), strip, urlToMatch))
                         break
 
@@ -1105,7 +1105,7 @@ class Flow:
                                            self.o.flatten)
                     filtered_worklist.append(m)
                 else:
-                    self.reject(m, 304, "unmatched pattern %s" % url)
+                    self.reject(m, 404, "unmatched pattern %s" % url)
 
         self.worklist.incoming = filtered_worklist
 
@@ -1489,24 +1489,24 @@ class Flow:
                 new_mtime = sarracenia.timestr2flt(msg['mtime'])
                 old_mtime = 0.0
 
-                if self.o.timeCopy:
-                    old_mtime = lstat.st_mtime
-                elif sarracenia.filemetadata.supports_extended_attributes:
-                    try:
-                        x = sarracenia.filemetadata.FileMetadata(msg['new_path'])
-                        old_mtime = sarracenia.timestr2flt(x.get('mtime'))
-                    except:
-                        pass
-    
-                if new_mtime <= old_mtime:
-                    self.reject(msg, 304,
+            if self.o.timeCopy:
+                old_mtime = lstat.st_mtime
+            elif sarracenia.filemetadata.supports_extended_attributes:
+                try:
+                    x = sarracenia.filemetadata.FileMetadata(msg['new_path'])
+                    old_mtime = sarracenia.timestr2flt(x.get('mtime'))
+                except:
+                    pass
+
+            if new_mtime <= old_mtime:
+                self.reject(msg, 406,
                             "mtime not newer %s " % (msg['new_path']))
-                    return False
-                else:
-                    logger.debug(
-                        "{} new version is {} newer (new: {} vs old: {} )".format(
-                        msg['new_path'], new_mtime - old_mtime, new_mtime,
-                        old_mtime))
+                return False
+            else:
+                logger.debug(
+                    "{} new version is {} newer (new: {} vs old: {} )".format(
+                    msg['new_path'], new_mtime - old_mtime, new_mtime,
+                    old_mtime))
 
         elif method in ['random', 'cod']:
             logger.debug("content_match %s sum random/zero/cod never matches" %
