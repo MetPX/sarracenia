@@ -19,7 +19,7 @@ sys.argv[-1] = os.path.basename(sys.argv[0]).replace('sr_', '').replace(
     '.py', '') + os.sep + sys.argv[-1]
 args = [
     sys.executable,
-    os.path.dirname(inspect.getfile(Config)) + os.sep + 'sr.py'
+    os.path.dirname(inspect.getfile(sarracenia)) + os.sep + 'sr.py'
 ]
 args.extend(sys.argv[1:])
 

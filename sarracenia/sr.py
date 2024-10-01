@@ -43,7 +43,7 @@ import traceback
 
 from sarracenia.flowcb.v2wrapper import sum_algo_v2tov3
 
-from sarracenia import user_config_dir, user_cache_dir, naturalSize, nowstr, timestr2flt, timeflt2str
+from sarracenia import user_config_dir, user_cache_dir, naturalSize, nowstr, timestr2flt, timeflt2str, durationToString
 from sarracenia.config import *
 import sarracenia.moth
 import sarracenia.rabbitmq_admin
@@ -62,8 +62,8 @@ empty_metrics={ "byteRate":0, "cpuTime":0, "rejectCount":0, "last_housekeeping":
         "transferRxLast": 0, "transferTxLast": 0, "rxLast":0, "txLast":0, 
         "transferRxBytes":0, "transferRxFiles":0, "transferTxBytes": 0, "transferTxFiles": 0, 
         "msgs_in_post_retry": 0, "msgs_in_download_retry":0, "brokerQueuedMessageCount": 0, 
-        'time_base': 0, 'byteTotal': 0, 'byteRate': 0, 'msgRate': 0, 'msgRateCpu': 0, 'retry': 0, 'transferLast': 0,
-        'connectPercent': 0, 'byteConnectPercent': 0
+        'time_base': 0, 'byteTotal': 0, 'byteRate': 0, 'msgRate': 0, 'msgRateCpu': 0, 'retry': 0, 
+        'messageLast': 0, 'transferLast': 0, 'connectPercent': 0, 'byteConnectPercent': 0
         }
 
 sr3_tools_entry_points = [ "sr3_action_convert", "sr3_action_remove", "sr3_commit", "sr3_pull", "sr3_push", "sr3_remove", "sr3_scp", "sr3_ssh", "sr3_utils", "sr3d", "sr3l", "sr3r" ]
@@ -490,7 +490,9 @@ class sr_GlobalState:
                                     continue
 
                                 if pathname[-4:] == '.pid':
-                                    i = int(pathname[-6:-4])
+                                    i = self._instance_num_from_pidfile(pathname, c, cfg)
+                                    if i < 0:
+                                        continue
                                     if t.isdigit():
                                         #print( "pid assignment: {c}/{cfg} instance: {i}, pid: {t}" )
                                         self.states[c][cfg]['instance_pids'][i] = int(t)
@@ -585,7 +587,9 @@ class sr_GlobalState:
                         for filename in os.listdir():
                             # look at pid files, find ones where process is missing.
                             if filename[-4:] == '.pid':
-                                i = int(filename[-6:-4])
+                                i = self._instance_num_from_pidfile(filename, c, cfg)
+                                if i < 0:
+                                    continue
                                 if i != 0:
                                     p = pathlib.Path(filename)
                                     if sys.version_info[0] > 3 or sys.version_info[
@@ -840,7 +844,7 @@ class sr_GlobalState:
                     xl = self.__resolved_exchanges(c, cfg, o)
                     q = self.__guess_queueName(c, cfg, o)
 
-                    self.configs[c][cfg]['options'].resolved_qname = q
+                    self.configs[c][cfg]['options'].queueName_resolved = q
 
                     for exch in xl:
                         if exch in self.brokers[host]['exchanges']:
@@ -988,26 +992,9 @@ class sr_GlobalState:
     
                         m['latestTransfer'] = "n/a"
                         if "transferLast" in m and m['transferLast'] > 0:
-                            v=now - m['transferLast']
-                            if v > 10000:
-                                m['latestTransfer'] = f">9999"
-                            elif v > 100:
-                                m['latestTransfer'] = f"{round(v):4d}s"
-                            elif v >  10:
-                                m['latestTransfer'] = f"{v:4.1f}s"
-                            else:
-                                m['latestTransfer'] = f"{v:4.2f}s"
-                        elif "messageLast" in m:
-                            v=now - m['messageLast']
-                            if v > 10000:
-                                m['latestTransfer'] = f">9999"
-                            elif v > 100:
-                                m['latestTransfer'] = f"{round(v):4d}s"
-                            elif v >  10:
-                                m['latestTransfer'] = f"{v:4.1f}s"
-                            else:
-                                m['latestTransfer'] = f"{v:4.2f}s"
-
+                            m['latestTransfer'] = durationToString(now - m['transferLast'])
+                        elif "messageLast" in m and m['messageLast'] > 0:
+                            m['latestTransfer'] = durationToString(now - m['messageLast'])
                         
                         if len(m['latestTransfer']) > self.cumulative_stats['latestTransferWidth']:
                             self.cumulative_stats['latestTransferWidth'] = len(m['latestTransfer'])
@@ -1058,7 +1045,7 @@ class sr_GlobalState:
     
                             self.cumulative_stats['txMessageRate'] +=  (m["txGoodCount"]+m["txBadCount"])/time_base
                         if m["rxGoodCount"] > 0:
-                            m['rejectPercent'] = ((m['rejectCount']+m['rxBadCount'])/m['rxGoodCount'])*100
+                            m['rejectPercent'] = ((m['rejectCount']+m['rxBadCount'])/(m['rxGoodCount']+m['rxBadCount']))*100
                             if m['rejectPercent'] > 100:
                                 m['rejectPercent']=100
                         else:
@@ -1285,8 +1272,7 @@ class sr_GlobalState:
 
         self.invoking_directory = os.getcwd()
         self.bin_dir = os.path.dirname(os.path.realpath(__file__))
-        self.package_lib_dir = os.path.dirname(
-            inspect.getfile(sarracenia.config.Config))
+        self.package_lib_dir = os.path.dirname(inspect.getfile(sarracenia))
         self.appauthor = 'MetPX'
         self.options = opt
         self.appname = os.getenv('SR_DEV_APPNAME')
@@ -1434,8 +1420,7 @@ class sr_GlobalState:
                 component = sp[-2]
                 cfg = sp[-1]
 
-            iedir = os.path.dirname(inspect.getfile(
-                sarracenia.config.Config)) + os.sep + 'examples'
+            iedir = os.path.dirname(inspect.getfile(sarracenia)) + os.sep + 'examples'
 
             destdir = self.user_config_dir + os.sep + component
 
@@ -1572,9 +1557,9 @@ class sr_GlobalState:
             logging.info('looking at %s/%s ' % (c, cfg))
             o = self.configs[c][cfg]['options']
             od = o.dictify()
-            if hasattr(o, 'resolved_qname'):
+            if hasattr(o, 'queueName_resolved'):
                 od['broker'] = o.broker
-                od['queueName'] = o.resolved_qname
+                od['queueName'] = o.queueName_resolved
                 od['dry_run'] = self.options.dry_run
                 qdc = sarracenia.moth.Moth.subFactory(od)
                 qdc.getSetup()
@@ -1819,8 +1804,8 @@ class sr_GlobalState:
 
             o = self.configs[c][cfg]['options']
 
-            if hasattr(o, 'resolved_qname'):
-                #print('deleting: %s is: %s @ %s' % (f, o.resolved_qname, o.broker.url.hostname ))
+            if hasattr(o, 'queueName_resolved'):
+                #print('deleting: %s is: %s @ %s' % (f, o.queueName_resolved, o.broker.url.hostname ))
                 qdc = sarracenia.moth.Moth.subFactory(
                     {
                         'broker': o.broker,
@@ -1829,13 +1814,13 @@ class sr_GlobalState:
                         'queueDeclare': False,
                         'queueBind': False,
                         'broker': o.broker,
-                        'queueName': o.resolved_qname,
+                        'queueName': o.queueName_resolved,
                         'message_strategy': { 'stubborn':True }
                     })
                 qdc.getSetup()
                 qdc.getCleanUp()
                 qdc.close()
-                queues_to_delete.append((o.broker, o.resolved_qname))
+                queues_to_delete.append((o.broker, o.queueName_resolved))
 
         for h in self.brokers:
             if self.please_stop:
@@ -2214,9 +2199,10 @@ class sr_GlobalState:
         else:
             print('no stray processes found')
 
-        for l in sarracenia.features.keys():
-            if not sarracenia.features[l]['present']:
-                print( f"notice: python module {l} is missing: {sarracenia.features[l]['lament']}" )
+        #It is enough to have it *features* not needed in sanity.
+        #for l in sarracenia.features.keys():
+        #    if not sarracenia.features[l]['present']:
+        #        print( f"notice: python module {l} is missing: {sarracenia.features[l]['lament']}" )
 
         # run on_sanity plugins.
         for f in self.filtered_configurations:
@@ -2346,16 +2332,17 @@ class sr_GlobalState:
         attempts_max = 5
         now = time.time()
 
+        running_pids = len(pids_signalled)
         while attempts < attempts_max:
             for pid in self.procs:
                 if (not self.procs[pid]['claimed']) and (
-                    (now - self.procs[pid]['create_time']) > 50):
+                    (now - self.procs[pid]['create_time']) > 50 and pid not in pids_signalled):
                     print( f"pid: {pid} \"{' '.join(self.procs[pid]['cmdline'])}\" does not match any configured instance, sending it TERM" )
                     signal_pid(pid, signal.SIGTERM)
                     pids_signalled |= set([pid])
 
             ttw = 1 << attempts
-            print( f"Waiting {ttw} sec. to check if {len(pids_signalled)} processes stopped (try: {attempts})" )
+            print( f"Waiting {ttw} sec. to check if {running_pids} processes stopped (try: {attempts})" )
             time.sleep(ttw)
             # update to reflect killed processes.
             self._read_procs()
@@ -2393,7 +2380,7 @@ class sr_GlobalState:
                 for i in self.states[c][cfg]['instance_pids']:
                     if self.states[c][cfg]['instance_pids'][i] in self.procs:
                         p=self.states[c][cfg]['instance_pids'][i]
-                        print( f"signal_pid( {p}, SIGKILL )")
+                        print( f"signal_pid( {p} \"{' '.join(self.procs[p]['cmdline'])}\", SIGKILL )")
                         signal_pid(p, signal.SIGKILL)
                         pids_signalled |= set([p])
                         print('.', end='')
@@ -2638,9 +2625,9 @@ class sr_GlobalState:
 
                 if 'metrics' in self.states[c][cfg]:
                     m=self.states[c][cfg]['metrics']
-                    lfmt = f"%5d %3d%% %3d%% %5d %7.2fs %7.2fs %{latestTransferWidth}s %4.1f%% %8s/s %8s/s %8s/s %8s/s "
+                    lfmt = f"%5d %3d%% %3d%% %5d %8s %8s %{latestTransferWidth}s %4.1f%% %8s/s %8s/s %8s/s %8s/s "
                     line += lfmt % ( m['retry'], m['connectPercent'], m['byteConnectPercent'], \
-                            m['messagesQueued'], m['lagMax'], m['lagMean'], m['latestTransfer'], m['rejectPercent'],\
+                            m['messagesQueued'], durationToString(m['lagMax']), durationToString(m['lagMean']), m['latestTransfer'], m['rejectPercent'],\
                             naturalSize(m['byteRate']).replace("Bytes","B"), \
                             naturalSize(m['msgRate']).replace("B","m").replace("mytes","m"), \
                             naturalSize(m['transferRxByteRate']).replace("Bytes","B"), \
@@ -2845,12 +2832,16 @@ class sr_GlobalState:
                     elif (k == 'sleep' ) and (component == 'poll'):
                         k = 'scheduled_interval'
                     if k in convert_to_v3:
+                        if convert_to_v3[k] == [ 'continue' ]:
+                            logger.info( f"obsolete v2 keyword: {k}" )
+                            continue
+
                         if len(line) > 1:
                             v = line[1].replace('.py', '', 1)
                             if v in convert_to_v3[k]:
                                 line = convert_to_v3[k][v]
                                 if 'continue' in line:
-                                    logger.info("obsolete v2: " + v)
+                                    logger.info("obsolete v2: " + k)
                                     continue
                             else:
                                 logger.warning( f"unknown {k} {v}, manual conversion required.")
@@ -3033,6 +3024,19 @@ class sr_GlobalState:
         """
         return (component in ['post', 'cpost'] and self.configs[component][config]['options'].sleep > 0.1 and
                 hasattr(self.configs[component][config]['options'], 'path'))
+
+    def _instance_num_from_pidfile(self, pathname, component, cfg):
+        if os.sep in pathname:
+            pathname = pathname.split(os.sep)[-1]
+        if '_' in pathname:
+            i = int(pathname[0:-4].split('_')[-1])
+        # sr3c components just use iXX.pid
+        elif component[0] == 'c':
+            i = int(pathname[0:-4].replace('i', ''))
+        else:
+            logger.error(f"Failed to determine instance # for {component}/{cfg} {pathname}")
+            i = -1
+        return i
 
 
 def main():

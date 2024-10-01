@@ -1,10 +1,45 @@
-metpx-sr3 (3.00.55rc1) UNRELEASED; urgency=medium
+metpx-sr3 (3.00.56rc1) UNRELEASED; urgency=medium
 
+  * fix #1223 Switch from global QoS to per-consumer.
+  * AM sender problems identified in satnet testing.
+  * working on #35 replacing .qname with subscriptions.json state file.
+  * working on #1183, sr3 manages instances > 100 correctly.
+  * PR #1228 Unquote secret_access_key in s3CloudSender plugin
+  * PR #1230 ... reduced spurious "unknown options" messages from config.
+  * fix #1199 - directory /  not interpreted properly.
+
+ -- SSC-5CD2310S60 <peter@bsqt.homeip.net>  Mon, 23 Sep 2024 10:42:37 -0400
+
+metpx-sr3 (3.00.55) unstable; urgency=medium
+
+  * fix #1219 correct date conversion.
+  * fix #1214 scheduling refactor addresses a regression found in rc1
   * fix #953 sr3 status queue size updates again.
+  * fix #1157 transfer/stat() call improves behaviour with overly dynamic data.
+  * fix #1209 Added *schedule_time* to scheduled flows (and polls)
+  * fix #1159 provide obvious error message when no configurations matched.
+  * fix #1166 better download decision criteria (arbitrary identity vs. file size)
   * fix #1151 calculate on download not working.
+  * fix #1173 sr3 stop improvements.
+  * fix #1208 badly expiring timers (crashing mostly senders.)
   * fix #1150 bc transport api refactor.
+  * fix #1147 documenting messageAgeMax, post_messageAgeMax
+  * fix #1155 ack refactor (PR #1174)
+  * fix #1172 clash in names (unit tests.)
+  * fix #1195 more but still concise logging.
+  * fix #1192 bug in rejectPercent. improved lag display.
+  * fix #1204 display processes still running during each wait of stop.
+  * fix #1217 one minute of wiggle room when scheduled flows come due.
+  * fix #1218 permissions of directories created by senders. 
 
- -- SSC-5CD2310S60 <peter@bsqt.homeip.net>  Tue, 08 Aug 2024 11:24:36 -0400
+ -- SSC-5CD2310S60 <peter@bsqt.homeip.net>  Tue, 23 Sep 2024 09:47:36 -0400
+
+metpx-sr3 (3.00.54post2) unstable; urgency=medium
+
+  * 3.00.54post1 package generation on launchpad failed, re-uploading as post2
+  * fix for crash in fileAgeMin
+
+ -- SSC-5CD2310S60 <peter@bsqt.homeip.net>  Wed, 21 Aug 2024 11:49:45 -0400
 
 metpx-sr3 (3.00.54) unstable; urgency=medium
 

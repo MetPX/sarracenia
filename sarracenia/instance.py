@@ -62,7 +62,7 @@ class instance:
                     if line:
                         code.append("  %s" % (line.strip()))
             logging.debug('\n'.join(code))
-        self.running_instance.please_stop()
+        self.running_instance.stop_request()
 
     def start(self):
         """
@@ -114,16 +114,6 @@ class instance:
 
         logger.setLevel(logLevel)
 
-        if not hasattr(cfg_preparse,
-                       'no') and not (cfg_preparse.action == 'foreground'):
-            logger.critical('need an instance number to run.')
-            return
-
-        if (len(cfg_preparse.configurations) > 1 ) and \
-           ( cfg_preparse.configurations[0].split(os.sep)[0] != 'post' ):
-            logger.critical("can only run one configuration in an instance")
-            return
-
         if (not os.sep in cfg_preparse.configurations[0]):
             component = 'flow'
             config = cfg_preparse.configurations[0]
@@ -131,6 +121,36 @@ class instance:
             component, config = cfg_preparse.configurations[0].split(os.sep)
 
         cfg_preparse = sarracenia.config.one_config(component, config, cfg_preparse.action)
+
+        if cfg_preparse.statehost:
+            hostdir = cfg_preparse.hostdir
+        else:
+            hostdir = None
+
+        pidfilename = sarracenia.config.get_pid_filename( hostdir, component, config, cfg_preparse.no)
+
+        if not hasattr(cfg_preparse,
+                       'no') and not (cfg_preparse.action == 'foreground'):
+            logger.critical('need an instance number to run.')
+            return
+        elif cfg_preparse.no > 1:
+            # worker instances need give lead instance time to write subscriptions/queueNames/bindings
+            # FIXME: might be better to loop here until lead instance .pid file exists?
+            leadpidfilename = sarracenia.config.get_pid_filename( hostdir, component, config, 1)
+            time.sleep(cfg_preparse.no)
+            while not os.path.isdir(os.path.dirname(leadpidfilename)):
+                logger.debug("waiting for lead instance to create state directory")
+                time.sleep(cfg_preparse.no)
+            while not os.path.isfile(leadpidfilename):
+                logger.debug("waiting for lead instance to create pid file: {leadpidfilename}")
+                time.sleep(cfg_preparse.no)
+
+
+        if (len(cfg_preparse.configurations) > 1 ) and \
+           ( cfg_preparse.configurations[0].split(os.sep)[0] != 'post' ):
+            logger.critical("can only run one configuration in an instance")
+            return
+
 
         if cfg_preparse.logRotateInterval < (24*60*60):
             logRotateInterval=int(cfg_preparse.logRotateInterval)
@@ -142,10 +162,6 @@ class instance:
 
         # init logs here. need to know instance number and configuration and component before here.
         if cfg_preparse.action in ['start','run'] :
-            if cfg_preparse.statehost:
-                hostdir = cfg_preparse.hostdir
-            else:
-                hostdir = None
 
             metricsfilename = sarracenia.config.get_metrics_filename( hostdir, component, config, cfg_preparse.no)
 
@@ -165,7 +181,6 @@ class instance:
             if not cfg_preparse.logStdout:
 
                 logfilename = sarracenia.config.get_log_filename( hostdir, component, config, cfg_preparse.no)
-
                 dir_not_there = not os.path.exists(os.path.dirname(logfilename))
                 while dir_not_there:
                     try:
@@ -215,15 +230,13 @@ class instance:
         else:
             hostdir = None
 
-        pidfilename = sarracenia.config.get_pid_filename( hostdir, component, config, cfg_preparse.no)
-
         if not os.path.isdir(os.path.dirname(pidfilename)):
             pathlib.Path(os.path.dirname(pidfilename)).mkdir(parents=True, exist_ok=True)
 
         with open(pidfilename, 'w') as pfn:
             pfn.write('%d' % os.getpid())
 
-        cfg = sarracenia.config.one_config(component, config, cfg_preparse.action)
+        cfg = sarracenia.config.one_config(component, config, cfg_preparse.action, isPost=False, hostDir=hostdir)
 
         cfg.novipFilename = pidfilename.replace(".pid", ".noVip")
 

@@ -29,7 +29,7 @@ default_options = {
         'stubborn': True,
         'failure_duration': '5m'
     },
-    'message_ttl': 0,
+    'messageAgeMax': 0,
     'topicPrefix': ['v03'],
     'tlsRigour': 'normal'
 }
@@ -88,16 +88,16 @@ class Moth():
         * queueName   (for amqp, used as client-id for mqtt)
 
         this library knows nothing about Sarracenia, the only code used from sarracenia is to interpret
-        duration properties, from the root sarracenia/__init__.py, the broker argument from sarracenia.credentials
+        duration properties, from the root sarracenia/__init__.py, the broker argument from sarracenia.config.credentials
   
         usage::
 
            import sarracenia.moth
-           import sarracenia.credentials
+           import sarracenia.config.credentials
 
 
            props = sarracenia.moth.default_options
-           props['broker'] = sarracenia.credentials.Credential('amqps://anonymous:anonymous@hpfx.collab.science.gc.ca')
+           props['broker'] = sarracenia.config.credentials.Credential('amqps://anonymous:anonymous@hpfx.collab.science.gc.ca')
            props['expire'] = 300
            props['batch'] = 1
            is_subscriber=True
@@ -280,7 +280,7 @@ class Moth():
 
         self.is_subscriber = is_subscriber
         self.connected=False
-        self.please_stop = False
+        self._stop_requested = False
         self.metrics = { 'connected': False }
         self.metricsReset()
 
@@ -349,6 +349,13 @@ class Moth():
         """
         logger.error("NewMessages unimplemented")
         return []
+    
+    def please_stop(self) -> None:
+        """ register a request to cleanly stop. Any long running processes should check for _stop_requested and 
+            stop if it becomes True.
+        """
+        logger.info("asked to stop")
+        self._stop_requested = True
 
     def putNewMessage(self, message:sarracenia.Message, content_type: str ='application/json', exchange: str = None) -> bool:
         """

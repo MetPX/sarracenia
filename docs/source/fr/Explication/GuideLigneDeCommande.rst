@@ -953,14 +953,18 @@ que ca devrait être calculé lors du transfert.
 
 Pour définir la fréquence de sondage, on se sert de *scheduled_*, tel que::
 
-    scheduled_interal 30m
+    scheduled_interval 30m
 
 pour sonder à toute les trente minutes, ou bien::
 
     scheduled_hour 1,13,19
     scheduled_minute 27
 
-pour sonder trois fois par jour à 1h27, 13h27 et 19h27.
+pour sonder trois fois par jour à 1h27, 13h27 et 19h27, ou bien::
+
+    scheduled_time 15:30,20:30,23:15
+
+pour sonder à seulement 15:30, 20:30 et 23:15
     
 Par défaut, sr_poll envoie son message de publication au courtier avec l'échange par défaut
 (le préfixe *xs_* suivi du nom d’utilisateur du courtier). Le *post_broker* est obligatoire.

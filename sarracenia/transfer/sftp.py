@@ -25,6 +25,7 @@ import logging, paramiko, os, subprocess, sys, time
 from paramiko import *
 from stat import *
 
+import sarracenia
 from sarracenia.transfer import Transfer
 from sarracenia.transfer import alarm_cancel, alarm_set, alarm_raise
 from urllib.parse import unquote
@@ -79,29 +80,36 @@ class Sftp(Transfer):
 
     # cd
     def cd(self, path):
+
         alarm_set(self.o.timeout)
-        logger.debug("first cd to %s" % self.originalDir)
-        self.sftp.chdir(self.originalDir)
-        logger.debug("then cd to %s" % path)
-        self.sftp.chdir(path)
-        self.pwd = path
-        alarm_cancel()
+        try:
+            logger.debug("first cd to %s" % self.originalDir)
+            self.sftp.chdir(self.originalDir)
+            logger.debug("then cd to %s" % path)
+            self.sftp.chdir(path)
+            self.pwd = path
+        finally:
+            alarm_cancel()
 
     # cd forced
-    def cd_forced(self, perm, path):
-        logger.debug("sr_sftp cd_forced %d %s" % (perm, path))
+    def cd_forced(self, path):
+        """ try to cd to a directory. If the cd fails, create the directory
+        """
+        logger.debug("sr_sftp cd_forced %o %s" % (self.o.permDirDefault, path))
 
         # try to go directly to path
 
         alarm_set(self.o.timeout)
-        self.sftp.chdir(self.originalDir)
         try:
+            self.sftp.chdir(self.originalDir)
             self.sftp.chdir(path)
             alarm_cancel()
+            # cd was successful, no need to create the dir, just return
             return
         except:
             pass
-        alarm_cancel()
+        finally:
+            alarm_cancel()
 
         # need to create subdir
 
@@ -114,16 +122,21 @@ class Sftp(Transfer):
             try:
                 alarm_set(self.o.timeout)
                 self.sftp.chdir(d)
-                alarm_cancel()
                 continue
             except:
                 pass
+            finally:
+                alarm_cancel()
 
             # create and go to subdir
             alarm_set(self.o.timeout)
-            self.sftp.mkdir(d, self.o.permDirDefault)
-            self.sftp.chdir(d)
-            alarm_cancel()
+            try:
+                self.sftp.mkdir(d, self.o.permDirDefault)
+                self.sftp.chdir(d)
+                # Apply permDirDefault value. mkdir is limited by SFTP server umask value
+                self.sftp.chmod('.', self.o.permDirDefault)
+            finally:
+                alarm_cancel()
 
     def check_is_connected(self):
         logger.debug("sr_sftp check_is_connected")
@@ -144,10 +157,11 @@ class Sftp(Transfer):
         try:
             alarm_set(self.o.timeout)
             self.sftp.chdir(self.originalDir)
-            alarm_cancel()
         except:
             self.close()
             return False
+        finally:
+            alarm_cancel()
 
         return True
 
@@ -155,8 +169,10 @@ class Sftp(Transfer):
     def chmod(self, perm, path):
         logger.debug("sr_sftp chmod %s %s" % ("{0:o}".format(perm), path))
         alarm_set(self.o.timeout)
-        self.sftp.chmod(path, perm)
-        alarm_cancel()
+        try:
+            self.sftp.chmod(path, perm)
+        finally:
+            alarm_cancel()
 
     # close
     def close(self):
@@ -192,7 +208,6 @@ class Sftp(Transfer):
 
         alarm_set(self.o.timeout)
         try:
-
             sublogger = logging.getLogger('paramiko')
             sublogger.setLevel(logging.CRITICAL)
             self.ssh = paramiko.SSHClient()
@@ -222,8 +237,6 @@ class Sftp(Transfer):
 
             self.connected = True
             self.sftp = sftp
-
-            #alarm_cancel()
             return True
 
         except:
@@ -231,7 +244,8 @@ class Sftp(Transfer):
                          (self.host, self.user))
             logger.debug('Exception details: ', exc_info=True)
 
-        alarm_cancel()
+        finally:
+            alarm_cancel()
         return False
 
     # credentials...
@@ -300,31 +314,36 @@ class Sftp(Transfer):
             alarm_cancel()
             return
 
-        # proceed with file/link removal
-        if not S_ISDIR(s.st_mode):
-            logger.debug("sr_sftp remove %s" % path)
-            self.sftp.remove(path)
+        try:
+            # proceed with file/link removal
+            if not S_ISDIR(s.st_mode):
+                logger.debug("sr_sftp remove %s" % path)
+                self.sftp.remove(path)
 
-        # proceed with directory removal
-        else:
-            logger.debug("sr_sftp rmdir %s" % path)
-            self.sftp.rmdir(path)
-
-        alarm_cancel()
+            # proceed with directory removal
+            else:
+                logger.debug("sr_sftp rmdir %s" % path)
+                self.sftp.rmdir(path)
+        finally:
+            alarm_cancel()
 
     def readlink(self, link):
         logger.debug("%s" % (link))
         alarm_set(self.o.timeout)
-        value = self.sftp.readlink(link)
-        alarm_cancel()
+        try:
+            value = self.sftp.readlink(link)
+        finally:
+            alarm_cancel()
         return value
 
     # symlink
     def symlink(self, link, path):
         logger.debug("(in %s), create this file %s as a link to: %s" % (self.getcwd(), path, link) )
         alarm_set(self.o.timeout)
-        self.sftp.symlink(link, path)
-        alarm_cancel()
+        try:
+            self.sftp.symlink(link, path)
+        finally:
+            alarm_cancel()
 
     # get
 
@@ -340,10 +359,12 @@ class Sftp(Transfer):
             (remote_file, local_file, remote_offset, local_offset, length, exactLength))
 
         alarm_set(2 * self.o.timeout)
-        rfp = self.sftp.file(remote_file, 'rb', self.o.bufsize)
-        if remote_offset != 0: rfp.seek(remote_offset, 0)
-        rfp.settimeout(1.0 * self.o.timeout)
-        alarm_cancel()
+        try:
+            rfp = self.sftp.file(remote_file, 'rb', self.o.bufSize)
+            if remote_offset != 0: rfp.seek(remote_offset, 0)
+            rfp.settimeout(1.0 * self.o.timeout)
+        finally:
+            alarm_cancel()
 
         # read from rfp and write to local_file
 
@@ -354,8 +375,10 @@ class Sftp(Transfer):
         # close
 
         alarm_set(self.o.timeout)
-        rfp.close()
-        alarm_cancel()
+        try:
+            rfp.close()
+        finally:
+            alarm_cancel()
 
         return rw_length
 
@@ -381,8 +404,10 @@ class Sftp(Transfer):
     # getcwd
     def getcwd(self):
         alarm_set(self.o.timeout)
-        cwd = self.sftp.getcwd() if self.sftp else None
-        alarm_cancel()
+        try:
+            cwd = self.sftp.getcwd() if self.sftp else None
+        finally:
+            alarm_cancel()
         return cwd
 
     # ls
@@ -391,8 +416,11 @@ class Sftp(Transfer):
         self.entries = {}
         # timeout is at least 30 secs, say we wait for max 5 mins
         alarm_set(self.o.timeout)
-        dir_attr = self.sftp.listdir_attr()
-        alarm_cancel()
+        try:
+            dir_attr = self.sftp.listdir_attr()
+        finally:
+            alarm_cancel()
+
         for index in range(len(dir_attr)):
             attr = dir_attr[index]
             line = attr.__str__()
@@ -424,22 +452,22 @@ class Sftp(Transfer):
     def mkdir(self, remote_dir):
         logger.debug("mkdir %s" % remote_dir)
         alarm_set(self.o.timeout)
-        
         try:
             s = self.sftp.lstat(path)
             if S_ISDIR(s.st_mode):
                 return
             logger.error( f"cannot mkdir {path}, file exists" )
-            alarm_cancel()
             return
         except FileNotFoundError:
             pass
         except:
-            alarm_cancel()
             return
-
-        self.sftp.mkdir(remote_dir, self.o.permDirDefault)
-        alarm_cancel()
+        else:
+            self.sftp.mkdir(remote_dir, self.o.permDirDefault)
+            # Apply permDirDefault value. mkdir is limited by SFTP server umask value
+            self.sftp.chmod(remote_dir, self.o.permDirDefault)
+        finally:
+            alarm_cancel()
 
     # put
     def put(self,
@@ -449,31 +477,31 @@ class Sftp(Transfer):
             local_offset=0,
             remote_offset=0,
             length=0):
-        logger.debug(
-            "sr_sftp put %s %s %d %d %d" %
-            (local_file, remote_file, local_offset, remote_offset, length))
+        logger.debug( f" local_file={local_file} remote_file={remote_file} local_offset={local_offset} remote_offset={remote_offset} length={length}"  )
 
         # simple file
 
         alarm_set(2 * self.o.timeout)
 
-        if length == 0:
-            rfp = self.sftp.file(remote_file, 'wb', self.o.bufsize)
-            rfp.settimeout(1.0 * self.o.timeout)
+        try:
+           if length == 0:
+               rfp = self.sftp.file(remote_file, 'wb', self.o.bufSize)
+               rfp.settimeout(1.0 * self.o.timeout)
 
-        # parts
-        else:
-            try:
-                self.sftp.stat(remote_file)
-            except:
-                rfp = self.sftp.file(remote_file, 'wb', self.o.bufsize)
-                rfp.close()
+           # parts
+           else:
+               try:
+                   self.sftp.stat(remote_file)
+               except:
+                   rfp = self.sftp.file(remote_file, 'wb', self.o.bufSize)
+                   rfp.close()
 
-            rfp = self.sftp.file(remote_file, 'r+b', self.o.bufsize)
-            rfp.settimeout(1.0 * self.o.timeout)
-            if remote_offset != 0: rfp.seek(remote_offset, 0)
+               rfp = self.sftp.file(remote_file, 'r+b', self.o.bufSize)
+               rfp.settimeout(1.0 * self.o.timeout)
+               if remote_offset != 0: rfp.seek(remote_offset, 0)
 
-        alarm_cancel()
+        finally:
+            alarm_cancel()
 
         # read from local_file and write to rfp
 
@@ -482,10 +510,12 @@ class Sftp(Transfer):
         # no sparse file... truncate where we are at
 
         alarm_set(self.o.timeout)
-        self.fpos = remote_offset + rw_length
-        if length != 0: rfp.truncate(self.fpos)
-        rfp.close()
-        alarm_cancel()
+        try:
+            self.fpos = remote_offset + rw_length
+            if length != 0: rfp.truncate(self.fpos)
+            rfp.close()
+        finally:
+           alarm_cancel()
 
         return rw_length
 
@@ -518,19 +548,32 @@ class Sftp(Transfer):
         except:
             pass
         alarm_set(self.o.timeout)
-        self.sftp.rename(remote_old, remote_new)
-        alarm_cancel()
+        try:
+            self.sftp.rename(remote_old, remote_new)
+        finally:
+            alarm_cancel()
 
     # rmdir
     def rmdir(self, path):
         logger.debug("sr_sftp rmdir %s " % path)
         alarm_set(self.o.timeout)
-        self.sftp.rmdir(path)
-        alarm_cancel()
+        try:
+            self.sftp.rmdir(path)
+        finally:
+            alarm_cancel()
+
+    #when sftp is active, paramiko is present... STFPAttributes is then the same as FmdStat.
+    def stat(self, path, msg=None) -> sarracenia.filemetadata.FmdStat:
+        try:
+            return self.sftp.stat(path)
+        except:
+            return None
 
     # utime
     def utime(self, path, tup):
         logger.debug("sr_sftp utime %s %s " % (path, tup))
         alarm_set(self.o.timeout)
-        self.sftp.utime(path, tup)
-        alarm_cancel()
+        try:
+            self.sftp.utime(path, tup)
+        finally:
+            alarm_cancel()

@@ -39,6 +39,21 @@ Installation Instructions
 git
 ---
 
+3.0.56
+------
+
+*CHANGE*: code refactor *sarracenia.credentials...* classes are now 
+*sarracenia.config.credentials* any code using credentials need to be
+updated.
+
+*CHANGE*: queue settings stored in subscriptions.json state file,
+instead of a .qname file, along with more information. Transition
+is perhaps complex. This version will read and write both files,
+so as to preserve ability to downgrade. later version will drop
+support for qname files.
+
+
+
 3.0.54
 ------
 

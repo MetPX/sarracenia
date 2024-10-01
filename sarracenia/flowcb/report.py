@@ -41,7 +41,7 @@ class Report(FlowCB):
 
         if hasattr(self.o, 'report_broker') and self.o.report_broker:
             if type(self.o.report_broker) == str:
-                ok, cred_details = self.o._validate_urlstr(self.o.report_broker)
+                ok, cred_details = self.o.credentials.validate_urlstr(self.o.report_broker)
                 if ok:
                     self.o.report_broker = cred_details
       
@@ -166,3 +166,10 @@ class Report(FlowCB):
             self.poster.close()
         logger.info('closing')
 
+    def please_stop(self) -> None:
+        """ pass stop request along to publisher Moth instance(s)
+        """
+        super().please_stop()
+        if hasattr(self, 'poster') and self.poster:
+            logger.debug("asking Moth publisher to please_stop")
+            self.poster.please_stop()

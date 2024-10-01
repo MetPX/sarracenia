@@ -84,6 +84,12 @@ import sarracenia.identity.md5
 import sarracenia.identity.random
 import sarracenia.identity.sha512
 
+# the 'unknown' method is created to accomodate cases where a identity field 
+# missing, or the corresponding class is not known to this instance.
+
+# methods where size checks makes sense. updated when new methods added.
+binary_methods = [ 'sha512', 'md5', 'unknown' ]
+
 known_methods = []
 for sc in Identity.__subclasses__():
     known_methods.append(sc.__name__.lower())
