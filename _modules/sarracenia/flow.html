@@ -1187,7 +1187,7 @@
                                          <span class="p">(</span><span class="n">m</span><span class="p">[</span><span class="s1">&#39;fileOp&#39;</span><span class="p">][</span><span class="s1">&#39;rename&#39;</span><span class="p">]))</span>
                         <span class="k">else</span><span class="p">:</span>
                             <span class="bp">self</span><span class="o">.</span><span class="n">reject</span><span class="p">(</span>
-                                <span class="n">m</span><span class="p">,</span> <span class="mi">304</span><span class="p">,</span> <span class="s2">&quot;mask=</span><span class="si">%s</span><span class="s2"> strip=</span><span class="si">%s</span><span class="s2"> url=</span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span>
+                                <span class="n">m</span><span class="p">,</span> <span class="mi">404</span><span class="p">,</span> <span class="s2">&quot;mask=</span><span class="si">%s</span><span class="s2"> strip=</span><span class="si">%s</span><span class="s2"> url=</span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span>
                                 <span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">mask</span><span class="p">),</span> <span class="n">strip</span><span class="p">,</span> <span class="n">urlToMatch</span><span class="p">))</span>
                         <span class="k">break</span>
 
@@ -1222,7 +1222,7 @@
                                            <span class="bp">self</span><span class="o">.</span><span class="n">o</span><span class="o">.</span><span class="n">flatten</span><span class="p">)</span>
                     <span class="n">filtered_worklist</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">m</span><span class="p">)</span>
                 <span class="k">else</span><span class="p">:</span>
-                    <span class="bp">self</span><span class="o">.</span><span class="n">reject</span><span class="p">(</span><span class="n">m</span><span class="p">,</span> <span class="mi">304</span><span class="p">,</span> <span class="s2">&quot;unmatched pattern </span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="n">url</span><span class="p">)</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">reject</span><span class="p">(</span><span class="n">m</span><span class="p">,</span> <span class="mi">404</span><span class="p">,</span> <span class="s2">&quot;unmatched pattern </span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="n">url</span><span class="p">)</span>
 
         <span class="bp">self</span><span class="o">.</span><span class="n">worklist</span><span class="o">.</span><span class="n">incoming</span> <span class="o">=</span> <span class="n">filtered_worklist</span>
 
@@ -1611,24 +1611,24 @@
                 <span class="n">new_mtime</span> <span class="o">=</span> <span class="n">sarracenia</span><span class="o">.</span><span class="n">timestr2flt</span><span class="p">(</span><span class="n">msg</span><span class="p">[</span><span class="s1">&#39;mtime&#39;</span><span class="p">])</span>
                 <span class="n">old_mtime</span> <span class="o">=</span> <span class="mf">0.0</span>
 
-                <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">o</span><span class="o">.</span><span class="n">timeCopy</span><span class="p">:</span>
-                    <span class="n">old_mtime</span> <span class="o">=</span> <span class="n">lstat</span><span class="o">.</span><span class="n">st_mtime</span>
-                <span class="k">elif</span> <span class="n">sarracenia</span><span class="o">.</span><span class="n">filemetadata</span><span class="o">.</span><span class="n">supports_extended_attributes</span><span class="p">:</span>
-                    <span class="k">try</span><span class="p">:</span>
-                        <span class="n">x</span> <span class="o">=</span> <span class="n">sarracenia</span><span class="o">.</span><span class="n">filemetadata</span><span class="o">.</span><span class="n">FileMetadata</span><span class="p">(</span><span class="n">msg</span><span class="p">[</span><span class="s1">&#39;new_path&#39;</span><span class="p">])</span>
-                        <span class="n">old_mtime</span> <span class="o">=</span> <span class="n">sarracenia</span><span class="o">.</span><span class="n">timestr2flt</span><span class="p">(</span><span class="n">x</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;mtime&#39;</span><span class="p">))</span>
-                    <span class="k">except</span><span class="p">:</span>
-                        <span class="k">pass</span>
-    
-                <span class="k">if</span> <span class="n">new_mtime</span> <span class="o">&lt;=</span> <span class="n">old_mtime</span><span class="p">:</span>
-                    <span class="bp">self</span><span class="o">.</span><span class="n">reject</span><span class="p">(</span><span class="n">msg</span><span class="p">,</span> <span class="mi">304</span><span class="p">,</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">o</span><span class="o">.</span><span class="n">timeCopy</span><span class="p">:</span>
+                <span class="n">old_mtime</span> <span class="o">=</span> <span class="n">lstat</span><span class="o">.</span><span class="n">st_mtime</span>
+            <span class="k">elif</span> <span class="n">sarracenia</span><span class="o">.</span><span class="n">filemetadata</span><span class="o">.</span><span class="n">supports_extended_attributes</span><span class="p">:</span>
+                <span class="k">try</span><span class="p">:</span>
+                    <span class="n">x</span> <span class="o">=</span> <span class="n">sarracenia</span><span class="o">.</span><span class="n">filemetadata</span><span class="o">.</span><span class="n">FileMetadata</span><span class="p">(</span><span class="n">msg</span><span class="p">[</span><span class="s1">&#39;new_path&#39;</span><span class="p">])</span>
+                    <span class="n">old_mtime</span> <span class="o">=</span> <span class="n">sarracenia</span><span class="o">.</span><span class="n">timestr2flt</span><span class="p">(</span><span class="n">x</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;mtime&#39;</span><span class="p">))</span>
+                <span class="k">except</span><span class="p">:</span>
+                    <span class="k">pass</span>
+
+            <span class="k">if</span> <span class="n">new_mtime</span> <span class="o">&lt;=</span> <span class="n">old_mtime</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">reject</span><span class="p">(</span><span class="n">msg</span><span class="p">,</span> <span class="mi">406</span><span class="p">,</span>
                             <span class="s2">&quot;mtime not newer </span><span class="si">%s</span><span class="s2"> &quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">msg</span><span class="p">[</span><span class="s1">&#39;new_path&#39;</span><span class="p">]))</span>
-                    <span class="k">return</span> <span class="kc">False</span>
-                <span class="k">else</span><span class="p">:</span>
-                    <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span>
-                        <span class="s2">&quot;</span><span class="si">{}</span><span class="s2"> new version is </span><span class="si">{}</span><span class="s2"> newer (new: </span><span class="si">{}</span><span class="s2"> vs old: </span><span class="si">{}</span><span class="s2"> )&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
-                        <span class="n">msg</span><span class="p">[</span><span class="s1">&#39;new_path&#39;</span><span class="p">],</span> <span class="n">new_mtime</span> <span class="o">-</span> <span class="n">old_mtime</span><span class="p">,</span> <span class="n">new_mtime</span><span class="p">,</span>
-                        <span class="n">old_mtime</span><span class="p">))</span>
+                <span class="k">return</span> <span class="kc">False</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span>
+                    <span class="s2">&quot;</span><span class="si">{}</span><span class="s2"> new version is </span><span class="si">{}</span><span class="s2"> newer (new: </span><span class="si">{}</span><span class="s2"> vs old: </span><span class="si">{}</span><span class="s2"> )&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
+                    <span class="n">msg</span><span class="p">[</span><span class="s1">&#39;new_path&#39;</span><span class="p">],</span> <span class="n">new_mtime</span> <span class="o">-</span> <span class="n">old_mtime</span><span class="p">,</span> <span class="n">new_mtime</span><span class="p">,</span>
+                    <span class="n">old_mtime</span><span class="p">))</span>
 
         <span class="k">elif</span> <span class="n">method</span> <span class="ow">in</span> <span class="p">[</span><span class="s1">&#39;random&#39;</span><span class="p">,</span> <span class="s1">&#39;cod&#39;</span><span class="p">]:</span>
             <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;content_match </span><span class="si">%s</span><span class="s2"> sum random/zero/cod never matches&quot;</span> <span class="o">%</span>
