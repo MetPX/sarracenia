@@ -357,6 +357,11 @@ class MQTT(Moth):
         if self._stop_requested:
             return
 
+        start = time.time()
+        if  start < self.next_connect_time:
+            logger.info( "too soon to connect again, will try in {self.next_connect_time-start} seconds" )
+            return
+
         try:
             cs = self.o['clean_session']
             if ('queueName' in self.o) and ('no' in self.o):
@@ -388,6 +393,7 @@ class MQTT(Moth):
                           break
                      if ebo < 512 :
                         ebo *= 2
+                self.next_connect_failures=0
                 return
             else: # either 'declare' or 'foreground'
                 if 'instances' in self.o:    
@@ -412,11 +418,14 @@ class MQTT(Moth):
                     decl_client.disconnect()
                     decl_client.loop_stop()
                     logger.info( f"instance declaration for {icid} done" )
+                self.next_connect_failures=0
                 return
                 
         except Exception as err:
             logger.error( f"failed to {self.o['broker'].url.hostname} with {err}" )
             logger.error('Exception details: ', exc_info=True)
+            self.setEbo(start)
+
 
     def putSetup(self):
         """
@@ -427,6 +436,11 @@ class MQTT(Moth):
         self.connected=False
         
         if self._stop_requested:
+            return
+
+        start = time.time()
+        if  start < self.next_connect_time:
+            logger.info( "too soon to connect again, will try in {self.next_connect_time-start} seconds" )
             return
 
         try:
@@ -474,12 +488,13 @@ class MQTT(Moth):
                       ebo *= 2
                 
             if not self.connect_in_progress:
+                self.next_connect_failures=0
                 return
 
         except Exception as err:
             logger.error("failed to {self.o['broker'].url.hostname} with {err}" )
             logger.error('Exception details: ', exc_info=True)
-
+            self.setEbo(start)
 
     def __sub_on_message(client, userdata, msg):
         """
