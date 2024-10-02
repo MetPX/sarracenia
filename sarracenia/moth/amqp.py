@@ -468,7 +468,6 @@ class AMQP(Moth):
                         self.o['broker'].url.hostname, err))
             logger.debug('Exception details: ', exc_info=True)
             self.setEbo(start)
-
         self.close()
 
     def putCleanUp(self) -> None:
