@@ -333,7 +333,7 @@ class AMQP(Moth):
         self.next_connect_time = now + next_try
         logger.error( f"could not connect. next try in {next_try} seconds.")
 
-    def getSetup(self) -> bool:
+    def getSetup(self) -> None:
         """
         Setup so we can get messages.
 
@@ -358,6 +358,7 @@ class AMQP(Moth):
             # from sr_consumer.build_connection...
             if not self.__connect(self.o['broker']):
                 self.setEbo(start)
+                self.connection = None
                 return
             
             if self.o['prefetch'] != 0:
@@ -408,6 +409,7 @@ class AMQP(Moth):
             logger.error( f"failed connection to {self.o['broker'].url.hostname}: {err}" )
             logger.debug('Exception details: ', exc_info=True)
             self.setEbo(start)
+            self.connection = None
 
     def putSetup(self) -> None:
 
@@ -428,6 +430,7 @@ class AMQP(Moth):
 
             if not self.__connect(self.o['broker']):
                 self.setEbo(start)
+                self.connection = None
                 return
 
             # transaction mode... confirms would be better...
@@ -459,7 +462,6 @@ class AMQP(Moth):
             self.metricsConnect()
             self.next_connect_failures = 0
             logger.debug('putSetup ... Done!')
-            return
 
         except Exception as err:
             logger.error(
@@ -468,7 +470,8 @@ class AMQP(Moth):
                         self.o['broker'].url.hostname, err))
             logger.debug('Exception details: ', exc_info=True)
             self.setEbo(start)
-        self.close()
+            self.connection=None
+            self.close()
 
     def putCleanUp(self) -> None:
 
@@ -533,8 +536,7 @@ class AMQP(Moth):
             if not self.connection:
                 self.getSetup()
 
-            if not hasattr(self,'channel'):
-                self.close()
+            if (not hasattr(self,'channel')) or (not hasattr(self,'connection')) or not self.connection:
                 return None
 
             raw_msg = self.channel.basic_get(self.o['queueName'])

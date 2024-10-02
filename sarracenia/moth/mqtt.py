@@ -129,6 +129,10 @@ class MQTT(Moth):
         self.o.update(default_options)
         self.o.update(options)
 
+        now = time.time()
+        self.next_connect_time = now
+        self.next_connect_failures = 0
+
         if 'qos' in self.o:
             if type(self.o['qos']) is not int:
                 self.o['qos'] = int(self.o['qos'])
