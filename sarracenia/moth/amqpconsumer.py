@@ -69,11 +69,6 @@ class AMQPConsumer(AMQP):
         # This will block until the msg can be put in the queue
         self._raw_msg_q.put(msg)
 
-    def getCleanUp(self) -> None:
-        # TODO cancel consumer with basic_cancel(consumer_tag)?
-        super().getCleanUp()
-        self._active_consumer_tag = None
-
     def getSetup(self) -> None:
         super().getSetup()
         # (re)create queue. Anything in the queue is invalid after re-creating a connection.
@@ -147,3 +142,16 @@ class AMQPConsumer(AMQP):
         self.close()
         time.sleep(1)
         return None
+
+    def close(self) -> None:
+        # TODO cancel consumer with basic_cancel(consumer_tag)?
+        if self._active_consumer_tag:
+            try:
+                self.channel.basic_cancel(self._active_consumer_tag)
+                logger.info(f"cancelled consumer with tag {self._active_consumer_tag}")
+            except Exception as e:
+                logger.warning(f"failed to cancel consumer with tag {self._active_consumer_tag} {e}")
+                logger.debug("Exception details:", exc_info=True)
+        self._active_consumer_tag = None
+        super().close()
+
