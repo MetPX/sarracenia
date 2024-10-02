@@ -333,7 +333,7 @@ class AMQP(Moth):
         self.next_connect_time = now + next_try
         logger.error( f"could not connect. next try in {next_try} seconds.")
 
-    def getSetup(self) -> bool:
+    def getSetup(self) -> None:
         """
         Setup so we can get messages.
 
