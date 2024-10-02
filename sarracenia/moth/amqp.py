@@ -316,23 +316,6 @@ class AMQP(Moth):
             self.metrics['brokerQueuedMessageCount'] = -1
         return -1
 
-    def setEbo(self,start)->None:
-        """  Calculate next retry time using exponential backoff
-             note that it doesn't look like classic EBO because the time
-             is multiplied by how long it took to fail. Long failures should not
-             be retried quickly, but short failures can be variable in duration.
-             If the timing of failures is variable, the "attempt_duration" will be low, 
-             and so the next_try might get smaller even though it hasn't succeeded yet... 
-             it should eventually settle down to a long period though.
-        """
-        now=time.time()
-        attempt_duration = now - start
-        self.next_connect_failures += 1
-        ebo = 2**self.next_connect_failures
-        next_try = min(attempt_duration * ebo, 600)
-        self.next_connect_time = now + next_try
-        logger.error( f"could not connect. next try in {next_try} seconds.")
-
     def getSetup(self) -> None:
         """
         Setup so we can get messages.
@@ -363,10 +346,7 @@ class AMQP(Moth):
             # from sr_consumer.build_connection...
             if not self.__connect(self.o['broker']):
                 self.setEbo(start)
-<<<<<<< HEAD
                 self.connection = None
-=======
->>>>>>> 9264522b (implement ebo for broker connection attempts, AMQP)
                 return
 
             if self.o['prefetch'] != 0:
@@ -419,10 +399,7 @@ class AMQP(Moth):
             logger.error( f"failed connection to {self.o['broker'].url.hostname}: {err}" )
             logger.debug('Exception details: ', exc_info=True)
             self.setEbo(start)
-<<<<<<< HEAD
             self.connection = None
-=======
->>>>>>> 9264522b (implement ebo for broker connection attempts, AMQP)
 
     def putSetup(self) -> None:
 
