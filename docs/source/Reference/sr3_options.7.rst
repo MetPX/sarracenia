@@ -2092,10 +2092,10 @@ Examples: Canada/Pacific, Pacific/Nauru, Canada/Eastern, Europe/Paris
 Has no effect other than in when polling an FTP server.
 
 
-tlsRigour (default: medium)
+tlsRigour (default: normal)
 ---------------------------
 
-tlsRigour can be set to: *lax, medium, or strict*, and gives a hint to the
+tlsRigour can be set to: *lax, normal, or strict*, and gives a hint to the
 application of how to configure TLS connections. TLS, or Transport Level
 Security (used to be called Secure Socket Layer (SSL)) is the wrapping of
 normal TCP sockets in standard encryption. There are many aspects of TLS
