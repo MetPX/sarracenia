@@ -284,6 +284,10 @@ class Moth():
         self.metrics = { 'connected': False }
         self.metricsReset()
 
+        now = time.time()
+        self.next_connect_time = now
+        self.next_connect_failures = 0
+
         if (sys.version_info.major == 3) and (sys.version_info.minor < 7):
             self.o = {}
             for k in default_options:
@@ -414,6 +418,23 @@ class Moth():
             self.getCleanUp()
         else:
             self.putCleanUp()
+
+    def setEbo(self,start)->None:
+        """  Calculate next retry time using exponential backoff
+             note that it doesn't look like classic EBO because the time
+             is multiplied by how long it took to fail. Long failures should not
+             be retried quickly, but short failures can be variable in duration.
+             If the timing of failures is variable, the "attempt_duration" will be low,
+             and so the next_try might get smaller even though it hasn't succeeded yet...
+             it should eventually settle down to a long period though.
+        """
+        now=time.time()
+        attempt_duration = now - start
+        self.next_connect_failures += 1
+        ebo = 2**self.next_connect_failures
+        next_try = min(attempt_duration * ebo, 600)
+        self.next_connect_time = now + next_try
+        logger.error( f"could not connect. next try in {next_try} seconds.")
 
 if features['amqp']['present']:
     import sarracenia.moth.amqp
