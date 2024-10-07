@@ -1,8 +1,11 @@
 metpx-sr3 (3.00.56rc1) UNRELEASED; urgency=medium
 
+  * NEW option *recusion* option ( #1237 ) (actually restored, was removed.)
+  * fix #1156 - NEW option *logDuplicates* 
+  * NEW EXPERIMENTAL option: *logJson*
   * fix #1223 Switch from global QoS to per-consumer.
   * AM sender problems identified in satnet testing.
-  * working on #35 replacing .qname with subscriptions.json state file.
+  * working on #35 augmenting .qname with subscriptions.json state file.
   * working on #1183, sr3 manages instances > 100 correctly.
   * PR #1228 Unquote secret_access_key in s3CloudSender plugin
   * PR #1230 ... reduced spurious "unknown options" messages from config.
