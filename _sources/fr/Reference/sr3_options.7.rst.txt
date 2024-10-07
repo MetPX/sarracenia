@@ -1083,6 +1083,17 @@ de python. Le format est documenté ici:
 
 * https://docs.python.org/fr/3/library/logging.html#logrecord-attributes
 
+logJson <flag> (par défaut : faux) EXPÉRIMENTAL
+------------------------------------------------
+
+lorsque *logJson on* est défini, un deuxième fichier journal avec l'extension .json est créé à côté du
+fichier .log normal. Chaque ligne des journaux .json est une structure .json, contenant
+un message écrit par le journal de flux. Il ne contient pas de sortie non formatée
+des sous-shell et des plugins qui peuvent produire une sortie arbitraire.
+
+Le fichier .log contiendra la sortie des sous-programmes lancés par le flux,
+et le .json ne contiendra que les messages de journal correctement formatés provenant de l'application elle-même
+et des rappels correctement écrits (qui utilisent des mécanismes de journalisation python normaux.)
 
 logLevel ( défaut: info )
 -------------------------

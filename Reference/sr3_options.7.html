@@ -1062,6 +1062,16 @@ to control what is written to log files.  The format is documented here:</p>
 <li><p><a class="reference external" href="https://docs.python.org/3/library/logging.html#logrecord-attributes">https://docs.python.org/3/library/logging.html#logrecord-attributes</a></p></li>
 </ul>
 </section>
+<section id="logjson-flag-default-false-experimental">
+<h4>logJson &lt;flag&gt; (default: False) EXPERIMENTAL<a class="headerlink" href="#logjson-flag-default-false-experimental" title="Link to this heading"></a></h4>
+<p>when <em>logJson on</em> is set, a second log file with the .json extension is made beside the
+normal .log file.  Each line of the .json logs is a .json structure, containing
+a message written by the flow log. It does not contain unformatted output of
+sub-shells, and plugins which may produce arbitrary output.</p>
+<p>The .log file will contain the output of sub-programs launched by the flow,
+and the .json will only contain properly formatted log messages from the application itself
+and properly written callbacks (that use normal python logging mechanisms.)</p>
+</section>
 <section id="loglevel-default-info">
 <h4>logLevel ( default: info )<a class="headerlink" href="#loglevel-default-info" title="Link to this heading"></a></h4>
 <p>The level of logging as expressed by python’s logging. Possible values are :  critical, error, info, warning, debug.</p>
