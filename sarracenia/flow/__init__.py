@@ -567,6 +567,7 @@ class Flow:
             if self._stop_requested:
                 if stopping:
                     logger.debug('clean stop from run loop')
+                    logger.error(f'TODO REMOVE ME: {self.worklist}')
                     self.close()
                     break
                 else:
@@ -582,6 +583,7 @@ class Flow:
 
             self.worklist.incoming = []
 
+            # poll has to ingest messages even when it doesn't have the vip
             if (self.o.component == 'poll') or self.have_vip:
 
                 if ( self.o.messageRateMax > 0 ) and (current_rate > 0.8*self.o.messageRateMax ):
@@ -599,15 +601,19 @@ class Flow:
 
                 self.filter()
 
-                # this for duplicate cache synchronization.
-                if self.worklist.poll_catching_up:
-                    self.ack(self.worklist.incoming)
-                    self.ack(self.worklist.rejected)
-                    self.worklist.incoming = []
+                self.work()
 
-                else: # normal processing, when you are active.
-                    self.work()
+                # only post when you have the vip
+                # and polls should not post until they have ingested messages and synced their nodupe cache
+                if self.have_vip and not self.worklist.poll_catching_up:
                     self.post(now)
+                # when you're a poll that does not have the vip, and not catching up, need to get rid of the messages
+                # that are done processing. Normally self.post() does this.
+                elif self.o.component == 'poll' and not self.worklist.poll_catching_up:
+                    self.worklist.ok = []
+                    self.worklist.directories_ok = []
+                    self.worklist.failed = []
+                
 
             now = nowflt()
             run_time = now - start_time
