@@ -1089,6 +1089,19 @@ to control what is written to log files.  The format is documented here:
 * https://docs.python.org/3/library/logging.html#logrecord-attributes
 
 
+logJson <flag> (default: False) EXPERIMENTAL
+--------------------------------------------
+
+when *logJson on* is set, a second log file with the .json extension is made beside the
+normal .log file.  Each line of the .json logs is a .json structure, containing 
+a message written by the flow log. It does not contain unformatted output of
+sub-shells, and plugins which may produce arbitrary output.
+
+The .log file will contain the output of sub-programs launched by the flow, 
+and the .json will only contain properly formatted log messages from the application itself
+and properly written callbacks (that use normal python logging mechanisms.)
+
+
 logLevel ( default: info )
 --------------------------
 

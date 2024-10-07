@@ -98,6 +98,7 @@ default_options = {
     'identity_method': 'sha512',
     'logDuplicates': False,
     'logFormat': '%(asctime)s [%(levelname)s] %(name)s %(funcName)s %(message)s',
+    'logJson': False,
     'logMetrics': False,
     'logStdout': False,
     'metrics_writeInterval': 5,
@@ -141,14 +142,16 @@ count_options = [
 
 
 # all the boolean settings.
-flag_options = [ 'acceptSizeWrong', 'acceptUnmatched', 'amqp_consumer', 'baseUrl_relPath', 'debug', \
-    'delete', 'discard', 'download', 'dry_run', 'durable', 'exchangeDeclare', 'exchangeSplit', 'logReject', 'realpathFilter', \
-    'follow_symlinks', 'force_polling', 'inline', 'inlineOnly', 'inplace', 'logDuplicates', 'logMetrics', 'logStdout', 'logReject', 'restore', \
-    'messageDebugDump', 'mirror', 'timeCopy', 'notify_only', 'overwrite', 'post_on_start', \
-    'permCopy', 'persistent', 'queueBind', 'queueDeclare', 'randomize', 'recursive', 'realpathPost', \
+
+flag_options = [ 'acceptSizeWrong', 'acceptUnmatched', 'amqp_consumer', 'baseUrl_relPath', 'debug', 
+    'delete', 'discard', 'download', 'dry_run', 'durable', 'exchangeDeclare', 'exchangeSplit', 
+    'follow_symlinks', 'force_polling', 'inline', 'inlineOnly', 'inplace', 'logJson', 
+    'logMetrics', 'logReject', 'logStdout', 'logReject', 'restore', 'messageDebugDump', 
+    'mirror', 'notify_only', 'overwrite', 'post_on_start', 'permCopy', 'persistent', 
+    'queueBind', 'queueDeclare', 'randomize', 'recursive', 'realpathFilter', 'realpathPost', 
     'reconnect', 'report', 'reset', 'retry_refilter', 'retryEmptyBeforeExit', 'save', 
-    'sundew_compat_regex_first_match_is_zero', 'sourceFromExchange', 'sourceFromMessage', 'topicCopy', 
-    'statehost', 'users', 'v2compatRenameDoublePost', 'wololo'
+    'sundew_compat_regex_first_match_is_zero', 'sourceFromExchange', 'sourceFromMessage', 
+    'statehost', 'timeCopy', 'topicCopy', 'users', 'v2compatRenameDoublePost', 'wololo'
                 ]
 
 float_options = [ 'messageRateMax', 'messageRateMin' ]
