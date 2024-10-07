@@ -1514,7 +1514,7 @@ class Config:
         else:
             cfname = cfg
 
-        logger.debug( f'looking for {cfg} (in {os.getcwd()}')
+        #logger.debug( f'looking for {cfg} (in {os.getcwd()}')
 
         cfg=os.path.expanduser(cfg)
 
@@ -1530,7 +1530,7 @@ class Config:
             if not cfgfilepath:
                  logger.error( f'failed to find {cfg}' )
                  return
-            logger.debug( f'found {cfgfilepath}')
+            #logger.debug( f'found {cfgfilepath}')
 
         lineno=0
         saved_lineno=0
