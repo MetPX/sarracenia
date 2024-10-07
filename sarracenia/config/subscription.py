@@ -57,7 +57,6 @@ class Subscriptions(list):
 
         found=False
         for s in self:
-            logger.critical( f"FIXME: comparing {s['broker']=} to {new_subscription['broker']=} ")
             if ( s['broker'] == new_subscription['broker'] ) and \
                ( s['queue']['name'] == new_subscription['queue']['name'] ):
                for b in s['bindings']:
