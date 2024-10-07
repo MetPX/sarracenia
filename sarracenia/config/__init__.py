@@ -1393,7 +1393,7 @@ class Config:
             
         if hasattr(self, 'exchange') and hasattr(self, 'topicPrefix'):
             self.bindings.append((self.exchange, self.topicPrefix, subtopic))
-            self.subscriptions.append(Subscription(self, self.queueName, subtopic))
+            self.subscriptions.add(Subscription(self, self.queueName, subtopic))
 
     def _parse_v2plugin(self, entryPoint, value):
         """
@@ -2514,7 +2514,7 @@ class Config:
 
             namespace.bindings.append(
                 (namespace.exchange, topicPrefix, values))
-            namespace.subscriptions.append(Subscription(namespace, qn, values))
+            namespace.subscriptions.add(Subscription(namespace, qn, values))
 
     def parse_args(self, isPost=False):
         """

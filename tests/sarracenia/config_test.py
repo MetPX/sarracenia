@@ -362,6 +362,7 @@ def test_broker_finalize():
      options.credentials.add( 'amqp://bunnypeer:passthepoi@localhost' )
 
      after_add=len(options.credentials.credentials)
+     logger.info( f" {before_add=}  {after_add=} " )
 
      assert( before_add + 1 == after_add )
 
