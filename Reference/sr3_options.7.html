@@ -1491,6 +1491,12 @@ monitor trees, but the trees may have completely different paths than the argume
 given. This option also enforces traversing of symbolic links.</p>
 <p>This option is being used to investigate some use cases, and may disappear in future.</p>
 </section>
+<section id="recursive-flag-default-on">
+<h4>recursive &lt;flag&gt; (default: on)<a class="headerlink" href="#recursive-flag-default-on" title="Link to this heading"></a></h4>
+<p>when scanning a path (for poll, post, cpost, or watch) if you encounter a directory
+do you include it’s contents as well? To only scan the specified directory
+and no sub-directories, specify <em>recursive off</em></p>
+</section>
 <section id="rename-path">
 <h4>rename &lt;path&gt;<a class="headerlink" href="#rename-path" title="Link to this heading"></a></h4>
 <p>With the <em>rename</em> option, the user can suggest a destination path for its files. If the given

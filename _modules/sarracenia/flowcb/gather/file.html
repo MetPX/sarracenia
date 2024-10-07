@@ -713,7 +713,7 @@
             <span class="k">try</span><span class="p">:</span>
                 <span class="n">ow</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">observer</span><span class="o">.</span><span class="n">schedule</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">watch_handler</span><span class="p">,</span>
                                             <span class="n">d</span><span class="p">,</span>
-                                            <span class="n">recursive</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+                                            <span class="n">recursive</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">o</span><span class="o">.</span><span class="n">recursive</span><span class="p">)</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">obs_watched</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">ow</span><span class="p">)</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">inl</span><span class="p">[</span><span class="n">dir_dev_id</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="n">ow</span><span class="p">,</span> <span class="n">d</span><span class="p">)</span>
                 <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span>

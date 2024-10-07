@@ -1609,6 +1609,14 @@ given. This option also enforces traversing of symbolic links.
 This option is being used to investigate some use cases, and may disappear in future.
 
 
+recursive <flag> (default: on)
+------------------------------
+
+when scanning a path (for poll, post, cpost, or watch) if you encounter a directory
+do you include it's contents as well? To only scan the specified directory
+and no sub-directories, specify *recursive off*
+
+
 rename <path>
 -------------
 

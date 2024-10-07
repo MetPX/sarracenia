@@ -541,20 +541,22 @@
 
         <span class="c1"># post poll list</span>
 
-        <span class="n">msgs</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">poll_list_post</span><span class="p">(</span><span class="n">pdir</span><span class="p">,</span> <span class="n">dir_dict</span><span class="p">,</span> <span class="n">dir_dict</span><span class="o">.</span><span class="n">keys</span><span class="p">()))</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">o</span><span class="o">.</span><span class="n">recursive</span><span class="p">:</span>
+            <span class="n">msgs</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">poll_list_post</span><span class="p">(</span><span class="n">pdir</span><span class="p">,</span> <span class="n">dir_dict</span><span class="p">,</span> <span class="n">dir_dict</span><span class="o">.</span><span class="n">keys</span><span class="p">()))</span>
 
         <span class="n">msgs</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">poll_list_post</span><span class="p">(</span><span class="n">pdir</span><span class="p">,</span> <span class="n">desclst</span><span class="p">,</span> <span class="n">filelst</span><span class="p">))</span>
 
         <span class="c1"># poll in children directory</span>
 
-        <span class="n">sdir</span> <span class="o">=</span> <span class="nb">sorted</span><span class="p">(</span><span class="n">dir_dict</span><span class="o">.</span><span class="n">keys</span><span class="p">())</span>
-        <span class="k">for</span> <span class="n">d</span> <span class="ow">in</span> <span class="n">sdir</span><span class="p">:</span>
-            <span class="k">if</span> <span class="n">d</span> <span class="o">==</span> <span class="s1">&#39;.&#39;</span> <span class="ow">or</span> <span class="n">d</span> <span class="o">==</span> <span class="s1">&#39;..&#39;</span><span class="p">:</span> <span class="k">continue</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">o</span><span class="o">.</span><span class="n">recursive</span><span class="p">:</span>
+            <span class="n">sdir</span> <span class="o">=</span> <span class="nb">sorted</span><span class="p">(</span><span class="n">dir_dict</span><span class="o">.</span><span class="n">keys</span><span class="p">())</span>
+            <span class="k">for</span> <span class="n">d</span> <span class="ow">in</span> <span class="n">sdir</span><span class="p">:</span>
+                <span class="k">if</span> <span class="n">d</span> <span class="o">==</span> <span class="s1">&#39;.&#39;</span> <span class="ow">or</span> <span class="n">d</span> <span class="o">==</span> <span class="s1">&#39;..&#39;</span><span class="p">:</span> <span class="k">continue</span>
 
-            <span class="c1">#d_lspath = lspath + &#39;_&#39; + d</span>
-            <span class="n">d_pdir</span> <span class="o">=</span> <span class="n">pdir</span> <span class="o">+</span> <span class="n">os</span><span class="o">.</span><span class="n">sep</span> <span class="o">+</span> <span class="n">d</span>
+                <span class="c1">#d_lspath = lspath + &#39;_&#39; + d</span>
+                <span class="n">d_pdir</span> <span class="o">=</span> <span class="n">pdir</span> <span class="o">+</span> <span class="n">os</span><span class="o">.</span><span class="n">sep</span> <span class="o">+</span> <span class="n">d</span>
 
-            <span class="n">msgs</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">poll_directory</span><span class="p">(</span><span class="n">d_pdir</span><span class="p">))</span>
+                <span class="n">msgs</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">poll_directory</span><span class="p">(</span><span class="n">d_pdir</span><span class="p">))</span>
 
         <span class="k">return</span> <span class="n">msgs</span>
 
