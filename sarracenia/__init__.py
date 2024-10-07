@@ -567,7 +567,8 @@ class Message(dict):
             pass
         elif source:
             msg['source'] = source
-            msg['_deleteOnPost'] |= set(['source'])
+        elif 'source' in msg:
+            del msg['source']
 
     def deriveTopics(msg,o,topic,separator='.'):
         """
