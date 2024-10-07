@@ -22,6 +22,8 @@ sudo apt -y install python3-setuptools python3-magic python-setuptools python3-p
 sudo apt -y install metpx-libsr3c metpx-libsr3c-dev metpx-sr3c
 sudo apt -y install metpx-libsr3c metpx-libsr3c-dev metpx-sr3c
 sudo apt -y install erlang-nox erlang-diameter erlang-eldap findutils git librabbitmq4 net-tools openssh-client openssh-server python3-pip rabbitmq-server xattr wget 
+sudo apt -y install wget ncftp
+
 
 ${pip_install} -U pip
 
