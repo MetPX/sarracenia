@@ -313,7 +313,7 @@ class CredentialDB:
         #  we only have a user ... permitted only for sftp
 
         if url.scheme != 'sftp': 
-            logger.error( f'credential not found'  )
+            logger.error( f"credential {url} not found"  )
             return False
 
         #  sftp and an ssh_keyfile was provided... check that it exists

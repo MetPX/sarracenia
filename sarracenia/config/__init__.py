@@ -1393,7 +1393,7 @@ class Config:
             
         if hasattr(self, 'exchange') and hasattr(self, 'topicPrefix'):
             self.bindings.append((self.exchange, self.topicPrefix, subtopic))
-            self.subscriptions.append(Subscription(self, self.queueName, subtopic))
+            self.subscriptions.add(Subscription(self, self.queueName, subtopic))
 
     def _parse_v2plugin(self, entryPoint, value):
         """
@@ -1514,7 +1514,7 @@ class Config:
         else:
             cfname = cfg
 
-        logger.debug( f'looking for {cfg} (in {os.getcwd()}')
+        #logger.debug( f'looking for {cfg} (in {os.getcwd()}')
 
         cfg=os.path.expanduser(cfg)
 
@@ -1530,7 +1530,7 @@ class Config:
             if not cfgfilepath:
                  logger.error( f'failed to find {cfg}' )
                  return
-            logger.debug( f'found {cfgfilepath}')
+            #logger.debug( f'found {cfgfilepath}')
 
         lineno=0
         saved_lineno=0
@@ -2514,7 +2514,7 @@ class Config:
 
             namespace.bindings.append(
                 (namespace.exchange, topicPrefix, values))
-            namespace.subscriptions.append(Subscription(namespace, qn, values))
+            namespace.subscriptions.add(Subscription(namespace, qn, values))
 
     def parse_args(self, isPost=False):
         """
