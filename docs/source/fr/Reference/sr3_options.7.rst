@@ -1083,6 +1083,17 @@ de python. Le format est documenté ici:
 
 * https://docs.python.org/fr/3/library/logging.html#logrecord-attributes
 
+logJson <flag> (par défaut : faux) EXPÉRIMENTAL
+------------------------------------------------
+
+lorsque *logJson on* est défini, un deuxième fichier journal avec l'extension .json est créé à côté du
+fichier .log normal. Chaque ligne des journaux .json est une structure .json, contenant
+un message écrit par le journal de flux. Il ne contient pas de sortie non formatée
+des sous-shell et des plugins qui peuvent produire une sortie arbitraire.
+
+Le fichier .log contiendra la sortie des sous-programmes lancés par le flux,
+et le .json ne contiendra que les messages de journal correctement formatés provenant de l'application elle-même
+et des rappels correctement écrits (qui utilisent des mécanismes de journalisation python normaux.)
 
 logLevel ( défaut: info )
 -------------------------
@@ -1587,8 +1598,12 @@ donné. Cette option impose également la traversée de liens symboliques.
 
 Cette option est utilisée pour étudier certains cas d'utilisation et pourrait disparaître à l'avenir.
 
+<flag> recursive (par défaut : activé)
+--------------------------------------
 
-
+Lors de l'analyse d'un chemin (pour un *poll*, une *post*, un *cpost* ou un *watch*), si vous 
+rencontrez un répertoire, incluez-vous également son contenu ? Pour analyser uniquement le répertoire spécifié
+et aucun sous-répertoire, spécifiez *recursive off*
 
 rename <chemin>
 ---------------
@@ -1770,8 +1785,8 @@ sanity_log_dead <intervalle> (défaut: 1.5*housekeeping)
 
 L’option **sanity_log_dead** définit la durée à prendre en compte avant de redémarrer un composant.
 
-scheduled_interval,scheduled_hour,scheduled_minute
---------------------------------------------------
+scheduled_interval,scheduled_hour,scheduled_minute,scheduled_time
+-----------------------------------------------------------------
 
 Lorsque vous travaillez avec des flux cédulés, tels que des sondages, vous pouvez configurer une durée
 (unité: seconde par défaut, suffixes : m-minute, h-heure) à laquelle exécuter un
@@ -2063,10 +2078,10 @@ exemples: Canada/Pacific, Pacific/Nauru, Europe/Paris
 Seulement actif dans le contexte de sondage de serveur FTP.
 
 
-tlsRigour (défaut: medium)
+tlsRigour (défaut: normal)
 --------------------------
 
-*tlsRigour* peut être réglé a : *lax, medium ou strict*, et donne un indice à l'application par rapport à la
+*tlsRigour* peut être réglé a : *lax, normal ou strict*, et donne un indice à l'application par rapport à la
 configuration des connexions TLS. TLS, ou Transport Layer Security (autrefois appelée Secure Socket Layer (SSL))
 est l’encapsulation de sockets TCP normales en cryptage standard. Il existe de nombreux aspects de
 négociations TLS, vérification du nom d’hôte, vérification des certificats, validation, choix de

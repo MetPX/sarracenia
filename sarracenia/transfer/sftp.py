@@ -80,6 +80,7 @@ class Sftp(Transfer):
 
     # cd
     def cd(self, path):
+
         alarm_set(self.o.timeout)
         try:
             logger.debug("first cd to %s" % self.originalDir)
@@ -92,6 +93,8 @@ class Sftp(Transfer):
 
     # cd forced
     def cd_forced(self, path):
+        """ try to cd to a directory. If the cd fails, create the directory
+        """
         logger.debug("sr_sftp cd_forced %o %s" % (self.o.permDirDefault, path))
 
         # try to go directly to path
@@ -101,6 +104,8 @@ class Sftp(Transfer):
             self.sftp.chdir(self.originalDir)
             self.sftp.chdir(path)
             alarm_cancel()
+            # cd was successful, no need to create the dir, just return
+            return
         except:
             pass
         finally:
@@ -472,9 +477,7 @@ class Sftp(Transfer):
             local_offset=0,
             remote_offset=0,
             length=0):
-        logger.debug(
-            "sr_sftp put %s %s %d %d %d" %
-            (local_file, remote_file, local_offset, remote_offset, length))
+        logger.debug( f" local_file={local_file} remote_file={remote_file} local_offset={local_offset} remote_offset={remote_offset} length={length}"  )
 
         # simple file
 

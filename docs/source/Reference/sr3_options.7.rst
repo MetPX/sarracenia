@@ -1089,6 +1089,19 @@ to control what is written to log files.  The format is documented here:
 * https://docs.python.org/3/library/logging.html#logrecord-attributes
 
 
+logJson <flag> (default: False) EXPERIMENTAL
+--------------------------------------------
+
+when *logJson on* is set, a second log file with the .json extension is made beside the
+normal .log file.  Each line of the .json logs is a .json structure, containing 
+a message written by the flow log. It does not contain unformatted output of
+sub-shells, and plugins which may produce arbitrary output.
+
+The .log file will contain the output of sub-programs launched by the flow, 
+and the .json will only contain properly formatted log messages from the application itself
+and properly written callbacks (that use normal python logging mechanisms.)
+
+
 logLevel ( default: info )
 --------------------------
 
@@ -1596,6 +1609,14 @@ given. This option also enforces traversing of symbolic links.
 This option is being used to investigate some use cases, and may disappear in future.
 
 
+recursive <flag> (default: on)
+------------------------------
+
+when scanning a path (for poll, post, cpost, or watch) if you encounter a directory
+do you include it's contents as well? To only scan the specified directory
+and no sub-directories, specify *recursive off*
+
+
 rename <path>
 -------------
 
@@ -1771,7 +1792,7 @@ appropriately.
 
 
 scheduled_interval,scheduled_hour,scheduled_minute,scheduled_time
---------------------------------------------------
+-----------------------------------------------------------------
 
 When working with scheduled flows, such as polls, one can configure a duration
 (no units defaults to seconds, suffixes: m-minute, h-hour) at which to run a 
@@ -1798,7 +1819,7 @@ this will poll the data at 15:30, 16:30 and 18:59 every day. This option allows 
 your time field then previous options.
 
 sendTo <url>
----------------
+------------
 
 Specification of a remote resource to deliver to in a sender.
 
@@ -2079,10 +2100,10 @@ Examples: Canada/Pacific, Pacific/Nauru, Canada/Eastern, Europe/Paris
 Has no effect other than in when polling an FTP server.
 
 
-tlsRigour (default: medium)
+tlsRigour (default: normal)
 ---------------------------
 
-tlsRigour can be set to: *lax, medium, or strict*, and gives a hint to the
+tlsRigour can be set to: *lax, normal, or strict*, and gives a hint to the
 application of how to configure TLS connections. TLS, or Transport Level
 Security (used to be called Secure Socket Layer (SSL)) is the wrapping of
 normal TCP sockets in standard encryption. There are many aspects of TLS

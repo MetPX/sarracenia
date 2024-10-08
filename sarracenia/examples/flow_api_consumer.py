@@ -2,11 +2,11 @@ import re
 import sarracenia.config
 from sarracenia.flow.subscribe import Subscribe
 import sarracenia.flowcb
-import sarracenia.credentials
+import sarracenia.config.credentials
 
 cfg = sarracenia.config.no_file_config()
 
-cfg.broker = sarracenia.credentials.Credential(
+cfg.broker = sarracenia.config.credentials.Credential(
     'amqps://anonymous:anonymous@hpfx.collab.science.gc.ca')
 cfg.topicPrefix = ['v02', 'post']
 cfg.component = 'subscribe'
