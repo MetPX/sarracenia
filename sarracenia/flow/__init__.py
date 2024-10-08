@@ -235,7 +235,6 @@ class Flow:
         self.metrics=self.new_metrics
 
         # removing old metrics files
-        #logger.debug( f"looking for old metrics for {self.o.metricsFilename}" )
         old_metrics=sorted(glob.glob(self.o.metricsFilename+'.*'))[0:-self.o.logRotateCount]
         for o in old_metrics:
             logger.info( f"removing old metrics file: {o} " )
@@ -876,7 +875,7 @@ class Flow:
 
         if path_strip_count > 0:
 
-            logger.warning( f"path_strip_count:{path_strip_count}   ")
+            logger.debug( f"path_strip_count:{path_strip_count}   ")
             strip=path_strip_count 
             if strip < len(token):
                 token = token[strip:]
@@ -1071,7 +1070,7 @@ class Flow:
                                          (m['fileOp']['rename']))
                         else:
                             self.reject(
-                                m, 304, "mask=%s strip=%s url=%s" %
+                                m, 404, "mask=%s strip=%s url=%s" %
                                 (str(mask), strip, urlToMatch))
                         break
 
@@ -1106,7 +1105,7 @@ class Flow:
                                            self.o.flatten)
                     filtered_worklist.append(m)
                 else:
-                    self.reject(m, 304, "unmatched pattern %s" % url)
+                    self.reject(m, 404, "unmatched pattern %s" % url)
 
         self.worklist.incoming = filtered_worklist
 
@@ -1292,7 +1291,6 @@ class Flow:
                     mfn.write( f'\"{timestamp}\" : {metrics},\n')
 
             # removing old metrics files
-            #logger.debug( f"looking for old metrics for {self.o.metricsFilename}" )
             old_metrics=sorted(glob.glob(self.o.metricsFilename+'.*'))[0:-self.o.logRotateCount]
             for o in old_metrics:
                 logger.info( f"removing old metrics file: {o} " )
@@ -1491,24 +1489,24 @@ class Flow:
                 new_mtime = sarracenia.timestr2flt(msg['mtime'])
                 old_mtime = 0.0
 
-                if self.o.timeCopy:
-                    old_mtime = lstat.st_mtime
-                elif sarracenia.filemetadata.supports_extended_attributes:
-                    try:
-                        x = sarracenia.filemetadata.FileMetadata(msg['new_path'])
-                        old_mtime = sarracenia.timestr2flt(x.get('mtime'))
-                    except:
-                        pass
-    
-                if new_mtime <= old_mtime:
-                    self.reject(msg, 304,
+            if self.o.timeCopy:
+                old_mtime = lstat.st_mtime
+            elif sarracenia.filemetadata.supports_extended_attributes:
+                try:
+                    x = sarracenia.filemetadata.FileMetadata(msg['new_path'])
+                    old_mtime = sarracenia.timestr2flt(x.get('mtime'))
+                except:
+                    pass
+
+            if new_mtime <= old_mtime:
+                self.reject(msg, 406,
                             "mtime not newer %s " % (msg['new_path']))
-                    return False
-                else:
-                    logger.debug(
-                        "{} new version is {} newer (new: {} vs old: {} )".format(
-                        msg['new_path'], new_mtime - old_mtime, new_mtime,
-                        old_mtime))
+                return False
+            else:
+                logger.debug(
+                    "{} new version is {} newer (new: {} vs old: {} )".format(
+                    msg['new_path'], new_mtime - old_mtime, new_mtime,
+                    old_mtime))
 
         elif method in ['random', 'cod']:
             logger.debug("content_match %s sum random/zero/cod never matches" %
@@ -2341,6 +2339,7 @@ class Flow:
         local_file = os.path.basename(local_path).replace('\\', '/')
         new_dir = msg['new_dir'].replace('\\', '/')
         new_file = msg['new_file'].replace('\\', '/')
+
         new_inflight_path = None
 
         try:
@@ -2589,7 +2588,7 @@ class Flow:
                         else:
                             len_written = self.proto[self.scheme].put( msg, local_file, new_file)
                 except Exception as ex:
-                    logger.error( f"could not send {local_dir}{os.sep}{local_file} to inflight=None {sendTo} {msg['new_dir']}/{new_file}: {ex}" )
+                    logger.error( f"could not send {local_dir}{os.sep}{local_file} to inflight=None {sendTo} {msg['new_dir']} ... {new_file}: {ex}" )
                     return False
                 
             elif (('blocks' in msg)
