@@ -37,7 +37,7 @@ jobs:
     timeout-minutes: 40
     
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
 
       # Enable tmate debugging of manually-triggered workflows if the input option was provided
       # https://github.com/marketplace/actions/debugging-with-tmate
