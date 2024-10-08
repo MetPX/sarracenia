@@ -1,4 +1,4 @@
-metpx-sr3 (3.00.56rc1) UNRELEASED; urgency=medium
+metpx-sr3 (3.00.56rc1) unstable; urgency=medium
 
   * NEW option *recusion* option ( #1237 ) (actually restored, was removed.)
   * fix #1156 - NEW option *logDuplicates* 
@@ -10,8 +10,9 @@ metpx-sr3 (3.00.56rc1) UNRELEASED; urgency=medium
   * PR #1228 Unquote secret_access_key in s3CloudSender plugin
   * PR #1230 ... reduced spurious "unknown options" messages from config.
   * fix #1199 - directory /  not interpreted properly.
+  * fix #1246 delete source when no options given
 
- -- SSC-5CD2310S60 <peter@bsqt.homeip.net>  Mon, 23 Sep 2024 10:42:37 -0400
+ -- SSC-5CD2310S60 <peter@bsqt.homeip.net>  Tue, 08 Oct 2024 10:42:37 -0400
 
 metpx-sr3 (3.00.55post1) unstable; urgency=medium
 
