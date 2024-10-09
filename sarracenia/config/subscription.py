@@ -34,7 +34,7 @@ class Subscriptions(list):
                         s['broker'] = broker
             return self
         except Exception as Ex:
-            logger.error( f"failed to read to {fn}: {Ex}" )
+            logger.debug( f"failed {fn}: {Ex}" )
             logger.debug('Exception details: ', exc_info=True)
             return None
 
@@ -50,7 +50,7 @@ class Subscriptions(list):
             with open(fn,'w') as f:
                 f.write(json.dumps(jl))
         except Exception as Ex:
-            logger.error( f"failed to write to {fn}: {Ex}" )
+            logger.error( f"failed: {fn}: {Ex}" )
             logger.debug('Exception details: ', exc_info=True)
 
     def add(self, new_subscription):
