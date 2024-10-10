@@ -6,6 +6,7 @@ on:
   push:
     branches:
       - v03_disabled
+      - '*redis*'
     
     paths-ignore:
       - '.github/**'
