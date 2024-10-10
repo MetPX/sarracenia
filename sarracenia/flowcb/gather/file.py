@@ -465,7 +465,7 @@ class File(FlowCB):
             age = time.time() - lstat.st_mtime
 
             if age < self.o.fileAgeMin:
-                logger.debug( "%d vs (inflight setting) %d seconds. Too New!" % (age,self.o.fileAgeMin) )
+                logger.debug( "%d vs (fileAgeMin setting) %d seconds. Too New!" % (age,self.o.fileAgeMin) )
                 return (False, [])
 
             if self.o.fileAgeMax > 0 and age > self.o.fileAgeMax:
