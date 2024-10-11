@@ -112,6 +112,7 @@ default_options = {
     'post_documentRoot': None,
     'post_baseDir': None,
     'post_baseUrl': None,
+    'post_batch' : 100,
     'post_format': 'v03',
     'realpathPost': False,
     'recursive' : True,
@@ -136,7 +137,7 @@ default_options = {
 
 count_options = [
     'batch', 'count', 'exchangeSplit', 'instances', 'logRotateCount', 'no', 
-    'post_exchangeSplit', 'prefetch', 'messageCountMax', 'runStateThreshold_cpuSlow', 
+    'post_batch', 'post_exchangeSplit', 'prefetch', 'messageCountMax', 'runStateThreshold_cpuSlow', 
     'runStateThreshold_reject', 'runStateThreshold_retry', 'runStateThreshold_slow', 
 ]
 
@@ -2121,6 +2122,10 @@ class Config:
             if self.batch > self.messageCountMax:
                 self.batch = self.messageCountMax
                 logger.info( f'{component}/{config} overriding batch for consistency with messageCountMax: {self.batch}' )
+            if self.post_batch > self.messageCountMax:
+                self.post_batch = self.messageCountMax
+                logger.info( f'{component}/{config} overriding batch for consistency with messageCountMax: {self.post_batch}' )
+
 
         if (component not in ['poll' ]):
             self.path = list(map( os.path.expanduser, self.path ))
@@ -2577,7 +2582,7 @@ class Config:
         parser.add_argument('--batch',
                             type=int,
                             nargs='?',
-                            help='how many transfers per each connection')
+                            help='how many ingestions per each connection')
         parser.add_argument(
             '--blockSize',
             type=int,
@@ -2683,6 +2688,10 @@ class Config:
         parser.add_argument('--queueName',
                             nargs='?',
                             help='name of AMQP consumer queue to create')
+        parser.add_argument('--post_batch',
+                            type=int,
+                            nargs='?',
+                            help='how many deliveries per each connection')
         parser.add_argument('--post_broker',
                             nargs='?',
                             help='broker to post downloaded files to')
