@@ -69,7 +69,7 @@ class File(FlowCB):
     also should likely switch from listdir to scandir
     """
     def on_add(self, event, src, dst):
-        logger.debug("on_add %s %s %s" % ( event, src, dst ) )
+        logger.debug("%s %s %s" % ( event, src, dst ) )
         self.new_events['%s %s' % (src, dst)] = (event, src, dst)
 
     def on_created(self, event):
@@ -465,12 +465,15 @@ class File(FlowCB):
             age = time.time() - lstat.st_mtime
 
             if age < self.o.fileAgeMin:
-                logger.debug( "%d vs (inflight setting) %d seconds. Too New!" % (age,self.o.fileAgeMin) )
+                logger.debug("%d vs (fileAgeMin setting) %d seconds. Too New! %s" % (age,self.o.fileAgeMin,src) )
                 return (False, [])
 
             if self.o.fileAgeMax > 0 and age > self.o.fileAgeMax:
-                logger.debug("%d vs (fileAgeMax setting) %d seconds. Too Old!" % (age,self.o.fileAgeMax) )
+                logger.debug("%d vs (fileAgeMax setting) %d seconds. Too Old! %s" % (age,self.o.fileAgeMax,src) )
                 return (True, [])
+        else:
+            logger.debug(f"lstat or st_mtime problem? lstat={lstat}")
+            logger.debug(f"st_mtime={lstat.st_mtime}")
 
         # post it
 
