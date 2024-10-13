@@ -551,6 +551,7 @@ class Message(dict):
     def deriveSource(msg,o):
         """
            set msg['source'] field as appropriate for given message and options (o)
+           This is used on message receipt to set up fields prior to processing.
         """
         source=None
         if 'source' in o:
@@ -570,31 +571,24 @@ class Message(dict):
         elif 'source' in msg:
             del msg['source']
 
-    def deriveTopics(msg,o,topic,separator='.'):
+    def deriveTopics(msg,o,inbound_topic,separator='.'):
         """
-            derive subtopic, topicPrefix, and topic fields based on message and options.
+            derive subtopic, topicPrefix, and inbound_topic fields based on message and options.
+            This is used on message receipt to set up fields prior to processing.
         """
-        msg_topic = topic.split(separator)
+        msg_topic = inbound_topic.split(separator)
         # topic validation... deal with DMS topic scheme. https://github.com/MetPX/sarracenia/issues/1017
-        if 'topicCopy' in o and o['topicCopy']:
-            topicOverride=True
+
+        topicOverride = 'topicCopy' in o and o['topicCopy']
+        if topicOverride:
+            msg['topic'] = inbound_topic
+            msg['_deleteOnPost'] |= set( ['topic'] )
         else:
-            topicOverride=False
-            if 'relPath' in msg:
-                path_topic = o['topicPrefix'] + os.path.dirname(msg['relPath']).split('/')
-
-                if msg_topic != path_topic:
-                    topicOverride=True
-
+            # if the topic isn't as expected by Sarracenia, leave subtopic unset.
             # set subtopic if possible.
             if msg_topic[0:len(o['topicPrefix'])] == o['topicPrefix']:
                 msg['subtopic'] = msg_topic[len(o['topicPrefix']):]
-            else:
-                topicOverride=True
-
-        if topicOverride:
-            msg['topic'] = topic
-            msg['_deleteOnPost'] |= set( ['topic'] )
+                msg['_deleteOnPost'] |= set(['subtopic'])
 
 
     def dumps(msg) -> str:

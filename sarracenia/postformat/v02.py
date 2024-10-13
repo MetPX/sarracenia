@@ -144,7 +144,7 @@ class V02(PostFormat):
         return msg
 
     @staticmethod
-    def exportMine(body, options) -> (str, dict, str):
+    def exportMine(body, options, topicOverride=None) -> (str, dict, str):
         """
            given a v03 (internal) message, produce an encoded version.
        """
@@ -158,6 +158,6 @@ class V02(PostFormat):
             if h in v2m.headers:
                     del v2m.headers[h]
 
-        v2m.headers['topic'] = PostFormat.topicDerive( body, options )
+        v2m.headers['topic'] = PostFormat.topicDerive( body, options, topicOverride )
 
         return v2m.notice, v2m.headers, V02.content_type()

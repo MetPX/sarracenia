@@ -64,18 +64,18 @@ class PostFormat:
         pass
 
     @staticmethod
-    def exportAny(msg, post_format='v03', topicPrefix=[ 'v03' ], options={ 'post_format': 'v03', 'topicPrefix':'v03' } ) -> (str, dict, str):
+    def exportAny(msg, post_format='v03', topicPrefix=[ 'v03' ], options={ 'post_format': 'v03', 'topicPrefix':'v03' }, topicOverride=None ) -> (str, dict, str):
         """
           return a tuple of the encoded message body, a headers dict, and content_type
           and a completed topic as a list as one header.
        """
         for sc in PostFormat.__subclasses__():
             if post_format == sc.__name__.lower():
-                return sc.exportMine( msg, options ) 
+                return sc.exportMine( msg, options, topicOverride ) 
 
         return None, None, None
 
-    def topicDerive(msg, options ) -> list:
+    def topicDerive(msg, options, topicOverride=None ) -> list:
         """
            Sarracenia standard topic derivation.
 
@@ -96,20 +96,20 @@ class PostFormat:
             topic_prefix = options['topicPrefix']
             topic_separator='.'
 
-        if 'topic' in msg:
-            if type(msg['topic']) is list:
-                topic = msg['topic']
-            else:
-                topic = msg['topic'].split(topic_separator)
-        elif 'topic' in options and options['topic'] and (type(options['topic']) is not list):
-            topic = options['topic'].split(topic_separator)
+        if topicOverride:
+            topic = topicOverride
+        elif 'topic' in options and options['topic']:
+            topic = options['topic']
+        elif 'relPath' in msg: 
+            topic = topic_prefix + msg['relPath'].split('/')[0:-1]
+        elif 'subtopic' in msg:
+            topic = topic_prefix + msg['subtopic']  
         else:
-            if 'relPath' in msg: 
-                topic = topic_prefix + msg['relPath'].split('/')[0:-1]
-            elif 'subtopic' in msg:
-                topic = topic_prefix + msg['subtopic']  
-            else:
-                topic = topic_prefix
+            topic = topic_prefix
+         
+        if type(topic) is not list:
+            topic = topic.split(topic_separator)
+
         return topic
 
    

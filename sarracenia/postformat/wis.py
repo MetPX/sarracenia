@@ -115,7 +115,7 @@ class Wis(PostFormat):
             return msg
 
     @staticmethod
-    def exportMine(body, options) -> (str, dict, str):
+    def exportMine(body, options, topicOverride=None) -> (str, dict, str):
             """
            given a v03 (internal) message, produce an encoded version.
        """
@@ -125,12 +125,15 @@ class Wis(PostFormat):
                 if literal in body:
                     GeoJSONBody[literal] = body[literal]
 
-            if 'topic' in body:
-                topic = body['topic'].split('/')
+            if topicOverride:
+                topic=topicOverride
             elif 'topic' in options:
                 topic=options['topic'].split('/')
             else:
                 topic= []
+
+            if type(topic)  is not list:
+                topic = topic.split('/')
 
             headers = { 'topic' : topic }
             """
