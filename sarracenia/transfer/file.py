@@ -50,6 +50,7 @@ logger = logging.getLogger(__name__)
 #           options.permDirDefault
 #     opt   options.byteRateMax
 #     opt   options.bufSize
+#     opt   options.post_batch
 
 
 class File(Transfer):

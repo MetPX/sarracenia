@@ -112,7 +112,7 @@ default_options = {
     'post_documentRoot': None,
     'post_baseDir': None,
     'post_baseUrl': None,
-    'post_batch' : 100,
+    'post_batch' : None,
     'post_format': 'v03',
     'realpathPost': False,
     'recursive' : True,
@@ -2117,6 +2117,9 @@ class Config:
                 self.post_baseDir = os.path.expanduser(self.baseDir)
                 logger.debug("{component}/{config} defaulting post_baseDir to same as baseDir")
 
+        # Assign post_batch a default value if not specified
+        if self.post_batch is None:
+            self.post_batch = self.batch
 
         if self.messageCountMax > 0:
             if self.batch > self.messageCountMax:
@@ -2141,6 +2144,10 @@ class Config:
         if self.vip and not features['vip']['present']:
             logger.critical( f"{component}/{config} vip feature requested, but missing library: {' '.join(features['vip']['modules_needed'])} " )
             sys.exit(1)
+
+        if hasattr(self,'batch') and hasattr(self,'post_batch'):
+            if self.batch != self.post_batch:
+                logger.warning(f"Current batch value differs from post_batch. batch = {self.batch} , post_batch = {self.post_batch}")
 
     def check_undeclared_options(self):
 

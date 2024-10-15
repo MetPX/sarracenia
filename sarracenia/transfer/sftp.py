@@ -59,7 +59,7 @@ class Sftp(Transfer):
         self.ssh = None
         self.seek = True
 
-        self.batch = 0
+        self.post_batch = 0
         self.connected = False
         self.ssh_config = None
 
@@ -148,8 +148,8 @@ class Sftp(Transfer):
             self.close()
             return False
 
-        self.batch = self.batch + 1
-        if self.batch > self.o.batch:
+        self.post_batch = self.post_batch + 1
+        if self.post_batch > self.o.post_batch:
             self.close()
             return False
 

@@ -74,7 +74,7 @@ class Ftp(Transfer):
         self.connected = False
         self.ftp = None
         self.details = None
-        self.batch = 0
+        self.post_batch = 0
 
     def registered_as():
         return ['ftp']
@@ -156,8 +156,8 @@ class Ftp(Transfer):
             self.close()
             return False
 
-        self.batch = self.batch + 1
-        if self.batch > self.o.batch:
+        self.post_batch = self.post_batch + 1
+        if self.post_batch > self.o.post_batch:
             self.close()
             return False
 
