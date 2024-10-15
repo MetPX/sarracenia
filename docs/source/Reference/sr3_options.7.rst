@@ -468,7 +468,7 @@ be prepended with the sub-directories from the notification message's baseUrl fi
 batch <count> (default: 100)
 ----------------------------
 
-The **batch** option is used to indicate how many files should be transferred
+The **batch** option is used to indicate how many files should be **ingested**
 over a connection, before it is torn down, and re-established.  On very low
 volume transfers, where timeouts can occur between transfers, this should be
 lowered to 1.  For most usual situations the default is fine. For higher volume
@@ -1408,6 +1408,17 @@ post_baseUrl <url>
 The **post_baseUrl** option sets how to get the file... it defines the protocol,
 host, port, and optionally, the user. It is best practice to not include
 passwords in urls.
+
+post_batch <count> (default: Same value as batch)
+----------------------------
+
+The **post_batch** option is used to indicate how many files should be **transferred**
+over a connection, before it is torn down, and re-established.  On very low
+volume transfers, where timeouts can occur between transfers, this should be
+lowered to 1.  For most usual situations the default is fine. For higher volume
+cases, one could raise it to reduce transfer overhead. It is only used for file
+transfer protocols, not HTTP ones at the moment.
+
 
 post_broker <url>
 -----------------
