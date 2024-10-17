@@ -667,6 +667,7 @@ normal way… where <em>n</em> is the number of configurations to convert.</p>
 <p>The configurations are listed on the left. For each configuraion, the state
 will be:</p>
 <ul class="simple">
+<li><p>cpuS:  process is expensive in CPU usage (runStateThreshold_cpuSlow)</p></li>
 <li><p>disa:  disabled, configured not to run.</p></li>
 <li><p>hung:  processes appear hung, not writing anything to logs.</p></li>
 <li><p>idle:  all processes running, but no data or message transfers for too long (runStateThreshold_idle)</p></li>
@@ -677,6 +678,7 @@ will be:</p>
 <li><p>run:   all processes are running (and transferring, and not behind, and not slow… normal state.)</p></li>
 <li><p>slow:  transfering less than minimum bytes/second ( runStateThreshold_slow )</p></li>
 <li><p>stop:  no processes are running.</p></li>
+<li><p>wVip:  process doesn’t have the vip (only applies when the vip option is specified in the config)</p></li>
 </ul>
 <p>The next columns to the right give more information, detailing how many processes are Running, out of the number expected.
 For example, 3/3 means 3 processes or instances found of the 3 expected to be found.
