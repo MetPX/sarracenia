@@ -1489,24 +1489,23 @@ class Flow:
                 new_mtime = sarracenia.timestr2flt(msg['mtime'])
                 old_mtime = 0.0
 
-            if self.o.timeCopy:
-                old_mtime = lstat.st_mtime
-            elif sarracenia.filemetadata.supports_extended_attributes:
-                try:
-                    x = sarracenia.filemetadata.FileMetadata(msg['new_path'])
-                    old_mtime = sarracenia.timestr2flt(x.get('mtime'))
-                except:
-                    pass
+                if self.o.timeCopy:
+                    old_mtime = lstat.st_mtime
+                elif sarracenia.filemetadata.supports_extended_attributes:
+                    try:
+                        x = sarracenia.filemetadata.FileMetadata(msg['new_path'])
+                        old_mtime = sarracenia.timestr2flt(x.get('mtime'))
+                    except:
+                        pass
 
-            if new_mtime <= old_mtime:
-                self.reject(msg, 406,
+                if new_mtime <= old_mtime:
+                    self.reject(msg, 406,
                             "mtime not newer %s " % (msg['new_path']))
-                return False
-            else:
-                logger.debug(
-                    "{} new version is {} newer (new: {} vs old: {} )".format(
-                    msg['new_path'], new_mtime - old_mtime, new_mtime,
-                    old_mtime))
+                    return False
+                else:
+                    logger.debug(
+                        f"{msg['new_path']} new version is {new_mtime - old_mtime} " \
+                                f"newer (new: {new_mtime,} vs old: {old_mtime} )" )
 
         elif method in ['random', 'cod']:
             logger.debug("content_match %s sum random/zero/cod never matches" %
