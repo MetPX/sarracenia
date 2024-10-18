@@ -1504,9 +1504,8 @@ class Flow:
                     return False
                 else:
                     logger.debug(
-                        "{} new version is {} newer (new: {} vs old: {} )".format(
-                        msg['new_path'], new_mtime - old_mtime, new_mtime,
-                        old_mtime))
+                        f"{msg['new_path']} new version is {new_mtime - old_mtime} " \
+                                f"newer (new: {new_mtime,} vs old: {old_mtime} )" )
 
         elif method in ['random', 'cod']:
             logger.debug("content_match %s sum random/zero/cod never matches" %
