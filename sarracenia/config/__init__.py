@@ -1875,7 +1875,6 @@ class Config:
 
             logger.debug( f'instance read queueName {queueName} from queue state file {queuefile}' )
             if len(queueName) < 1:
-                  logger.debug( f'queue name corrupt take a short {nap} second nap, then try again' )
                   logger.critical( f'failed to read queue name from {queuefile}')
                   sys.exit(2)
         else: 
