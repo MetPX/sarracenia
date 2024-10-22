@@ -890,7 +890,7 @@ class Flow:
                     if f in msg['fileOp']:
                         fopv = msg['fileOp'][f].split('/') 
                         # an absolute path file posted is relative to '/' (in relPath) but the values in
-                        # the link and rename fields may be absolute, requiring and adjustmeent when stripping
+                        # the link and rename fields may be absolute, requiring and adjustment when stripping
                         if fopv[0] == '':
                             strip += 1
                         elif len(fopv) == 1:
@@ -947,9 +947,6 @@ class Flow:
                         if (f in msg['fileOp']) :
                             if msg['fileOp'][f].startswith(self.o.baseDir):
                                 msg['fileOp'][f] = msg['fileOp'][f].replace(self.o.baseDir, d, 1)
-                            elif os.sep not in msg['fileOp'][f] and f != 'link':
-                                toclimb=len(token)-1
-                                msg['fileOp'][f] = '../'*(toclimb) + msg['fileOp'][f]
 
         elif 'fileOp' in msg and new_dir:
             u = sarracenia.baseUrlParse(msg['baseUrl'])
@@ -958,9 +955,6 @@ class Flow:
                     if (len(u.path) > 1):
                         if msg['fileOp'][f].startswith(u.path):
                             msg['fileOp'][f] = msg['fileOp'][f].replace(u.path, new_dir, 1)
-                        elif '/' not in msg['fileOp'][f] and f!= 'link':
-                            toclimb=len(token)-1
-                            msg['fileOp'][f] = '../'*(toclimb) + msg['fileOp'][f]
                             
         if self.o.mirror and len(token) > 1:
             new_dir = new_dir + '/' + '/'.join(token[:-1])
