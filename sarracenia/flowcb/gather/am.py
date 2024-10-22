@@ -68,7 +68,6 @@ from typing import NoReturn
 
 import sarracenia
 from sarracenia.bulletin import Bulletin
-from sarracenia.flowcb.rename.raw2bulletin import Raw2bulletin
 import sarracenia.config
 from sarracenia.flowcb import FlowCB
 
@@ -80,7 +79,6 @@ class Am(FlowCB):
         
         super().__init__(options,logger)
         self.bulletinHandler = Bulletin()
-        self.renamer = Raw2bulletin(self.o)
 
         self.url = urllib.parse.urlparse(self.o.sendTo)
 
@@ -471,7 +469,6 @@ class Am(FlowCB):
                     ##                                       Random Integer
 
                     binary = 0
-                    isProblem = False
 
                     missing_ahl = self.o.MissingAMHeaders
 
@@ -522,6 +519,9 @@ class Am(FlowCB):
                         "value":decoded_bulletin
                         }
 
+                    # For renamer (to be deleted after rename plugin is called)
+                    msg['isProblem'] = False
+
                     # Receiver is looking for raw message.
                     msg['size'] = len(bulletin)
 
@@ -536,11 +536,11 @@ class Am(FlowCB):
                     ident.update(bulletin)
                     msg['identity'] = {'method':self.o.identity_method, 'value':ident.value}
 
-                    # Call renamer
-                    msg = self.renamer.rename(msg,isProblem)
-                    if msg == None:
-                        continue
-                    logger.debug(f"New sarracenia message: {msg}")
+                    # # Call renamer
+                    # msg = self.renamer.rename(msg,isProblem)
+                    # if msg == None:
+                    #     continue
+                    # logger.debug(f"New sarracenia message: {msg}")
 
                     newmsg.append(msg)
 

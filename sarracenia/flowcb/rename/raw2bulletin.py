@@ -82,89 +82,96 @@ class Raw2bulletin(FlowCB):
         self.o.add_option('binaryInitialCharacters', 'list', [b'BUFR' , b'GRIB', b'\211PNG'])
 
     # If file was converted, get rid of extensions it had
-    def rename(self,msg,isProblem):
+    def after_accept(self,worklist):
 
-        path = msg['new_dir'] + '/' + msg['new_file']
+        new_worklist = []
 
-        data = self.bulletinHandler.getData(msg, path)
+        for msg in worklist.incoming:
+            path = msg['new_dir'] + '/' + msg['new_file']
 
-        # AM bulletins that need their filename rewritten with data should only have two chars before the first underscore
-        # This is in concordance with Sundew logic -> https://github.com/MetPX/Sundew/blob/main/lib/bulletinAm.py#L70-L71
-        # These messages are still good, so we will add them to the good_msgs list
-        # if len(filenameFirstChars) != 2 and self.binary: 
-        #     good_msgs.append(msg)
-        #     continue
+            data = self.bulletinHandler.getData(msg, path)
 
-        if data == None:
-            return None
-        
-        lines  = data.split('\n')
-        #first_line  = lines[0].strip('\r')
-        #first_line  = first_line.strip(' ')
-        #first_line  = first_line.strip('\t')
-        first_line  = lines[0].split(' ')
+            # AM bulletins that need their filename rewritten with data should only have two chars before the first underscore
+            # This is in concordance with Sundew logic -> https://github.com/MetPX/Sundew/blob/main/lib/bulletinAm.py#L70-L71
+            # These messages are still good, so we will add them to the good_msgs list
+            # if len(filenameFirstChars) != 2 and self.binary: 
+            #     good_msgs.append(msg)
+            #     continue
 
-        # Build header from bulletin
-        header = self.bulletinHandler.buildHeader(first_line)
-        if header == None:
-            logger.error("Unable to fetch header contents. Skipping message")
-            return None
-        
-        # Get the station timestamp from bulletin
-        if len(header.split('_')) == 2:
-            ddhhmm = self.bulletinHandler.getTime(data)
-            if ddhhmm == None:
-                logger.error("Unable to get julian time.")
-        else:
-            ddhhmm = ''
-        
-        # Get the BBB from bulletin
-        BBB = self.bulletinHandler.getBBB(first_line)
+            if data == None:
+                worklist.rejected.append(msg)
+            
+            lines  = data.split('\n')
+            #first_line  = lines[0].strip('\r')
+            #first_line  = first_line.strip(' ')
+            #first_line  = first_line.strip('\t')
+            first_line  = lines[0].split(' ')
 
-        # Get the station ID from bulletin
-        stn_id = self.bulletinHandler.getStation(data)
-
-        # Generate a sequence (random ints)
-        seq = self.bulletinHandler.getSequence()
-
-        
-
-        # Rename file with data fetched
-        try:
-            # We can't disseminate bulletins downstream if they're missing the timestamp, but we want to keep the bulletins to troubleshoot source problems
-            # We'll append "_PROBLEM" to the filename to be able to identify erronous bulletins
-            if ddhhmm == None or isProblem:
-                timehandler = datetime.datetime.now()
-
-                # Add current time as new timestamp to filename
-                new_file = header + "_" + timehandler.strftime('%d%H%M') + "_" + BBB + "_" + stn_id + "_" + seq + "_PROBLEM"
-
-                # Write the file manually as the messages don't get posted downstream.
-                # The message won't also get downloaded further downstream
-                msg['new_file'] = new_file
-                new_path = msg['new_dir'] + '/' + msg['new_file']
-
-                # with open(new_path, 'w') as f: f.write(data)
-
-                logger.error(f"New filename (for problem file): {new_file}")
-            elif stn_id == None:
-                new_file = header + "_" + BBB + "_" + '' + "_" + seq + "_PROBLEM"
-                logger.error(f"New filename (for problem file): {new_file}")
-            elif ddhhmm == '':
-                new_file = header + "_" + BBB + "_" + stn_id + "_" + seq
+            # Build header from bulletin
+            header = self.bulletinHandler.buildHeader(first_line)
+            if header == None:
+                logger.error("Unable to fetch header contents. Skipping message")
+                worklist.rejected.append(msg)
+                continue
+            
+            # Get the station timestamp from bulletin
+            if len(header.split('_')) == 2:
+                ddhhmm = self.bulletinHandler.getTime(data)
+                if ddhhmm == None:
+                    logger.error("Unable to get julian time.")
+                    worklist.rejected.append(msg)
+                    continue
             else:
-                new_file = header + "_" + ddhhmm + "_" + BBB + "_" + stn_id + "_" + seq
+                ddhhmm = ''
+            
+            # Get the BBB from bulletin
+            BBB = self.bulletinHandler.getBBB(first_line)
 
-            msg['new_file'] = new_file
-            # We need the rest of the fields to be also updated
-            del(msg['relPath'])
-            msg.updatePaths(self.o, msg['new_dir'], msg['new_file'])
+            # Get the station ID from bulletin
+            stn_id = self.bulletinHandler.getStation(data)
 
-            logger.info(f"New filename (with path): {msg['relPath']}")
+            # Generate a sequence (random ints)
+            seq = self.bulletinHandler.getSequence()
 
-            return msg
+            
 
-        except Exception as e:
-            logger.error(f"Error in renaming. Error message: {e}")
+            # Rename file with data fetched
+            try:
+                # We can't disseminate bulletins downstream if they're missing the timestamp, but we want to keep the bulletins to troubleshoot source problems
+                # We'll append "_PROBLEM" to the filename to be able to identify erronous bulletins
+                if ddhhmm == None or msg["isProblem"]:
+                    timehandler = datetime.datetime.now()
 
-            return None
+                    # Add current time as new timestamp to filename
+                    new_file = header + "_" + timehandler.strftime('%d%H%M') + "_" + BBB + "_" + stn_id + "_" + seq + "_PROBLEM"
+
+                    # Write the file manually as the messages don't get posted downstream.
+                    # The message won't also get downloaded further downstream
+                    msg['new_file'] = new_file
+                    new_path = msg['new_dir'] + '/' + msg['new_file']
+
+                    # with open(new_path, 'w') as f: f.write(data)
+
+                    logger.error(f"New filename (for problem file): {new_file}")
+                elif stn_id == None:
+                    new_file = header + "_" + BBB + "_" + '' + "_" + seq + "_PROBLEM"
+                    logger.error(f"New filename (for problem file): {new_file}")
+                elif ddhhmm == '':
+                    new_file = header + "_" + BBB + "_" + stn_id + "_" + seq
+                else:
+                    new_file = header + "_" + ddhhmm + "_" + BBB + "_" + stn_id + "_" + seq
+
+                msg['new_file'] = new_file
+                # We need the rest of the fields to be also updated
+                del(msg['relPath'])
+                # No longer needed
+                del(msg['isProblem'])
+                msg.updatePaths(self.o, msg['new_dir'], msg['new_file'])
+
+                logger.info(f"New filename (with path): {msg['relPath']}")
+                new_worklist.append(msg)
+                
+            except Exception as e:
+                logger.error(f"Error in renaming. Error message: {e}")
+
+            worklist.incoming = new_worklist
