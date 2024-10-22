@@ -645,6 +645,10 @@ class AMQP(Moth):
         version = body['_format']
 
 
+        topicOverride=None
+        if 'topic' in body:
+            topicOverride=body['topic']
+
         if '_deleteOnPost' in body:
             # FIXME: need to delete because building entire JSON object at once.
             # makes this routine alter the message. Ideally, would use incremental
@@ -689,7 +693,7 @@ class AMQP(Moth):
         else:
             deliv_mode = 2
 
-        raw_body, headers, content_type = PostFormat.exportAny( body, version, self.o['topicPrefix'], self.o )
+        raw_body, headers, content_type = PostFormat.exportAny( body, version, self.o['topicPrefix'], self.o, topicOverride )
 
         topic = '.'.join(headers['topic'])
         topic = topic.replace('#', '%23')
