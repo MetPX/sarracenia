@@ -947,7 +947,7 @@ class Flow:
                         if (f in msg['fileOp']) :
                             if msg['fileOp'][f].startswith(self.o.baseDir):
                                 msg['fileOp'][f] = msg['fileOp'][f].replace(self.o.baseDir, d, 1)
-                            elif os.sep not in msg['fileOp'][f]:
+                            elif os.sep not in msg['fileOp'][f] and f != 'link':
                                 toclimb=len(token)-1
                                 msg['fileOp'][f] = '../'*(toclimb) + msg['fileOp'][f]
 
@@ -958,7 +958,7 @@ class Flow:
                     if (len(u.path) > 1):
                         if msg['fileOp'][f].startswith(u.path):
                             msg['fileOp'][f] = msg['fileOp'][f].replace(u.path, new_dir, 1)
-                        elif '/' not in msg['fileOp'][f]:
+                        elif '/' not in msg['fileOp'][f] and f!= 'link':
                             toclimb=len(token)-1
                             msg['fileOp'][f] = '../'*(toclimb) + msg['fileOp'][f]
                             
