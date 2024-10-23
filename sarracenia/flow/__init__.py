@@ -893,9 +893,6 @@ class Flow:
                         # the link and rename fields may be absolute, requiring and adjustment when stripping
                         if fopv[0] == '':
                             strip += 1
-                        elif len(fopv) == 1:
-                            toclimb=len(token)-1
-                            msg['fileOp'][f] = '../'*(toclimb) + fopv[0]
                         if len(fopv) > strip:
                             rest=fopv[strip:]
                             toclimb=len(token)-rest.count('..')-1
