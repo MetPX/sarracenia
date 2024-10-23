@@ -469,6 +469,7 @@ class Am(FlowCB):
                     ##                                       Random Integer
 
                     binary = 0
+                    isProblem = False
 
                     missing_ahl = self.o.MissingAMHeaders
 
@@ -520,7 +521,7 @@ class Am(FlowCB):
                         }
 
                     # For renamer (to be deleted after rename plugin is called)
-                    msg['isProblem'] = False
+                    msg['isProblem'] = isProblem
 
                     # Receiver is looking for raw message.
                     msg['size'] = len(bulletin)

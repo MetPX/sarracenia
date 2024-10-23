@@ -121,8 +121,6 @@ class Raw2bulletin(FlowCB):
                 ddhhmm = self.bulletinHandler.getTime(data)
                 if ddhhmm == None:
                     logger.error("Unable to get julian time.")
-                    worklist.rejected.append(msg)
-                    continue
             else:
                 ddhhmm = ''
             
