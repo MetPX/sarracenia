@@ -99,7 +99,9 @@ class Raw2bulletin(FlowCB):
             #     continue
 
             if data == None:
+                logger.error("No data was found. Skipping message")
                 worklist.rejected.append(msg)
+                continue
             
             lines  = data.split('\n')
             #first_line  = lines[0].strip('\r')
@@ -173,5 +175,6 @@ class Raw2bulletin(FlowCB):
                 
             except Exception as e:
                 logger.error(f"Error in renaming. Error message: {e}")
+                continue
 
-            worklist.incoming = new_worklist
+        worklist.incoming = new_worklist
