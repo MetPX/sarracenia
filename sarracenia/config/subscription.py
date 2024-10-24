@@ -59,12 +59,12 @@ class Subscriptions(list):
         for s in self:
             if ( s['broker'] == new_subscription['broker'] ) and \
                ( s['queue']['name'] == new_subscription['queue']['name'] ):
+               newb = new_subscription['bindings'][0]
                for b in s['bindings']:
-                   newb = new_subscription['bindings'][0]
-                   if (b['sub'] != newb['sub']) or (b['prefix'] != newb['prefix']):
-                      s['bindings'].append( { 'exchange': newb['exchange'], \
-                                   'prefix':newb['prefix'], 'sub':newb['sub'] } )
+                   if newb == b:
                       found=True
+               if not found:
+                      s['bindings'].append( newb )
 
         if not found:
             self.append(new_subscription)
