@@ -1539,6 +1539,8 @@ Les instances démarrées sur n’importe quel nœud ayant accès au même fichi
 même fil d’attente. Certains voudront peut-être utiliser l’option *queueName* comme méthode plus explicite
 de partager le travail sur plusieurs nœuds. Il est pourtant recommandé d´utiliser queueShare a cette fin.
 
+l´option *subtopic* devrait apparaître après le paramètre queueName dans les fichiers
+pour que les liaisons de sujet s'appliquent à la file d'attente spécifié.
 
 
 queueShare <str> (default: ${USER}_${HOSTNAME}_${RAND8} )
@@ -1558,6 +1560,8 @@ Ce entraînera l'ajout d'un nombre aléatoire à 8 chiffres au nom de la file d'
 Toutes les instances de la configuration ayant accès au même répertoire d'état
 utilisera le nom de file d'attente ainsi défini.
 
+l´option *subtopic* devrait apparaître après le paramètre queueShare dans les fichiers
+pour que les liaisons de sujet s'appliquent à la file d'attente spécifié.
 
 randomize <flag>
 ----------------
@@ -1965,7 +1969,8 @@ origine. À utiliser uniquement avec des flux de données fiables et organisés 
 subtopic <modèle  amqp> (défaut: #)
 -----------------------------------
 
-Dans les publications d’un échange, le paramètre de subtopic restreint la sélection du produit.
+Dans les publications d’un échange, le paramètre de subtopic sert à préciser des messages 
+à placer dans la file d'attente actuellement sélectionnée. 
 Pour donner la bonne valeur au subtopic, on a le choix de filtrer en utilisant **subtopic** seulement avec le
 wildcarding limité d’AMQP et une longueur limitée à 255 octets encodés, ou de manière plus puissante, les expressions régulière
 basés sur les mécanismes **accept/reject** décrits ci-dessous. La différence est que le
@@ -1978,12 +1983,17 @@ Il est recommandé d’utiliser le filtrage côté serveur pour réduire le nomb
 au client et envoyer seulement ce qui est pertinent, et seulement régler les mécanismes côté client,
 économisant du bandwidth et du traitement pour tous.
 
-topicPrefix est principalement utilisé lors des transitions de version de protocole,
-où l’on souhaite spécifier une version de protocole non-commune des messages d'annonce auquel s’abonner.
-
-Normalement, l’utilisateur spécifie un échange et plusieurs options de subtopic. **subtopic** est ce qui est
 normalement utilisé pour indiquer les messages d'annonce d'intérêt. Pour utiliser **subtopic** pour filtrer les produits,
+
+Souvent, l'utilisateur spécifie un échange et plusieurs options de sous-thèmes.
+Le **subtopic** est ce qui est normalement utilisé pour indiquer les messages d'intérêt
+pour une file d'attente donnée. Si nécessaire, **queueName** et/ou **queueShare** 
+doivent apparaître plus tôt dans le fichier de configuration pour que le sous-thème 
+s'applique à la file d'attente sélectionnée.
+
 il faut que la chaîne de caractère subtopic corresponde au chemin relatif du produit.
+(les pompes non Sarracenia peuvent avoir d´autres conventions de hiérarchie des sujets.)
+
 
 Par exemple, en consommant à partir de DD, pour donner la bonne valeur au subtopic, il est possible de
 parcourir le site Web **http://dd.weather.gc.ca** et noter tous les répertoires
@@ -2108,6 +2118,12 @@ topicPrefix (défaut: v03)
 rajouté au subtopic pour former une hiérarchie complète de thèmes (topics).
 Cette option s’applique aux liaisons d’abonnement.
 Indique la version des messages d'annonce reçus dans les subtopics. (V03 fait référence à `<sr3_post.7.html>`_)
+
+topicPrefix sert principalement lors des transitions de format de messages.
+Le topicPrefix identifie dans quel version de format les messages sous le thème
+sont créés. Sr3 s´attend a des messages v03 par défault, mais il y plein
+de sources qui offrent l´ancienne version (nécessitant une topicPrefix de *v02.post*) 
+pour spécifier l´ancienned version de messages. 
 
 topicCopy (défaut: False)
 -------------------------
