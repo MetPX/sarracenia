@@ -106,15 +106,16 @@ class Https(Transfer):
         self.path = path
 
     # for compatibility... always new connection with http
-    def check_is_connected(self):
-        logger.debug("sr_http check_is_connected")
-
-        if not self.connected : return False
-
-        if self.sendTo != self.o.sendTo:
+    def check_is_connected(self):        
+        if (not self.connected 
+            or not self.opener 
+            or not self.head_opener 
+            or self.sendTo != self.o.sendTo):
+            logger.debug("sr_http check_is_connected -> no")
             self.close()
             return False
-
+        
+        logger.debug("sr_http check_is_connected -> yes")
         return True
 
     # close
@@ -131,10 +132,36 @@ class Https(Transfer):
         self.connected = False
         self.sendTo = self.o.sendTo
         self.timeout = self.o.timeout
+        self.opener = None
+        self.head_opener = None
+        self.password_mgr = None
+        
+        # Set up an opener, this used to be done in every call to __open__ uses a lot of CPU (issue #1261)
+        #   FIXME? When done in connect, we create a new opener every time the destination changes
+        #   which might still be too frequently, depending on the config. I'm not convinced that we ever 
+        #   need to create a new opener. Maybe just put it in __init__ ?
+        try:
+            self.password_mgr = urllib.request.HTTPPasswordMgrWithDefaultRealm()
+            auth_handler = urllib.request.HTTPBasicAuthHandler(self.password_mgr)
+        
+            ssl_handler = urllib.request.HTTPSHandler(0, self.tlsctx)
 
-        if not self.credentials(): return False
+            head_redirect_handler = HTTPRedirectHandlerSameMethod()
 
-        return True
+            # create "opener" (OpenerDirector instance)
+            self.opener = urllib.request.build_opener(auth_handler, ssl_handler)
+            self.head_opener = urllib.request.build_opener(auth_handler, ssl_handler, head_redirect_handler)
+
+        except:
+            logger.error(f'unable to connect {self.o.sendTo}')
+            logger.debug('Exception details: ', exc_info=True)
+            self.connected = False
+
+        if not self.credentials(): 
+            self.connected = False
+
+        self.connected = True
+        return self.connected
 
     # credentials...
     def credentials(self):
@@ -149,12 +176,15 @@ class Https(Transfer):
             self.bearer_token = details.bearer_token if hasattr(
                 details, 'bearer_token') else None
 
+             # username and password credentials
+            if self.user != None:
+                # continue with authentication
+                self.password_mgr.add_password(None, self.sendTo, self.user, unquote(self.password))
+
             return True
 
         except:
-            logger.error(
-                "sr_http/credentials: unable to get credentials for %s" %
-                self.sendTo)
+            logger.error("sr_http/credentials: unable to get credentials for %s" % self.sendTo)
             logger.debug('Exception details: ', exc_info=True)
 
         return False
@@ -223,7 +253,10 @@ class Https(Transfer):
         self.http = None
         self.details = None
         self.seek = True
+
         self.opener = None
+        self.head_opener = None
+        self.password_mgr = None
 
         self.urlstr = ''
         self.path = ''
@@ -232,9 +265,7 @@ class Https(Transfer):
         self.data = ''
         self.entries = {}
 
-
-# ls
-
+    # ls
     def ls(self):
         logger.debug("sr_http ls")
 
@@ -291,7 +322,7 @@ class Https(Transfer):
         return redir_msg
 
     # open
-    def __open__(self, path, remote_offset=0, length=0, method:str=None, add_headers:dict=None, handlers:list=[]) -> bool:
+    def __open__(self, path, remote_offset=0, length=0, method:str=None, add_headers:dict=None) -> bool:
         """ Open a URL. When the open is successful, self.http is set to a urllib.response instance that can be
             read from like a file.
 
@@ -300,10 +331,11 @@ class Https(Transfer):
         logger.debug( f"{path} " + (method if method else ''))
 
         self.http = None
-        self.connected = False
         self.req = None
         self.urlstr = path
-        self.opener = None 
+
+        if not self.check_is_connected():
+            self.connect()
 
         # have noticed that some site does not allow // in path
         if path.startswith('http://') and '//' in path[7:]:
@@ -335,38 +367,23 @@ class Https(Transfer):
 
             # username and password credentials
             if self.user != None:
-                password_mgr = urllib.request.HTTPPasswordMgrWithDefaultRealm()
                 # takeaway credentials info from urlstr
                 cred = self.user + '@'
                 self.urlstr = self.urlstr.replace(cred, '')
                 if self.password != None:
                     cred = self.user + ':' + self.password + '@'
                     self.urlstr = self.urlstr.replace(cred, '')
-
-                # continue with authentication
-                password_mgr.add_password(None, self.urlstr, self.user, unquote(self.password))
-                auth_handler = urllib.request.HTTPBasicAuthHandler(password_mgr)
-                handlers.append(auth_handler)
-
-            ssl_handler = urllib.request.HTTPSHandler(0, self.tlsctx)
-            handlers.append(ssl_handler)
-
-            # create "opener" (OpenerDirector instance)
-            self.opener = urllib.request.build_opener(*handlers)
-
-            # Install the opener. Now all calls to get the request use our opener.
-            # NOTE not necessary since we call opener.open directly. Install only needed if we want to use urlopen.
-            # urllib.request.install_opener(opener)
  
             # Build the request that will get opened. If None is passed to method it defaults to GET.
             self.req = urllib.request.Request(self.urlstr, headers=headers, method=method)
 
             # open... we are connected
+            opener = self.head_opener if method == 'HEAD' else self.opener
             if self.timeout == None:
                 # when timeout is not passed, urllib defaults to socket._GLOBAL_DEFAULT_TIMEOUT
-                self.http = self.opener.open(self.req)
+                self.http = opener.open(self.req)
             else:
-                self.http = self.opener.open(self.req, timeout=self.timeout)
+                self.http = opener.open(self.req, timeout=self.timeout)
 
             # knowing if we got redirected is useful for debugging
             try:
@@ -413,9 +430,7 @@ class Https(Transfer):
             url += '/' 
         url += path
 
-        # Default HTTPRedirectHandler may change a HEAD request to a GET when following the redirect.
-        handlers = [ HTTPRedirectHandlerSameMethod() ]
-        ok = self.__open__(url, method='HEAD', add_headers={'Accept-Encoding': 'identity'}, handlers=handlers)
+        ok = self.__open__(url, method='HEAD', add_headers={'Accept-Encoding': 'identity'})
         if not ok:
             logger.debug(f"failed")
             return None

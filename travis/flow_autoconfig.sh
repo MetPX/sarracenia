@@ -30,6 +30,7 @@ ${pip_install} -U pip
 # The dependencies that are installed using apt are only available to system default Python versions (e.g. Python 3.8 on Ubuntu 20.04)
 # If we are testing on a non-default Python version, we need to ensure these dependencies are still installed, so we use pip.
 # See issue #407, #445.
+echo "Checking for missing Python packages and installing with pip"
 for PKG in amqp appdirs dateparser flufl.lock humanize jsonpickle netifaces paho-mqtt psutil rangehttpserver watchdog xattr paramiko pyftpdlib net-tools; do
     PKG_INSTALLED="`pip3 list | grep ${PKG}`"
     if [ "$?" == "0" ] ; then
@@ -38,6 +39,9 @@ for PKG in amqp appdirs dateparser flufl.lock humanize jsonpickle netifaces paho
         ${pip_install} ${PKG}
     fi
 done
+
+# Need paho > 2.1.0 https://github.com/MetPX/sarracenia/pull/1119
+${pip_install} --upgrade paho-mqtt
 
 # in case it was installed as a dependency.
 sudo apt -y remove metpx-sr3

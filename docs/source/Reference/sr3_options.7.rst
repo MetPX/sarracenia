@@ -1549,6 +1549,9 @@ Instances started on any node with access to the same shared file will use the
 same queue. Some may want use the *queueName* option as a more explicit method
 of sharing work across multiple nodes.
 
+This *subtopic* option should appear after the queueName setting in files
+for the topic bindings to apply to the given queue.
+
 
 queueShare <str> ( default: ${USER}_${HOSTNAME}_${RAND8} )
 ----------------------------------------------------------
@@ -1566,6 +1569,9 @@ to get a private queue, for example, one could specify::
 will result in a random 8 digit number being appended to the queue name.
 All the instances within the configuration with access to the same state directory
 will use the queue name thus defined.
+
+This *subtopic* option should appear after the queueShare setting in files
+for the topic bindings to apply to the given queue.
 
 
 randomize <flag>
@@ -1973,8 +1979,8 @@ message flows.
 subtopic <amqp pattern> (default: #)
 ------------------------------------
 
-Within an exchange's postings, the subtopic setting narrows the product selection.
-To give a correct value to the subtopic,
+Within an exchange's postings, the subtopic setting narrows the product selection,
+for objects to place in the currently selected queue. To give a correct value to the subtopic,
 one has the choice of filtering using **subtopic** with only AMQP's limited wildcarding and
 length limited to 255 encoded bytes, or the more powerful regular expression
 based  **accept/reject**  mechanisms described below. The difference being that the
@@ -1983,18 +1989,18 @@ to the client at all. The  **accept/reject**  patterns apply to messages sent by
 broker to the subscriber. In other words,  **accept/reject**  are client side filters,
 whereas **subtopic** is server side filtering.
 
-It is best practice to use server side filtering to reduce the number of notification messages sent
-to the client to a small superset of what is relevant, and perform only a fine-tuning with the
-client side mechanisms, saving bandwidth and processing for all.
+Use server side filtering to reduce the number of notification messages sent
+to the client to a small superset of what is relevant, and refine further with the
+client side accept/reject, saving bandwidth and processing for all.
 
-topicPrefix is primarily of interest during protocol version transitions,
-where one wishes to specify a non-default protocol version of messages to
-subscribe to.
+Often, the user specifies one exchange, and several subtopic options.
+**Subtopic** is what is normally used to indicate messages of interest 
+for a given queue. If needed, queueName, and/or queueShare need to be
+earlier in the configuration file for the subtopic to apply to the selected queue.
 
-Usually, the user specifies one exchange, and several subtopic options.
-**Subtopic** is what is normally used to indicate messages of interest.
 To use the subtopic to filter the products, match the subtopic string with
-the relative path of the product.
+the relative path of the product (non Sarracenia pumps may have different
+topic hierarchy conventions.)
 
 For example, consuming from DD, to give a correct value to subtopic, one can
 browse the our website  **http://dd.weather.gc.ca** and write down all directories
@@ -2084,7 +2090,6 @@ Sarracenia has a convention for how topics for products should be organized. The
 a topicPrefix, followed by subtopics derived from the *relPath* field of the message.
 Some networks may choose to use different topic conventions, external to sarracenia.
 
-
 timeout <interval> (default: 0)
 -------------------------------
 
@@ -2133,6 +2138,14 @@ topicPrefix (default: v03)
 prepended to the sub-topic to form a complete topic hierarchy. 
 This option applies to subscription bindings.
 Denotes the version of messages received in the sub-topics. (v03 refers to `<sr3_post.7.html>`_)
+
+topicPrefix is primarily of interest during protocol version transitions,
+where one wishes to specify a non-default protocol version of messages to
+subscribe to.
+
+For example, Sr3 expects v03 messages by default, but there are
+plenty of sources that offer the old version (requiring a topicPrefix of *v02.post*)
+to specify the old version of messages.
 
 users <flag> (default: false)
 -----------------------------

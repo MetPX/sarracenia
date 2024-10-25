@@ -37,7 +37,7 @@ jobs:
     timeout-minutes: 40
     
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
 
       - name: Install dependencies
       # 2023-11-13 RS Added SSH config changes to see if it makes the tests more reliable

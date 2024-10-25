@@ -890,12 +890,9 @@ class Flow:
                     if f in msg['fileOp']:
                         fopv = msg['fileOp'][f].split('/') 
                         # an absolute path file posted is relative to '/' (in relPath) but the values in
-                        # the link and rename fields may be absolute, requiring and adjustmeent when stripping
+                        # the link and rename fields may be absolute, requiring and adjustment when stripping
                         if fopv[0] == '':
                             strip += 1
-                        elif len(fopv) == 1:
-                            toclimb=len(token)-1
-                            msg['fileOp'][f] = '../'*(toclimb) + fopv[0]
                         if len(fopv) > strip:
                             rest=fopv[strip:]
                             toclimb=len(token)-rest.count('..')-1
@@ -947,9 +944,6 @@ class Flow:
                         if (f in msg['fileOp']) :
                             if msg['fileOp'][f].startswith(self.o.baseDir):
                                 msg['fileOp'][f] = msg['fileOp'][f].replace(self.o.baseDir, d, 1)
-                            elif os.sep not in msg['fileOp'][f]:
-                                toclimb=len(token)-1
-                                msg['fileOp'][f] = '../'*(toclimb) + msg['fileOp'][f]
 
         elif 'fileOp' in msg and new_dir:
             u = sarracenia.baseUrlParse(msg['baseUrl'])
@@ -958,9 +952,6 @@ class Flow:
                     if (len(u.path) > 1):
                         if msg['fileOp'][f].startswith(u.path):
                             msg['fileOp'][f] = msg['fileOp'][f].replace(u.path, new_dir, 1)
-                        elif '/' not in msg['fileOp'][f]:
-                            toclimb=len(token)-1
-                            msg['fileOp'][f] = '../'*(toclimb) + msg['fileOp'][f]
                             
         if self.o.mirror and len(token) > 1:
             new_dir = new_dir + '/' + '/'.join(token[:-1])
@@ -1489,24 +1480,23 @@ class Flow:
                 new_mtime = sarracenia.timestr2flt(msg['mtime'])
                 old_mtime = 0.0
 
-            if self.o.timeCopy:
-                old_mtime = lstat.st_mtime
-            elif sarracenia.filemetadata.supports_extended_attributes:
-                try:
-                    x = sarracenia.filemetadata.FileMetadata(msg['new_path'])
-                    old_mtime = sarracenia.timestr2flt(x.get('mtime'))
-                except:
-                    pass
+                if self.o.timeCopy:
+                    old_mtime = lstat.st_mtime
+                elif sarracenia.filemetadata.supports_extended_attributes:
+                    try:
+                        x = sarracenia.filemetadata.FileMetadata(msg['new_path'])
+                        old_mtime = sarracenia.timestr2flt(x.get('mtime'))
+                    except:
+                        pass
 
-            if new_mtime <= old_mtime:
-                self.reject(msg, 406,
+                if new_mtime <= old_mtime:
+                    self.reject(msg, 406,
                             "mtime not newer %s " % (msg['new_path']))
-                return False
-            else:
-                logger.debug(
-                    "{} new version is {} newer (new: {} vs old: {} )".format(
-                    msg['new_path'], new_mtime - old_mtime, new_mtime,
-                    old_mtime))
+                    return False
+                else:
+                    logger.debug(
+                        f"{msg['new_path']} new version is {new_mtime - old_mtime} " \
+                                f"newer (new: {new_mtime,} vs old: {old_mtime} )" )
 
         elif method in ['random', 'cod']:
             logger.debug("content_match %s sum random/zero/cod never matches" %

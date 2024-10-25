@@ -542,6 +542,7 @@ The second row of output gives detailed headings within each category:
 The configurations are listed on the left. For each configuraion, the state
 will be:
 
+* cpuS:  process is expensive in CPU usage (runStateThreshold_cpuSlow)
 * disa:  disabled, configured not to run.
 * hung:  processes appear hung, not writing anything to logs.
 * idle:  all processes running, but no data or message transfers for too long (runStateThreshold_idle)
@@ -552,6 +553,7 @@ will be:
 * run:   all processes are running (and transferring, and not behind, and not slow... normal state.)
 * slow:  transfering less than minimum bytes/second ( runStateThreshold_slow )
 * stop:  no processes are running. 
+* wVip:  process doesn't have the vip (only applies when the vip option is specified in the config)
 
 The next columns to the right give more information, detailing how many processes are Running, out of the number expected.
 For example, 3/3 means 3 processes or instances found of the 3 expected to be found.
