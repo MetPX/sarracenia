@@ -2775,6 +2775,24 @@ class sr_GlobalState:
                 v3_cfg.write('#v2 sftp handling is always absolute, sr3 is relative. might need this, remove when all sr3:\n')
                 v3_cfg.write('#flowcb accept.sftp_absolute\n')
 
+            queueName=None
+
+            #1st prep pass (for cases when re-ordering needed.)
+            with open(v2_config_path, 'r') as v2_cfg:
+                for line in v2_cfg.readlines():
+                    if len(line.strip()) < 1:
+                        continue
+                    if line[0].startswith('#'):
+                        continue
+                    line = line.strip().split()
+                    k = line[0]
+                    if k in synonyms:
+                        k = synonyms[k]
+                    if k in [ 'queueName' ]:
+                        queueName=line[1]
+
+            #2nd re-write pass.
+            subtopicFound=False
             with open(v2_config_path, 'r') as v2_cfg:
                 for line in v2_cfg.readlines():
                     if len(line.strip()) < 1:
@@ -2818,7 +2836,13 @@ class sr_GlobalState:
                         else:
                             logger.error( f"unknown checksum spec: {line}")
                             continue
-               
+                    elif k == 'queueName':
+                        if subtopicFound or not queueName:
+                            continue
+                    elif k == 'subtopic':
+                        if queueName:
+                            v3_cfg.write(f'queueName {queueName}\n')
+                            queueName=None
                     if (k == 'accept') :
                         if line[1] == '.*':
                             accept_all_seen=True

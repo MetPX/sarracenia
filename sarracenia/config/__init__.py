@@ -1536,6 +1536,8 @@ class Config:
         saved_lineno=0
         self.files.append(cfgfilepath)
 
+        self.subtopic_seen=False
+
         for l in open(cfgfilepath, "r").readlines():
             lineno+=1
             if self.lineno > 0:
@@ -1646,6 +1648,7 @@ class Config:
                 logger.error( f"{','.join(self.files)}:{self.lineno} file {v} failed to parse:  {ex}" )
                 logger.debug('Exception details: ', exc_info=True)
         elif k in ['subtopic']:
+            self.subtopic_seen=True
             self._parse_binding(v)
         elif k in ['topicPrefix']:
             if '/' in v :
@@ -1753,6 +1756,12 @@ class Config:
                         logger.error( f'{",".join(self.files)}:{lineno} invalid entry {i} in {k}. Must be one of: {set_choices[k]}' )
 
         elif k in str_options:
+            # queueName warning... is for something that is not an error... 
+            # probably need to remove this warning later... because people could use default queue with subtopic and
+            # specify a second queue with different bindings... so this warning could be complaining about something 
+            # that is correct.   but in every current case, the warning will be helpful.
+            if ( k == 'queueName' ) and self.subtopic_seen:
+                logger.warning( f"queueName usually should be before subtopic in configs: subtopic to default queue" )
             if ( k == 'directory' ) and not self.download:
                 logger.info( f"{','.join(self.files)}:{lineno} if download is false, directory has no effect" )
 
