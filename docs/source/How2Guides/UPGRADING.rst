@@ -52,7 +52,11 @@ is perhaps complex. This version will read and write both files,
 so as to preserve ability to downgrade. later version will drop
 support for qname files.
 
-
+*CHANGE*: in configuration files: *subtopic* must come after
+the relevant queue naming options (queueName, queueShare)
+in prior releases, the queue naming was a global setting.
+In a future version, one will be able to subscribe to multiple
+queues with a single subscriber.
 
 3.0.54
 ------
