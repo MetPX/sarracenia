@@ -2090,11 +2090,6 @@ Sarracenia has a convention for how topics for products should be organized. The
 a topicPrefix, followed by subtopics derived from the *relPath* field of the message.
 Some networks may choose to use different topic conventions, external to sarracenia.
 
-topicPrefix is primarily of interest during protocol version transitions,
-where one wishes to specify a non-default protocol version of messages to
-subscribe to.
-
-
 timeout <interval> (default: 0)
 -------------------------------
 
@@ -2143,6 +2138,14 @@ topicPrefix (default: v03)
 prepended to the sub-topic to form a complete topic hierarchy. 
 This option applies to subscription bindings.
 Denotes the version of messages received in the sub-topics. (v03 refers to `<sr3_post.7.html>`_)
+
+topicPrefix is primarily of interest during protocol version transitions,
+where one wishes to specify a non-default protocol version of messages to
+subscribe to.
+
+For example, Sr3 expects v03 messages by default, but there are
+plenty of sources that offer the old version (requiring a topicPrefix of *v02.post*)
+to specify the old version of messages.
 
 users <flag> (default: false)
 -----------------------------
