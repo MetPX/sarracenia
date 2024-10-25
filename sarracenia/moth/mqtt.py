@@ -129,6 +129,10 @@ class MQTT(Moth):
         self.o.update(default_options)
         self.o.update(options)
 
+        now = time.time()
+        self.next_connect_time = now
+        self.next_connect_failures = 0
+
         if 'qos' in self.o:
             if type(self.o['qos']) is not int:
                 self.o['qos'] = int(self.o['qos'])
@@ -349,74 +353,79 @@ class MQTT(Moth):
 
         something_broke = True
         self.connected=False
-        while True:
 
-            if self._stop_requested:
-                break
+        if self._stop_requested:
+            return
 
-            try:
-                cs = self.o['clean_session']
-                if ('queueName' in self.o) and ('no' in self.o):
-                    cid = self.o['queueName'] + "_i%02d" % self.o['no']
+        start = time.time()
+        if  start < self.next_connect_time:
+            logger.info( "too soon to connect again, will try in {self.next_connect_time-start} seconds" )
+            return
+
+        try:
+            cs = self.o['clean_session']
+            if ('queueName' in self.o) and ('no' in self.o):
+                cid = self.o['queueName'] + "_i%02d" % self.o['no']
+            else:
+                #cid = ''.join(random.choice(string.ascii_lowercase) for i in range(10))
+                cid = None
+                cs = True
+                logger.info( f" cid=+{cid}+"  )
+
+            props = Properties(PacketTypes.CONNECT)
+            if 'expire' in self.o and self.o['expire']:
+                props.SessionExpiryInterval = int(self.o['expire'])
+            if 'receiveMaximum' in self.o:
+                props.ReceiveMaximum = self.o['receiveMaximum']
+
+            logger.info( f"is no around? {self.o['no']} " )
+            if ('no' in self.o) and self.o['no'] > 0: # instances 'started'
+                self.client = self.__clientSetup(cid)
+                self.client.connect( self.o['broker'].url.hostname, port=self.__sslClientSetup(), \
+                       clean_start=False, properties=props )
+                self.client.enable_logger(logger)
+                self.client.loop_start()
+                ebo=1
+                while (self.connect_in_progress) or (self.subscribe_in_progress > 0):
+                     logger.info( f"waiting for subscription to be set up. (ebo={ebo})")
+                     time.sleep(0.1*ebo)
+                     if self._stop_requested:
+                          break
+                     if ebo < 512 :
+                        ebo *= 2
+                self.next_connect_failures=0
+                return
+            else: # either 'declare' or 'foreground'
+                if 'instances' in self.o:    
+                    session_mxi=self.o['instances']+1
                 else:
-                    #cid = ''.join(random.choice(string.ascii_lowercase) for i in range(10))
-                    cid = None
-                    cs = True
-                    logger.info( f" cid=+{cid}+"  )
+                    session_mxi=2
 
-                props = Properties(PacketTypes.CONNECT)
-                if 'expire' in self.o and self.o['expire']:
-                    props.SessionExpiryInterval = int(self.o['expire'])
-                if 'receiveMaximum' in self.o:
-                    props.ReceiveMaximum = self.o['receiveMaximum']
-
-                logger.info( f"is no around? {self.o['no']} " )
-                if ('no' in self.o) and self.o['no'] > 0: # instances 'started'
-                    self.client = self.__clientSetup(cid)
-                    self.client.connect( self.o['broker'].url.hostname, port=self.__sslClientSetup(), \
-                           clean_start=False, properties=props )
-                    self.client.enable_logger(logger)
-                    self.client.loop_start()
-                    ebo=1
+                for i in range(1,session_mxi ):
+                    icid = self.o['queueName'] + "_i%02d" %  i
+                    logger.info( f"declare session for instances {icid}" )
+                    decl_client = self.__clientSetup(icid)
+                    decl_client.on_connect = MQTT.__sub_on_connect
+                    decl_client.connect( self.o['broker'].url.hostname, port=self.__sslClientSetup(decl_client), \
+                       clean_start=False, properties=props )
                     while (self.connect_in_progress) or (self.subscribe_in_progress > 0):
-                         logger.info( f"waiting for subscription to be set up. (ebo={ebo})")
-                         time.sleep(0.1*ebo)
-                         if self._stop_requested:
-                              break
-                         if ebo < 512 :
-                            ebo *= 2
-                    break
-                else: # either 'declare' or 'foreground'
-                    if 'instances' in self.o:    
-                        session_mxi=self.o['instances']+1
-                    else:
-                        session_mxi=2
+                        logger.info( f"waiting ({ebo} seconds) for broker to confirm subscription is set up.")
+                        logger.info( f"for {icid} connect_in_progress={self.connect_in_progress} subscribe_in_progress={self.subscribe_in_progress}" )
+                        if self._stop_requested:
+                            break
+                        if ebo < 60: ebo *= 2
+                        decl_client.loop(ebo)
+                    decl_client.disconnect()
+                    decl_client.loop_stop()
+                    logger.info( f"instance declaration for {icid} done" )
+                self.next_connect_failures=0
+                return
+                
+        except Exception as err:
+            logger.error( f"failed to {self.o['broker'].url.hostname} with {err}" )
+            logger.error('Exception details: ', exc_info=True)
+            self.setEbo(start)
 
-                    for i in range(1,session_mxi ):
-                        icid = self.o['queueName'] + "_i%02d" %  i
-                        logger.info( f"declare session for instances {icid}" )
-                        decl_client = self.__clientSetup(icid)
-                        decl_client.on_connect = MQTT.__sub_on_connect
-                        decl_client.connect( self.o['broker'].url.hostname, port=self.__sslClientSetup(decl_client), \
-                           clean_start=False, properties=props )
-                        while (self.connect_in_progress) or (self.subscribe_in_progress > 0):
-                            logger.info( f"waiting ({ebo} seconds) for broker to confirm subscription is set up.")
-                            logger.info( f"for {icid} connect_in_progress={self.connect_in_progress} subscribe_in_progress={self.subscribe_in_progress}" )
-                            if self._stop_requested:
-                                break
-                            if ebo < 60: ebo *= 2
-                            decl_client.loop(ebo)
-                        decl_client.disconnect()
-                        decl_client.loop_stop()
-                        logger.info( f"instance declaration for {icid} done" )
-                    break
-                    
-            except Exception as err:
-                logger.error( f"failed to {self.o['broker'].url.hostname} with {err}" )
-                logger.error('Exception details: ', exc_info=True)
-
-            if ebo < 60: ebo *= 2
-            time.sleep(ebo)
 
     def putSetup(self):
         """
@@ -425,64 +434,67 @@ class MQTT(Moth):
         ebo = 1
 
         self.connected=False
-        while True:
-            
-            if self._stop_requested:
-                break
+        
+        if self._stop_requested:
+            return
 
-            try:
-                self.pending_publishes = collections.deque()
-                self.unexpected_publishes = collections.deque()
+        start = time.time()
+        if  start < self.next_connect_time:
+            logger.info( "too soon to connect again, will try in {self.next_connect_time-start} seconds" )
+            return
 
-                props = Properties(PacketTypes.CONNECT)
-                if self.o['messageAgeMax'] > 0:
-                    props.MessageExpiryInterval = int(self.o['messageAgeMax'])
+        try:
+            self.pending_publishes = collections.deque()
+            self.unexpected_publishes = collections.deque()
 
-                self.transport = 'websockets' if (self.o['broker'].url.scheme[-2:] == 'ws' ) or  \
-                   (self.o['broker'].url.scheme[-1] == 'w' ) else 'tcp'
+            props = Properties(PacketTypes.CONNECT)
+            if self.o['messageAgeMax'] > 0:
+                props.MessageExpiryInterval = int(self.o['messageAgeMax'])
 
-                self.client = paho.mqtt.client.Client( 
-                        callback_api_version = paho.mqtt.client.CallbackAPIVersion.VERSION2, \
-                        userdata=self, transport=self.transport, protocol=self.proto_version )
+            self.transport = 'websockets' if (self.o['broker'].url.scheme[-2:] == 'ws' ) or  \
+               (self.o['broker'].url.scheme[-1] == 'w' ) else 'tcp'
 
-                #self.client = paho.mqtt.client.Client(
-                #    protocol=self.proto_version, userdata=self)
+            self.client = paho.mqtt.client.Client( 
+                    callback_api_version = paho.mqtt.client.CallbackAPIVersion.VERSION2, \
+                    userdata=self, transport=self.transport, protocol=self.proto_version )
 
-                self.client.enable_logger(logger)
-                self.client.on_connect = MQTT.__pub_on_connect
-                self.client.on_disconnect = MQTT.__pub_on_disconnect
-                self.client.on_publish = MQTT.__pub_on_publish
-                if 'max_queued_messages' in self.o:
-                    self.client.max_queued_messages_set(self.o['max_queued_messages'])
+            #self.client = paho.mqtt.client.Client(
+            #    protocol=self.proto_version, userdata=self)
 
-                self.client.username_pw_set(self.o['broker'].url.username,
-                                            unquote(self.o['broker'].url.password))
-                self.connect_in_progress = True
-                res = self.client.connect_async(self.o['broker'].url.hostname,
-                                          port=self.__sslClientSetup(),
-                                         properties=props)
-                logger.info( f"connecting to {self.o['broker'].url.hostname}, res={res}" )
+            self.client.enable_logger(logger)
+            self.client.on_connect = MQTT.__pub_on_connect
+            self.client.on_disconnect = MQTT.__pub_on_disconnect
+            self.client.on_publish = MQTT.__pub_on_publish
+            if 'max_queued_messages' in self.o:
+                self.client.max_queued_messages_set(self.o['max_queued_messages'])
 
-                self.client.loop_start()
+            self.client.username_pw_set(self.o['broker'].url.username,
+                                        unquote(self.o['broker'].url.password))
+            self.connect_in_progress = True
+            res = self.client.connect_async(self.o['broker'].url.hostname,
+                                      port=self.__sslClientSetup(),
+                                     properties=props)
+            logger.info( f"connecting to {self.o['broker'].url.hostname}, res={res}" )
 
-                ebo=1
-                while self.connect_in_progress:
-                     logger.info( f"waiting for connection to {self.o['broker']} ebo={ebo}")
-                     time.sleep(0.1*ebo)
-                     if self._stop_requested:
-                          break
-                     if ebo < 512:
-                          ebo *= 2
-                    
-                if not self.connect_in_progress:
-                    break
+            self.client.loop_start()
 
-            except Exception as err:
-                logger.error("failed to {self.o['broker'].url.hostname} with {err}" )
-                logger.error('Exception details: ', exc_info=True)
+            ebo=1
+            while self.connect_in_progress:
+                 logger.info( f"waiting for connection to {self.o['broker']} ebo={ebo}")
+                 time.sleep(0.1*ebo)
+                 if self._stop_requested:
+                      break
+                 if ebo < 512:
+                      ebo *= 2
+                
+            if not self.connect_in_progress:
+                self.next_connect_failures=0
+                return
 
-            if ebo < 60: ebo *= 2
-            time.sleep(ebo)
+        except Exception as err:
+            logger.error("failed to {self.o['broker'].url.hostname} with {err}" )
+            logger.error('Exception details: ', exc_info=True)
+            self.setEbo(start)
 
     def __sub_on_message(client, userdata, msg):
         """
