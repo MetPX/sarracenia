@@ -1,13 +1,20 @@
-metpx-sr3 (3.00.56rc2) UNRELEASED; urgency=medium
+metpx-sr3 (3.00.56rc2) unstable; urgency=medium
 
+  * fix #1261 http performance regression.
+  * fix #1270 invalid mirroring of relative symlinks when realpath is
+    symlinked.  (requires next metpx-sr3c version 3.24.10rc2 ?3?)
+  * fix #1267 queueName before subtopic from this point forward.
+  * fix #1262 mtime referenced before assignment (download check fail.)
+  * fix #1271 renamer for AM socket generalized.
+  * fix #1255 remove malformed useless error message.
   * incrementing github action version because of plaintive supplications
   * demoted false-alarm error message about missing subscriptions.json to debug.
 
- -- SSC-5CD2310S60 <peter@bsqt.homeip.net>  Tue, 08 Oct 2024 17:47:54 -0400
+ -- SSC-5CD2310S60 <peter@bsqt.homeip.net>  Fri, 25 Oct 2024 14:47:54 -0400
 
 metpx-sr3 (3.00.56rc1) unstable; urgency=medium
 
-  * NEW option *recusion* option ( #1237 ) (actually restored, was removed.)
+  * NEW option *recursion* option ( #1237 ) (actually restored, was removed.)
   * fix #1156 - NEW option *logDuplicates* 
   * NEW EXPERIMENTAL option: *logJson*
   * fix #1223 Switch from global QoS to per-consumer.
