@@ -51,6 +51,10 @@ est peut-être complexe. Cette version lira et écrira les deux fichiers,
 afin de préserver la possibilité de rétrogradation. La version ultérieure abandonnera
 la prise en charge des fichiers qname.
 
+*CHANGEMENT* : dans les fichiers de configuration : *subtopic* doit venir après
+la spécification de nom de file d'attente pertinentes (queueName, queueShare.)
+Dans les versions précédentes, la dénomination de la file d'attente était un paramètre global.
+Dans une future version, on pourra s'abonner à plusieurs files d'attente avec un seul abonné.
 
 3.0.54
 ------

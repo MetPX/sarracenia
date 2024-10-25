@@ -1455,6 +1455,8 @@ queueName est écrit à :</p>
 <p>Les instances démarrées sur n’importe quel nœud ayant accès au même fichier partagé utiliseront la
 même fil d’attente. Certains voudront peut-être utiliser l’option <em>queueName</em> comme méthode plus explicite
 de partager le travail sur plusieurs nœuds. Il est pourtant recommandé d´utiliser queueShare a cette fin.</p>
+<p>l´option <em>subtopic</em> devrait apparaître après le paramètre queueName dans les fichiers
+pour que les liaisons de sujet s’appliquent à la file d’attente spécifié.</p>
 </section>
 <section id="queueshare-str-default-user-hostname-rand8">
 <h4>queueShare &lt;str&gt; (default: ${USER}_${HOSTNAME}_${RAND8} )<a class="headerlink" href="#queueshare-str-default-user-hostname-rand8" title="Link to this heading"></a></h4>
@@ -1471,6 +1473,8 @@ pour que les instances choisissent la même file d’attente:</p>
 <p>Ce entraînera l’ajout d’un nombre aléatoire à 8 chiffres au nom de la file d’attente.
 Toutes les instances de la configuration ayant accès au même répertoire d’état
 utilisera le nom de file d’attente ainsi défini.</p>
+<p>l´option <em>subtopic</em> devrait apparaître après le paramètre queueShare dans les fichiers
+pour que les liaisons de sujet s’appliquent à la file d’attente spécifié.</p>
 </section>
 <section id="randomize-flag">
 <h4>randomize &lt;flag&gt;<a class="headerlink" href="#randomize-flag" title="Link to this heading"></a></h4>
@@ -1810,7 +1814,8 @@ origine. À utiliser uniquement avec des flux de données fiables et organisés 
 </section>
 <section id="subtopic-modele-amqp-defaut">
 <h4>subtopic &lt;modèle  amqp&gt; (défaut: #)<a class="headerlink" href="#subtopic-modele-amqp-defaut" title="Link to this heading"></a></h4>
-<p>Dans les publications d’un échange, le paramètre de subtopic restreint la sélection du produit.
+<p>Dans les publications d’un échange, le paramètre de subtopic sert à préciser des messages
+à placer dans la file d’attente actuellement sélectionnée.
 Pour donner la bonne valeur au subtopic, on a le choix de filtrer en utilisant <strong>subtopic</strong> seulement avec le
 wildcarding limité d’AMQP et une longueur limitée à 255 octets encodés, ou de manière plus puissante, les expressions régulière
 basés sur les mécanismes <strong>accept/reject</strong> décrits ci-dessous. La différence est que le
@@ -1821,11 +1826,14 @@ alors que <strong>subtopic</strong> est le filtrage côté serveur.</p>
 <p>Il est recommandé d’utiliser le filtrage côté serveur pour réduire le nombre d’annonces envoyées
 au client et envoyer seulement ce qui est pertinent, et seulement régler les mécanismes côté client,
 économisant du bandwidth et du traitement pour tous.</p>
-<p>topicPrefix est principalement utilisé lors des transitions de version de protocole,
-où l’on souhaite spécifier une version de protocole non-commune des messages d’annonce auquel s’abonner.</p>
-<p>Normalement, l’utilisateur spécifie un échange et plusieurs options de subtopic. <strong>subtopic</strong> est ce qui est
-normalement utilisé pour indiquer les messages d’annonce d’intérêt. Pour utiliser <strong>subtopic</strong> pour filtrer les produits,
-il faut que la chaîne de caractère subtopic corresponde au chemin relatif du produit.</p>
+<p>normalement utilisé pour indiquer les messages d’annonce d’intérêt. Pour utiliser <strong>subtopic</strong> pour filtrer les produits,</p>
+<p>Souvent, l’utilisateur spécifie un échange et plusieurs options de sous-thèmes.
+Le <strong>subtopic</strong> est ce qui est normalement utilisé pour indiquer les messages d’intérêt
+pour une file d’attente donnée. Si nécessaire, <strong>queueName</strong> et/ou <strong>queueShare</strong>
+doivent apparaître plus tôt dans le fichier de configuration pour que le sous-thème
+s’applique à la file d’attente sélectionnée.</p>
+<p>il faut que la chaîne de caractère subtopic corresponde au chemin relatif du produit.
+(les pompes non Sarracenia peuvent avoir d´autres conventions de hiérarchie des sujets.)</p>
 <p>Par exemple, en consommant à partir de DD, pour donner la bonne valeur au subtopic, il est possible de
 parcourir le site Web <strong>http://dd.weather.gc.ca</strong> et noter tous les répertoires
 d’intérêt.  Pour chaque arborescence de répertoires d’intérêt, il faut écrire une option de <strong>subtopic</strong>
@@ -1937,6 +1945,11 @@ construit normalement le bon valeur.</p>
 <p>rajouté au subtopic pour former une hiérarchie complète de thèmes (topics).
 Cette option s’applique aux liaisons d’abonnement.
 Indique la version des messages d’annonce reçus dans les subtopics. (V03 fait référence à <a class="reference external" href="sr3_post.7.html">sr3_post.7.html</a>)</p>
+<p>topicPrefix sert principalement lors des transitions de format de messages.
+Le topicPrefix identifie dans quel version de format les messages sous le thème
+sont créés. Sr3 s´attend a des messages v03 par défault, mais il y plein
+de sources qui offrent l´ancienne version (nécessitant une topicPrefix de <em>v02.post</em>)
+pour spécifier l´ancienned version de messages.</p>
 </section>
 <section id="topiccopy-defaut-false">
 <h4>topicCopy (défaut: False)<a class="headerlink" href="#topiccopy-defaut-false" title="Link to this heading"></a></h4>

@@ -1443,6 +1443,8 @@ queueName is written to:</p>
 <p>Instances started on any node with access to the same shared file will use the
 same queue. Some may want use the <em>queueName</em> option as a more explicit method
 of sharing work across multiple nodes.</p>
+<p>This <em>subtopic</em> option should appear after the queueName setting in files
+for the topic bindings to apply to the given queue.</p>
 </section>
 <section id="queueshare-str-default-user-hostname-rand8">
 <h4>queueShare &lt;str&gt; ( default: ${USER}_${HOSTNAME}_${RAND8} )<a class="headerlink" href="#queueshare-str-default-user-hostname-rand8" title="Link to this heading"></a></h4>
@@ -1459,6 +1461,8 @@ to have instances pick the same queue:</p>
 <p>will result in a random 8 digit number being appended to the queue name.
 All the instances within the configuration with access to the same state directory
 will use the queue name thus defined.</p>
+<p>This <em>subtopic</em> option should appear after the queueShare setting in files
+for the topic bindings to apply to the given queue.</p>
 </section>
 <section id="randomize-flag">
 <h4>randomize &lt;flag&gt;<a class="headerlink" href="#randomize-flag" title="Link to this heading"></a></h4>
@@ -1793,8 +1797,8 @@ message flows.</p>
 </section>
 <section id="subtopic-amqp-pattern-default">
 <h4>subtopic &lt;amqp pattern&gt; (default: #)<a class="headerlink" href="#subtopic-amqp-pattern-default" title="Link to this heading"></a></h4>
-<p>Within an exchange’s postings, the subtopic setting narrows the product selection.
-To give a correct value to the subtopic,
+<p>Within an exchange’s postings, the subtopic setting narrows the product selection,
+for objects to place in the currently selected queue. To give a correct value to the subtopic,
 one has the choice of filtering using <strong>subtopic</strong> with only AMQP’s limited wildcarding and
 length limited to 255 encoded bytes, or the more powerful regular expression
 based  <strong>accept/reject</strong>  mechanisms described below. The difference being that the
@@ -1802,16 +1806,16 @@ AMQP filtering is applied by the broker itself, saving the notices from being de
 to the client at all. The  <strong>accept/reject</strong>  patterns apply to messages sent by the
 broker to the subscriber. In other words,  <strong>accept/reject</strong>  are client side filters,
 whereas <strong>subtopic</strong> is server side filtering.</p>
-<p>It is best practice to use server side filtering to reduce the number of notification messages sent
-to the client to a small superset of what is relevant, and perform only a fine-tuning with the
-client side mechanisms, saving bandwidth and processing for all.</p>
-<p>topicPrefix is primarily of interest during protocol version transitions,
-where one wishes to specify a non-default protocol version of messages to
-subscribe to.</p>
-<p>Usually, the user specifies one exchange, and several subtopic options.
-<strong>Subtopic</strong> is what is normally used to indicate messages of interest.
-To use the subtopic to filter the products, match the subtopic string with
-the relative path of the product.</p>
+<p>Use server side filtering to reduce the number of notification messages sent
+to the client to a small superset of what is relevant, and refine further with the
+client side accept/reject, saving bandwidth and processing for all.</p>
+<p>Often, the user specifies one exchange, and several subtopic options.
+<strong>Subtopic</strong> is what is normally used to indicate messages of interest
+for a given queue. If needed, queueName, and/or queueShare need to be
+earlier in the configuration file for the subtopic to apply to the selected queue.</p>
+<p>To use the subtopic to filter the products, match the subtopic string with
+the relative path of the product (non Sarracenia pumps may have different
+topic hierarchy conventions.)</p>
 <p>For example, consuming from DD, to give a correct value to subtopic, one can
 browse the our website  <strong>http://dd.weather.gc.ca</strong> and write down all directories
 of interest.  For each directory tree of interest, write a  <strong>subtopic</strong>
@@ -1933,6 +1937,12 @@ value.</p>
 <p>prepended to the sub-topic to form a complete topic hierarchy.
 This option applies to subscription bindings.
 Denotes the version of messages received in the sub-topics. (v03 refers to <a class="reference external" href="sr3_post.7.html">sr3_post.7.html</a>)</p>
+<p>topicPrefix is primarily of interest during protocol version transitions,
+where one wishes to specify a non-default protocol version of messages to
+subscribe to.</p>
+<p>For example, Sr3 expects v03 messages by default, but there are
+plenty of sources that offer the old version (requiring a topicPrefix of <em>v02.post</em>)
+to specify the old version of messages.</p>
 </section>
 <section id="users-flag-default-false">
 <h4>users &lt;flag&gt; (default: false)<a class="headerlink" href="#users-flag-default-false" title="Link to this heading"></a></h4>

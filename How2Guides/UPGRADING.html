@@ -159,6 +159,11 @@ instead of a .qname file, along with more information. Transition
 is perhaps complex. This version will read and write both files,
 so as to preserve ability to downgrade. later version will drop
 support for qname files.</p>
+<p><em>CHANGE</em>: in configuration files: <em>subtopic</em> must come after
+the relevant queue naming options (queueName, queueShare)
+in prior releases, the queue naming was a global setting.
+In a future version, one will be able to subscribe to multiple
+queues with a single subscriber.</p>
 </section>
 <section id="id2">
 <h2>3.0.54<a class="headerlink" href="#id2" title="Link to this heading"></a></h2>
