@@ -34,7 +34,7 @@ class Subscriptions(list):
                         s['broker'] = broker
             return self
         except Exception as Ex:
-            logger.error( f"failed to read to {fn}: {Ex}" )
+            logger.debug( f"failed {fn}: {Ex}" )
             logger.debug('Exception details: ', exc_info=True)
             return None
 
@@ -50,7 +50,7 @@ class Subscriptions(list):
             with open(fn,'w') as f:
                 f.write(json.dumps(jl))
         except Exception as Ex:
-            logger.error( f"failed to write to {fn}: {Ex}" )
+            logger.error( f"failed: {fn}: {Ex}" )
             logger.debug('Exception details: ', exc_info=True)
 
     def add(self, new_subscription):
@@ -59,12 +59,12 @@ class Subscriptions(list):
         for s in self:
             if ( s['broker'] == new_subscription['broker'] ) and \
                ( s['queue']['name'] == new_subscription['queue']['name'] ):
+               newb = new_subscription['bindings'][0]
                for b in s['bindings']:
-                   newb = new_subscription['bindings'][0]
-                   if (b['sub'] != newb['sub']) or (b['prefix'] != newb['prefix']):
-                      s['bindings'].append( { 'exchange': newb['exchange'], \
-                                   'prefix':newb['prefix'], 'sub':newb['sub'] } )
+                   if newb == b:
                       found=True
+               if not found:
+                      s['bindings'].append( newb )
 
         if not found:
             self.append(new_subscription)

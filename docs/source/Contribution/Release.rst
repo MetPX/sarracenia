@@ -19,7 +19,7 @@ To publish a pre-release one needs to:
   * git pull
   * git checkout development_py36
   * git pull
-  * git merge development
+  * git merge --strategy-option=theirs development
 
 - validate that the correct version of C stack will be running when running flow tests.
   on each server::
@@ -84,7 +84,7 @@ To publish a pre-release one needs to:
      * git pull 
      * git checkout pre_release_py36
      * git pull
-     * git merge development_py36
+     * git merge --strategy-option=theirs development_py36
      * git push
      * git push origin o3.xx.yyrcz
 
@@ -92,7 +92,7 @@ To publish a pre-release one needs to:
      * git tag -a v3.xx.yy.rcZ -m "pre-release v3.xx.yy.rcz"
      * git checkout pre_release
      * git pull
-     * git merge development
+     * git merge --strategy-option=theirs development
      * git push
      * git push origin v3.xx.yyrcz
 
@@ -172,7 +172,7 @@ the stable release does not require any explicit testing.
      git pull
      git checkout stable
      git pull
-     git merge pre-release
+     git merge --strategy-option=theirs pre-release
      git push
 
      # there will be conflicts here for debian/changelog and sarracenia/_version.py
@@ -191,7 +191,7 @@ the stable release does not require any explicit testing.
      git pull
      git checkout stable_py36
      git pull
-     git merge pre_release_py36
+     git merge --strategy-option=theirs pre_release_py36
      git push
      # same editing required as above.
      git tag -a o3.xx.yy -m "o3.xx.yy"
@@ -255,6 +255,26 @@ ubuntu 18 is not compatible with the current pypi.org.
   * attach redhat 8 rpm
   * attach redhat 9 rpm 
   * attach windows exe ... see: `Building a Windows Installer`_
+
+Post-Release 
+------------
+
+Sometimes there is *just one bug* that should really be addressed in a stable release.
+Usually build with:
+
+* choose the branch (either pre-release or stable or similar for v2)
+* one (or more) *git cherry-pick* emergency fixes from some other branch.
+* one individual commit for sarracenia/_version.py to change add the post1 branch,
+* one commit to debian/changelog to update that with information about post1 and the changes therein
+
+These changes to debian/changelog and sarracenia/_version that will cause conflicts with 
+future development.  Afterwards, one needs to cherry-pick the debian/changelog back into 
+development to have a record of it.  This will likely cause a conflict, but it's easy to
+resolve.
+
+That's why a lot of the merges have *--strategy-option=theirs* because these postX releases
+cause conflicts.  
+
 
 Details
 -------
@@ -376,7 +396,7 @@ A tag should be created to identify the end of the cycle::
 Once the tag is in the development branch, promote it to stable::
 
    git checkout pre-release
-   git merge development
+   git merge --strategy-option=theirs development
    git push
 
 Once stable is updated on github, the docker images will be automatically upgraded, but
@@ -526,6 +546,12 @@ Repositories:
   * metpx-sr3 -- on demand build sr3 packages from *stable* branch.
   * metpx-sr3-old -- on demand build sr3 packages from *stable_py36* branch.
   * metpx-sarracenia-release -- on deman build v2 packages from *v2_stable* branch.
+
+* Post-Release ( version.post1, post2 etc...)
+  usually the result of a cherry-pick for an emergency fix, and a commit or two about
+  debian/changelog and sarracenia/_version that will cause conflicts with future development.
+  * metpx-sr3 is the repository to target (using *stable* (or *v2_stable*) branch)
+  
 
 for more discussion see `Which Version is stable <https://github.com/MetPX/sarracenia/issues/139>`_
 
