@@ -174,7 +174,7 @@ class Raw2bulletin(FlowCB):
 
                 # msg.updatePaths(self.o, msg['new_dir'], msg['new_file'])
 
-                logger.info(f"New filename (with path): {msg['relPath']}")
+                logger.info(f"New filename: {msg['new_file']}")
                 new_worklist.append(msg)
                 
             except Exception as e:
