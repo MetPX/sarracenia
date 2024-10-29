@@ -444,6 +444,28 @@ des **attempts** (ou d’envoi, pour un sender) va entrainer l’ajout du messag
 pour une nouvelle tentative plus tard. Lorsque aucun message d'annonce n’est prêt à être consommé dans la fil d’attente AMQP,
 les requêtes se feront avec la fil d’attente de "retry".
 
+Si:
+
+* on sait que les transferts échoueront pendant une longue période, en raison d'une panne ou d'une maintenance
+à la destination.
+
+* Vous vous attendez à ce qu'un grand volume de fichiers soit mis en file d'attente pour transfert. Les files d'attente
+sur la pompe de données augmenteront donc jusqu'à un point où les administrateurs de la pompe ne seront plus à l'aise.
+Notez que : Tous les conseils sur le réglage des performances et de la disponibilité de courtier de messages
+demandent aux utilisateurs de minimiser la population des files d'attente sur les courtiers.
+
+* Le répertoire d'état local ( ~/.cache ) est accessible en écriture pendant la période de la panne.
+
+Alors :
+
+On peut définir *attempts* sur 0. Cela entraînera l'écriture des messages mis en file d'attente pour le transfert
+dans les files d'attente de *download_retry* locales (écrites dans les répertoires d'état locaux) et déchargera
+le courtier.
+
+Lorsque *attempts* est égal à 0, la commande *sr3 status* signalera que le flux est dans l'état
+*standby*. Le nombre de files d'attente de nouvelles tentatives augmentera et seuls les messages (pas de données) seront transférés.
+Lorsque l'activité de maintenance ou la panne a été résolue.
+
 baseDir <chemin> (défaut: /)
 ----------------------------
 
