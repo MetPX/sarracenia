@@ -78,7 +78,7 @@ class Am(FlowCB):
     def __init__(self, options):
         
         super().__init__(options,logger)
-        self.bulletinHandler = Bulletin()
+        self.bulletinHandler = Bulletin(self.o)
 
         self.url = urllib.parse.urlparse(self.o.sendTo)
 

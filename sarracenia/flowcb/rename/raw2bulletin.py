@@ -76,7 +76,7 @@ class Raw2bulletin(FlowCB):
         super().__init__(options,logger)
         self.seq = 0
         self.binary = 0
-        self.bulletinHandler = Bulletin()
+        self.bulletinHandler = Bulletin(self.o)
         # Need to redeclare these options to have their default values be initialized.
         self.o.add_option('inputCharset', 'str', 'utf-8')
         self.o.add_option('binaryInitialCharacters', 'list', [b'BUFR' , b'GRIB', b'\211PNG'])
@@ -87,18 +87,23 @@ class Raw2bulletin(FlowCB):
         new_worklist = []
 
         for msg in worklist.incoming:
-            path = msg['new_dir'] + '/' + msg['new_file']
 
-            data = self.bulletinHandler.getData(msg, path)
+            # If called by a sarra, should always have post_baseDir, so should be OK in specifying it
+            path = self.o.post_baseDir + '/' + msg['relPath']
 
-            # AM bulletins that need their filename rewritten with data should only have two chars before the first underscore
-            # This is in concordance with Sundew logic -> https://github.com/MetPX/Sundew/blob/main/lib/bulletinAm.py#L70-L71
-            # These messages are still good, so we will add them to the good_msgs list
-            # if len(filenameFirstChars) != 2 and self.binary: 
-            #     good_msgs.append(msg)
-            #     continue
+            data = msg.getContent(self.o)
 
-            if data == None:
+            # Determine if bulletin is binary or not
+            # From sundew source code
+            if data.splitlines()[1][:4] in self.o.binaryInitialCharacters:
+                # Decode data, only text. The raw binary data contains the header in which we're interested. Only get that header.
+                data = data.splitlines()[0].decode('ascii')
+            else:
+                # Data is not binary
+                data = data.decode(self.o.inputCharset)
+
+
+            if not data:
                 logger.error("No data was found. Skipping message")
                 worklist.rejected.append(msg)
                 continue
@@ -133,13 +138,16 @@ class Raw2bulletin(FlowCB):
             # Generate a sequence (random ints)
             seq = self.bulletinHandler.getSequence()
 
-            
+            # Assign a default value for messages not coming from AM
+            if 'isProblem' not in msg:
+                msg['isProblem'] = False
+
 
             # Rename file with data fetched
             try:
                 # We can't disseminate bulletins downstream if they're missing the timestamp, but we want to keep the bulletins to troubleshoot source problems
                 # We'll append "_PROBLEM" to the filename to be able to identify erronous bulletins
-                if ddhhmm == None or msg["isProblem"]:
+                if ddhhmm == None or msg['isProblem']:
                     timehandler = datetime.datetime.now()
 
                     # Add current time as new timestamp to filename
@@ -162,13 +170,14 @@ class Raw2bulletin(FlowCB):
                     new_file = header + "_" + ddhhmm + "_" + BBB + "_" + stn_id + "_" + seq
 
                 msg['new_file'] = new_file
-                # We need the rest of the fields to be also updated
-                del(msg['relPath'])
-                # No longer needed
-                del(msg['isProblem'])
-                msg.updatePaths(self.o, msg['new_dir'], msg['new_file'])
 
-                logger.info(f"New filename (with path): {msg['relPath']}")
+                # No longer needed
+                if 'isProblem' in msg:
+                    del(msg['isProblem'])
+
+                # msg.updatePaths(self.o, msg['new_dir'], msg['new_file'])
+
+                logger.info(f"New filename: {msg['new_file']}")
                 new_worklist.append(msg)
                 
             except Exception as e:
