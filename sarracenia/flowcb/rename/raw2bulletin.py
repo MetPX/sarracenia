@@ -91,7 +91,7 @@ class Raw2bulletin(FlowCB):
             # If called by a sarra, should always have post_baseDir, so should be OK in specifying it
             path = self.o.post_baseDir + '/' + msg['relPath']
 
-            data = msg.getContent()
+            data = msg.getContent(self.o)
 
             # Determine if bulletin is binary or not
             # From sundew source code
@@ -100,7 +100,7 @@ class Raw2bulletin(FlowCB):
                 data = data.splitlines()[0].decode('ascii')
             else:
                 # Data is not binary
-                data = data.decode('utf-8')
+                data = data.decode(self.o.inputCharset)
 
 
             if not data:

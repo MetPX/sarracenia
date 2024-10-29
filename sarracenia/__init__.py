@@ -1019,10 +1019,11 @@ class Message(dict):
 
         # inlined/embedded case.
         if 'content' in msg:
+            logger.info("Getting msg from inline'd content")
             if msg['content']['encoding'] == 'base64':
                 return b64decode(msg['content']['value'])
             else:
-                return msg['content']['value'].encode('utf-8')
+                 return msg['content']['value'].encode('utf-8') if not options.inputCharset else msg['content']['value'].encode(options.inputCharset)
 
         path=''
         if msg['baseUrl'].startswith('file:'):
