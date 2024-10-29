@@ -1875,6 +1875,7 @@ class Flow:
             parsed_url = sarracenia.baseUrlParse(msg['baseUrl'])
             self.scheme = parsed_url.scheme
 
+            ok = False
             i = 1
             while i <= self.o.attempts:
 
@@ -2856,6 +2857,7 @@ class Flow:
 
             # N attempts to send
 
+            ok = False
             i = 1
             while i <= self.o.attempts:
                 if i != 1:
