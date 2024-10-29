@@ -603,13 +603,11 @@ class AMQP(Moth):
             except Exception as err:
                 logger.warning("failed for tag: %s: %s" % (m['ack_id'], err))
                 logger.debug('Exception details: ', exc_info=True)
-                if type(err) == BrokenPipeError or type(err) == ConnectionResetError:
-                    # Cleanly close partially broken connection
-                    self.close()
-                    # No point in trying to ack again if the connection is broken
-                    del m['ack_id']
-                    m['_deleteOnPost'].remove('ack_id')
-                    return False
+                # No point in trying to ack again if the connection is broken
+                del m['ack_id']
+                m['_deleteOnPost'].remove('ack_id')
+                self.close()
+                return False
             
             if ebo < 60:
                 ebo *= 2
