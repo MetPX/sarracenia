@@ -91,16 +91,19 @@ class Raw2bulletin(FlowCB):
             # If called by a sarra, should always have post_baseDir, so should be OK in specifying it
             path = self.o.post_baseDir + '/' + msg['relPath']
 
-            data = self.bulletinHandler.getData(msg, path)
+            data = msg.getContent()
 
-            # AM bulletins that need their filename rewritten with data should only have two chars before the first underscore
-            # This is in concordance with Sundew logic -> https://github.com/MetPX/Sundew/blob/main/lib/bulletinAm.py#L70-L71
-            # These messages are still good, so we will add them to the good_msgs list
-            # if len(filenameFirstChars) != 2 and self.binary: 
-            #     good_msgs.append(msg)
-            #     continue
+            # Determine if bulletin is binary or not
+            # From sundew source code
+            if data.splitlines()[1][:4] in self.o.binaryInitialCharacters:
+                # Decode data, only text. The raw binary data contains the header in which we're interested. Only get that header.
+                data = data.splitlines()[0].decode('ascii')
+            else:
+                # Data is not binary
+                data = data.decode('utf-8')
 
-            if data == None:
+
+            if not data:
                 logger.error("No data was found. Skipping message")
                 worklist.rejected.append(msg)
                 continue
