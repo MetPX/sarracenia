@@ -2233,6 +2233,20 @@ class sr_GlobalState:
         if len(self.leftovers) > 0 and not self._action_all_configs:
             logging.error( f"{self.leftovers} configuration not found" )
             return
+        
+        has_disabled_config = False
+
+        # if any configs are disabled, don't start any
+        for f in self.filtered_configurations:
+            (c, cfg) = f.split(os.sep)
+            
+            if self.configs[c][cfg]['status'] == 'disabled':
+                has_disabled_config = True
+                logger.error(f"Config {c}/{cfg} is disabled. It must be enabled before starting.")
+
+        if has_disabled_config:
+            logger.error("No configs have been started due to disabled configurations.")
+            return
 
         pcount = 0
         for f in self.filtered_configurations:
