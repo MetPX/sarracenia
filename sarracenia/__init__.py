@@ -1023,7 +1023,7 @@ class Message(dict):
             if msg['content']['encoding'] == 'base64':
                 return b64decode(msg['content']['value'])
             else:
-                 return msg['content']['value'].encode('utf-8') if not options.inputCharset else msg['content']['value'].encode(options.inputCharset)
+                return msg['content']['value'].encode('utf-8') if not hasattr(options,'inputCharset') else msg['content']['value'].encode(options.inputCharset)
 
         path=''
         if msg['baseUrl'].startswith('file:'):
