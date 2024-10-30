@@ -2090,8 +2090,8 @@ Sarracenia has a convention for how topics for products should be organized. The
 a topicPrefix, followed by subtopics derived from the *relPath* field of the message.
 Some networks may choose to use different topic conventions, external to sarracenia.
 
-timeout <interval> (default: 0)
--------------------------------
+timeout <interval> (default: 300)
+---------------------------------
 
 The **timeout** option, sets the number of seconds to wait before aborting a
 connection or download transfer (applied per buffer during transfer).
