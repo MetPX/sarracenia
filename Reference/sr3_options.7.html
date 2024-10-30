@@ -497,6 +497,23 @@ in most cases. When the <strong>retry</strong> option is false, the file is then
 of <strong>attempts</strong> (or send, in a sender) will cause the notification message to be added to a queue file
 for later retry. When there are no notification messages ready to consume from the AMQP queue,
 the retry queue will be queried.</p>
+<p>If:</p>
+<ul class="simple">
+<li><p>It is known that transfers will fail for a long time, because of some sort of outage or maintenance
+on your destination</p></li>
+<li><p>There is a large volume of files you expect to queue up for transfer. so the queues
+on the data pump will grow to a point where the pump admins will be uncomfortable.
+Note that: All advice about message broker performance and availability tuning
+asks users to minimize queueing on the brokers.</p></li>
+<li><p>The local state directory ( ~/.cache ) is writable during the outage period.</p></li>
+</ul>
+<p>Then:</p>
+<p>One can set <em>attempts</em> to 0. This will cause messages queued for transfer to be written
+to local download_retry queues (written in the local state directories) and offload
+the broker.</p>
+<p>When <em>attempts</em> is 0, the <em>sr3 status</em> command will report that the flow is in the
+<em>standby</em> state. The retry queue count will rise, and only messages (no data) will be transferred.
+When the maintenance activity or failure has been addressed.</p>
 </section>
 <section id="basedir-path-default">
 <h4>baseDir &lt;path&gt; (default: /)<a class="headerlink" href="#basedir-path-default" title="Link to this heading"></a></h4>

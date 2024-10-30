@@ -630,6 +630,7 @@ sera :</p>
 <li><p>rtry : tous les processus en cours d’exécution, mais un grand nombre de transferts échouent, causant d’autres tentatives (runStateThreshold_retry )</p></li>
 <li><p>run : tous les processus sont en cours d’exécution (et en transfert, et pas en retard, et pas lents… état normal.)</p></li>
 <li><p>slow : transfert de moins que le minimum d’octets/seconde ( runStateThreshold_slow )</p></li>
+<li><p>stby : Mode veille (Standby): tous les processus sont en cours d’exécution, mais les messages sont stockés dans la file d’attente download_retry locale.</p></li>
 <li><p>stop : aucun processus n’est en cours d’exécution.</p></li>
 </ul>
 <p>Les colonnes à droite donnent plus d’informations, détaillant le nombre de processus en cours d’exécution à partir du nombre attendu.
@@ -817,8 +818,8 @@ pour que les instances choisissent la même file d’attente:</p>
 Toutes les instances de la configuration ayant accès au même répertoire d’état
 utilisera le nom de file d’attente ainsi défini.</p>
 </section>
-<section id="amqp-queue-bindings">
-<h3>AMQP QUEUE BINDINGS<a class="headerlink" href="#amqp-queue-bindings" title="Link to this heading"></a></h3>
+<section id="liasons-amqp-queue">
+<h3>Liasons AMQP QUEUE<a class="headerlink" href="#liasons-amqp-queue" title="Link to this heading"></a></h3>
 <p>Une fois qu’on a une fil d’attente, elle doit être liée à un échange (exchange.)
 Les utilisateurs ont presque toujours besoin de définir ces options. Une
 fois qu’une fil d’attente existe sur le courtier, il doit être lié (<em>bound</em>) à
@@ -888,15 +889,15 @@ On peut désactiver la liaison de fil d’attente comme cela:</p>
 <p>(False, ou off marchera aussi.)</p>
 </section>
 </section>
-<section id="client-side-filtering">
-<h3>Client-side Filtering<a class="headerlink" href="#client-side-filtering" title="Link to this heading"></a></h3>
+<section id="filtrage-cote-client">
+<h3>Filtrage côté client<a class="headerlink" href="#filtrage-cote-client" title="Link to this heading"></a></h3>
 <p>Nous avons sélectionné nos messages via <strong>exchange</strong>, <strong>subtopic</strong> et <strong>subtopic</strong>.
 Le courtier met les messages correspondants dans notre fil d’attente (<em>queue</em>).
 Le composant télécharge ces messages.</p>
 <p>Les clients Sarracenia implémentent un filtrage plus flexible côté client
 en utilisant les expressions régulières.</p>
-<section id="brief-introduction-to-regular-expressions">
-<h4>Brief Introduction to Regular Expressions<a class="headerlink" href="#brief-introduction-to-regular-expressions" title="Link to this heading"></a></h4>
+<section id="bref-introduction-aux-expressions-regulieres">
+<h4>Bref introduction aux expressions régulières<a class="headerlink" href="#bref-introduction-aux-expressions-regulieres" title="Link to this heading"></a></h4>
 <p>Les expressions régulières sont un moyen très puissant d’exprimer les correspondances de motifs.
 Ils offrent une flexibilité extrême, mais dans ces exemples, nous utiliserons seulement un
 petit sous-ensemble : Le point (.) est un joker qui correspond à n’importe quel caractère
@@ -2004,6 +2005,10 @@ Sarracenia utilise le back-off exponentiel à de nombreux endroits pour éviter 
 des erreurs. Le back-off peut s’accumuler au point où les nouvelles tentatives peuvent être séparées d’une minute
 ou deux. Une fois que le serveur recommence à répondre normalement, les programmes reviendront à la
 vitesse normale de traitement.</p>
+<p>Si une panne dure un certain temps, on peut arrêter le flux, configurer <em>attempts 0</em> pour remplir la
+file d’attente de nouvelles tentatives sans faire de vaines tentatives de téléchargement ou d’envoi. À la fin de la panne,
+remettez <em>attempts</em> à la normale et la file d’attente de nouvelles tentatives sera progressivement vidée lorsqu’il y aura
+de la place dans le flux de données actuel.</p>
 </section>
 <section id="exemples">
 <h2>EXEMPLES<a class="headerlink" href="#exemples" title="Link to this heading"></a></h2>
