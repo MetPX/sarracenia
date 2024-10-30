@@ -1761,7 +1761,7 @@ class Config:
             # specify a second queue with different bindings... so this warning could be complaining about something 
             # that is correct.   but in every current case, the warning will be helpful.
             if ( k == 'queueName' ) and self.subtopic_seen:
-                logger.warning( f"queueName usually should be before subtopic in configs: subtopic to default queue" )
+                logger.warning( f"{','.join(self.files)}:{lineno} queueName usually should be before subtopic in configs: subtopic to default queue" )
             if ( k == 'directory' ) and not self.download:
                 logger.info( f"{','.join(self.files)}:{lineno} if download is false, directory has no effect" )
 

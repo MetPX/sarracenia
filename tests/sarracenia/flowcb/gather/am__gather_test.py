@@ -25,6 +25,7 @@ class Options:
         self.fileAgeMax = 0
         self.post_baseUrl = "http://localhost/"
         self.post_format = "v02"
+        self.post_baseDir = "/this/path/is/fake"
 
     def add_option(self, option, type, default = None):
         if not hasattr(self, option):
@@ -49,6 +50,7 @@ def make_message():
     m["to_clusters"] = "localhost"
     m["baseUrl"] =  "https://NotARealURL"
     m["post_baseUrl"] =  "https://NotARealURL"
+    m["post_baseDir"] = "/this/path/is/fake"
     m["relPath"] = "ThisIsAPath/To/A/File.txt"
     m["_deleteOnPost"] = set()
     return m
