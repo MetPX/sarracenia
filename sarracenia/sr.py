@@ -1113,11 +1113,16 @@ class sr_GlobalState:
                     elif self.states[c][cfg]['metrics']['byteRate'] < self.configs[c][cfg]['options'].runStateThreshold_slow:
                         flow_status = 'slow'
                     elif self.states[c][cfg]['metrics']['retry'] > self.configs[c][cfg]['options'].runStateThreshold_retry:
-                        flow_status = 'retry'
+                        if self.configs[c][cfg]['options'].attempts == 0:
+                            flow_status='standby'
+                        else:
+                            flow_status = 'retry'
                     elif self.states[c][cfg]['metrics']['lagMean'] > self.configs[c][cfg]['options'].runStateThreshold_lag:
                         flow_status = 'lagging'
                     elif self.states[c][cfg]['metrics']['rejectPercent'] > self.configs[c][cfg]['options'].runStateThreshold_reject:
                         flow_status = 'reject'
+                    elif self.configs[c][cfg]['options'].attempts == 0:
+                        flow_status='standby'
                     elif hasattr(self.configs[c][cfg]['options'],'post_broker') and self.configs[c][cfg]['options'].post_broker \
                             and (now-self.states[c][cfg]['metrics']['txLast']) > self.configs[c][cfg]['options'].runStateThreshold_idle:
                         flow_status = 'idle'
@@ -1130,6 +1135,7 @@ class sr_GlobalState:
                            self.states[c][cfg]['metrics']['msgRateCpu'] < self.configs[c][cfg]['options'].runStateThreshold_cpuSlow:
                         flow_status = 'cpuSlow'
                     else:
+
                         flow_status = 'running'
 
                     self.states[c][cfg]['resource_usage'] = copy.deepcopy(resource_usage)
@@ -1306,7 +1312,7 @@ class sr_GlobalState:
             'sender', 'shovel', 'subscribe', 'watch', 'winnow'
         ]
         # active means >= 1 process exists on the node.
-        self.status_active =  ['cpuSlow', 'hung', 'idle', 'lagging', 'partial', 'reject', 'retry', 'running', 'slow', 'waitVip' ]
+        self.status_active =  ['cpuSlow', 'hung', 'idle', 'lagging', 'partial', 'reject', 'retry', 'running', 'slow', 'standby', 'waitVip' ]
         self.status_values = self.status_active + [ 'disabled', 'include', 'missing', 'stopped', 'unknown' ]
 
         self.bin_dir = os.path.dirname(os.path.realpath(__file__))
@@ -2233,6 +2239,21 @@ class sr_GlobalState:
         if len(self.leftovers) > 0 and not self._action_all_configs:
             logging.error( f"{self.leftovers} configuration not found" )
             return
+        
+        has_disabled_config = False
+
+        # if any configs are disabled, don't start any
+        if not self._action_all_configs:
+            for f in self.filtered_configurations:
+                (c, cfg) = f.split(os.sep)
+            
+                if self.configs[c][cfg]['status'] == 'disabled':
+                    has_disabled_config = True
+                    logger.error(f"Config {c}/{cfg} is disabled. It must be enabled before starting.")
+
+            if has_disabled_config:
+                logger.error("No configs have been started due to disabled configurations.")
+                return
 
         pcount = 0
         for f in self.filtered_configurations:
@@ -2616,6 +2637,8 @@ class sr_GlobalState:
                     cfg_status = "rtry"
                 if cfg_status == "runn" :
                     cfg_status = "run"
+                if cfg_status == "stan" :
+                    cfg_status = "stby"
                 elif cfg_status == 'wait':
                     cfg_status = 'wVip'
 

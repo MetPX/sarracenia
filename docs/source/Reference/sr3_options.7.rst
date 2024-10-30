@@ -438,6 +438,30 @@ of **attempts** (or send, in a sender) will cause the notification message to be
 for later retry. When there are no notification messages ready to consume from the AMQP queue,
 the retry queue will be queried.
 
+If:
+
+* It is known that transfers will fail for a long time, because of some sort of outage or maintenance
+  on your destination
+
+* There is a large volume of files you expect to queue up for transfer. so the queues
+  on the data pump will grow to a point where the pump admins will be uncomfortable.
+  Note that: All advice about message broker performance and availability tuning
+  asks users to minimize queueing on the brokers.
+
+* The local state directory ( ~/.cache ) is writable during the outage period.
+
+Then:
+
+One can set *attempts* to 0. This will cause messages queued for transfer to be written
+to local download_retry queues (written in the local state directories) and offload 
+the broker. 
+
+When *attempts* is 0, the *sr3 status* command will report that the flow is in the 
+*standby* state. The retry queue count will rise, and only messages (no data) will be transferred.
+When the maintenance activity or failure has been addressed.
+
+
+
 
 baseDir <path> (default: /)
 ----------------------------
@@ -2090,8 +2114,8 @@ Sarracenia has a convention for how topics for products should be organized. The
 a topicPrefix, followed by subtopics derived from the *relPath* field of the message.
 Some networks may choose to use different topic conventions, external to sarracenia.
 
-timeout <interval> (default: 0)
--------------------------------
+timeout <interval> (default: 300)
+---------------------------------
 
 The **timeout** option, sets the number of seconds to wait before aborting a
 connection or download transfer (applied per buffer during transfer).

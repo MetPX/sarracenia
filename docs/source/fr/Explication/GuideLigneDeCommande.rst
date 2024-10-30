@@ -552,8 +552,8 @@ sera :
 * rtry : tous les processus en cours d'exécution, mais un grand nombre de transferts échouent, causant d'autres tentatives (runStateThreshold_retry )
 * run : tous les processus sont en cours d'exécution (et en transfert, et pas en retard, et pas lents... état normal.)
 * slow : transfert de moins que le minimum d'octets/seconde ( runStateThreshold_slow )
+* stby : Mode veille (Standby): tous les processus sont en cours d'exécution, mais les messages sont stockés dans la file d'attente download_retry locale.
 * stop : aucun processus n'est en cours d'exécution.
-
 Les colonnes à droite donnent plus d’informations, détaillant le nombre de processus en cours d’exécution à partir du nombre attendu.
 Par exemple, 3/3 signifie 3 processus ou instances sont trouvés à partir des 3 attendus.
 Expected liste combien de processus devraient être exécutés à partir d'une configuration même si ils sont arrêtés.
@@ -694,8 +694,8 @@ utilisera le nom de file d'attente ainsi défini.
 
 
 
-AMQP QUEUE BINDINGS
--------------------
+Liasons AMQP QUEUE 
+------------------
 
 Une fois qu'on a une fil d'attente, elle doit être liée à un échange (exchange.)
 Les utilisateurs ont presque toujours besoin de définir ces options. Une
@@ -784,8 +784,8 @@ On peut désactiver la liaison de fil d’attente comme cela::
 
 
 
-Client-side Filtering
----------------------
+Filtrage côté client
+--------------------
 
 Nous avons sélectionné nos messages via **exchange**, **subtopic** et **subtopic**.
 Le courtier met les messages correspondants dans notre fil d'attente (*queue*).
@@ -794,8 +794,8 @@ Le composant télécharge ces messages.
 Les clients Sarracenia implémentent un filtrage plus flexible côté client
 en utilisant les expressions régulières.
 
-Brief Introduction to Regular Expressions
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Bref introduction aux expressions régulières
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Les expressions régulières sont un moyen très puissant d'exprimer les correspondances de motifs.
 Ils offrent une flexibilité extrême, mais dans ces exemples, nous utiliserons seulement un
@@ -2042,6 +2042,12 @@ Sarracenia utilise le back-off exponentiel à de nombreux endroits pour éviter 
 des erreurs. Le back-off peut s’accumuler au point où les nouvelles tentatives peuvent être séparées d’une minute
 ou deux. Une fois que le serveur recommence à répondre normalement, les programmes reviendront à la
 vitesse normale de traitement.
+
+Si une panne dure un certain temps, on peut arrêter le flux, configurer *attempts 0* pour remplir la
+file d'attente de nouvelles tentatives sans faire de vaines tentatives de téléchargement ou d'envoi. À la fin de la panne, 
+remettez *attempts* à la normale et la file d'attente de nouvelles tentatives sera progressivement vidée lorsqu'il y aura
+de la place dans le flux de données actuel.
+
 
 EXEMPLES
 ========

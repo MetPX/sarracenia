@@ -1,3 +1,12 @@
+metpx-sr3 (3.00.56rc3) unstable; urgency=medium
+
+  * fix related to #1275 so "attempts 0" works for outages.
+  * fix #1278 regression: ack failure loops forever.
+  * fix #1271 AM charset issues, made some plugins more flexible.
+  * fix #1266 complain when explicitly asked to start disabled config.
+
+ -- SSC-5CD2310S60 <peter@bsqt.homeip.net>  Wed, 30 Oct 2024 12:25:14 -0400
+
 metpx-sr3 (3.00.56rc2) unstable; urgency=medium
 
   * fix #1261 http performance regression.
