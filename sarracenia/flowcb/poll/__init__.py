@@ -443,20 +443,22 @@ class Poll(FlowCB):
 
         # post poll list
 
-        msgs.extend(self.poll_list_post(pdir, dir_dict, dir_dict.keys()))
+        if self.o.recursive:
+            msgs.extend(self.poll_list_post(pdir, dir_dict, dir_dict.keys()))
 
         msgs.extend(self.poll_list_post(pdir, desclst, filelst))
 
         # poll in children directory
 
-        sdir = sorted(dir_dict.keys())
-        for d in sdir:
-            if d == '.' or d == '..': continue
+        if self.o.recursive:
+            sdir = sorted(dir_dict.keys())
+            for d in sdir:
+                if d == '.' or d == '..': continue
 
-            #d_lspath = lspath + '_' + d
-            d_pdir = pdir + os.sep + d
+                #d_lspath = lspath + '_' + d
+                d_pdir = pdir + os.sep + d
 
-            msgs.extend(self.poll_directory(d_pdir))
+                msgs.extend(self.poll_directory(d_pdir))
 
         return msgs
 

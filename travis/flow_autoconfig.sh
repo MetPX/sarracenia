@@ -18,16 +18,19 @@ sudo apt-key adv --keyserver "hkps.pool.sks-keyservers.net" --recv-keys "0x6B73A
 sudo add-apt-repository -y ppa:ssc-hpc-chp-spc/metpx
 sudo apt update
 sudo apt -y upgrade
-sudo apt -y install python3-setuptools python3-magic python-setuptools python3-paramiko python3-requests
+sudo apt -y install python3-setuptools python3-magic python-setuptools python3-paramiko python3-requests python3-pyftpdlib
 sudo apt -y install metpx-libsr3c metpx-libsr3c-dev metpx-sr3c
 sudo apt -y install metpx-libsr3c metpx-libsr3c-dev metpx-sr3c
 sudo apt -y install erlang-nox erlang-diameter erlang-eldap findutils git librabbitmq4 net-tools openssh-client openssh-server python3-pip rabbitmq-server xattr wget 
+sudo apt -y install wget ncftp
+
 
 ${pip_install} -U pip
 
 # The dependencies that are installed using apt are only available to system default Python versions (e.g. Python 3.8 on Ubuntu 20.04)
 # If we are testing on a non-default Python version, we need to ensure these dependencies are still installed, so we use pip.
 # See issue #407, #445.
+echo "Checking for missing Python packages and installing with pip"
 for PKG in amqp appdirs dateparser flufl.lock humanize jsonpickle netifaces paho-mqtt psutil rangehttpserver watchdog xattr paramiko pyftpdlib net-tools; do
     PKG_INSTALLED="`pip3 list | grep ${PKG}`"
     if [ "$?" == "0" ] ; then
@@ -36,6 +39,9 @@ for PKG in amqp appdirs dateparser flufl.lock humanize jsonpickle netifaces paho
         ${pip_install} ${PKG}
     fi
 done
+
+# Need paho > 2.1.0 https://github.com/MetPX/sarracenia/pull/1119
+${pip_install} --upgrade paho-mqtt
 
 # in case it was installed as a dependency.
 sudo apt -y remove metpx-sr3

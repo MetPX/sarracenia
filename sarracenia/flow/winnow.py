@@ -6,6 +6,7 @@ logger = logging.getLogger(__name__)
 default_options = {
         'acceptUnmatched': True, 
         'nodupe_ttl': 300,
+        'logDuplicates': True
 }
 
 

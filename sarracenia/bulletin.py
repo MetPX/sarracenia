@@ -23,7 +23,9 @@ class Bulletin:
             from sarracenia.bulletin import Bulletin
     """
 
-    def __init__(self):
+    def __init__(self,options):
+        super().__init__()
+        self.o = options
         self.seq = 0
         self.binary = 0
 
@@ -125,7 +127,7 @@ class Bulletin:
         try:
 
             self.binary = 0
-            if msg['content']:
+            if 'content' in msg:
                 data = msg['content']['value']
 
                 # Change from b64. We want to get the header from the raw binary data. Not retrievable in b64 format

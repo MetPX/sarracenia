@@ -1,3 +1,32 @@
+metpx-sr3 (3.00.56) unstable; urgency=medium
+
+  * fix related to #1275 so "attempts 0" works for outages.
+  * fix #1278 regression: ack failure loops forever.
+  * fix #1271 AM charset issues, made some plugins more flexible.
+  * fix #1266 complain when explicitly asked to start disabled config.
+  * fix #1261 http performance regression.
+  * fix #1270 invalid mirroring of relative symlinks when realpath is
+    symlinked.  (requires next metpx-sr3c version 3.24.10rc2 ?3?)
+  * fix #1267 queueName before subtopic from this point forward.
+  * fix #1262 mtime referenced before assignment (download check fail.)
+  * fix #1271 renamer for AM socket generalized.
+  * fix #1255 remove malformed useless error message.
+  * incrementing github action version because of plaintive supplications
+  * demoted false-alarm error message about missing subscriptions.json to debug.
+  * NEW option *recursion* option ( #1237 ) (actually restored, was removed.)
+  * fix #1156 - NEW option *logDuplicates* 
+  * NEW EXPERIMENTAL option: *logJson*
+  * fix #1223 Switch from global QoS to per-consumer.
+  * AM sender problems identified in satnet testing.
+  * working on #35 augmenting .qname with subscriptions.json state file.
+  * working on #1183, sr3 manages instances > 100 correctly.
+  * PR #1228 Unquote secret_access_key in s3CloudSender plugin
+  * PR #1230 ... reduced spurious "unknown options" messages from config.
+  * fix #1199 - directory /  not interpreted properly.
+  * fix #1246 delete source when no options given
+
+ -- SSC-5CD2310S60 <peter@bsqt.homeip.net>  Thu, 31 Oct 2024 12:25:14 -0400
+
 metpx-sr3 (3.00.55post1) unstable; urgency=medium
 
   * fix #1242 sftp creates directories when it should not.

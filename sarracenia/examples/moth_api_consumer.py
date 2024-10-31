@@ -5,7 +5,7 @@
 """
 import sarracenia.moth
 import sarracenia.moth.amqp
-import sarracenia.credentials
+import sarracenia.config.credentials
 
 import time
 import socket
@@ -13,7 +13,7 @@ import socket
 options = sarracenia.moth.default_options
 options.update(sarracenia.moth.amqp.default_options)
 
-options['broker'] = sarracenia.credentials.Credential(
+options['broker'] = sarracenia.config.credentials.Credential(
     'amqps://anonymous:anonymous@hpfx.collab.science.gc.ca')
 
 # binding tuple:  consists of prefix, exchange, rest.

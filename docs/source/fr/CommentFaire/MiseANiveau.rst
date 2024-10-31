@@ -38,6 +38,24 @@ Instructions d’installation
 git
 ---
 
+3.0.56
+------
+
+*CHANGEMENT* : refactorisation du code *sarracenia.credentials...* les classes sont désormais
+*sarracenia.config.credentials* tout code utilisant des informations d'identification doit être
+mis à jour.
+
+*CHANGEMENT* : paramètres de file d'attente stockés dans le fichier d'état subscriptions.json,
+au lieu d'un fichier .qname, avec plus d'informations. La transition
+est peut-être complexe. Cette version lira et écrira les deux fichiers,
+afin de préserver la possibilité de rétrogradation. La version ultérieure abandonnera
+la prise en charge des fichiers qname.
+
+*CHANGEMENT* : dans les fichiers de configuration : *subtopic* doit venir après
+la spécification de nom de file d'attente pertinentes (queueName, queueShare.)
+Dans les versions précédentes, la dénomination de la file d'attente était un paramètre global.
+Dans une future version, on pourra s'abonner à plusieurs files d'attente avec un seul abonné.
+
 3.0.54
 ------
 

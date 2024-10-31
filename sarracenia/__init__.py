@@ -417,13 +417,17 @@ known_report_codes = {
     206: "Partial Content: received and inserted.",
     304: "Not modified (Checksum validated, unchanged, so no download resulted.)",
     307: "Insertion deferred (writing to temporary part file for the moment.)",
-    410: "Gone: server data different from notification message",
+    404: "Not Found: no pattern match",
+    406: "Not Acceptable: file older than fileAgeMax",
+    410: "Gone: file too old",
     417: "Expectation Failed: invalid notification message (corrupt headers)",
     422: "Unprocessable Content: could not determine path to transfer to",
+    425: "Too Early: file younger than fileAgeMin",
     499: "Failure: Not Copied. SFTP/FTP/HTTP download problem",
     #FIXME : should  not have 503 error code 3 times in a row
     # 503: "Service unavailable. delete (File removal not currently supported.)",
     503: "Unable to process: Service unavailable",
+    504: "Gateway Timeout: message too old"
     # 503: "Unsupported transport protocol specified in posting."
 }
 
@@ -563,7 +567,8 @@ class Message(dict):
             pass
         elif source:
             msg['source'] = source
-            msg['_deleteOnPost'] |= set(['source'])
+        elif 'source' in msg:
+            del msg['source']
 
     def deriveTopics(msg,o,topic,separator='.'):
         """
@@ -1014,10 +1019,11 @@ class Message(dict):
 
         # inlined/embedded case.
         if 'content' in msg:
+            logger.info("Getting msg from inline'd content")
             if msg['content']['encoding'] == 'base64':
                 return b64decode(msg['content']['value'])
             else:
-                return msg['content']['value'].encode('utf-8')
+                return msg['content']['value'].encode('utf-8') if not hasattr(options,'inputCharset') else msg['content']['value'].encode(options.inputCharset)
 
         path=''
         if msg['baseUrl'].startswith('file:'):
