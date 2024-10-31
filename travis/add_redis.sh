@@ -73,9 +73,25 @@ else
 fi
 echo -e "..done\n"
 
+# later OS versions have later versions of pip that require convincing to actually install.
+. /etc/os-release
+if [ "${VERSION_ID}" \> "22.04" ]; then
+        pip_install="pip3 install --break-system-packages --user "
+else
+        pip_install="pip3 install "
+fi
+
 echo "Install Redis Python modules... "
 # Install Python modules
-pip3 install redis python-redis-lock
+sudo apt -y install python3-redis || true
+for PKG in redis python-redis-lock; do
+    PKG_INSTALLED="`pip3 list | grep ${PKG}`"
+    if [ "$?" == "0" ] ; then
+        echo "$PKG is already installed"
+    else
+        ${pip_install} ${PKG}
+    fi
+done
 echo -e "..done\n"
 
 echo "Add redis options to sr3 default config... "

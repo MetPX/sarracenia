@@ -542,6 +542,7 @@ The second row of output gives detailed headings within each category:
 The configurations are listed on the left. For each configuraion, the state
 will be:
 
+* cpuS:  process is expensive in CPU usage (runStateThreshold_cpuSlow)
 * disa:  disabled, configured not to run.
 * hung:  processes appear hung, not writing anything to logs.
 * idle:  all processes running, but no data or message transfers for too long (runStateThreshold_idle)
@@ -552,6 +553,8 @@ will be:
 * run:   all processes are running (and transferring, and not behind, and not slow... normal state.)
 * slow:  transfering less than minimum bytes/second ( runStateThreshold_slow )
 * stop:  no processes are running. 
+* stby:  Standby mode: all processes running, but messages are being stored in the local download_retry queue.
+* wVip:  process doesn't have the vip (only applies when the vip option is specified in the config)
 
 The next columns to the right give more information, detailing how many processes are Running, out of the number expected.
 For example, 3/3 means 3 processes or instances found of the 3 expected to be found.
@@ -2054,6 +2057,11 @@ Sarracenia uses exponential back-off in many points to avoid overloading a serve
 are errors. The back-off can accumulate to the point where retries could be separated by a minute
 or two. Once the server begins responding normally again, the programs will return to normal
 processing speed.
+
+If a failure will last for a while, one can stop the flow, configure *attempts 0* to fill the 
+retry queue without making vain attempts to download or send. At the end of the outage, return 
+*attempts* to normal, and the retry queue will gradually be drained when there
+is room in the current data flow. 
 
 
 EXAMPLES

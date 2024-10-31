@@ -4,7 +4,7 @@
 """
 import sarracenia.moth
 import sarracenia
-import sarracenia.credentials
+import sarracenia.config.credentials
 from sarracenia.config import default_config
 
 import os
@@ -23,7 +23,7 @@ else:
 
 cfg = default_config()
 #cfg.logLevel = 'debug'
-cfg.broker = sarracenia.credentials.Credential( broker )
+cfg.broker = sarracenia.config.credentials.Credential( broker )
 cfg.exchange = 'xsarra'
 cfg.post_baseUrl = 'http://host'
 cfg.post_baseDir = '/tmp'

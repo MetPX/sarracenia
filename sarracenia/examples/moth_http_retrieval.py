@@ -4,7 +4,7 @@
 """
 import sarracenia.moth
 import sarracenia.moth.amqp
-import sarracenia.credentials
+import sarracenia.config.credentials
 
 import time
 import socket
@@ -14,7 +14,7 @@ import xml.etree.ElementTree as ET
 
 options = sarracenia.moth.default_options
 options.update(sarracenia.moth.amqp.default_options)
-options['broker'] = sarracenia.credentials.Credential(
+options['broker'] = sarracenia.config.credentials.Credential(
     'amqps://anonymous:anonymous@hpfx.collab.science.gc.ca')
 options['topicPrefix'] = ['v02', 'post']
 options['bindings'] = [('xpublic', ['v02', 'post'],

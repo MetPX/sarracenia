@@ -444,6 +444,28 @@ des **attempts** (ou d’envoi, pour un sender) va entrainer l’ajout du messag
 pour une nouvelle tentative plus tard. Lorsque aucun message d'annonce n’est prêt à être consommé dans la fil d’attente AMQP,
 les requêtes se feront avec la fil d’attente de "retry".
 
+Si:
+
+* on sait que les transferts échoueront pendant une longue période, en raison d'une panne ou d'une maintenance
+à la destination.
+
+* Vous vous attendez à ce qu'un grand volume de fichiers soit mis en file d'attente pour transfert. Les files d'attente
+sur la pompe de données augmenteront donc jusqu'à un point où les administrateurs de la pompe ne seront plus à l'aise.
+Notez que : Tous les conseils sur le réglage des performances et de la disponibilité de courtier de messages
+demandent aux utilisateurs de minimiser la population des files d'attente sur les courtiers.
+
+* Le répertoire d'état local ( ~/.cache ) est accessible en écriture pendant la période de la panne.
+
+Alors :
+
+On peut définir *attempts* sur 0. Cela entraînera l'écriture des messages mis en file d'attente pour le transfert
+dans les files d'attente de *download_retry* locales (écrites dans les répertoires d'état locaux) et déchargera
+le courtier.
+
+Lorsque *attempts* est égal à 0, la commande *sr3 status* signalera que le flux est dans l'état
+*standby*. Le nombre de files d'attente de nouvelles tentatives augmentera et seuls les messages (pas de données) seront transférés.
+Lorsque l'activité de maintenance ou la panne a été résolue.
+
 baseDir <chemin> (défaut: /)
 ----------------------------
 
@@ -1083,6 +1105,17 @@ de python. Le format est documenté ici:
 
 * https://docs.python.org/fr/3/library/logging.html#logrecord-attributes
 
+logJson <flag> (par défaut : faux) EXPÉRIMENTAL
+------------------------------------------------
+
+lorsque *logJson on* est défini, un deuxième fichier journal avec l'extension .json est créé à côté du
+fichier .log normal. Chaque ligne des journaux .json est une structure .json, contenant
+un message écrit par le journal de flux. Il ne contient pas de sortie non formatée
+des sous-shell et des plugins qui peuvent produire une sortie arbitraire.
+
+Le fichier .log contiendra la sortie des sous-programmes lancés par le flux,
+et le .json ne contiendra que les messages de journal correctement formatés provenant de l'application elle-même
+et des rappels correctement écrits (qui utilisent des mécanismes de journalisation python normaux.)
 
 logLevel ( défaut: info )
 -------------------------
@@ -1528,6 +1561,8 @@ Les instances démarrées sur n’importe quel nœud ayant accès au même fichi
 même fil d’attente. Certains voudront peut-être utiliser l’option *queueName* comme méthode plus explicite
 de partager le travail sur plusieurs nœuds. Il est pourtant recommandé d´utiliser queueShare a cette fin.
 
+l´option *subtopic* devrait apparaître après le paramètre queueName dans les fichiers
+pour que les liaisons de sujet s'appliquent à la file d'attente spécifié.
 
 
 queueShare <str> (default: ${USER}_${HOSTNAME}_${RAND8} )
@@ -1547,6 +1582,8 @@ Ce entraînera l'ajout d'un nombre aléatoire à 8 chiffres au nom de la file d'
 Toutes les instances de la configuration ayant accès au même répertoire d'état
 utilisera le nom de file d'attente ainsi défini.
 
+l´option *subtopic* devrait apparaître après le paramètre queueShare dans les fichiers
+pour que les liaisons de sujet s'appliquent à la file d'attente spécifié.
 
 randomize <flag>
 ----------------
@@ -1587,8 +1624,12 @@ donné. Cette option impose également la traversée de liens symboliques.
 
 Cette option est utilisée pour étudier certains cas d'utilisation et pourrait disparaître à l'avenir.
 
+<flag> recursive (par défaut : activé)
+--------------------------------------
 
-
+Lors de l'analyse d'un chemin (pour un *poll*, une *post*, un *cpost* ou un *watch*), si vous 
+rencontrez un répertoire, incluez-vous également son contenu ? Pour analyser uniquement le répertoire spécifié
+et aucun sous-répertoire, spécifiez *recursive off*
 
 rename <chemin>
 ---------------
@@ -1770,8 +1811,8 @@ sanity_log_dead <intervalle> (défaut: 1.5*housekeeping)
 
 L’option **sanity_log_dead** définit la durée à prendre en compte avant de redémarrer un composant.
 
-scheduled_interval,scheduled_hour,scheduled_minute
---------------------------------------------------
+scheduled_interval,scheduled_hour,scheduled_minute,scheduled_time
+-----------------------------------------------------------------
 
 Lorsque vous travaillez avec des flux cédulés, tels que des sondages, vous pouvez configurer une durée
 (unité: seconde par défaut, suffixes : m-minute, h-heure) à laquelle exécuter un
@@ -1950,7 +1991,8 @@ origine. À utiliser uniquement avec des flux de données fiables et organisés 
 subtopic <modèle  amqp> (défaut: #)
 -----------------------------------
 
-Dans les publications d’un échange, le paramètre de subtopic restreint la sélection du produit.
+Dans les publications d’un échange, le paramètre de subtopic sert à préciser des messages 
+à placer dans la file d'attente actuellement sélectionnée. 
 Pour donner la bonne valeur au subtopic, on a le choix de filtrer en utilisant **subtopic** seulement avec le
 wildcarding limité d’AMQP et une longueur limitée à 255 octets encodés, ou de manière plus puissante, les expressions régulière
 basés sur les mécanismes **accept/reject** décrits ci-dessous. La différence est que le
@@ -1963,12 +2005,17 @@ Il est recommandé d’utiliser le filtrage côté serveur pour réduire le nomb
 au client et envoyer seulement ce qui est pertinent, et seulement régler les mécanismes côté client,
 économisant du bandwidth et du traitement pour tous.
 
-topicPrefix est principalement utilisé lors des transitions de version de protocole,
-où l’on souhaite spécifier une version de protocole non-commune des messages d'annonce auquel s’abonner.
-
-Normalement, l’utilisateur spécifie un échange et plusieurs options de subtopic. **subtopic** est ce qui est
 normalement utilisé pour indiquer les messages d'annonce d'intérêt. Pour utiliser **subtopic** pour filtrer les produits,
+
+Souvent, l'utilisateur spécifie un échange et plusieurs options de sous-thèmes.
+Le **subtopic** est ce qui est normalement utilisé pour indiquer les messages d'intérêt
+pour une file d'attente donnée. Si nécessaire, **queueName** et/ou **queueShare** 
+doivent apparaître plus tôt dans le fichier de configuration pour que le sous-thème 
+s'applique à la file d'attente sélectionnée.
+
 il faut que la chaîne de caractère subtopic corresponde au chemin relatif du produit.
+(les pompes non Sarracenia peuvent avoir d´autres conventions de hiérarchie des sujets.)
+
 
 Par exemple, en consommant à partir de DD, pour donner la bonne valeur au subtopic, il est possible de
 parcourir le site Web **http://dd.weather.gc.ca** et noter tous les répertoires
@@ -2048,8 +2095,8 @@ source et la destination sont comparés.
 
 Lorsqu’il est défini dans un composant de publication, les en-têtes *atime* et *mtime* des messages d'annonce sont éliminés.
 
-timeout <intervalle> (défaut: 0)
---------------------------------
+timeout <intervalle> (défaut: 300)
+----------------------------------
 
 L’option **timeout** définit le nombre de secondes à attendre avant d’interrompre un
 transfert de connexion ou de téléchargement (appliqué pendant le transfert).
@@ -2063,10 +2110,10 @@ exemples: Canada/Pacific, Pacific/Nauru, Europe/Paris
 Seulement actif dans le contexte de sondage de serveur FTP.
 
 
-tlsRigour (défaut: medium)
+tlsRigour (défaut: normal)
 --------------------------
 
-*tlsRigour* peut être réglé a : *lax, medium ou strict*, et donne un indice à l'application par rapport à la
+*tlsRigour* peut être réglé a : *lax, normal ou strict*, et donne un indice à l'application par rapport à la
 configuration des connexions TLS. TLS, ou Transport Layer Security (autrefois appelée Secure Socket Layer (SSL))
 est l’encapsulation de sockets TCP normales en cryptage standard. Il existe de nombreux aspects de
 négociations TLS, vérification du nom d’hôte, vérification des certificats, validation, choix de
@@ -2093,6 +2140,12 @@ topicPrefix (défaut: v03)
 rajouté au subtopic pour former une hiérarchie complète de thèmes (topics).
 Cette option s’applique aux liaisons d’abonnement.
 Indique la version des messages d'annonce reçus dans les subtopics. (V03 fait référence à `<sr3_post.7.html>`_)
+
+topicPrefix sert principalement lors des transitions de format de messages.
+Le topicPrefix identifie dans quel version de format les messages sous le thème
+sont créés. Sr3 s´attend a des messages v03 par défault, mais il y plein
+de sources qui offrent l´ancienne version (nécessitant une topicPrefix de *v02.post*) 
+pour spécifier l´ancienned version de messages. 
 
 topicCopy (défaut: False)
 -------------------------

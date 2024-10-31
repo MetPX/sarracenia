@@ -20,7 +20,7 @@ sudo dnf install -y python3-setuptools python3-magic
 #sudo apt -y install metpx-libsr3c metpx-libsr3c-dev metpx-sr3c
 
 sudo dnf install -y erlang findutils git librabbitmq net-tools python3-pip rabbitmq-server 
-sudo dnf install -y wget 
+sudo dnf install -y wget ncftp
 
 sudo dnf install -y python3-devel
 sudo dnf install -y rpmdevtools rpmlint lsb_release

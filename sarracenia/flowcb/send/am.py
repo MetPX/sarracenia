@@ -70,8 +70,8 @@ class Am(FlowCB):
         s = struct.Struct(self.patternAM)
         size = struct.calcsize('80s')
 
-        msg_path = sarra_msg['new_relPath']
-        msg_file = open(os.sep + msg_path, 'rb')
+        msg_path = sarra_msg['new_dir'] + '/' + sarra_msg['new_file']
+        msg_file = open(msg_path, 'rb')
         data = msg_file.read()
         msg_file.close()
 

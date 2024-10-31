@@ -490,7 +490,9 @@ class sr_GlobalState:
                                     continue
 
                                 if pathname[-4:] == '.pid':
-                                    i = int(pathname[-6:-4])
+                                    i = self._instance_num_from_pidfile(pathname, c, cfg)
+                                    if i < 0:
+                                        continue
                                     if t.isdigit():
                                         #print( "pid assignment: {c}/{cfg} instance: {i}, pid: {t}" )
                                         self.states[c][cfg]['instance_pids'][i] = int(t)
@@ -585,7 +587,9 @@ class sr_GlobalState:
                         for filename in os.listdir():
                             # look at pid files, find ones where process is missing.
                             if filename[-4:] == '.pid':
-                                i = int(filename[-6:-4])
+                                i = self._instance_num_from_pidfile(filename, c, cfg)
+                                if i < 0:
+                                    continue
                                 if i != 0:
                                     p = pathlib.Path(filename)
                                     if sys.version_info[0] > 3 or sys.version_info[
@@ -840,7 +844,7 @@ class sr_GlobalState:
                     xl = self.__resolved_exchanges(c, cfg, o)
                     q = self.__guess_queueName(c, cfg, o)
 
-                    self.configs[c][cfg]['options'].resolved_qname = q
+                    self.configs[c][cfg]['options'].queueName_resolved = q
 
                     for exch in xl:
                         if exch in self.brokers[host]['exchanges']:
@@ -1109,11 +1113,16 @@ class sr_GlobalState:
                     elif self.states[c][cfg]['metrics']['byteRate'] < self.configs[c][cfg]['options'].runStateThreshold_slow:
                         flow_status = 'slow'
                     elif self.states[c][cfg]['metrics']['retry'] > self.configs[c][cfg]['options'].runStateThreshold_retry:
-                        flow_status = 'retry'
+                        if self.configs[c][cfg]['options'].attempts == 0:
+                            flow_status='standby'
+                        else:
+                            flow_status = 'retry'
                     elif self.states[c][cfg]['metrics']['lagMean'] > self.configs[c][cfg]['options'].runStateThreshold_lag:
                         flow_status = 'lagging'
                     elif self.states[c][cfg]['metrics']['rejectPercent'] > self.configs[c][cfg]['options'].runStateThreshold_reject:
                         flow_status = 'reject'
+                    elif self.configs[c][cfg]['options'].attempts == 0:
+                        flow_status='standby'
                     elif hasattr(self.configs[c][cfg]['options'],'post_broker') and self.configs[c][cfg]['options'].post_broker \
                             and (now-self.states[c][cfg]['metrics']['txLast']) > self.configs[c][cfg]['options'].runStateThreshold_idle:
                         flow_status = 'idle'
@@ -1126,6 +1135,7 @@ class sr_GlobalState:
                            self.states[c][cfg]['metrics']['msgRateCpu'] < self.configs[c][cfg]['options'].runStateThreshold_cpuSlow:
                         flow_status = 'cpuSlow'
                     else:
+
                         flow_status = 'running'
 
                     self.states[c][cfg]['resource_usage'] = copy.deepcopy(resource_usage)
@@ -1268,8 +1278,7 @@ class sr_GlobalState:
 
         self.invoking_directory = os.getcwd()
         self.bin_dir = os.path.dirname(os.path.realpath(__file__))
-        self.package_lib_dir = os.path.dirname(
-            inspect.getfile(sarracenia.config.Config))
+        self.package_lib_dir = os.path.dirname(inspect.getfile(sarracenia))
         self.appauthor = 'MetPX'
         self.options = opt
         self.appname = os.getenv('SR_DEV_APPNAME')
@@ -1303,7 +1312,7 @@ class sr_GlobalState:
             'sender', 'shovel', 'subscribe', 'watch', 'winnow'
         ]
         # active means >= 1 process exists on the node.
-        self.status_active =  ['cpuSlow', 'hung', 'idle', 'lagging', 'partial', 'reject', 'retry', 'running', 'slow', 'waitVip' ]
+        self.status_active =  ['cpuSlow', 'hung', 'idle', 'lagging', 'partial', 'reject', 'retry', 'running', 'slow', 'standby', 'waitVip' ]
         self.status_values = self.status_active + [ 'disabled', 'include', 'missing', 'stopped', 'unknown' ]
 
         self.bin_dir = os.path.dirname(os.path.realpath(__file__))
@@ -1417,8 +1426,7 @@ class sr_GlobalState:
                 component = sp[-2]
                 cfg = sp[-1]
 
-            iedir = os.path.dirname(inspect.getfile(
-                sarracenia.config.Config)) + os.sep + 'examples'
+            iedir = os.path.dirname(inspect.getfile(sarracenia)) + os.sep + 'examples'
 
             destdir = self.user_config_dir + os.sep + component
 
@@ -1555,9 +1563,9 @@ class sr_GlobalState:
             logging.info('looking at %s/%s ' % (c, cfg))
             o = self.configs[c][cfg]['options']
             od = o.dictify()
-            if hasattr(o, 'resolved_qname'):
+            if hasattr(o, 'queueName_resolved'):
                 od['broker'] = o.broker
-                od['queueName'] = o.resolved_qname
+                od['queueName'] = o.queueName_resolved
                 od['dry_run'] = self.options.dry_run
                 qdc = sarracenia.moth.Moth.subFactory(od)
                 qdc.getSetup()
@@ -1802,8 +1810,8 @@ class sr_GlobalState:
 
             o = self.configs[c][cfg]['options']
 
-            if hasattr(o, 'resolved_qname'):
-                #print('deleting: %s is: %s @ %s' % (f, o.resolved_qname, o.broker.url.hostname ))
+            if hasattr(o, 'queueName_resolved'):
+                #print('deleting: %s is: %s @ %s' % (f, o.queueName_resolved, o.broker.url.hostname ))
                 qdc = sarracenia.moth.Moth.subFactory(
                     {
                         'broker': o.broker,
@@ -1812,13 +1820,13 @@ class sr_GlobalState:
                         'queueDeclare': False,
                         'queueBind': False,
                         'broker': o.broker,
-                        'queueName': o.resolved_qname,
+                        'queueName': o.queueName_resolved,
                         'message_strategy': { 'stubborn':True }
                     })
                 qdc.getSetup()
                 qdc.getCleanUp()
                 qdc.close()
-                queues_to_delete.append((o.broker, o.resolved_qname))
+                queues_to_delete.append((o.broker, o.queueName_resolved))
 
         for h in self.brokers:
             if self.please_stop:
@@ -2197,9 +2205,10 @@ class sr_GlobalState:
         else:
             print('no stray processes found')
 
-        for l in sarracenia.features.keys():
-            if not sarracenia.features[l]['present']:
-                print( f"notice: python module {l} is missing: {sarracenia.features[l]['lament']}" )
+        #It is enough to have it *features* not needed in sanity.
+        #for l in sarracenia.features.keys():
+        #    if not sarracenia.features[l]['present']:
+        #        print( f"notice: python module {l} is missing: {sarracenia.features[l]['lament']}" )
 
         # run on_sanity plugins.
         for f in self.filtered_configurations:
@@ -2230,6 +2239,21 @@ class sr_GlobalState:
         if len(self.leftovers) > 0 and not self._action_all_configs:
             logging.error( f"{self.leftovers} configuration not found" )
             return
+        
+        has_disabled_config = False
+
+        # if any configs are disabled, don't start any
+        if not self._action_all_configs:
+            for f in self.filtered_configurations:
+                (c, cfg) = f.split(os.sep)
+            
+                if self.configs[c][cfg]['status'] == 'disabled':
+                    has_disabled_config = True
+                    logger.error(f"Config {c}/{cfg} is disabled. It must be enabled before starting.")
+
+            if has_disabled_config:
+                logger.error("No configs have been started due to disabled configurations.")
+                return
 
         pcount = 0
         for f in self.filtered_configurations:
@@ -2613,6 +2637,8 @@ class sr_GlobalState:
                     cfg_status = "rtry"
                 if cfg_status == "runn" :
                     cfg_status = "run"
+                if cfg_status == "stan" :
+                    cfg_status = "stby"
                 elif cfg_status == 'wait':
                     cfg_status = 'wVip'
 
@@ -2772,6 +2798,24 @@ class sr_GlobalState:
                 v3_cfg.write('#v2 sftp handling is always absolute, sr3 is relative. might need this, remove when all sr3:\n')
                 v3_cfg.write('#flowcb accept.sftp_absolute\n')
 
+            queueName=None
+
+            #1st prep pass (for cases when re-ordering needed.)
+            with open(v2_config_path, 'r') as v2_cfg:
+                for line in v2_cfg.readlines():
+                    if len(line.strip()) < 1:
+                        continue
+                    if line[0].startswith('#'):
+                        continue
+                    line = line.strip().split()
+                    k = line[0]
+                    if k in synonyms:
+                        k = synonyms[k]
+                    if k in [ 'queueName' ]:
+                        queueName=line[1]
+
+            #2nd re-write pass.
+            subtopicFound=False
             with open(v2_config_path, 'r') as v2_cfg:
                 for line in v2_cfg.readlines():
                     if len(line.strip()) < 1:
@@ -2815,7 +2859,13 @@ class sr_GlobalState:
                         else:
                             logger.error( f"unknown checksum spec: {line}")
                             continue
-               
+                    elif k == 'queueName':
+                        if subtopicFound or not queueName:
+                            continue
+                    elif k == 'subtopic':
+                        if queueName:
+                            v3_cfg.write(f'queueName {queueName}\n')
+                            queueName=None
                     if (k == 'accept') :
                         if line[1] == '.*':
                             accept_all_seen=True
@@ -2829,12 +2879,16 @@ class sr_GlobalState:
                     elif (k == 'sleep' ) and (component == 'poll'):
                         k = 'scheduled_interval'
                     if k in convert_to_v3:
+                        if convert_to_v3[k] == [ 'continue' ]:
+                            logger.info( f"obsolete v2 keyword: {k}" )
+                            continue
+
                         if len(line) > 1:
                             v = line[1].replace('.py', '', 1)
                             if v in convert_to_v3[k]:
                                 line = convert_to_v3[k][v]
                                 if 'continue' in line:
-                                    logger.info("obsolete v2: " + v)
+                                    logger.info("obsolete v2: " + k)
                                     continue
                             else:
                                 logger.warning( f"unknown {k} {v}, manual conversion required.")
@@ -3017,6 +3071,19 @@ class sr_GlobalState:
         """
         return (component in ['post', 'cpost'] and self.configs[component][config]['options'].sleep > 0.1 and
                 hasattr(self.configs[component][config]['options'], 'path'))
+
+    def _instance_num_from_pidfile(self, pathname, component, cfg):
+        if os.sep in pathname:
+            pathname = pathname.split(os.sep)[-1]
+        if '_' in pathname:
+            i = int(pathname[0:-4].split('_')[-1])
+        # sr3c components just use iXX.pid
+        elif component[0] == 'c':
+            i = int(pathname[0:-4].replace('i', ''))
+        else:
+            logger.error(f"Failed to determine instance # for {component}/{cfg} {pathname}")
+            i = -1
+        return i
 
 
 def main():

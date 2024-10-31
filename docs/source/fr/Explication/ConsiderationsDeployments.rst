@@ -167,6 +167,46 @@ Considérations de sécurité
 Cette section a pour but de donner un aperçu à ceux qui ont besoin d'effectuer un examen de sécurité.
 de l'application avant la mise en œuvre.
 
+Architecture
+~~~~~~~~~~~~
+
+Sarracenia peut être un composant de nombreuses solutions et peut être déployé en tant que composant cloud.
+Cependant, dans sa forme la plus brute et la plus simple, Sarracenia n'est pas utilisé comme les services cloud, où
+un service est accessible de n'importe où. Il s'agit plutôt d'un composant ou d'une boîte à outils qui est
+censé fonctionner avec le zonage de sécurité réseau traditionnel. Plutôt que d'avoir un service
+pour tous et d'exiger des exceptions de trafic/pare-feu et une analyse de sécurité externe pour
+intercepter le trafic, on déploie une pompe à chaque démarcation de zone réseau.
+
+Les données sont livrées à la pompe au point de démarcation, puis une autre pompe
+transmet les données à la zone suivante. Dans le cadre du traitement de démarcation, on 
+peut télécharger un fichier, l'exécuter via un traitement, comme une analyse des logiciels 
+malveillants, puis annoncer sa disponibilité à la pompe suivante uniquement si elle est correcte.
+
+Chaque pompe dispose d'une authentification indépendante, et les administrateurs de pompe
+et les utilisateurs peuvent définir le trafic mis à disposition des utilisateurs de l'autre côté
+du point de démarcation. Les pompes sont enchaînées en copiant de l'une à l'autre
+à l'autre, où chacune peut avoir un accès, un but et une propriété différents.
+
+Aucune fédération formelle ou identité de réseau complet n'est nécessaire pour transmettre des données
+sur le réseau. Au lieu de cela, chaque pompe établit une authentification pour la pompe voisine.
+Si les pays exploitaient des pompes de données, on pourrait imaginer une situation comme celle-ci :
+Les Russes et les Américains veulent transférer des données mais ne veulent pas être exposés directement aux serveurs
+des autres. Les Russes pourraient partager avec le Kazakhstan, les Kazakhs échanger
+avec la Corée et la Corée échanger avec le Canada. Les Américains n'ont besoin que d'avoir
+une bonne relation avec les Canadiens ou les Coréens. Chaque maillon de la chaîne
+s'expose directement uniquement aux pairs avec lesquels il a une relation explicite et
+convenue. Chaque maillon de la chaîne peut effectuer sa propre analyse et son propre traitement avant d'accepter les données.
+
+.. image:: Concepts/sr3_exemple_de_flux.svg
+    :scale: 100%
+    :align: center
+
+Dans cet exemple, vous pouvez voir que les pompes DDR sont déployées sur des zones d'opérations
+internes et qu'elles poussent ou tirent depuis des pompes situées dans d'autres zones, telles qu'une autre
+zone d'opérations ou une zone d'accès public. Les pompes sont censées
+servir de médiateur au trafic circulant entre les zones du réseau.
+
+
 Client
 ~~~~~~
 

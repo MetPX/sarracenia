@@ -235,7 +235,6 @@ class Flow:
         self.metrics=self.new_metrics
 
         # removing old metrics files
-        #logger.debug( f"looking for old metrics for {self.o.metricsFilename}" )
         old_metrics=sorted(glob.glob(self.o.metricsFilename+'.*'))[0:-self.o.logRotateCount]
         for o in old_metrics:
             logger.info( f"removing old metrics file: {o} " )
@@ -876,7 +875,7 @@ class Flow:
 
         if path_strip_count > 0:
 
-            logger.warning( f"path_strip_count:{path_strip_count}   ")
+            logger.debug( f"path_strip_count:{path_strip_count}   ")
             strip=path_strip_count 
             if strip < len(token):
                 token = token[strip:]
@@ -891,12 +890,9 @@ class Flow:
                     if f in msg['fileOp']:
                         fopv = msg['fileOp'][f].split('/') 
                         # an absolute path file posted is relative to '/' (in relPath) but the values in
-                        # the link and rename fields may be absolute, requiring and adjustmeent when stripping
+                        # the link and rename fields may be absolute, requiring and adjustment when stripping
                         if fopv[0] == '':
                             strip += 1
-                        elif len(fopv) == 1:
-                            toclimb=len(token)-1
-                            msg['fileOp'][f] = '../'*(toclimb) + fopv[0]
                         if len(fopv) > strip:
                             rest=fopv[strip:]
                             toclimb=len(token)-rest.count('..')-1
@@ -948,9 +944,6 @@ class Flow:
                         if (f in msg['fileOp']) :
                             if msg['fileOp'][f].startswith(self.o.baseDir):
                                 msg['fileOp'][f] = msg['fileOp'][f].replace(self.o.baseDir, d, 1)
-                            elif os.sep not in msg['fileOp'][f]:
-                                toclimb=len(token)-1
-                                msg['fileOp'][f] = '../'*(toclimb) + msg['fileOp'][f]
 
         elif 'fileOp' in msg and new_dir:
             u = sarracenia.baseUrlParse(msg['baseUrl'])
@@ -959,9 +952,6 @@ class Flow:
                     if (len(u.path) > 1):
                         if msg['fileOp'][f].startswith(u.path):
                             msg['fileOp'][f] = msg['fileOp'][f].replace(u.path, new_dir, 1)
-                        elif '/' not in msg['fileOp'][f]:
-                            toclimb=len(token)-1
-                            msg['fileOp'][f] = '../'*(toclimb) + msg['fileOp'][f]
                             
         if self.o.mirror and len(token) > 1:
             new_dir = new_dir + '/' + '/'.join(token[:-1])
@@ -1071,7 +1061,7 @@ class Flow:
                                          (m['fileOp']['rename']))
                         else:
                             self.reject(
-                                m, 304, "mask=%s strip=%s url=%s" %
+                                m, 404, "mask=%s strip=%s url=%s" %
                                 (str(mask), strip, urlToMatch))
                         break
 
@@ -1106,7 +1096,7 @@ class Flow:
                                            self.o.flatten)
                     filtered_worklist.append(m)
                 else:
-                    self.reject(m, 304, "unmatched pattern %s" % url)
+                    self.reject(m, 404, "unmatched pattern %s" % url)
 
         self.worklist.incoming = filtered_worklist
 
@@ -1292,7 +1282,6 @@ class Flow:
                     mfn.write( f'\"{timestamp}\" : {metrics},\n')
 
             # removing old metrics files
-            #logger.debug( f"looking for old metrics for {self.o.metricsFilename}" )
             old_metrics=sorted(glob.glob(self.o.metricsFilename+'.*'))[0:-self.o.logRotateCount]
             for o in old_metrics:
                 logger.info( f"removing old metrics file: {o} " )
@@ -1499,16 +1488,15 @@ class Flow:
                         old_mtime = sarracenia.timestr2flt(x.get('mtime'))
                     except:
                         pass
-    
+
                 if new_mtime <= old_mtime:
-                    self.reject(msg, 304,
+                    self.reject(msg, 406,
                             "mtime not newer %s " % (msg['new_path']))
                     return False
                 else:
                     logger.debug(
-                        "{} new version is {} newer (new: {} vs old: {} )".format(
-                        msg['new_path'], new_mtime - old_mtime, new_mtime,
-                        old_mtime))
+                        f"{msg['new_path']} new version is {new_mtime - old_mtime} " \
+                                f"newer (new: {new_mtime,} vs old: {old_mtime} )" )
 
         elif method in ['random', 'cod']:
             logger.debug("content_match %s sum random/zero/cod never matches" %
@@ -1887,6 +1875,7 @@ class Flow:
             parsed_url = sarracenia.baseUrlParse(msg['baseUrl'])
             self.scheme = parsed_url.scheme
 
+            ok = False
             i = 1
             while i <= self.o.attempts:
 
@@ -2341,6 +2330,7 @@ class Flow:
         local_file = os.path.basename(local_path).replace('\\', '/')
         new_dir = msg['new_dir'].replace('\\', '/')
         new_file = msg['new_file'].replace('\\', '/')
+
         new_inflight_path = None
 
         try:
@@ -2589,7 +2579,7 @@ class Flow:
                         else:
                             len_written = self.proto[self.scheme].put( msg, local_file, new_file)
                 except Exception as ex:
-                    logger.error( f"could not send {local_dir}{os.sep}{local_file} to inflight=None {sendTo} {msg['new_dir']}/{new_file}: {ex}" )
+                    logger.error( f"could not send {local_dir}{os.sep}{local_file} to inflight=None {sendTo} {msg['new_dir']} ... {new_file}: {ex}" )
                     return False
                 
             elif (('blocks' in msg)
@@ -2867,6 +2857,7 @@ class Flow:
 
             # N attempts to send
 
+            ok = False
             i = 1
             while i <= self.o.attempts:
                 if i != 1:

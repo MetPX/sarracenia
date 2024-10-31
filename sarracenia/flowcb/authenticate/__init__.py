@@ -55,7 +55,7 @@ class BearerToken(sarracenia.flowcb.FlowCB):
                 logger.info(f"Token for {msg['baseUrl']} not in credentials database. Adding it!")
                 # Add the new bearer token to the internal credentials db. If the credential is already in the db, it will
                 # be replaced which is desirable.
-                cred = sarracenia.credentials.Credential(urlstr=msg['baseUrl'])
+                cred = sarracenia.config.credentials.Credential(urlstr=msg['baseUrl'])
                 cred.bearer_token = token
                 self.o.credentials.add(msg['baseUrl'], details=cred)
     
