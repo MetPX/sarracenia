@@ -2566,8 +2566,8 @@ class sr_GlobalState:
         flowNameWidth=self.cumulative_stats['flowNameWidth']
         latestTransferWidth=self.cumulative_stats['latestTransferWidth']
 
-        lfmt = f"%-{flowNameWidth}s %-11s %7s %10s %19s %14s %38s "
-        line = lfmt % ("Component/Config", "Processes", "Connection", "Lag", "", "Rates", "" )
+        lfmt = f"%-{flowNameWidth}s %-43s %s"
+        line = lfmt % ("Component/Config", "Processes", "Rates" )
 
         if self.options.displayFull:
             line += "%10s %-40s %17s %33s %40s" % ("", "Counters (per housekeeping)", "", "Data Counters", "" )
@@ -2579,9 +2579,9 @@ class sr_GlobalState:
         try:
             print(line)
 
-            lfmt      = f"%-{flowNameWidth}s %-5s %5s %5s %4s %4s %5s %8s %8s %{latestTransferWidth}s %5s %10s %10s %10s %10s " 
-            line      =  lfmt % ("", "State", "Run", "Retry", "msg", "data", "Que", "LagMax", "LagAvg", "Last", "%rej", "pubsub", "messages", "RxData", "TxData" )
-            underline =  lfmt % ("", "-----", "---", "-----", "---", "----", "---", "------", "------", "----", "----", "------", "--------", "------", "------" )
+            lfmt      = f"%-{flowNameWidth}s %-5s %5s %5s %4s %6s %{latestTransferWidth}s %7s %9s %8s " 
+            line      =  lfmt % ("", "State", "Run", "Retry", "Que", "Lag", "Last", "%rej", "messages", "Data" )
+            underline =  lfmt % ("", "-----", "---", "-----", "---", "---", "----", "----", "--------", "----" )
 
             if self.options.displayFull:
                 line      += "%10s %10s %10s %10s %10s %10s %10s %10s %10s %10s %10s %10s %8s " % \
@@ -2648,14 +2648,12 @@ class sr_GlobalState:
 
                 if 'metrics' in self.states[c][cfg]:
                     m=self.states[c][cfg]['metrics']
-                    lfmt = f"%5d %3d%% %3d%% %5d %8s %8s %{latestTransferWidth}s %4.1f%% %8s/s %8s/s %8s/s %8s/s "
-                    line += lfmt % ( m['retry'], m['connectPercent'], m['byteConnectPercent'], \
-                            m['messagesQueued'], durationToString(m['lagMax']), durationToString(m['lagMean']), m['latestTransfer'], m['rejectPercent'],\
-                            naturalSize(m['byteRate']).replace("Bytes","B"), \
+                    lfmt = f"%4d %4d %8s %{latestTransferWidth}s %5.1f%% %6s/s %8s/s "
+                    line += lfmt % ( m['retry'], \
+                            m['messagesQueued'], durationToString(m['lagMean']), m['latestTransfer'], m['rejectPercent'],\
                             naturalSize(m['msgRate']).replace("B","m").replace("mytes","m"), \
-                            naturalSize(m['transferRxByteRate']).replace("Bytes","B"), \
-                            naturalSize(m['transferTxByteRate']).replace("Bytes","B") 
-                            )
+                            naturalSize(m['transferRxByteRate'] + m['transferTxByteRate']).replace("Bytes","B")) 
+                            
 
                     if self.options.displayFull :
                         line += "%10s %10s %10s %10s %10s %10s %10s %10s %10s %10s %10s %10s %7.2fs " % ( \
