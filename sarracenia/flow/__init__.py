@@ -2829,6 +2829,10 @@ class Flow:
                 self.reject(msg, 422, f"new_file message field missing, do not know name of file to write. skipping." )
                 continue
 
+            if self.o.fileSizeMax > 0 and msg['size'] > self.o.fileSizeMax: 
+                self.reject(msg, 413, f"Payload Too Large {msg.getIDStr()}") 
+                continue
+
             # weed out non-file transfer operations that are configured to not be done.
             if 'fileOp' in msg:
                 if ('directory' in msg['fileOp']) and ('remove' in msg['fileOp']) and ( 'rmdir' not in self.o.fileEvents ):
