@@ -86,7 +86,8 @@ class Am(FlowCB):
 
         # Step out of the function if the bulletin size is too big
         if len(strdata) > self.o.fileSizeMax:
-            raise Exception(f"Bulletin length too long. Bulletin limit length: {self.o.MaxBulLen}. Latest bulletin length: {len(strdata)}. Path to bulletin: {msg_path}")
+            logger.error(f"Bulletin length too long. Bulletin limit length: {self.o.fileSizeMax}. Latest bulletin length: {len(strdata)}. Path to bulletin: {msg_path}")
+            return None
 
         ## Attach rest of header with NULLs (if not long enough)
         nulheader = ['\0' for _ in range(size)]
@@ -149,6 +150,10 @@ class Am(FlowCB):
     def send(self, bulletin):
         try:
             self.packed_bulletin = self.wrapbulletin(bulletin)
+
+            # We don't want to send nothing.
+            if self.packed_bulletin == None:
+                return False
 
             while True:
                 try:
