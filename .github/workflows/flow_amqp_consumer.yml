@@ -74,7 +74,7 @@ jobs:
       
       - name: Save run artifacts
         if: always()
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         continue-on-error: true
         with:
           name: sr3_${{ matrix.which_test }}_${{ matrix.osver }}_state_${{ github.sha }}
