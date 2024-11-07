@@ -1077,9 +1077,18 @@ class Config:
             return None
 
         if len(arguments) > 1:
-            fn = arguments[1]
+            # First arg is a Sundew filename option
+            if arguments[1].split(':')[0].split('=')[0] in ['None', 'DESTFN', 'DESTFNSCRIPT', 'HEADFN',
+                                                            'NONE', 'NONESENDER', 'SATNET', 'SENDER', 'WHATFN']:
+                fn = arguments[1]
+                # Other arguments can be used by plugins
+                args = arguments[2:]
+            else:
+                fn = self.filename
+                args = arguments[1:]
         else:
             fn = self.filename
+            args = []
         if fn and re.compile('DESTFNSCRIPT=.*').match(fn):
             script=fn[13:]
             self.destfn_scripts.append(script)
@@ -1090,13 +1099,13 @@ class Config:
            d = self.directory
         return (arguments[0], d, fn, regex,
                 option.lower() in ['accept' ], self.mirror, self.strip,
-                self.pstrip, self.flatten)
+                self.pstrip, self.flatten, args)
 
     def mask_ppstr(self, mask):
         """
            return a pretty print string version of the given mask, easier for humans to read.
         """
-        pattern, maskDir, maskFileOption, mask_regexp, accepting, mirror, strip, pstrip, flatten = mask
+        pattern, maskDir, maskFileOption, mask_regexp, accepting, mirror, strip, pstrip, flatten, args = mask
 
         s = 'accept' if accepting else 'reject'
         if pstrip : strip=pstrip
@@ -1104,7 +1113,8 @@ class Config:
         fn = '' if (maskFileOption == 'WHATFN') else f' filename:{maskFileOption}'
         flatten = '' if flatten == '/' else f' flatten:{flatten}'
         w = 'with ' if fn or flatten or strip else ''
-        return f'{s} {pattern} into {maskDir} {w}mirror:{mirror}{strip}{flatten}{fn}'
+        args = '' if len(args) == 0 else ' args:' + str(args)
+        return f'{s} {pattern} into {maskDir} {w}mirror:{mirror}{strip}{flatten}{fn}{args}'
 
     def _parse_set_string( self, v:str, old_value: set ) -> set:
         """
