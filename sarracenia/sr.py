@@ -2688,8 +2688,8 @@ class sr_GlobalState:
                              ru['user_cpu'], ru['system_cpu'] \
                              )
                 else:
-                    line += "%10s %10s %10s" % ( "-", "-", "-" )
                     if self.options.displayFull:
+                        line += "%10s %10s %10s" % ( "-", "-", "-" )
                         line += "%10s %10s" % ( "-", "-" )
                 try:
                      print(line)
