@@ -2566,7 +2566,7 @@ class sr_GlobalState:
         flowNameWidth=self.cumulative_stats['flowNameWidth']
         latestTransferWidth=self.cumulative_stats['latestTransferWidth']
 
-        lfmt = f"%-{flowNameWidth}s %-43s %s"
+        lfmt = f"%-{flowNameWidth}s %-45s %s"
         line = lfmt % ("Component/Config", "Processes", "Rates" )
 
         if self.options.displayFull:
@@ -2579,7 +2579,7 @@ class sr_GlobalState:
         try:
             print(line)
 
-            lfmt      = f"%-{flowNameWidth}s %-5s %5s %5s %4s %6s %{latestTransferWidth}s %7s %9s %8s " 
+            lfmt      = f"%-{flowNameWidth}s %-5s %5s %5s %4s %7s %{latestTransferWidth + 1}s %7s %9s %9s " 
             line      =  lfmt % ("", "State", "Run", "Retry", "Que", "Lag", "Last", "%rej", "messages", "Data" )
             underline =  lfmt % ("", "-----", "---", "-----", "---", "---", "----", "----", "--------", "----" )
 
@@ -2648,7 +2648,7 @@ class sr_GlobalState:
 
                 if 'metrics' in self.states[c][cfg]:
                     m=self.states[c][cfg]['metrics']
-                    lfmt = f"%4d %4d %8s %{latestTransferWidth}s %5.1f%% %6s/s %8s/s "
+                    lfmt = f"%4d %4d %8s %{latestTransferWidth + 1}s %6.1f%% %6s/s %8s/s "
                     line += lfmt % ( m['retry'], \
                             m['messagesQueued'], durationToString(m['lagMean']), m['latestTransfer'], m['rejectPercent'],\
                             naturalSize(m['msgRate']).replace("B","m").replace("mytes","m"), \
