@@ -2566,7 +2566,7 @@ class sr_GlobalState:
         flowNameWidth=self.cumulative_stats['flowNameWidth']
         latestTransferWidth=self.cumulative_stats['latestTransferWidth']
 
-        lfmt = f"%-{flowNameWidth}s %-45s %s"
+        lfmt = f"%-{flowNameWidth}s %-49s %s"
         line = lfmt % ("Component/Config", "Processes", "Rates" )
 
         if self.options.displayFull:
