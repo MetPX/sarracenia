@@ -196,10 +196,15 @@
         <span class="k">if</span> <span class="ow">not</span> <span class="n">features</span><span class="p">[</span><span class="s1">&#39;retry&#39;</span><span class="p">][</span><span class="s1">&#39;present&#39;</span><span class="p">]</span> <span class="ow">or</span> <span class="bp">self</span><span class="o">.</span><span class="n">o</span><span class="o">.</span><span class="n">retry_refilter</span><span class="p">:</span>
             <span class="k">return</span>
 
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">download_retry</span><span class="p">)</span> <span class="o">&lt;</span> <span class="mi">1</span><span class="p">:</span>
+            <span class="k">return</span>
+
         <span class="n">qty</span> <span class="o">=</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">o</span><span class="o">.</span><span class="n">batch</span> <span class="o">/</span> <span class="mi">2</span><span class="p">)</span> <span class="o">-</span> <span class="nb">len</span><span class="p">(</span><span class="n">worklist</span><span class="o">.</span><span class="n">incoming</span><span class="p">)</span>
         <span class="c1">#logger.info(&#39;qty: %d len(worklist.incoming) %d&#39; % ( qty, len(worklist.incoming) ) )</span>
 
-        <span class="k">if</span> <span class="n">qty</span> <span class="o">&lt;=</span> <span class="mi">0</span><span class="p">:</span> <span class="k">return</span>
+        <span class="k">if</span> <span class="n">qty</span> <span class="o">&lt;=</span> <span class="mi">0</span><span class="p">:</span> 
+            <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">worklist</span><span class="o">.</span><span class="n">incoming</span><span class="p">)</span><span class="si">}</span><span class="s2"> messages to process, too busy to retry&quot;</span> <span class="p">)</span>
+            <span class="k">return</span>
 
         <span class="n">mlist</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">download_retry</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">qty</span><span class="p">)</span>
 
@@ -222,6 +227,9 @@
             <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span> <span class="sa">f</span><span class="s2">&quot;putting </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">worklist</span><span class="o">.</span><span class="n">failed</span><span class="p">)</span><span class="si">}</span><span class="s2"> messages into </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">download_retry_name</span><span class="si">}</span><span class="s2">&quot;</span>  <span class="p">)</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">download_retry</span><span class="o">.</span><span class="n">put</span><span class="p">(</span><span class="n">worklist</span><span class="o">.</span><span class="n">failed</span><span class="p">)</span>
             <span class="n">worklist</span><span class="o">.</span><span class="n">failed</span> <span class="o">=</span> <span class="p">[]</span>
+
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">post_retry</span><span class="p">)</span> <span class="o">&lt;</span> <span class="mi">1</span><span class="p">:</span>
+            <span class="k">return</span>
 
         <span class="c1"># retry posting...</span>
         <span class="k">if</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">o</span><span class="o">.</span><span class="n">batch</span> <span class="o">&gt;</span> <span class="mi">2</span><span class="p">):</span>
