@@ -196,35 +196,29 @@ gather statisical information.
 Init Integration
 ~~~~~~~~~~~~~~~~
 
-By default, when sarracenia is installed, it is done as a user tool and not a system-wide resource.
-The tools/ sub-directory directory allows for integration with tools for different usage scenarios.
+If installed using a \.deb package, the `Systemd <https://systemd.io/>`_ service files will be put in the right place.
+The package installed in *disabled* state.  use *systemctl* in the normal way to manage it.
 
 .. NOTE::
-   tools/sr.init -- a sample init script suitable for sysv-init or upstart based systems.
-   tools/sarra_system.service -- for systemd base systems for a 'daemon' style deployment.
-   tools/sarra_user.service -- for systemd as a per user service.
+   debian/metpx-sr3.service -- for systemd base systems for a 'daemon' style deployment.
+   tools/metpx-sr3_user.service -- for systemd as a per user service.
 
-
-Systemd installation process, by administrator::
+If installed using python packages, there is less system integration, and one may need to
+manually create appropriate groups and copy files from the source tree into the right 
+system places:
 
    groupadd sarra
    useradd sarra
-   cp tools/sarra_system.service /etc/systemd/system/sarra.service  (if a package installs it, it should go in /usr/lib/systemd/system )
-   cp tools/sarra_user.service /etc/systemd/user/sarra.service (or /usr/lib/systemd/user, if installed by a package )
+   cp debian/metpx-sr3.service /etc/systemd/system  (if a package installs it, it should go in /usr/lib/systemd/system )
+   cp tools/metpx-sr3_user.service /etc/systemd/user/metpx-sr3.service (or /usr/lib/systemd/user, if installed by a package )
    systemctl daemon-reload
    
-It is then assumed that one uses the 'sarra' account to store the daemon oriented (or system-wide) sarra configuration.
-Users can also run their personal configuration in sessions via::
+The *sarra* user is the default account assumed to store the daemon oriented (or system-wide) sarra configuration.
+Users can also run their personal configuration (user mode systemd) in sessions via::
 
-  systemctl --user enable sarra
-  systemctl --user start sarra
+  systemctl --user enable metpx-sr3
+  systemctl --user start metpx-sr3
 
-
-On an upstart or sysv-init based system::
-
-   cp tools/sr.init /etc/init.d/sr
-   <insert magic here to get that activated.>
-  
 
 
 Rabbitmq Setup
