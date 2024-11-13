@@ -324,14 +324,14 @@ class AMQP(Moth):
         """
         ebo = 1
 
-        while True:
+        if True:
             
             if self._stop_requested:
-                break
+                return
 
             if 'broker' not in self.o or self.o['broker'] is None:
                 logger.critical( f"no broker given" )
-                break
+                return
 
             # It does not really matter how it fails, the recovery approach is always the same:
             # tear the whole thing down, and start over.
@@ -339,7 +339,7 @@ class AMQP(Moth):
                 # from sr_consumer.build_connection...
                 if not self.__connect(self.o['broker']):
                     logger.critical('could not connect')
-                    break
+                    return
                 
                 if self.o['prefetch'] != 0:
                     # using global False because RabbitMQ Quorum Queues don't support Global QoS, issue #1233
@@ -359,7 +359,7 @@ class AMQP(Moth):
                 # from Queue declare
                 msg_count = self._queueDeclare()
                 
-                if msg_count == -2: break
+                if msg_count == -2: return
 
                 if self.o['queueBind'] and self.o['queueName']:
                     for tup in self.o['bindings']:
@@ -378,7 +378,7 @@ class AMQP(Moth):
                 # Setup Successfully Complete!
                 self.metricsConnect()
                 logger.debug('getSetup ... Done!')
-                break
+                return
 
             except Exception as err:
                 logger.error(
@@ -388,32 +388,32 @@ class AMQP(Moth):
                     self.o['broker'].url.hostname, err))
                 logger.debug('Exception details: ', exc_info=True)
 
-            if not self.o['message_strategy']['stubborn']: return
+            #if not self.o['message_strategy']['stubborn']: return
 
-            if ebo < 60: ebo *= 2
+            #if ebo < 60: ebo *= 2
 
-            logger.info("Sleeping {} seconds ...".format(ebo))
-            interruptible_sleep(ebo, obj=self)
+            #logger.info("Sleeping {} seconds ...".format(ebo))
+            #interruptible_sleep(ebo, obj=self)
 
     def putSetup(self) -> None:
 
         ebo = 1
 
-        while True:
+        if True:
 
             # It does not really matter how it fails, the recovery approach is always the same:
             # tear the whole thing down, and start over.
             try:
                 if self._stop_requested:
-                    break
+                    return
 
                 if self.o['broker'] is None:
                     logger.critical( f"no broker given" )
-                    break
+                    return
 
                 if not self.__connect(self.o['broker']):
                     logger.critical('could not connect')
-                    break
+                    return
 
                 # transaction mode... confirms would be better...
                 self.channel.tx_select()
@@ -443,7 +443,7 @@ class AMQP(Moth):
                 # Setup Successfully Complete!
                 self.metricsConnect()
                 logger.debug('putSetup ... Done!')
-                break
+                return
 
             except Exception as err:
                 logger.error(
@@ -452,13 +452,13 @@ class AMQP(Moth):
                             self.o['broker'].url.hostname, err))
                 logger.debug('Exception details: ', exc_info=True)
 
-            if not self.o['message_strategy']['stubborn']: return
+            #if not self.o['message_strategy']['stubborn']: return
 
-            if ebo < 60: ebo *= 2
+            #if ebo < 60: ebo *= 2
 
             self.close()
-            logger.info("Sleeping {} seconds ...".format(ebo))
-            interruptible_sleep(ebo, obj=self)
+            #logger.info("Sleeping {} seconds ...".format(ebo))
+            #interruptible_sleep(ebo, obj=self)
 
     def putCleanUp(self) -> None:
 
