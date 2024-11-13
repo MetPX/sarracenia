@@ -298,33 +298,38 @@ before operations, we need to figure out how Nagios will monitor it.</p>
 </div>
 <section id="init-integration">
 <h3>Init Integration<a class="headerlink" href="#init-integration" title="Link to this heading"></a></h3>
-<p>By default, when sarracenia is installed, it is done as a user tool and not a system-wide resource.
-The tools/ sub-directory directory allows for integration with tools for different usage scenarios.</p>
+<p>If installed using a .deb package, the <a class="reference external" href="https://systemd.io/">Systemd</a> service files will be put in the right place.
+The package installed in <em>disabled</em> state.  use <em>systemctl</em> in the normal way to manage it.</p>
 <div class="admonition note">
 <p class="admonition-title">Note</p>
-<p>tools/sr.init – a sample init script suitable for sysv-init or upstart based systems.
-tools/sarra_system.service – for systemd base systems for a ‘daemon’ style deployment.
-tools/sarra_user.service – for systemd as a per user service.</p>
+<p>debian/metpx-sr3.service – for systemd base systems for a ‘daemon’ style deployment.
+tools/metpx-sr3_user.service – for systemd as a per user service.</p>
 </div>
-<p>Systemd installation process, by administrator:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">groupadd</span> <span class="n">sarra</span>
-<span class="n">useradd</span> <span class="n">sarra</span>
-<span class="n">cp</span> <span class="n">tools</span><span class="o">/</span><span class="n">sarra_system</span><span class="o">.</span><span class="n">service</span> <span class="o">/</span><span class="n">etc</span><span class="o">/</span><span class="n">systemd</span><span class="o">/</span><span class="n">system</span><span class="o">/</span><span class="n">sarra</span><span class="o">.</span><span class="n">service</span>  <span class="p">(</span><span class="k">if</span> <span class="n">a</span> <span class="n">package</span> <span class="n">installs</span> <span class="n">it</span><span class="p">,</span> <span class="n">it</span> <span class="n">should</span> <span class="n">go</span> <span class="ow">in</span> <span class="o">/</span><span class="n">usr</span><span class="o">/</span><span class="n">lib</span><span class="o">/</span><span class="n">systemd</span><span class="o">/</span><span class="n">system</span> <span class="p">)</span>
-<span class="n">cp</span> <span class="n">tools</span><span class="o">/</span><span class="n">sarra_user</span><span class="o">.</span><span class="n">service</span> <span class="o">/</span><span class="n">etc</span><span class="o">/</span><span class="n">systemd</span><span class="o">/</span><span class="n">user</span><span class="o">/</span><span class="n">sarra</span><span class="o">.</span><span class="n">service</span> <span class="p">(</span><span class="ow">or</span> <span class="o">/</span><span class="n">usr</span><span class="o">/</span><span class="n">lib</span><span class="o">/</span><span class="n">systemd</span><span class="o">/</span><span class="n">user</span><span class="p">,</span> <span class="k">if</span> <span class="n">installed</span> <span class="n">by</span> <span class="n">a</span> <span class="n">package</span> <span class="p">)</span>
-<span class="n">systemctl</span> <span class="n">daemon</span><span class="o">-</span><span class="n">reload</span>
+<p>If installed using python packages, there is less system integration, and one may need to
+manually create appropriate groups and copy files from the source tree into the right
+system places:</p>
+<blockquote>
+<div><p>groupadd sarra
+useradd sarra
+cp debian/metpx-sr3.service /etc/systemd/system  (if a package installs it, it should go in /usr/lib/systemd/system )
+cp tools/metpx-sr3_user.service /etc/systemd/user/metpx-sr3.service (or /usr/lib/systemd/user, if installed by a package )
+systemctl daemon-reload</p>
+</div></blockquote>
+<p>The <em>sarra</em> user is the default account assumed to store the daemon oriented (or system-wide) sarra configuration.
+Users can also run their personal configuration (user mode systemd) in sessions via:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">systemctl</span> <span class="o">--</span><span class="n">user</span> <span class="n">enable</span> <span class="n">metpx</span><span class="o">-</span><span class="n">sr3</span>
+<span class="n">systemctl</span> <span class="o">--</span><span class="n">user</span> <span class="n">start</span> <span class="n">metpx</span><span class="o">-</span><span class="n">sr3</span>
 </pre></div>
 </div>
-<p>It is then assumed that one uses the ‘sarra’ account to store the daemon oriented (or system-wide) sarra configuration.
-Users can also run their personal configuration in sessions via:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">systemctl</span> <span class="o">--</span><span class="n">user</span> <span class="n">enable</span> <span class="n">sarra</span>
-<span class="n">systemctl</span> <span class="o">--</span><span class="n">user</span> <span class="n">start</span> <span class="n">sarra</span>
+<p>To have it started on every login, the following might be helpful (assuming polkit present, which it usually is):</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">loginctl</span> <span class="n">enable</span><span class="o">-</span><span class="n">linger</span>
 </pre></div>
 </div>
-<p>On an upstart or sysv-init based system:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">cp</span> <span class="n">tools</span><span class="o">/</span><span class="n">sr</span><span class="o">.</span><span class="n">init</span> <span class="o">/</span><span class="n">etc</span><span class="o">/</span><span class="n">init</span><span class="o">.</span><span class="n">d</span><span class="o">/</span><span class="n">sr</span>
-<span class="o">&lt;</span><span class="n">insert</span> <span class="n">magic</span> <span class="n">here</span> <span class="n">to</span> <span class="n">get</span> <span class="n">that</span> <span class="n">activated</span><span class="o">.&gt;</span>
+<p>if polkit is missing, then it must be enabled by the administrator:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">sudo</span> <span class="n">loginctl</span> <span class="n">enable</span><span class="o">-</span><span class="n">linger</span> <span class="o">*</span><span class="n">user_to_run_metpx</span><span class="o">-</span><span class="n">sr3</span><span class="o">*</span>
 </pre></div>
 </div>
+<p>more info: <a class="reference external" href="https://wiki.archlinux.org/title/Systemd/User#Automatic_start-up_of_systemd_user_instances">https://wiki.archlinux.org/title/Systemd/User#Automatic_start-up_of_systemd_user_instances</a></p>
 </section>
 </section>
 <section id="rabbitmq-setup">
