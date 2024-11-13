@@ -250,6 +250,15 @@ Les utilisateurs peuvent également exécuter leur configuration personnelle (mo
   systemctl --user enable metpx-sr3
   systemctl --user start metpx-sr3
 
+Pour le démarrer à au démarrage du système, ce qui suit peut être utile (en supposant que Polkit soit présent, ce qui est généralement le cas) ::
+
+  loginctl enable-linger
+
+Si Polkit est manquant, il doit être activé par l'administrateur ::
+
+  sudo loginctl enable-linger *user_to_run_metpx-sr3*
+
+plus d'informations (en anglais) : https://wiki.archlinux.org/title/Systemd/User#Automatic_start-up_of_systemd_user_instances
 
 
 Installation Rabbitmq

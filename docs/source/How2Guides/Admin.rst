@@ -219,6 +219,17 @@ Users can also run their personal configuration (user mode systemd) in sessions 
   systemctl --user enable metpx-sr3
   systemctl --user start metpx-sr3
 
+To have it started on every login, the following might be helpful (assuming polkit present, which it usually is)::
+
+  loginctl enable-linger
+
+if polkit is missing, then it must be enabled by the administrator::
+
+  sudo loginctl enable-linger *user_to_run_metpx-sr3*
+
+
+
+more info: https://wiki.archlinux.org/title/Systemd/User#Automatic_start-up_of_systemd_user_instances
 
 
 Rabbitmq Setup
