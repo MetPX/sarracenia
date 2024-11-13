@@ -349,10 +349,10 @@ class MQTT(Moth):
 
         something_broke = True
         self.connected=False
-        while True:
+        if True:
 
             if self._stop_requested:
-                break
+                return
 
             try:
                 cs = self.o['clean_session']
@@ -385,7 +385,7 @@ class MQTT(Moth):
                               break
                          if ebo < 512 :
                             ebo *= 2
-                    break
+                    return
                 else: # either 'declare' or 'foreground'
                     if 'instances' in self.o:    
                         session_mxi=self.o['instances']+1
@@ -403,20 +403,20 @@ class MQTT(Moth):
                             logger.info( f"waiting ({ebo} seconds) for broker to confirm subscription is set up.")
                             logger.info( f"for {icid} connect_in_progress={self.connect_in_progress} subscribe_in_progress={self.subscribe_in_progress}" )
                             if self._stop_requested:
-                                break
+                                return
                             if ebo < 60: ebo *= 2
                             decl_client.loop(ebo)
                         decl_client.disconnect()
                         decl_client.loop_stop()
                         logger.info( f"instance declaration for {icid} done" )
-                    break
+                    return
                     
             except Exception as err:
                 logger.error( f"failed to {self.o['broker'].url.hostname} with {err}" )
                 logger.error('Exception details: ', exc_info=True)
 
-            if ebo < 60: ebo *= 2
-            time.sleep(ebo)
+            #if ebo < 60: ebo *= 2
+            #time.sleep(ebo)
 
     def putSetup(self):
         """
