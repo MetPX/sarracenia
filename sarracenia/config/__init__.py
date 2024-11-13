@@ -1038,6 +1038,12 @@ class Config:
         if ( '${RAND8}' in word ):
             result = result.replace('${RAND8}', str(randint(0, 100000000)).zfill(8))
 
+        if ( '${INSTANCE}' in word ):
+            if hasattr(self,'no'): 
+                instance=self.no
+            else:
+                instance=00
+            result = result.replace('${INSTANCE}', f"{instance:02d}" )
         if not '$' in result:
             return result
 
@@ -1058,6 +1064,8 @@ class Config:
                 repval = getattr(self, e)
                 if type(repval) is list:
                     repval = repval[0]
+                if type(repval) is not str:
+                    repval = str(repval)
                 result = result.replace('${' + E + '}', repval)
                 continue
 
