@@ -661,9 +661,9 @@ Creating the Queue
 Once connected to an AMQP broker, the user needs to create a queue.
 Common settings for the queue on broker :
 
-- **queueShare <strin>         (default: ${USER}_${HOSTNAME}_${RAND8})**
-- **expire        <duration>      (default: 5m  == five minutes. RECOMMEND OVERRIDING)**
-- **message_ttl   <duration>      (default: None)**
+- **queueShare    <string>       (default: ${USER}_${HOSTNAME}_${RAND8})**
+- **expire        <duration>     (default: 5m  == five minutes. RECOMMEND OVERRIDING)**
+- **message_ttl   <duration>     (default: None)**
 - **prefetch      <N>            (default: 1)**
 
 
@@ -1733,6 +1733,7 @@ right hand side to be evaluated, surrounded by ${..} The built-in variables are:
  - ${CONFIG}      - the name of the configuration file being run.
  - ${HOSTNAME}    - the hostname running the client.
  - ${RANDID}      - a random id that will be consistent within a single invocation.
+ - ${INSTANCE}    - The instance id of the running flow.
 
 
 flowCallbacks

@@ -142,6 +142,7 @@ option, with the use of *${..}* notation:
 * HOSTNAME    - the hostname running the client.
 * RANDID      - a random id (0-64Ki) that will be consistent within a single instance.
 * RAND8       - a random 8 digit wide number that is generated whenever it is evaluated in a string.
+* INSTANCE    - the flow process's instance number 
 
 The %Y%m%d and %h time stamps refer to the time at which the data is processed by
 the component, it is not decoded or derived from the content of the files delivered.

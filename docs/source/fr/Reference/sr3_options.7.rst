@@ -140,6 +140,7 @@ en utilisant la notation *${..} * :
 * HOSTNAME    - le hostname qui exécute le client.
 * RANDID      - Un ID aléatoire qui va être consistant pendant la duration d'une seule invocation.
 * RAND8 - un nombre aléatoire à 8 chiffres qui est généré chaque fois qu'il est évalué dans une chaîne de caractères.
+* INSTANCE   - le numéro d'instance du processus de flux (composant/configuration)
 
 
 Les horodatages %Y%m%d et %H font référence à l’heure à laquelle les données sont traitées par
