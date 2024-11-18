@@ -260,7 +260,10 @@
 
         <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">props</span><span class="p">,</span> <span class="n">is_subscriber</span><span class="p">)</span>
 
-        <span class="bp">self</span><span class="o">.</span><span class="n">last_qDeclare</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span>
+        <span class="n">now</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">last_qDeclare</span> <span class="o">=</span> <span class="n">now</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">next_connect_time</span> <span class="o">=</span> <span class="n">now</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">next_connect_failures</span> <span class="o">=</span> <span class="mi">0</span>
 
         <span class="n">logging</span><span class="o">.</span><span class="n">basicConfig</span><span class="p">(</span>
             <span class="nb">format</span><span class="o">=</span>
@@ -395,13 +398,31 @@
             <span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span>
                     <span class="sa">f</span><span class="s1">&#39;connecting to: </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">o</span><span class="p">[</span><span class="s2">&quot;queueName&quot;</span><span class="p">]</span><span class="si">}</span><span class="s1">, durable: </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">o</span><span class="p">[</span><span class="s2">&quot;durable&quot;</span><span class="p">]</span><span class="si">}</span><span class="s1">, expire: </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">o</span><span class="p">[</span><span class="s2">&quot;expire&quot;</span><span class="p">]</span><span class="si">}</span><span class="s1">, auto_delete=</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">o</span><span class="p">[</span><span class="s2">&quot;auto_delete&quot;</span><span class="p">]</span><span class="si">}</span><span class="s1">&#39;</span>
                 <span class="p">)</span>
-            <span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="s2">&quot;AMQP getSetup failed to </span><span class="si">{}</span><span class="s2"> with </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
-                    <span class="bp">self</span><span class="o">.</span><span class="n">o</span><span class="p">[</span><span class="s1">&#39;broker&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">url</span><span class="o">.</span><span class="n">hostname</span><span class="p">,</span> <span class="n">err</span><span class="p">))</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span> <span class="sa">f</span><span class="s2">&quot;failed queue declare to </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">o</span><span class="p">[</span><span class="s1">&#39;broker&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">url</span><span class="o">.</span><span class="n">hostname</span><span class="si">}</span><span class="s2">: </span><span class="si">{</span><span class="n">err</span><span class="si">}</span><span class="s2">&quot;</span> <span class="p">)</span>
             <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s1">&#39;Exception details: &#39;</span><span class="p">,</span> <span class="n">exc_info</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 
         <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="s1">&#39;metrics&#39;</span><span class="p">):</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">metrics</span><span class="p">[</span><span class="s1">&#39;brokerQueuedMessageCount&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="o">-</span><span class="mi">1</span>
         <span class="k">return</span> <span class="o">-</span><span class="mi">1</span>
+
+<div class="viewcode-block" id="AMQP.setEbo">
+<a class="viewcode-back" href="../../../Reference/code.html#sarracenia.moth.amqp.AMQP.setEbo">[docs]</a>
+    <span class="k">def</span> <span class="nf">setEbo</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">start</span><span class="p">)</span><span class="o">-&gt;</span><span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;  Calculate next retry time using exponential backoff</span>
+<span class="sd">             note that it doesn&#39;t look like classic EBO because the time</span>
+<span class="sd">             is multiplied by how long it took to fail. Long failures should not</span>
+<span class="sd">             be retried quickly, but short failures can be variable in duration.</span>
+<span class="sd">             If the timing of failures is variable, the &quot;attempt_duration&quot; will be low, </span>
+<span class="sd">             and so the next_try might get smaller even though it hasn&#39;t succeeded yet... </span>
+<span class="sd">             it should eventually settle down to a long period though.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">now</span><span class="o">=</span><span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span>
+        <span class="n">attempt_duration</span> <span class="o">=</span> <span class="n">now</span> <span class="o">-</span> <span class="n">start</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">next_connect_failures</span> <span class="o">+=</span> <span class="mi">1</span>
+        <span class="n">ebo</span> <span class="o">=</span> <span class="mi">2</span><span class="o">**</span><span class="bp">self</span><span class="o">.</span><span class="n">next_connect_failures</span>
+        <span class="n">next_try</span> <span class="o">=</span> <span class="nb">min</span><span class="p">(</span><span class="n">attempt_duration</span> <span class="o">*</span> <span class="n">ebo</span><span class="p">,</span> <span class="mi">600</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">next_connect_time</span> <span class="o">=</span> <span class="n">now</span> <span class="o">+</span> <span class="n">next_try</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span> <span class="sa">f</span><span class="s2">&quot;could not connect. next try in </span><span class="si">{</span><span class="n">next_try</span><span class="si">}</span><span class="s2"> seconds.&quot;</span><span class="p">)</span></div>
 
 
 <div class="viewcode-block" id="AMQP.getSetup">
@@ -413,144 +434,139 @@
 <span class="sd">        if message_strategy is stubborn, will loop here forever.</span>
 <span class="sd">             connect, declare queue, apply bindings.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="n">ebo</span> <span class="o">=</span> <span class="mi">1</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_stop_requested</span><span class="p">:</span>
+            <span class="k">return</span>
 
-        <span class="k">while</span> <span class="kc">True</span><span class="p">:</span>
+        <span class="k">if</span> <span class="s1">&#39;broker&#39;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">o</span> <span class="ow">or</span> <span class="bp">self</span><span class="o">.</span><span class="n">o</span><span class="p">[</span><span class="s1">&#39;broker&#39;</span><span class="p">]</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">critical</span><span class="p">(</span> <span class="sa">f</span><span class="s2">&quot;no broker given&quot;</span> <span class="p">)</span>
+            <span class="k">return</span>
+
+        <span class="n">start</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span>
+        <span class="k">if</span> <span class="n">start</span> <span class="o">&lt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">next_connect_time</span><span class="p">:</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">critical</span><span class="p">(</span> <span class="sa">f</span><span class="s2">&quot;too soon to connect again will try in: </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">next_connect_time</span><span class="o">-</span><span class="n">start</span><span class="si">}</span><span class="s2"> seconds&quot;</span> <span class="p">)</span>
+            <span class="k">return</span>
+
+        <span class="c1"># It does not really matter how it fails, the recovery approach is always the same:</span>
+        <span class="c1"># tear the whole thing down, and start over.</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="c1"># from sr_consumer.build_connection...</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">__connect</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">o</span><span class="p">[</span><span class="s1">&#39;broker&#39;</span><span class="p">]):</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">setEbo</span><span class="p">(</span><span class="n">start</span><span class="p">)</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">connection</span> <span class="o">=</span> <span class="kc">None</span>
+                <span class="k">return</span>
             
-            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_stop_requested</span><span class="p">:</span>
-                <span class="k">break</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">o</span><span class="p">[</span><span class="s1">&#39;prefetch&#39;</span><span class="p">]</span> <span class="o">!=</span> <span class="mi">0</span><span class="p">:</span>
+                <span class="c1"># using global False because RabbitMQ Quorum Queues don&#39;t support Global QoS, issue #1233</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">channel</span><span class="o">.</span><span class="n">basic_qos</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">o</span><span class="p">[</span><span class="s1">&#39;prefetch&#39;</span><span class="p">],</span> <span class="kc">False</span><span class="p">)</span>
 
-            <span class="k">if</span> <span class="s1">&#39;broker&#39;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">o</span> <span class="ow">or</span> <span class="bp">self</span><span class="o">.</span><span class="n">o</span><span class="p">[</span><span class="s1">&#39;broker&#39;</span><span class="p">]</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-                <span class="n">logger</span><span class="o">.</span><span class="n">critical</span><span class="p">(</span> <span class="sa">f</span><span class="s2">&quot;no broker given&quot;</span> <span class="p">)</span>
-                <span class="k">break</span>
-
-            <span class="c1"># It does not really matter how it fails, the recovery approach is always the same:</span>
-            <span class="c1"># tear the whole thing down, and start over.</span>
-            <span class="k">try</span><span class="p">:</span>
-                <span class="c1"># from sr_consumer.build_connection...</span>
-                <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">__connect</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">o</span><span class="p">[</span><span class="s1">&#39;broker&#39;</span><span class="p">]):</span>
-                    <span class="n">logger</span><span class="o">.</span><span class="n">critical</span><span class="p">(</span><span class="s1">&#39;could not connect&#39;</span><span class="p">)</span>
-                    <span class="k">break</span>
-                
-                <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">o</span><span class="p">[</span><span class="s1">&#39;prefetch&#39;</span><span class="p">]</span> <span class="o">!=</span> <span class="mi">0</span><span class="p">:</span>
-                    <span class="c1"># using global False because RabbitMQ Quorum Queues don&#39;t support Global QoS, issue #1233</span>
-                    <span class="bp">self</span><span class="o">.</span><span class="n">channel</span><span class="o">.</span><span class="n">basic_qos</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">o</span><span class="p">[</span><span class="s1">&#39;prefetch&#39;</span><span class="p">],</span> <span class="kc">False</span><span class="p">)</span>
-
-                <span class="c1"># only first/lead instance needs to declare a queue and bindings.</span>
-                <span class="k">if</span> <span class="s1">&#39;no&#39;</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">o</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">o</span><span class="p">[</span><span class="s1">&#39;no&#39;</span><span class="p">]</span> <span class="o">&gt;=</span> <span class="mi">2</span><span class="p">:</span>
-                    <span class="bp">self</span><span class="o">.</span><span class="n">metricsConnect</span><span class="p">()</span>
-                    <span class="k">return</span>
-
-                <span class="c1">#logger.info(&#39;getSetup connected to {}&#39;.format(self.o[&#39;broker&#39;].url.hostname) )</span>
-
-                <span class="c1">#FIXME: test self.first_setup and props[&#39;reset&#39;]... delete queue...</span>
-                <span class="n">broker_str</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">o</span><span class="p">[</span><span class="s1">&#39;broker&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">url</span><span class="o">.</span><span class="n">geturl</span><span class="p">()</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span>
-                    <span class="s1">&#39;:&#39;</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">o</span><span class="p">[</span><span class="s1">&#39;broker&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">url</span><span class="o">.</span><span class="n">password</span> <span class="o">+</span> <span class="s1">&#39;@&#39;</span><span class="p">,</span> <span class="s1">&#39;@&#39;</span><span class="p">)</span>
-
-                <span class="c1"># from Queue declare</span>
-                <span class="n">msg_count</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_queueDeclare</span><span class="p">()</span>
-                
-                <span class="k">if</span> <span class="n">msg_count</span> <span class="o">==</span> <span class="o">-</span><span class="mi">2</span><span class="p">:</span> <span class="k">break</span>
-
-                <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">o</span><span class="p">[</span><span class="s1">&#39;queueBind&#39;</span><span class="p">]</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">o</span><span class="p">[</span><span class="s1">&#39;queueName&#39;</span><span class="p">]:</span>
-                    <span class="k">for</span> <span class="n">tup</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">o</span><span class="p">[</span><span class="s1">&#39;bindings&#39;</span><span class="p">]:</span>
-                        <span class="n">exchange</span><span class="p">,</span> <span class="n">prefix</span><span class="p">,</span> <span class="n">subtopic</span> <span class="o">=</span> <span class="n">tup</span>
-                        <span class="n">topic</span> <span class="o">=</span> <span class="s1">&#39;.&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">prefix</span> <span class="o">+</span> <span class="n">subtopic</span><span class="p">)</span>
-                        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">o</span><span class="p">[</span><span class="s1">&#39;dry_run&#39;</span><span class="p">]:</span>
-                            <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s1">&#39;binding (dry run) </span><span class="si">%s</span><span class="s1"> with </span><span class="si">%s</span><span class="s1"> to </span><span class="si">%s</span><span class="s1"> (as: </span><span class="si">%s</span><span class="s1">)&#39;</span> <span class="o">%</span> \
-                                <span class="p">(</span> <span class="bp">self</span><span class="o">.</span><span class="n">o</span><span class="p">[</span><span class="s1">&#39;queueName&#39;</span><span class="p">],</span> <span class="n">topic</span><span class="p">,</span> <span class="n">exchange</span><span class="p">,</span> <span class="n">broker_str</span> <span class="p">)</span> <span class="p">)</span>
-                        <span class="k">else</span><span class="p">:</span>
-                            <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s1">&#39;binding </span><span class="si">%s</span><span class="s1"> with </span><span class="si">%s</span><span class="s1"> to </span><span class="si">%s</span><span class="s1"> (as: </span><span class="si">%s</span><span class="s1">)&#39;</span> <span class="o">%</span> \
-                                <span class="p">(</span> <span class="bp">self</span><span class="o">.</span><span class="n">o</span><span class="p">[</span><span class="s1">&#39;queueName&#39;</span><span class="p">],</span> <span class="n">topic</span><span class="p">,</span> <span class="n">exchange</span><span class="p">,</span> <span class="n">broker_str</span> <span class="p">)</span> <span class="p">)</span>
-                            <span class="k">if</span> <span class="n">exchange</span><span class="p">:</span>
-                                <span class="bp">self</span><span class="o">.</span><span class="n">management_channel</span><span class="o">.</span><span class="n">queue_bind</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">o</span><span class="p">[</span><span class="s1">&#39;queueName&#39;</span><span class="p">],</span> <span class="n">exchange</span><span class="p">,</span>
-                                                <span class="n">topic</span><span class="p">)</span>
-
-                <span class="c1"># Setup Successfully Complete!</span>
+            <span class="c1"># only first/lead instance needs to declare a queue and bindings.</span>
+            <span class="k">if</span> <span class="s1">&#39;no&#39;</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">o</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">o</span><span class="p">[</span><span class="s1">&#39;no&#39;</span><span class="p">]</span> <span class="o">&gt;=</span> <span class="mi">2</span><span class="p">:</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">metricsConnect</span><span class="p">()</span>
-                <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s1">&#39;getSetup ... Done!&#39;</span><span class="p">)</span>
-                <span class="k">break</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">next_connect_failures</span> <span class="o">=</span> <span class="mi">0</span>
+                <span class="k">return</span>
 
-            <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">err</span><span class="p">:</span>
-                <span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span>
-                    <span class="sa">f</span><span class="s1">&#39;connecting to: </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">o</span><span class="p">[</span><span class="s2">&quot;queueName&quot;</span><span class="p">]</span><span class="si">}</span><span class="s1">, durable: </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">o</span><span class="p">[</span><span class="s2">&quot;durable&quot;</span><span class="p">]</span><span class="si">}</span><span class="s1">, expire: </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">o</span><span class="p">[</span><span class="s2">&quot;expire&quot;</span><span class="p">]</span><span class="si">}</span><span class="s1">, auto_delete=</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">o</span><span class="p">[</span><span class="s2">&quot;auto_delete&quot;</span><span class="p">]</span><span class="si">}</span><span class="s1">&#39;</span>
-                <span class="p">)</span>
-                <span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="s2">&quot;AMQP getSetup failed to </span><span class="si">{}</span><span class="s2"> with </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
-                    <span class="bp">self</span><span class="o">.</span><span class="n">o</span><span class="p">[</span><span class="s1">&#39;broker&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">url</span><span class="o">.</span><span class="n">hostname</span><span class="p">,</span> <span class="n">err</span><span class="p">))</span>
-                <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s1">&#39;Exception details: &#39;</span><span class="p">,</span> <span class="n">exc_info</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+            <span class="c1">#logger.info(&#39;getSetup connected to {}&#39;.format(self.o[&#39;broker&#39;].url.hostname) )</span>
 
-            <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">o</span><span class="p">[</span><span class="s1">&#39;message_strategy&#39;</span><span class="p">][</span><span class="s1">&#39;stubborn&#39;</span><span class="p">]:</span> <span class="k">return</span>
+            <span class="c1">#FIXME: test self.first_setup and props[&#39;reset&#39;]... delete queue...</span>
+            <span class="n">broker_str</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">o</span><span class="p">[</span><span class="s1">&#39;broker&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">url</span><span class="o">.</span><span class="n">geturl</span><span class="p">()</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span>
+                <span class="s1">&#39;:&#39;</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">o</span><span class="p">[</span><span class="s1">&#39;broker&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">url</span><span class="o">.</span><span class="n">password</span> <span class="o">+</span> <span class="s1">&#39;@&#39;</span><span class="p">,</span> <span class="s1">&#39;@&#39;</span><span class="p">)</span>
 
-            <span class="k">if</span> <span class="n">ebo</span> <span class="o">&lt;</span> <span class="mi">60</span><span class="p">:</span> <span class="n">ebo</span> <span class="o">*=</span> <span class="mi">2</span>
+            <span class="c1"># from Queue declare</span>
+            <span class="n">msg_count</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_queueDeclare</span><span class="p">()</span>
+            
+            <span class="k">if</span> <span class="n">msg_count</span> <span class="o">==</span> <span class="o">-</span><span class="mi">2</span><span class="p">:</span> <span class="k">return</span>
 
-            <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Sleeping </span><span class="si">{}</span><span class="s2"> seconds ...&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">ebo</span><span class="p">))</span>
-            <span class="n">interruptible_sleep</span><span class="p">(</span><span class="n">ebo</span><span class="p">,</span> <span class="n">obj</span><span class="o">=</span><span class="bp">self</span><span class="p">)</span></div>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">o</span><span class="p">[</span><span class="s1">&#39;queueBind&#39;</span><span class="p">]</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">o</span><span class="p">[</span><span class="s1">&#39;queueName&#39;</span><span class="p">]:</span>
+                <span class="k">for</span> <span class="n">tup</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">o</span><span class="p">[</span><span class="s1">&#39;bindings&#39;</span><span class="p">]:</span>
+                    <span class="n">exchange</span><span class="p">,</span> <span class="n">prefix</span><span class="p">,</span> <span class="n">subtopic</span> <span class="o">=</span> <span class="n">tup</span>
+                    <span class="n">topic</span> <span class="o">=</span> <span class="s1">&#39;.&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">prefix</span> <span class="o">+</span> <span class="n">subtopic</span><span class="p">)</span>
+                    <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">o</span><span class="p">[</span><span class="s1">&#39;dry_run&#39;</span><span class="p">]:</span>
+                        <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s1">&#39;binding (dry run) </span><span class="si">%s</span><span class="s1"> with </span><span class="si">%s</span><span class="s1"> to </span><span class="si">%s</span><span class="s1"> (as: </span><span class="si">%s</span><span class="s1">)&#39;</span> <span class="o">%</span> \
+                            <span class="p">(</span> <span class="bp">self</span><span class="o">.</span><span class="n">o</span><span class="p">[</span><span class="s1">&#39;queueName&#39;</span><span class="p">],</span> <span class="n">topic</span><span class="p">,</span> <span class="n">exchange</span><span class="p">,</span> <span class="n">broker_str</span> <span class="p">)</span> <span class="p">)</span>
+                    <span class="k">else</span><span class="p">:</span>
+                        <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s1">&#39;binding </span><span class="si">%s</span><span class="s1"> with </span><span class="si">%s</span><span class="s1"> to </span><span class="si">%s</span><span class="s1"> (as: </span><span class="si">%s</span><span class="s1">)&#39;</span> <span class="o">%</span> \
+                            <span class="p">(</span> <span class="bp">self</span><span class="o">.</span><span class="n">o</span><span class="p">[</span><span class="s1">&#39;queueName&#39;</span><span class="p">],</span> <span class="n">topic</span><span class="p">,</span> <span class="n">exchange</span><span class="p">,</span> <span class="n">broker_str</span> <span class="p">)</span> <span class="p">)</span>
+                        <span class="k">if</span> <span class="n">exchange</span><span class="p">:</span>
+                            <span class="bp">self</span><span class="o">.</span><span class="n">management_channel</span><span class="o">.</span><span class="n">queue_bind</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">o</span><span class="p">[</span><span class="s1">&#39;queueName&#39;</span><span class="p">],</span> <span class="n">exchange</span><span class="p">,</span>
+                                            <span class="n">topic</span><span class="p">)</span>
+
+            <span class="c1"># Setup Successfully Complete!</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">metricsConnect</span><span class="p">()</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">next_connect_failures</span> <span class="o">=</span> <span class="mi">0</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s1">&#39;getSetup ... Done!&#39;</span><span class="p">)</span>
+            <span class="k">return</span>
+
+        <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">err</span><span class="p">:</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span>
+                <span class="sa">f</span><span class="s1">&#39;connecting to: </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">o</span><span class="p">[</span><span class="s2">&quot;queueName&quot;</span><span class="p">]</span><span class="si">}</span><span class="s1">, durable: </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">o</span><span class="p">[</span><span class="s2">&quot;durable&quot;</span><span class="p">]</span><span class="si">}</span><span class="s1">, expire: </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">o</span><span class="p">[</span><span class="s2">&quot;expire&quot;</span><span class="p">]</span><span class="si">}</span><span class="s1">, auto_delete=</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">o</span><span class="p">[</span><span class="s2">&quot;auto_delete&quot;</span><span class="p">]</span><span class="si">}</span><span class="s1">&#39;</span>
+            <span class="p">)</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span> <span class="sa">f</span><span class="s2">&quot;failed connection to </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">o</span><span class="p">[</span><span class="s1">&#39;broker&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">url</span><span class="o">.</span><span class="n">hostname</span><span class="si">}</span><span class="s2">: </span><span class="si">{</span><span class="n">err</span><span class="si">}</span><span class="s2">&quot;</span> <span class="p">)</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s1">&#39;Exception details: &#39;</span><span class="p">,</span> <span class="n">exc_info</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">setEbo</span><span class="p">(</span><span class="n">start</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">connection</span> <span class="o">=</span> <span class="kc">None</span></div>
 
 
     <span class="k">def</span> <span class="nf">putSetup</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
 
-        <span class="n">ebo</span> <span class="o">=</span> <span class="mi">1</span>
+        <span class="n">start</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span>
+        <span class="k">if</span> <span class="n">start</span> <span class="o">&lt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">next_connect_time</span><span class="p">:</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">critical</span><span class="p">(</span> <span class="sa">f</span><span class="s2">&quot;too soon to connect again will try in: </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">next_connect_time</span><span class="o">-</span><span class="n">start</span><span class="si">}</span><span class="s2"> seconds&quot;</span> <span class="p">)</span>
+            <span class="k">return</span>
 
-        <span class="k">while</span> <span class="kc">True</span><span class="p">:</span>
+        <span class="c1"># It does not really matter how it fails, the recovery approach is always the same:</span>
+        <span class="c1"># tear the whole thing down, and start over.</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_stop_requested</span><span class="p">:</span>
+                <span class="k">return</span>
 
-            <span class="c1"># It does not really matter how it fails, the recovery approach is always the same:</span>
-            <span class="c1"># tear the whole thing down, and start over.</span>
-            <span class="k">try</span><span class="p">:</span>
-                <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_stop_requested</span><span class="p">:</span>
-                    <span class="k">break</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">o</span><span class="p">[</span><span class="s1">&#39;broker&#39;</span><span class="p">]</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="n">logger</span><span class="o">.</span><span class="n">critical</span><span class="p">(</span> <span class="sa">f</span><span class="s2">&quot;no broker given&quot;</span> <span class="p">)</span>
+                <span class="k">return</span>
 
-                <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">o</span><span class="p">[</span><span class="s1">&#39;broker&#39;</span><span class="p">]</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-                    <span class="n">logger</span><span class="o">.</span><span class="n">critical</span><span class="p">(</span> <span class="sa">f</span><span class="s2">&quot;no broker given&quot;</span> <span class="p">)</span>
-                    <span class="k">break</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">__connect</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">o</span><span class="p">[</span><span class="s1">&#39;broker&#39;</span><span class="p">]):</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">setEbo</span><span class="p">(</span><span class="n">start</span><span class="p">)</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">connection</span> <span class="o">=</span> <span class="kc">None</span>
+                <span class="k">return</span>
 
-                <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">__connect</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">o</span><span class="p">[</span><span class="s1">&#39;broker&#39;</span><span class="p">]):</span>
-                    <span class="n">logger</span><span class="o">.</span><span class="n">critical</span><span class="p">(</span><span class="s1">&#39;could not connect&#39;</span><span class="p">)</span>
-                    <span class="k">break</span>
+            <span class="c1"># transaction mode... confirms would be better...</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">channel</span><span class="o">.</span><span class="n">tx_select</span><span class="p">()</span>
+            <span class="n">broker_str</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">o</span><span class="p">[</span><span class="s1">&#39;broker&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">url</span><span class="o">.</span><span class="n">geturl</span><span class="p">()</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span>
+                <span class="s1">&#39;:&#39;</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">o</span><span class="p">[</span><span class="s1">&#39;broker&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">url</span><span class="o">.</span><span class="n">password</span> <span class="o">+</span> <span class="s1">&#39;@&#39;</span><span class="p">,</span> <span class="s1">&#39;@&#39;</span><span class="p">)</span>
 
-                <span class="c1"># transaction mode... confirms would be better...</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">channel</span><span class="o">.</span><span class="n">tx_select</span><span class="p">()</span>
-                <span class="n">broker_str</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">o</span><span class="p">[</span><span class="s1">&#39;broker&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">url</span><span class="o">.</span><span class="n">geturl</span><span class="p">()</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span>
-                    <span class="s1">&#39;:&#39;</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">o</span><span class="p">[</span><span class="s1">&#39;broker&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">url</span><span class="o">.</span><span class="n">password</span> <span class="o">+</span> <span class="s1">&#39;@&#39;</span><span class="p">,</span> <span class="s1">&#39;@&#39;</span><span class="p">)</span>
+            <span class="c1">#logger.debug(&#39;putSetup ... 1. connected to {}&#39;.format(broker_str ) )</span>
 
-                <span class="c1">#logger.debug(&#39;putSetup ... 1. connected to {}&#39;.format(broker_str ) )</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">o</span><span class="p">[</span><span class="s1">&#39;exchangeDeclare&#39;</span><span class="p">]:</span>
+                <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s1">&#39;putSetup ... 1. declaring </span><span class="si">{}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">o</span><span class="p">[</span><span class="s1">&#39;exchange&#39;</span><span class="p">]))</span>
+                <span class="k">if</span> <span class="nb">type</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">o</span><span class="p">[</span><span class="s1">&#39;exchange&#39;</span><span class="p">])</span> <span class="ow">is</span> <span class="ow">not</span> <span class="nb">list</span><span class="p">:</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">o</span><span class="p">[</span><span class="s1">&#39;exchange&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">o</span><span class="p">[</span><span class="s1">&#39;exchange&#39;</span><span class="p">]]</span>
+                <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">o</span><span class="p">[</span><span class="s1">&#39;exchange&#39;</span><span class="p">]:</span>
+                    <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">o</span><span class="p">[</span><span class="s1">&#39;dry_run&#39;</span><span class="p">]:</span>
+                        <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s1">&#39;exchange declare (dry run): </span><span class="si">%s</span><span class="s1"> (as: </span><span class="si">%s</span><span class="s1">)&#39;</span> <span class="o">%</span>
+                                <span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">broker_str</span><span class="p">))</span>
+                    <span class="k">else</span><span class="p">:</span>
+                        <span class="bp">self</span><span class="o">.</span><span class="n">channel</span><span class="o">.</span><span class="n">exchange_declare</span><span class="p">(</span>
+                            <span class="n">x</span><span class="p">,</span>
+                            <span class="s1">&#39;topic&#39;</span><span class="p">,</span>
+                            <span class="n">auto_delete</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">o</span><span class="p">[</span><span class="s1">&#39;auto_delete&#39;</span><span class="p">],</span>
+                            <span class="n">durable</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">o</span><span class="p">[</span><span class="s1">&#39;durable&#39;</span><span class="p">])</span>
+                        <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s1">&#39;exchange declared: </span><span class="si">%s</span><span class="s1"> (as: </span><span class="si">%s</span><span class="s1">)&#39;</span> <span class="o">%</span>
+                                <span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">broker_str</span><span class="p">))</span>
 
-                <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">o</span><span class="p">[</span><span class="s1">&#39;exchangeDeclare&#39;</span><span class="p">]:</span>
-                    <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s1">&#39;putSetup ... 1. declaring </span><span class="si">{}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
-                        <span class="bp">self</span><span class="o">.</span><span class="n">o</span><span class="p">[</span><span class="s1">&#39;exchange&#39;</span><span class="p">]))</span>
-                    <span class="k">if</span> <span class="nb">type</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">o</span><span class="p">[</span><span class="s1">&#39;exchange&#39;</span><span class="p">])</span> <span class="ow">is</span> <span class="ow">not</span> <span class="nb">list</span><span class="p">:</span>
-                        <span class="bp">self</span><span class="o">.</span><span class="n">o</span><span class="p">[</span><span class="s1">&#39;exchange&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">o</span><span class="p">[</span><span class="s1">&#39;exchange&#39;</span><span class="p">]]</span>
-                    <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">o</span><span class="p">[</span><span class="s1">&#39;exchange&#39;</span><span class="p">]:</span>
-                        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">o</span><span class="p">[</span><span class="s1">&#39;dry_run&#39;</span><span class="p">]:</span>
-                            <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s1">&#39;exchange declare (dry run): </span><span class="si">%s</span><span class="s1"> (as: </span><span class="si">%s</span><span class="s1">)&#39;</span> <span class="o">%</span>
-                                    <span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">broker_str</span><span class="p">))</span>
-                        <span class="k">else</span><span class="p">:</span>
-                            <span class="bp">self</span><span class="o">.</span><span class="n">channel</span><span class="o">.</span><span class="n">exchange_declare</span><span class="p">(</span>
-                                <span class="n">x</span><span class="p">,</span>
-                                <span class="s1">&#39;topic&#39;</span><span class="p">,</span>
-                                <span class="n">auto_delete</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">o</span><span class="p">[</span><span class="s1">&#39;auto_delete&#39;</span><span class="p">],</span>
-                                <span class="n">durable</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">o</span><span class="p">[</span><span class="s1">&#39;durable&#39;</span><span class="p">])</span>
-                            <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s1">&#39;exchange declared: </span><span class="si">%s</span><span class="s1"> (as: </span><span class="si">%s</span><span class="s1">)&#39;</span> <span class="o">%</span>
-                                    <span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">broker_str</span><span class="p">))</span>
+            <span class="c1"># Setup Successfully Complete!</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">metricsConnect</span><span class="p">()</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">next_connect_failures</span> <span class="o">=</span> <span class="mi">0</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s1">&#39;putSetup ... Done!&#39;</span><span class="p">)</span>
 
-                <span class="c1"># Setup Successfully Complete!</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">metricsConnect</span><span class="p">()</span>
-                <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s1">&#39;putSetup ... Done!&#39;</span><span class="p">)</span>
-                <span class="k">break</span>
-
-            <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">err</span><span class="p">:</span>
-                <span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span>
-                    <span class="s2">&quot;AMQP putSetup failed to connect or declare exchanges </span><span class="si">{}</span><span class="s2">@</span><span class="si">{}</span><span class="s2"> on </span><span class="si">{}</span><span class="s2">: </span><span class="si">{}</span><span class="s2">&quot;</span>
-                    <span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">o</span><span class="p">[</span><span class="s1">&#39;exchange&#39;</span><span class="p">],</span> <span class="bp">self</span><span class="o">.</span><span class="n">o</span><span class="p">[</span><span class="s1">&#39;broker&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">url</span><span class="o">.</span><span class="n">username</span><span class="p">,</span>
-                            <span class="bp">self</span><span class="o">.</span><span class="n">o</span><span class="p">[</span><span class="s1">&#39;broker&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">url</span><span class="o">.</span><span class="n">hostname</span><span class="p">,</span> <span class="n">err</span><span class="p">))</span>
-                <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s1">&#39;Exception details: &#39;</span><span class="p">,</span> <span class="n">exc_info</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
-
-            <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">o</span><span class="p">[</span><span class="s1">&#39;message_strategy&#39;</span><span class="p">][</span><span class="s1">&#39;stubborn&#39;</span><span class="p">]:</span> <span class="k">return</span>
-
-            <span class="k">if</span> <span class="n">ebo</span> <span class="o">&lt;</span> <span class="mi">60</span><span class="p">:</span> <span class="n">ebo</span> <span class="o">*=</span> <span class="mi">2</span>
-
+        <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">err</span><span class="p">:</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span>
+                <span class="s2">&quot;AMQP putSetup failed to connect or declare exchanges </span><span class="si">{}</span><span class="s2">@</span><span class="si">{}</span><span class="s2"> on </span><span class="si">{}</span><span class="s2">: </span><span class="si">{}</span><span class="s2">&quot;</span>
+                <span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">o</span><span class="p">[</span><span class="s1">&#39;exchange&#39;</span><span class="p">],</span> <span class="bp">self</span><span class="o">.</span><span class="n">o</span><span class="p">[</span><span class="s1">&#39;broker&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">url</span><span class="o">.</span><span class="n">username</span><span class="p">,</span>
+                        <span class="bp">self</span><span class="o">.</span><span class="n">o</span><span class="p">[</span><span class="s1">&#39;broker&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">url</span><span class="o">.</span><span class="n">hostname</span><span class="p">,</span> <span class="n">err</span><span class="p">))</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s1">&#39;Exception details: &#39;</span><span class="p">,</span> <span class="n">exc_info</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">setEbo</span><span class="p">(</span><span class="n">start</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">connection</span><span class="o">=</span><span class="kc">None</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
-            <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Sleeping </span><span class="si">{}</span><span class="s2"> seconds ...&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">ebo</span><span class="p">))</span>
-            <span class="n">interruptible_sleep</span><span class="p">(</span><span class="n">ebo</span><span class="p">,</span> <span class="n">obj</span><span class="o">=</span><span class="bp">self</span><span class="p">)</span>
 
     <span class="k">def</span> <span class="nf">putCleanUp</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
 
@@ -619,6 +635,9 @@
         <span class="k">try</span><span class="p">:</span>
             <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">connection</span><span class="p">:</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">getSetup</span><span class="p">()</span>
+
+            <span class="k">if</span> <span class="p">(</span><span class="ow">not</span> <span class="nb">hasattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="s1">&#39;channel&#39;</span><span class="p">))</span> <span class="ow">or</span> <span class="p">(</span><span class="ow">not</span> <span class="nb">hasattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="s1">&#39;connection&#39;</span><span class="p">))</span> <span class="ow">or</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">connection</span><span class="p">:</span>
+                <span class="k">return</span> <span class="kc">None</span>
 
             <span class="n">raw_msg</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">channel</span><span class="o">.</span><span class="n">basic_get</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">o</span><span class="p">[</span><span class="s1">&#39;queueName&#39;</span><span class="p">])</span>
             <span class="k">if</span> <span class="p">(</span><span class="n">raw_msg</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">)</span> <span class="ow">and</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">connection</span><span class="o">.</span><span class="n">connected</span><span class="p">):</span>

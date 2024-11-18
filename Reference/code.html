@@ -1972,6 +1972,18 @@ self.metrics[‘TxBadCount’] should be incremented by 1 if an invalid message 
 </dl>
 </dd></dl>
 
+<dl class="py method">
+<dt class="sig sig-object py" id="sarracenia.moth.Moth.setEbo">
+<span class="sig-name descname"><span class="pre">setEbo</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">start</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="reference internal" href="../_modules/sarracenia/moth.html#Moth.setEbo"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#sarracenia.moth.Moth.setEbo" title="Link to this definition"></a></dt>
+<dd><p>Calculate next retry time using exponential backoff
+note that it doesn’t look like classic EBO because the time
+is multiplied by how long it took to fail. Long failures should not
+be retried quickly, but short failures can be variable in duration.
+If the timing of failures is variable, the “attempt_duration” will be low,
+and so the next_try might get smaller even though it hasn’t succeeded yet…
+it should eventually settle down to a long period though.</p>
+</dd></dl>
+
 </dd></dl>
 
 </section>
@@ -2047,6 +2059,18 @@ self.metrics[‘RxBadCount’] should be incremented by 1 if an invalid message 
 <dt class="sig sig-object py" id="sarracenia.moth.amqp.AMQP.putNewMessage">
 <span class="sig-name descname"><span class="pre">putNewMessage</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">message</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#sarracenia.Message" title="sarracenia.Message"><span class="pre">Message</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">content_type</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'application/json'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">exchange</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">bool</span></span></span><a class="reference internal" href="../_modules/sarracenia/moth/amqp.html#AMQP.putNewMessage"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#sarracenia.moth.amqp.AMQP.putNewMessage" title="Link to this definition"></a></dt>
 <dd><p>put a new message out, to the configured exchange by default.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="sarracenia.moth.amqp.AMQP.setEbo">
+<span class="sig-name descname"><span class="pre">setEbo</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">start</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="reference internal" href="../_modules/sarracenia/moth/amqp.html#AMQP.setEbo"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#sarracenia.moth.amqp.AMQP.setEbo" title="Link to this definition"></a></dt>
+<dd><p>Calculate next retry time using exponential backoff
+note that it doesn’t look like classic EBO because the time
+is multiplied by how long it took to fail. Long failures should not
+be retried quickly, but short failures can be variable in duration.
+If the timing of failures is variable, the “attempt_duration” will be low,
+and so the next_try might get smaller even though it hasn’t succeeded yet…
+it should eventually settle down to a long period though.</p>
 </dd></dl>
 
 </dd></dl>

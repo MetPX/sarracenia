@@ -374,6 +374,10 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">metrics</span> <span class="o">=</span> <span class="p">{</span> <span class="s1">&#39;connected&#39;</span><span class="p">:</span> <span class="kc">False</span> <span class="p">}</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">metricsReset</span><span class="p">()</span>
 
+        <span class="n">now</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">next_connect_time</span> <span class="o">=</span> <span class="n">now</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">next_connect_failures</span> <span class="o">=</span> <span class="mi">0</span>
+
         <span class="k">if</span> <span class="p">(</span><span class="n">sys</span><span class="o">.</span><span class="n">version_info</span><span class="o">.</span><span class="n">major</span> <span class="o">==</span> <span class="mi">3</span><span class="p">)</span> <span class="ow">and</span> <span class="p">(</span><span class="n">sys</span><span class="o">.</span><span class="n">version_info</span><span class="o">.</span><span class="n">minor</span> <span class="o">&lt;</span> <span class="mi">7</span><span class="p">):</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">o</span> <span class="o">=</span> <span class="p">{}</span>
             <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="n">default_options</span><span class="p">:</span>
@@ -525,6 +529,26 @@
             <span class="bp">self</span><span class="o">.</span><span class="n">getCleanUp</span><span class="p">()</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">putCleanUp</span><span class="p">()</span></div>
+
+
+<div class="viewcode-block" id="Moth.setEbo">
+<a class="viewcode-back" href="../../api-documentation.html#sarracenia.moth.Moth.setEbo">[docs]</a>
+    <span class="k">def</span> <span class="nf">setEbo</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">start</span><span class="p">)</span><span class="o">-&gt;</span><span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;  Calculate next retry time using exponential backoff</span>
+<span class="sd">             note that it doesn&#39;t look like classic EBO because the time</span>
+<span class="sd">             is multiplied by how long it took to fail. Long failures should not</span>
+<span class="sd">             be retried quickly, but short failures can be variable in duration.</span>
+<span class="sd">             If the timing of failures is variable, the &quot;attempt_duration&quot; will be low,</span>
+<span class="sd">             and so the next_try might get smaller even though it hasn&#39;t succeeded yet...</span>
+<span class="sd">             it should eventually settle down to a long period though.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">now</span><span class="o">=</span><span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span>
+        <span class="n">attempt_duration</span> <span class="o">=</span> <span class="n">now</span> <span class="o">-</span> <span class="n">start</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">next_connect_failures</span> <span class="o">+=</span> <span class="mi">1</span>
+        <span class="n">ebo</span> <span class="o">=</span> <span class="mi">2</span><span class="o">**</span><span class="bp">self</span><span class="o">.</span><span class="n">next_connect_failures</span>
+        <span class="n">next_try</span> <span class="o">=</span> <span class="nb">min</span><span class="p">(</span><span class="n">attempt_duration</span> <span class="o">*</span> <span class="n">ebo</span><span class="p">,</span> <span class="mi">600</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">next_connect_time</span> <span class="o">=</span> <span class="n">now</span> <span class="o">+</span> <span class="n">next_try</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span> <span class="sa">f</span><span class="s2">&quot;could not connect. next try in </span><span class="si">{</span><span class="n">next_try</span><span class="si">}</span><span class="s2"> seconds.&quot;</span><span class="p">)</span></div>
 </div>
 
 
