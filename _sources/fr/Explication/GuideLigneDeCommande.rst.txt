@@ -1725,6 +1725,7 @@ right hand side to be evaluated, surrounded by ${..} The built-in variables are:
  - ${CONFIG}      - le nom du fichier de configuration en cours d'exécution.
  - ${HOSTNAME}    - le hostname qui exécute le client.
  - ${RANDID}      - Un ID aléatoire qui va être consistant pendant la duration d'une seule invocation.
+ - ${INSTANCE}    - le numéro d'instance du processus.
 
 flowCallbacks
 =============

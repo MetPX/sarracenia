@@ -835,9 +835,9 @@ to exchanges and topics to determine the notification messages of interest.</p>
 <p>Once connected to an AMQP broker, the user needs to create a queue.
 Common settings for the queue on broker :</p>
 <ul class="simple">
-<li><p><strong>queueShare &lt;strin&gt;         (default: ${USER}_${HOSTNAME}_${RAND8})</strong></p></li>
-<li><p><strong>expire        &lt;duration&gt;      (default: 5m  == five minutes. RECOMMEND OVERRIDING)</strong></p></li>
-<li><p><strong>message_ttl   &lt;duration&gt;      (default: None)</strong></p></li>
+<li><p><strong>queueShare    &lt;string&gt;       (default: ${USER}_${HOSTNAME}_${RAND8})</strong></p></li>
+<li><p><strong>expire        &lt;duration&gt;     (default: 5m  == five minutes. RECOMMEND OVERRIDING)</strong></p></li>
+<li><p><strong>message_ttl   &lt;duration&gt;     (default: None)</strong></p></li>
 <li><p><strong>prefetch      &lt;N&gt;            (default: 1)</strong></p></li>
 </ul>
 <p>Usually components guess reasonable defaults for all these values
@@ -1742,6 +1742,7 @@ right hand side to be evaluated, surrounded by ${..} The built-in variables are:
 <li><p>${CONFIG}      - the name of the configuration file being run.</p></li>
 <li><p>${HOSTNAME}    - the hostname running the client.</p></li>
 <li><p>${RANDID}      - a random id that will be consistent within a single invocation.</p></li>
+<li><p>${INSTANCE}    - The instance id of the running flow.</p></li>
 </ul>
 </div></blockquote>
 </section>
