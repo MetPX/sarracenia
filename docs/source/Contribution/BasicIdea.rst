@@ -12,7 +12,7 @@ pump is a standalone configuration which transforms data in complex ways, in
 sarracenia, the data sources establish a structure which is carried through any 
 number of intervening pumps until they arrive at a client. The consumer can 
 provide explicit acknowledgement that propagates back through the network to the 
-source.  
+source. 
 
 Whereas traditional file pumping is a point-to-point affair where knowledge is only
 between each segment, in Sarracenia, information flows from end to end in both directions.
@@ -31,14 +31,14 @@ sending far more efficient.
 
 Sources of data announce their products, pumping systems pull the data onto their 
 WAF trees, and then announce their trees for downstream clients. When clients 
-download data, they may write a log message back to the server. Servers are configured 
-to forward those client log messages back through the intervening servers back to 
+download data, they may write a report message back to the server. Servers are configured 
+to forward those client report messages back through the intervening servers back to 
 the source. The Source can see the entire path that the data took to get to each 
 client. With traditional pumping applications, sources only see that they delivered 
 to the first hop in a chain. Beyond that first hop, routing is opaque, and tracing
-the path of data required assistance from administrators of each intervening system.  
-With Sarracenia's log forwarding, the pumping network is completely transparent 
-to the sources, in that they can see where it went. With end to end logs, diagnostics 
+the path of data required assistance from administrators of each intervening system. 
+With Sarracenia's report forwarding, the pumping network is completely transparent 
+to the sources, in that they can see where it went. With end to end reports, diagnostics 
 are vastly simplified for everyone.
 
 For large files / high performance, files are segmented on ingest if they are sufficiently 
@@ -49,7 +49,7 @@ will pick up segments and transfer them. The more segments available, the higher
 the parallelism of the transfer. Sarracenia manages parallelism and network usage 
 without explicit user intervention. As intervening pumps do not store and 
 forward entire files, the maximum file size which can traverse the network is 
-maximized.  
+maximized. 
 
 
 These concepts below are not in order (yet?) maybe we will do that later.
@@ -76,28 +76,27 @@ and seem helpful. We should get rid of any that are not helpful.
 
    reasoning:
    need to keep the notification messages small so that the forwarding rate is high.
-   large notification messages will gum up the works.  also permissions become interesting.
+   large notification messages will gum up the works. also permissions become interesting.
    end up with a 'maximum size' threshold, and implementing two methods for everything.
 
 3. Config changes should propagate, not be unique to a host
-   you should not have to do dsh, or px-push.  
+
+   You should not have to do dsh, or px-push. 
    That sort of management is built in. the message bus is there for that.
    might use 'scope' to have commands propagate through multiple clusters.
 
 
+4. Report is data
 
-4. Log is data.
+   *It is not enough for justice to be done. Justice must be seen to be done.* - Lord Heward
 
-   *It is not enough for justice to be done.  Justice must be seen to be done.*
-
-   It is not enough for data to be delivered.  That delivery must be logged,
-   and that log must be returned to the source.  While we want to supply
+   It is not enough for data to be delivered. That delivery must be reported,
+   and that report must be returned to the source. While we want to supply
    enough information to data sources, we do not want to drown the network
-   in meta data.  The local component logs will have much more information,
-   The log messages traverse the network to the source are ´final dispositions´
+   in meta data. The local component logs will have much more information,
+   The report messages traverse the network to the source are ´final dispositions´
    whenever an operation is either completed or finally abandoned.
   
-
 
 5. This is a data distribution tool, not a file tree replicator.
 
@@ -107,7 +106,7 @@ and seem helpful. We should get rid of any that are not helpful.
    - we do not care what ACL's it has (they aren't relevant on the destination.)
    - we do not care about extended attributes. (portability, win,mac,lin,netapp?)
 
-   again doubtful about this one.  Does it help?
+   again doubtful about this one. Does it help?
 
 
 
@@ -123,20 +122,20 @@ and seem helpful. We should get rid of any that are not helpful.
    - need to prove all the moving parts work together first.
 
    - much later, may return to see how to make each transfer engine
-     go faster.  
+     go faster. 
 
 7. This is not a web application, this is not an FTP server.
 
-   This application uses HTTP as one of the transport protocols, that's all.  
-   It is not trying to be a web site, any more than it is trying to be an sftp server.  
+   This application uses HTTP as one of the transport protocols, that's all. 
+   It is not trying to be a web site, any more than it is trying to be an sftp server. 
 
 
-8. Common management not needed, just pass logs around.
+8. Common management not needed, just pass reports around.
 
    Different groups can manage different pumps.
    when we interconnect pumps, they become a source for us.
-   log messages are routed to the data sources, so they get our logs on their
-   data.  (security can have something to say about that.)
+   report messages are routed to the data sources, so they get reports on their
+   data. (security can have something to say about that.)
 
 9. It needs to run anywhere.
    ubuntu,centos -- primary.
@@ -151,8 +150,8 @@ and seem helpful. We should get rid of any that are not helpful.
 
 10. the application does not need to pursue absolute reliability.
 
-   Node failure is rare in a Data Centre environment.  
-   Working well in the normal case is the priority.  
+   Node failure is rare in a Data Centre environment. 
+   Working well in the normal case is the priority. 
    if it breaks, information is never lost.
    Worst case, just re-post, and the system will resend the missing parts
    through the nodes that are left.
@@ -167,33 +166,33 @@ and seem helpful. We should get rid of any that are not helpful.
 
 11. Bulletins getting less common, Files are larger... No file too large.
 
-   old apps are used to tiny files (millions of them) in EC/MSC.  
+   old apps are used to tiny files (millions of them) in EC/MSC. 
    but even in EC, files are getting bigger, and will likely grow a lot.
    Satellite sensor data is now very critical, and that is substantially larger.
    A traditional WMO format weather warning was limited to 15Kbytes (limited by internals 
-   systems to 32 Kbytes now) and those sizes were rarely reached.  It was more like 7-12K.
+   systems to 32 Kbytes now) and those sizes were rarely reached. It was more like 7-12K.
    an average modern XML weather warning (CAP) is 60K so, so a five to eight fold increase.
    WMO since raised the limit to 500,000 bytes for WMO-GTS messages. and other mechanisms,
-   such as FTP, have no fixed limit.  
+   such as FTP, have no fixed limit. 
 
    Other scientific domains use very large files (measured in terabytes.) aim to be able
-   to flow those through the pumps.  Worth thinking about transporting huge files.
+   to flow those through the pumps. Worth thinking about transporting huge files.
 
 
 12. Normal operation should not require programming knowledge.
 
-  Configuratin and coding are distinct activities.  One should not have to modify scripts 
-  to configure standard elements of the application.  Software can be much simpler if it 
-  just leaves all features implemented as plug-in scripts.  leaving the local details 
-  for the scripts.  But most people will not be able to use it.
+  Configuratin and coding are distinct activities. One should not have to modify scripts 
+  to configure standard elements of the application. Software can be much simpler if it 
+  just leaves all features implemented as plug-in scripts. leaving the local details 
+  for the scripts. But most people will not be able to use it.
 
   Need to provide all core functionality through CLI at the very least.
   config files are consiered part of the CLI, which is why we try to choose carefully 
-  there as well.   For programmers, difference between script and config is subtle,
+  there as well.  For programmers, difference between script and config is subtle,
   not so for most other people.
 
   Scripting should only be required to extend features beyond what is standard.
-  to provide added flexibility.  If the flexibility proves generally useful over time, 
+  to provide added flexibility. If the flexibility proves generally useful over time, 
   then it should be brought out of scripts and into the configuration realm.
 
 

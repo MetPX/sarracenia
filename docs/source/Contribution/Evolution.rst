@@ -7,12 +7,12 @@ is totally different from v2. Design changes:
 
 * explicit core application support for reports were ripped out 
   as they were never used, can easily be re-inserted as callbacks
-  and conventions.
+  and conventions. (re-inserted in 2023.)
 * nobody used segmented files, and they were very complicated,
   but everyone finds them fantastic in theory. Need to re-implement
-  post sr3 re-factor.  
+  post sr3 re-factor.   (re-implemented in 2023 and 2024)
 * mirroring was a use case we had to address, had to add metadata,
-  and evolve a bit.
+  and evolve a bit. ( 
 * the cluster routing concepts have been removed (cluster_from, cluster_to, etc...)
   it got in the analysts' way more than it helped. Dead easy to 
   implement using flow callbacks, if we ever want them back.
