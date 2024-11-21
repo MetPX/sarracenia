@@ -8,8 +8,8 @@ Status: Draft
 .. section-numbering::
 
 This document reflects the current design resulting from discussions and thinking
-at a more detailed level that the outline document.  See `Outline <Outline.html>`_ 
-for an overview of the design requirements.  See `use-cases <use-cases.html>`_ for 
+at a more detailed level that the outline document. See `Outline <Outline.html>`_ 
+for an overview of the design requirements. See `use-cases <use-cases.html>`_ for 
 an exploration of functionality of how this design works in different situations.
 The way to make progress towards a working implementation is described in `plan <plan.html>`_.
 
@@ -20,20 +20,24 @@ Assumptions/Constraints
 
  - Are there cluster file systems available everywhere? No.
 
+ - Even if such file systems are available, node local file systems should have higher
+   performance, and in the case of storage failure you have n-1 other participating
+   transfer engines.
+
  - an operational team might want to monitor/alert when certain transfers experience difficulty.
 
  - security may want to run different scanning on different traffic (each block?)
    security might want us to refuse certain file types, so they go through heavier scanning.
    or perform heavier scanning on those file types.
 
- - extranet zones cannot initiate connections to internal zones.  
+ - extranet zones cannot initiate connections to internal zones. 
    extranet zones receive inbound connections from anywhere.
 
  - Government operations zones can initiate connections anywhere.
    however, Science is considered a sort of extranet to all the partners.
 
  - No-one can initiate connections into partner networks, but all partner departments can initiate
-   connections into science.gc.ca zone.  Within the science zones, there is the shared file system
+   connections into science.gc.ca zone. Within the science zones, there is the shared file system
    area, where servers access a common cluster oriented file system, as well as some small restricted
    zones, where very limited access is afforded to ensure availability.
 
@@ -45,21 +49,21 @@ Assumptions/Constraints
  - collaborators are academic, other-governmental, or commercial entities which which government
    scientists exchange data.
 
- - collaborators connect to extranet resources from their own networks.  Similarly to partners,
+ - collaborators connect to extranet resources from their own networks. Similarly to partners,
    (subject to exceptions) no connections can be initiated into any collaborator network.
 
  - There are no proxies, no systems in the extranet are given exceptional permissions to
-   initiate inbound connections.  File storage protocols etc... are completely isolated between
-   them.  There are no file systems that cross network zone boundaries. 
+   initiate inbound connections. File storage protocols etc... are completely isolated between
+   them. There are no file systems that cross network zone boundaries. 
 
  - One method of improving service reliability is to use internal services for internal use
-   and reserve public facing services for external users.  Isolated services on the inside
+   and reserve public facing services for external users. Isolated services on the inside
    are completely impervious to internet ´weather´ (DDOS of various forms, load, etc...)
    internal and external loads can be scaled independently.
 
 
-Number of Switches 
-------------------
+Number of Data Pumps 
+--------------------
 
 The application is supposed to support any number of topologies, that is any number of pumps S=0,1,2,3
 may exist between origin and final delivery, and do the right thing.
@@ -67,17 +71,17 @@ may exist between origin and final delivery, and do the right thing.
 Why isn´t everything point to point, or when do you insert a pumps?
 
  - network topology/firewall rules sometimes require being at rest in a transfer area between two
-   organizations.  Exception to these rules create vulnerabilities, so prefer to avoid.
+   organizations. Exception to these rules create vulnerabilities, so prefer to avoid.
    whenever traffic prevents initiating a connection, that indicates a store & forward pumps
    may be needed.
 
- - physical topology.  While connectivity may be present, optimal bandwidth use may involve 
+ - physical topology. While connectivity may be present, optimal bandwidth use may involve 
    not taking the default path from A to B, but perhaps passing through C.
 
  - when the transfer is not 1:1, but 1:<source does not know how> many. The pumping takes
    care of sending it to multiple points.
 
- - when the source data needs to be reliably available.  This translates to making many copies,
+ - when the source data needs to be reliably available. This translates to making many copies,
    rather than just one, so it is easier for the source to post once, and have the network
    take care of replication.
 
@@ -89,7 +93,7 @@ Why isn´t everything point to point, or when do you insert a pumps?
    when appropriate. They can be fixed rather than waiting for ad-hoc monitoring to detect
    the issue.
 
- - For asynchronous transfers.  If the source has many other activities, it may want
+ - For asynchronous transfers. If the source has many other activities, it may want
    to give responsibility to another service to do potentially lengthy file transfers.
    the pump is inserted very near to the source, and is full store & forward. sr_post
    completes (nearly instant), and from then on the pumping network manages transfers.
@@ -99,13 +103,13 @@ AMQP Feature Selection
 ----------------------
 
 AMQP is a universal message passing protocol with many different options to support many 
-different messaging patterns.  MetPX-sarracenia specifies and uses a small subset of AMQP 
-patterns.  Indeed an important element of sarracenia development was to select from the 
+different messaging patterns. MetPX-sarracenia specifies and uses a small subset of AMQP 
+patterns. Indeed, an important element of Sarracenia development was to select from the 
 many possibilities a small subset of methods are general and easily understood, in order 
 to maximize potential for interoperability.
 
 Specifying the use of a protocol alone may be insufficient to provide enough information for
-data exchange and interoperability.  For example when exchanging data via FTP, a number of choices
+data exchange and interoperability. For example when exchanging data via FTP, a number of choices
 need to be made above and beyond the basic protocol.
 
  - authenticated or anonymous use?
@@ -126,13 +130,13 @@ as is provided by many free brokers, such as rabbitmq, often referred to as 0.8,
 
 In AMQP, many different actors can define communication parameters. To create a clearer
 security model, sarracenia constrains that model: sr3_post clients are not expected to declare
-Exchanges.  All clients are expected to use existing exchanges which have been declared by
-broker administrators.  Client permissions are limited to creating queues for their own use,
-using agreed upon naming schemes.  Queue for client: qc_<user>.????
+Exchanges. All clients are expected to use existing exchanges which have been declared by
+broker administrators. Client permissions are limited to creating queues for their own use,
+using agreed upon naming schemes. Queue for client: qc_<user>.????
 
 Topic-based exchanges are used exclusively. AMQP supports many other types of exchanges,
 but sr3_post have the topic sent in order to support server side filtering by using topic
-based filtering.  The topics mirror the path of the files being announced, allowing
+based filtering. The topics mirror the path of the files being announced, allowing
 straight-forward server-side filtering, to be augmented by client-side filtering on
 message reception.
 
@@ -176,7 +180,7 @@ Application
 -----------
 
 Description of application logic relevant to discussion. There is a ´control plane´ where notification messages about new 
-data available are made, and log messages reporting status of transfers of the same data are routed among 
+data available are made, and report messages reporting status of transfers of the same data are routed among 
 control plane users and pumps. A pump is an AMQP broker, and users authenticate to the broker. Data 
 may (most of the time does) have a different other authentication method.
 
@@ -186,27 +190,27 @@ There are very different security use cases for file transfer:
     disseminate to all who are interested as quickly and reliably as possible, potentially involving many 
     copies. The data authentication is typically null for this case. Users just issue HTTP GET requests with 
     no authentication. For AMQP authentication, it can be done as anonymous, with no ability for providers to
-    monitor.  If there is to be support from the data source, then the source would assign a non-anonymous user
-    for the AMQP traffic, and the client would ensure logging was working, enabling the provider to monitor and 
+    monitor. If there is to be support from the data source, then the source would assign a non-anonymous user
+    for the AMQP traffic, and the client would ensure reporting was working, enabling the provider to monitor and 
     alert when problems arise.
 
  2. **Private Transfer** proprietary data is being generated, and needs to be moved to somewhere where it can be 
-    archived and/or processed effectively, or shared with specific collaborators.  AMQP and HTTP traffic must
-    be encrypted with SSL/TLS.  Authentication is typically common between AMQP and HTTPS. For Apache httpd
+    archived and/or processed effectively, or shared with specific collaborators. AMQP and HTTP traffic must
+    be encrypted with SSL/TLS. Authentication is typically common between AMQP and HTTPS. For Apache httpd
     servers, the htpasswd/htaccess method will need to be continuously configured by the delivery system.
     These transfers can have requirements for be high availability. 
 
  3. **Third Party Transfer** the control plane is explicitly used only to control the transfer, authentication
-    at both ends is done separately.  Users authenticate to the data-less, or SEP pump with AMQP, but the
-    authentication at both ends is outside sarracenia control.  Third-party transfer is limited to S=0.
+    at both ends is done separately. Users authenticate to the data-less, or SEP pump with AMQP, but the
+    authentication at both ends is outside sarracenia control. Third-party transfer is limited to S=0.
     If the data does not cross the pump, it cannot be forwarded. So no routing is relevant to this case.
     Also dependent on the availability of the two end points throughout, so more difficult to assure in practice.
 
 Both public and private transfers are intended to support arbitrary chains of pumps between *source* and *consumer*.
-The cases depend on routing of notification messages and log messages. 
+The cases depend on routing of notification messages and report messages. 
 
 .. NOTE::
-   forward routing...  Private and Public transfers... not yet clear, still considering.
+   forward routing... Private and Public transfers... not yet clear, still considering.
    what is written here on that subject is tentative. wondering if split, and do public
    first, then private later?
 
@@ -229,7 +233,7 @@ on pumps:
 Routing
 -------
 
-There are two distinct flows to route: notification messages, and logs. 
+There are two distinct flows to route: notification messages, and reports. 
 The following header in messages relate to routing, which are set in all messages.
 
  - *source* - the user that injected the original notification messages.
@@ -252,11 +256,11 @@ Routing Posts
 
 Post routing is the routing of the notification messages announced by data *sources*.
 The data corresponding to the source follows the same sequence of pumps as the notification messages
-themselves.  When a notification message is processed on a pump, it is downloaded, and then the 
+themselves. When a notification message is processed on a pump, it is downloaded, and then the 
 notification message is modified to reflect that´s availability from the next-hop pump.
 
-Post messages are defined in the sr_post(7) man page.  They are initially emitted by *sources*,
-published to xs_source.  After Pre-Validation, they go (with modifications described in Security) to 
+Post messages are defined in the sr_post(7) man page. They are initially emitted by *sources*,
+published to xs_source. After Pre-Validation, they go (with modifications described in Security) to 
 either xPrivate or xPublic.
 
 .. note::
@@ -273,10 +277,10 @@ post2cluster.conf is just a list of cluster names configured by the administrato
         ddi.science.gc.ca 
 
 This list of clusters is supposed to be the clusters that are reachable by traversing
-this pump.  If any cluster in post2cluster.conf is listed in the to_clust of the 
+this pump. If any cluster in post2cluster.conf is listed in the to_clust of the 
 message field, then the data needs to tr
 
-Separate Downstream *feeders* connect to xPrivate for private data.  Only *feeders* are
+Separate Downstream *feeders* connect to xPrivate for private data. Only *feeders* are
 allowed to connect to xprivate.
 
 .. Note::
@@ -287,14 +291,14 @@ allowed to connect to xprivate.
 Routing Logs
 ~~~~~~~~~~~~
 
-Log messages are defined in the sr_log(7) man page.  They are emitted by *consumers* at the end, 
-as well as *feeders* as the messages traverse pumps.  log messages are posted to 
-the xl_<user> exchange, and after log validation queued for the xlog exchange.
+Log messages are defined in the sr_post(7) man page. They are emitted by *consumers* at the end, 
+as well as *feeders* as the messages traverse pumps. Report messages are posted to 
+the xr_<user> exchange, and after report validation queued for the xreport exchange.
 
 Messages in xlog destined for other clusters are routed to destinations by 
-log2cluster component using log2cluster.conf configuration file.  log2cluster.conf 
+log2cluster component using log2cluster.conf configuration file. log2cluster.conf 
 uses space separated fields: First field is the cluster name (set as per soclust in 
-notification messages, the second is the destination to send the log messages for posting 
+notification messages, the second is the destination to send the report messages for posting 
 originating from that cluster to) Sample, log2cluster.conf::
 
       clustername amqp://user@broker/vhost exchange=xlog
@@ -315,12 +319,12 @@ Users, Queues & Exchanges
 ~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Each user Alice, on a broker to which she has access:
- - has an exchange xs_Alice, where she writes her notification messages, and reads her logs from. 
- - has an exchange xl_Alice, where she writes her log messages.
+ - has an exchange xs_Alice, where she writes her notification messages, and reads her reports from. 
+ - has an exchange xr_Alice, where she writes her report messages.
  - can create queues qs_Alice\_.* to bind to exchanges.
 
 Switches connect with one another using inter-exchange accounts.
- - Alice can create and destroy her own queues, but no-one else's.  
+ - Alice can create and destroy her own queues, but no-one else's. 
  - Alice can only write to her xs_exchange, 
  - Exchanges are managed by the administrator, and not any user.
  - Alice can only post data that she is publishing (it will refer back to her) 
@@ -363,7 +367,7 @@ Regardless:
 
 Results:
  - Accept means: queue the message to another exchange (xinput) for downloading.
- - Reject means: do not copy message (still accept & ack so it leaves queue) product log message.
+ - Reject means: do not copy message (still accept & ack so it leaves queue) product report message.
  - Hold means:  do not consume... but sleep for a while.
 
 Hold is for temporary failure type reasons, such as bandwidth of disk space reasons. 
@@ -371,7 +375,7 @@ as these reasons are independent of the particular message, hold applies for
 the entire queue, not just the message.
 
 After Pre-Processing, a component like sr_sarra assumes the notification message is good,
-and just processes it.  That means it will fetch the data from the posting source.
+and just processes it. That means it will fetch the data from the posting source.
 Once the data is downloaded, it goes through Post-Validation.
 
 
@@ -379,7 +383,7 @@ Post-Validation
 ~~~~~~~~~~~~~~~
  
 When a file is downloaded, before re-announcing it for later hops it goes
-through some analysis.  The tools may call this *file validation*:
+through some analysis. The tools may call this *file validation*:
 
  - when a file is downloaded, it goes through post-validation,
  - invoke one or more virus scanners chosen by security  
@@ -390,34 +394,34 @@ through some analysis.  The tools may call this *file validation*:
  - Reject menas:  do not forward this data (potentially delete local copy.) Essentially *quarantine*
 
 
-Log Validation
-~~~~~~~~~~~~~~
+Report Validation
+~~~~~~~~~~~~~~~~~
 
-When a client like sarra or subscribe completes an operation, it creates a log message 
-corresponding to the result of the operation.  (This is much lower granularity than a 
+When a client like sarra or subscribe completes an operation, it creates a report message 
+corresponding to the result of the operation. (This is much lower granularity than a 
 local log files.) It is important for one client not to be able to impersonate another
-in creating log messages.  
+in creating report messages. 
 
  - Messages in exchanges have no reliable means of determining who inserted them.
- - so users publish their log messages to sl_<user> exchange.
- - For each user, log reader reads the message, and overwrites the consuminguser to force match. (if reading a message from sl_Alice, it forces the consuminguser field to be Alice) see sr_log(7) for user field
- - sl_* are write-only for all users, they cannot read their own notification messages for that.
+ - so users publish their report messages to xr_<user> exchange.
+ - For each user, report reader reads the message, and overwrites the consuminguser to force match. (if reading a message from xr_Alice, it forces the consuminguser field to be Alice) see sr_post(7) for user field
+ - xr_* are write-only for all users, they cannot read their own notification messages for that.
  - is there some check about consuminghost?
- - Accepting a log message means publishing on the xlog exchange.
- - Only admin functions can read from xlog.
- - downstream processing is from xlog exchange which is assumed clean.
- - Rejecting a log message means not copying it anywhere. 
+ - Accepting a report message means publishing on the xreport exchange.
+ - Only admin functions can read from xreport.
+ - downstream processing is from xreport exchange which is assumed clean.
+ - Rejecting a xreport message means not copying it anywhere. 
 
- - sourcce check does not make sense when channels are used for inter-pump log routing.
+ - source check does not make sense when channels are used for inter-pump report routing.
    Essentially, all downstream pumps can do is forward to the source cluster.
-   The pumps receiving the log messages must not convert the consuminguser on those links.
+   The pumps receiving the report messages must not convert the consuminguser on those links.
    evidence of need of some sort of setting: user vs. inter-pump setting.
 
 ... NOTE::
-   FIXME: if you reject a log message, does it generate a log message?
-   Denial of service potential by just generating infinite bogs log messages.
+   FIXME: if you reject a report message, does it generate a report message?
+   Denial of service potential by just generating infinite bogs report messages.
    It is sad that if a connection is mis-configured as a user one, when it is inter-pump,
-   that will cause messages to be dropped.  how to detect configuration error?
+   that will cause messages to be dropped. how to detect configuration error?
 
 
 Private vs. Public Data Transfer
@@ -430,28 +434,28 @@ ends of the transfer are not sharing with arbitrary others.
 .. NOTE::
    FIXME: This section is a half-baked idea! not sure how things will turn out.
    basic problem:  Alice connecting to S1 wants to share with Bob, who has an
-   account on S3.  To get from S1 to S3, one needs to traverse S2.  the normal
+   account on S3. To get from S1 to S3, one needs to traverse S2. the normal
    way such routing is done is via a sr_sarra subscription to xpublic on S1, and
-   S2.  So Eve, a user on S1 or S2, can see the data, and presumably download it.
+   S2. So Eve, a user on S1 or S2, can see the data, and presumably download it.
    unless the http permissions are set to deny on S1 and S2. Eve should not have
-   access.  Implement via http/auth permitting inter-pump accounts on S2
+   access. Implement via http/auth permitting inter-pump accounts on S2
    to access S1/<private> and S3 account to S2/<private>. then permit bob on
    S3.
 
 There are two modes of sending products through a network, private vs. public.
 With public sending, the information transmitted is assumed to be public and available
 to all comers,  If someone sees the data on an intervening pump, then they are likely
-to be able to download it at will without further arrangements.  public data is posted
+to be able to download it at will without further arrangements. public data is posted
 for inter-pump copies using the xPublic exchange, which all users may access as well.
 
 Private data is only made available to those who are explicitly permitted access.
-private data is made available only on the xPrivate exchange.  Only Interpump channel
+private data is made available only on the xPrivate exchange. Only Interpump channel
 users are given access to these messages.
 
 .. NOTE::
    - Is two exchanges needed, or is setting permissions enough?
    - if nobody on B is permitted, then only C is able to download from B, which just works.
-   - This only works with http because setting sftp permissions is going to be hell.  
+   - This only works with http because setting sftp permissions is going to be hell. 
    - If only using http, then Even can still see all postings, just not get data, unless xprivate happens.
 
 For SEP topologies (see Topologies) things are much simpler as end users can just use mode bits.
@@ -462,13 +466,13 @@ HTTPS Private Access
 
 .. NOTE:: 
    FIXME: Not designed yet.
-   Really not baked yet.  For https, need to create/manage .htaccess (canned but generated every day) 
-   and .htpasswd (generated every day) files.  
+   Really not baked yet. For https, need to create/manage .htaccess (canned but generated every day) 
+   and .htpasswd (generated every day) files. 
  
 Need some kind of adm message that sources can send N pumps later to alter the contents of .htpasswd
 CRUD? or just overwrite every time?  query?
 
-Sarra likely needs to look at this and add the ht* files every day.   Need to talk with the webmailteam guys.
+Sarra likely needs to look at this and add the ht* files every day. Need to talk with the webmailteam guys.
 
 How to change passwords
 
@@ -478,8 +482,8 @@ Topologies
 
 Questions... There are many choices for cluster layout. One can do simple H/A on a pair of nodes, 
 simple active/passive?  One can go to scalable designs on an array of nodes, which requires a load 
-balancer ahead of the processing nodes.  The disks of a cluster can be shared or individual to 
-the processing nodes, as can broker state.  Exploring whether to support any/all configurations, 
+balancer ahead of the processing nodes. The disks of a cluster can be shared or individual to 
+the processing nodes, as can broker state. Exploring whether to support any/all configurations, 
 or to determine if there is a particular design pattern that can be applied generally.
 
 To make these determinations, considerable exploration is needed.
@@ -488,7 +492,7 @@ We start with naming the topologies so they can be referred to easily in further
 None of the topologies assume that disks are pumped among servers in the traditional HA style.
 
 Based on experience, disk pumping is considered unreliable in practice, as it involves complex
-interaction with many layers, including the application.  Disks are either dedicated to nodes, 
+interaction with many layers, including the application. Disks are either dedicated to nodes, 
 or a cluster file system is to be used. The application is expected to deal with those two
 cases.
 
@@ -506,26 +510,26 @@ Bunny
 
 Capybara Effect
       *capybara through a snake*  where a large rodent distorts the body of a snake 
-      as it is being digested.  Symbolic of poor load balancing, where one node 
+      as it is being digested. Symbolic of poor load balancing, where one node 
       experiences a spike in load and slows down inordinately.
 
 Fingerprint Winnowing
       Each product has a checksum and size intended to identify it uniquely, referred to as
-      as fingerprint.  If two products have the same fingerprint, they are considered 
-      equivalent, and only one may be forwarded.  In cases where multiple sources of equivalent 
+      as fingerprint. If two products have the same fingerprint, they are considered 
+      equivalent, and only one may be forwarded. In cases where multiple sources of equivalent 
       data are available but downstream consumers would prefer to receive single notification messages 
       of products, processes may elect to publish notifications of the first product 
       with a given fingerprint, and ignore subsequent ones.
 
       This is the basis for the most robust strategy for high availability, but setting up
       multiple sources for the same data, accepting notification messages for all of them, but only
-      forwarding one downstream.  In normal operation, one source may be faster than the
+      forwarding one downstream. In normal operation, one source may be faster than the
       other, and so the second source's products are usually 'winnowed'. When one source 
       disappears, the other source's data is automatically selected, as the fingerprints 
       are now *fresh* and used, until a faster source becomes available. 
 
       The advantage of this method is that now A/B decision is required, so the time
-      to *pumpover* is zero.  Other strategies are subject to considerable delays        
+      to *pumpover* is zero. Other strategies are subject to considerable delays        
       in making the decision to pumpover, and pathologies one could summarize as flapping,
       and/or deadlocks.
 
@@ -533,9 +537,9 @@ Fingerprint Winnowing
 Standalone
 ~~~~~~~~~~
 
-In a standalone configuration, there is only one node in the configuration.  I runs all components 
-and shares none with any other nodes.  That means the Broker and data services such as sftp and 
-apache are on the one node.  
+In a standalone configuration, there is only one node in the configuration. I runs all components 
+and shares none with any other nodes. That means the Broker and data services such as sftp and 
+apache are on the one node. 
 
 One appropriate usage would be a small non-24x7 data acquisition setup, to take responsibility of data 
 queueing and transmission away from the instrument.
@@ -545,15 +549,15 @@ DDSR: Switching/Routing Configuration
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 This is a more scalable configuration involving several data mover nodes, and potentially several brokers.
-These clusters are not destinations of data transfers, but intermediaries.  Data flows through them, but
-querying them is more complicated because no one node has all data available.   The downstream clients
+These clusters are not destinations of data transfers, but intermediaries. Data flows through them, but
+querying them is more complicated because no one node has all data available. The downstream clients
 of DDSR's are essentially other sarracenia instances.
 
 There are still multiple options available within this configuration pattern.
 ddsr one broker per node?  (or just one broker ( clustered,logical ) broker?)
 
 On a pumping/router, once delivery has occurred to all contexts, can you delete the file?
-Just watch the log files and tick off as each scope confirms receipt.
+Just watch the reports from consumers and tick off as each scope confirms receipt.
 when last one confirmed, delete. (makes re-xmit difficult ;-)
 
 Based on a file size threshold? if the file is too big, don´t keep it around?
@@ -569,7 +573,7 @@ an individual broker running on a single node.
 
 ddsr - broker 
 
-pre-fetch validation would happen on the broker.  then re-post for the sarra's on the movers.
+pre-fetch validation would happen on the broker. then re-post for the sarra's on the movers.
 
 
  - each node broker and transfer engines act independently. Highest robustness to failure.
@@ -579,7 +583,7 @@ pre-fetch validation would happen on the broker.  then re-post for the sarra's o
 
 CONFIRM: Processes running on the individual nodes, are subscribed to the local broker.
 Highly susceptible to the *Capybara Effect* where all of the blocks of 
-the large file are channelled though a single processing node.  Large file transfers
+the large file are channelled though a single processing node. Large file transfers
 with trigger it.
 
 CONFIRM: Maximum performance for a single transfer is limited to a single node.
@@ -601,11 +605,11 @@ on all nodes, the mover processes use common exchanges and queues.
  - requires broker to be clustered, adding complexity there.
 
 In Shared Broker DDSR, *Capybara Effect* is minimized as individual blocks of a transfer
-are distributed across all the mover nodes.  When a large file arrives, all of the movers
+are distributed across all the mover nodes. When a large file arrives, all of the movers
 on all of the nodes may pick up individual blocks, so the work automatically is 
 distributed across them.
 
-This assumes that large files are segmented.  As different transfer nodes will have
+This assumes that large files are segmented. As different transfer nodes will have
 different blocks of a file, and the data view is not shared, no re-assembly of files 
 is done.
 
@@ -629,7 +633,7 @@ There are multiple options for achieving this end user visible effect, each with
 In all cases, there is a load balancer in front of the nodes which distributes incoming
 connection requests to a node for processing.
 
- - multiple server nodes.  Each standalone.
+ - multiple server nodes. Each standalone.
 
  - sr3 - load balancer, just re-directs to a sr3 node?
    dd1,dd2, 
@@ -642,7 +646,7 @@ Independent DD
 
  - The load balancer hands the incoming requests to multiple Standalone_ configurations. 
 
- - Each node downloads all data.  Disk space requirements for nodes in this configuration 
+ - Each node downloads all data. Disk space requirements for nodes in this configuration 
    are far larger than for DDSR nodes, where each node only has 1/n of the data.
 
  - Each node announces each product that it has downloaded, using it's own node name, because
@@ -660,7 +664,7 @@ Independent DD
    When a single node fails, it ceases to download, and the other n-1 nodes continue transferring.
 
 .. NOTE::
-  FIXME: shared broker and shared file system... hmm...  Could use second broker
+  FIXME: shared broker and shared file system... hmm... Could use second broker
   instance to do cooperating download via fingerpring winnowing. 
 
 
@@ -670,7 +674,7 @@ Shared-Broker DD
 
  - a single clustered broker is shared by all nodes.
 
- - Each node downloads all data.  Disk space requirements for nodes in this configuration 
+ - Each node downloads all data. Disk space requirements for nodes in this configuration 
    are far larger than for DDSR nodes, where each node only has 1/n of the data.
 
  - clients connect to a cluster-wide broker instance, so the download links can be from any
@@ -679,7 +683,7 @@ Shared-Broker DD
  - if the clustered broker fails, the service is down. (should be reliable)
 
  - A node cannot announce each product that it has downloaded, using it's own node name, because
-   it does not know if other nodes have that product.   (announce as dd1 vs. dd)
+   it does not know if other nodes have that product. (announce as dd1 vs. dd)
 
  - Either:
 
