@@ -118,8 +118,8 @@
 <section id="conception-strawman">
 <h1><a class="toc-backref" href="#id1" role="doc-backlink"><span class="sectnum">1 </span>Conception Strawman</a><a class="headerlink" href="#conception-strawman" title="Link to this heading"></a></h1>
 <p>Ce document reflète la conception actuelle résultant de discussions et de réflexions
-à un niveau plus détaillé que le document d’esquisse.  Voir <a class="reference external" href="Outline.html">Aperçu</a>
-pour une vue d’ensemble des exigences de conception.  Voir ‘cas d’utilisation <a class="reference external" href="use-cases.html.html">use-cases.html.html</a> pour
+à un niveau plus détaillé que le document d’esquisse. Voir <a class="reference external" href="Outline.html">Aperçu</a>
+pour une vue d’ensemble des exigences de conception. Voir ‘cas d’utilisation <a class="reference external" href="use-cases.html.html">use-cases.html.html</a> pour
 une exploration de la fonctionnalité du fonctionnement de cette conception dans différentes situations.
 La manière de progresser vers une mise en œuvre fonctionnelle est décrite dans le <a class="reference external" href="plan.html">plan</a>.</p>
 <nav class="contents" id="contents">
@@ -134,7 +134,7 @@ La manière de progresser vers une mise en œuvre fonctionnelle est décrite dan
 <li><p><a class="reference internal" href="#routage" id="id6"><span class="sectnum">1.5 </span>Routage</a></p>
 <ul class="auto-toc">
 <li><p><a class="reference internal" href="#routage-des-publications" id="id7"><span class="sectnum">1.5.1 </span>Routage des publications</a></p></li>
-<li><p><a class="reference internal" href="#journaux-de-routage" id="id8"><span class="sectnum">1.5.2 </span>Journaux de routage</a></p></li>
+<li><p><a class="reference internal" href="#rapports-de-routage" id="id8"><span class="sectnum">1.5.2 </span>Rapports de routage</a></p></li>
 </ul>
 </li>
 <li><p><a class="reference internal" href="#modele-de-securite" id="id9"><span class="sectnum">1.6 </span>Modèle de sécurité</a></p>
@@ -142,7 +142,7 @@ La manière de progresser vers une mise en œuvre fonctionnelle est décrite dan
 <li><p><a class="reference internal" href="#utilisateurs-files-dattente-et-echanges" id="id10"><span class="sectnum">1.6.1 </span>Utilisateurs, files d’attente et échanges</a></p></li>
 <li><p><a class="reference internal" href="#pre-validation" id="id11"><span class="sectnum">1.6.2 </span>Pré-validation</a></p></li>
 <li><p><a class="reference internal" href="#post-validation" id="id12"><span class="sectnum">1.6.3 </span>Post-Validation</a></p></li>
-<li><p><a class="reference internal" href="#validation-du-journal" id="id13"><span class="sectnum">1.6.4 </span>Validation du journal</a></p></li>
+<li><p><a class="reference internal" href="#validation-du-rapport" id="id13"><span class="sectnum">1.6.4 </span>Validation du rapport</a></p></li>
 <li><p><a class="reference internal" href="#transfert-de-donnees-prive-vs-public" id="id14"><span class="sectnum">1.6.5 </span>Transfert de données privé vs public</a></p></li>
 <li><p><a class="reference internal" href="#acces-prive-https" id="id15"><span class="sectnum">1.6.6 </span>Accès privé HTTPS</a></p></li>
 </ul>
@@ -178,7 +178,7 @@ Les zones extranet reçoivent des connexions entrantes de n’importe où.</p></
 <li><p>Les zones d’opérations gouvernementales peuvent initier des connexions n’importe où.
 cependant, la science est considérée comme une sorte d’extranet pour tous les partenaires.</p></li>
 <li><p>Personne ne peut initier de connexions dans les réseaux partenaires, mais tous les départements partenaires
-peuvent initier des connexions dans science.gc.ca zone.  Dans les zones scientifiques, il y a le système de
+peuvent initier des connexions dans science.gc.ca zone. Dans les zones scientifiques, il y a le système de
 fichiers partagés, où les serveurs accèdent à un système de fichiers commun orienté cluster, ainsi
 qu’à quelques petites zones restreintes, où l’accès est très limité pour assurer la disponibilité.</p></li>
 <li><p>Au sein du CNRC, il y a des laboratoires avec de l’équipement qui ne peut pas être entretenu, du point de vue des logiciels,
@@ -191,10 +191,10 @@ scientifiques du gouvernement échangent des données.</p></li>
 De la même façon que des partenaires, (sous réserve d’exceptions) aucune connexion ne peut être initiée
 à un réseau de collaborateurs.</p></li>
 <li><p>Il n’y a pas de proxys, aucun système dans l’extranet n’a reçu d’autorisations exceptionnelles pour
-Initier des connexions entrantes.  Protocoles de stockage de fichiers, etc. sont complètement isolés entre
+Initier des connexions entrantes. Protocoles de stockage de fichiers, etc. sont complètement isolés entre
 eux. Aucun système de fichiers ne traverse les limites des zones réseau.</p></li>
 <li><p>Une méthode pour améliorer la fiabilité du service consiste à utiliser les services internes à des fins internes
-et réserver des services destinés au public aux utilisateurs externes.  Des services isolés à l’intérieur
+et réserver des services destinés au public aux utilisateurs externes. Des services isolés à l’intérieur
 sont complètement imperméables aux ‘intempéries’ d’Internet (DDOS de diverses formes, charge, etc…)
 Les charges internes et externes peuvent être mises à l’échelle indépendamment.</p></li>
 </ul>
@@ -209,14 +209,14 @@ peut exister entre l’origine et la livraison finale, et faire ce qu’il faut.
 <blockquote>
 <div><ul class="simple">
 <li><p>les règles de topologie/firewall du réseau nécessitent parfois d’être au repos dans une zone de transfert entre deux
-organisations.  Les exceptions à ces règles créent des vulnérabilités, alors il vaux mieux éviter.
+organisations. Les exceptions à ces règles créent des vulnérabilités, alors il vaux mieux éviter.
 Chaque fois que le trafic empêche d’initier une connexion, cela indique qu’une pompe Store &amp; Forward
 peut être nécessaire.</p></li>
-<li><p>topologie physique.  Bien que la connectivité puisse être présente, l’utilisation optimale de
+<li><p>topologie physique. Bien que la connectivité puisse être présente, l’utilisation optimale de
 la bande passante peut impliquer de ne pas prendre le chemin par défaut de A à B, mais peut-être passer par C.</p></li>
 <li><p>quand le transfert n’est pas 1:1, mais 1:&lt;source ne sait pas comment&gt; beaucoup. Le pompage prend
 soin de l’envoyer à plusieurs points.</p></li>
-<li><p>lorsque les données sources doivent être disponibles de manière fiable.  Cela se traduit par la
+<li><p>lorsque les données sources doivent être disponibles de manière fiable. Cela se traduit par la
 réalisation de nombreuses copies,
 plutôt qu’une seul, il est donc plus facile pour la source de publier une fois et d’avoir le réseau
 s’occuper de la réplication.</p></li>
@@ -225,7 +225,7 @@ s’occuper de la réplication.</p></li>
 <li><p>pour des raisons de gestion, pour s’assurer que les échecs de transfert sont détectés et escaladés
 quand importants. Ils peuvent être corrigés plutôt que d’attendre une surveillance ad hoc pour détecter
 le problème.</p></li>
-<li><p>Pour les transferts asynchrones.  Si la source a beaucoup d’autres activités, elle peut vouloir
+<li><p>Pour les transferts asynchrones. Si la source a beaucoup d’autres activités, elle peut vouloir
 confier la responsabilité à un autre service pour effectuer des transferts de fichiers potentiellement longs.
 La pompe est insérée très près de la source et est full store &amp; forward. sr_post
 se termine (presque instantanément), et à partir de ce moment-là, le réseau de pompage gère les transferts.</p></li>
@@ -235,12 +235,12 @@ se termine (presque instantanément), et à partir de ce moment-là, le réseau 
 <section id="selection-des-fonctionnalites-amqp">
 <h2><a class="toc-backref" href="#id4" role="doc-backlink"><span class="sectnum">1.3 </span>Sélection des fonctionnalités AMQP</a><a class="headerlink" href="#selection-des-fonctionnalites-amqp" title="Link to this heading"></a></h2>
 <p>AMQP est un protocole universel de transmission de messages avec de nombreuses options différentes pour prendre en charge de nombreuses
-différents modèles de messagerie.  MetPX-sarracenia spécifie et utilise un petit sous-ensemble de
-modèles AMQP.  En effet, un élément important du développement de la sarracenia a été de choisir parmi les
+différents modèles de messagerie. MetPX-sarracenia spécifie et utilise un petit sous-ensemble de
+modèles AMQP. En effet, un élément important du développement de la sarracenia a été de choisir parmi les
 de nombreuses possibilités un petit sous-ensemble de méthodes qui sont générales et faciles à comprendre,
 pour maximiser le potentiel d’interopérabilité.</p>
 <p>Spécifier l’utilisation d’un protocole seul peut être insuffisant pour fournir suffisamment d’informations pour
-l’échange de données et l’interopérabilité.  Par exemple, lors de l’échange de données via FTP, un certain nombre de choix
+l’échange de données et l’interopérabilité. Par exemple, lors de l’échange de données via FTP, un certain nombre de choix
 doivent être faits au-delà du protocole de base.</p>
 <blockquote>
 <div><ul class="simple">
@@ -261,13 +261,13 @@ gratuits, tels que RabbitMQ, souvent appelé 0,8, mais 0,9 et post 0,9.
 Les courtiers sont également susceptibles de bien interopérer.</p>
 <p>Dans AMQP, de nombreux acteurs différents peuvent définir des paramètres de communication. Pour créer un
 modèle de sécurité, Sarracenia contraint ce modèle : les clients sr3_post ne sont pas censés déclarer
-des échanges.  Tous les clients sont censés utiliser les échanges existants qui ont été déclarés par
-les administrateurs de courtiers.  Les autorisations client sont limitées à la création de files
+des échanges. Tous les clients sont censés utiliser les échanges existants qui ont été déclarés par
+les administrateurs de courtiers. Les autorisations client sont limitées à la création de files
 d’attente pour leur propre usage,
-en utilisant des schémas de nommage convenus.  File d’attente pour le client : qc_&lt;user&gt;.????</p>
+en utilisant des schémas de nommage convenus. File d’attente pour le client : qc_&lt;user&gt;.????</p>
 <p>Les échanges topic-based sont utilisés exclusivement. AMQP prend en charge de nombreux autres types d’échanges,
 mais sr3_post envoye la rubrique afin de prendre en charge le filtrage côté serveur à l’aide du topic
-basé sur le filtrage.  Les rubriques reflètent le chemin d’accès des fichiers annoncés, ce qui permet un
+basé sur le filtrage. Les rubriques reflètent le chemin d’accès des fichiers annoncés, ce qui permet un
 filtrage direct côté serveur, complété par un filtrage côté client à la réception des messages.</p>
 <p>La racine de l’arborescence des topics est la version de la charge utile du message. Cela permet aux courtiers uniques
 de prendre facilement en charge plusieurs versions du protocole en même temps pendant les transitions. v02
@@ -303,7 +303,7 @@ ils peuvent entrer en collision. triste. Accepté comme limitation.</p></li>
 <h2><a class="toc-backref" href="#id5" role="doc-backlink"><span class="sectnum">1.4 </span>Application</a><a class="headerlink" href="#application" title="Link to this heading"></a></h2>
 <p>Description de la logique d’application pertinente pour la discussion. Il existe un “plan de contrôle”
 où les messages de notification concernant les nouvelles données disponibles sont mises en place et
-les messages de journal signalant l’état des transferts des mêmes données sont acheminés entre
+les messages de rapport signalant l’état des transferts des mêmes données sont acheminés entre
 les utilisateurs du plan de contrôle et les pompes. Une pompe est un courtier AMQP et les utilisateurs
 s’authentifient auprès du courtier. Les données peuvent (la plupart du temps) avoir une autre
 méthode d’authentification différente.</p>
@@ -315,28 +315,28 @@ le but est de diffuser à tous ceux qui sont intéressés aussi rapidement et de
 que possible, impliquant potentiellement de nombreuses copies. L’authentification des données est
 généralement null dans ce cas. Les utilisateurs émettent simplement des requêtes HTTP GET sans
 authentification. Pour l’authentification AMQP, cela peut être fait de manière anonyme, sans que
-les fournisseurs ne puissent surveiller.  S’il doit y avoir un support de la source de données,
+les fournisseurs ne puissent surveiller. S’il doit y avoir un support de la source de données,
 la source affectera un utilisateur non anonyme pour le trafic AMQP, et le client s’assurerait
-que la journalisation fonctionne, ce qui permettrait au fournisseur de surveiller et
+que les rapports fonctionnent, ce qui permettrait au fournisseur de surveiller et
 alerter lorsque des problèmes surviennent.</p></li>
 <li><p><strong>Transfert privé</strong> Les données exclusives sont générées et doivent être déplacées vers un endroit
 où elles peuvent être archivé et/ou traité efficacement, ou partagé avec des collaborateurs spécifiques.
-Le trafic AMQP et HTTP doit être chiffré avec SSL/TLS.  L’authentification est généralement courante
+Le trafic AMQP et HTTP doit être chiffré avec SSL/TLS. L’authentification est généralement courante
 entre AMQP et HTTPS. Pour Apache httpd, la méthode htpasswd/htaccess devra être configurée en permanence
 par le système de livraison. Ces transferts peuvent avoir des exigences de haute disponibilité.</p></li>
 <li><p><strong>Transfert par des tiers</strong> Le plan de contrôle est explicitement utilisé uniquement pour contrôler le
-transfert, l’authentification aux deux extrémités se fait séparément.  Les utilisateurs s’authentifient
+transfert, l’authentification aux deux extrémités se fait séparément. Les utilisateurs s’authentifient
 auprès de la pompe sans données ou une pompe SEP avec AMQP, mais l’authentification aux deux extrémités
-est hors du contrôle de Sarracenia.  Le transfert par des tiers est limité à S=0. Si les données ne
+est hors du contrôle de Sarracenia. Le transfert par des tiers est limité à S=0. Si les données ne
 traversent pas la pompe, elles ne peuvent pas être transmises. Aucun routage n’est donc pertinent dans ce cas.
 Cela dépend également de la disponibilité des deux points finaux, donc plus difficile à assurer dans la pratique.</p></li>
 </ol>
 </div></blockquote>
 <p>Les transferts publics et privés sont destinés à soutenir des chaînes arbitraires de pompes entre
-<em>source</em> et <em>consommateur</em>. Les cas dépendent du routage des messages de notification et des messages de journal.</p>
+<em>source</em> et <em>consommateur</em>. Les cas dépendent du routage des messages de notification et des messages de rapport.</p>
 <div class="admonition note">
 <p class="admonition-title">Note</p>
-<p>Routage vers l’avant…  Transferts privés et publics… Pas encore clair, toujours en considération.
+<p>Routage vers l’avant… Transferts privés et publics… Pas encore clair, toujours en considération.
 Ce qui est écrit ici à ce sujet est provisoire. On se demande si on divise, et on fait
 public d’abord, puis privé plus tard?</p>
 </div>
@@ -386,10 +386,10 @@ pompe est ajoutée au réseau.</p>
 <h3><a class="toc-backref" href="#id7" role="doc-backlink"><span class="sectnum">1.5.1 </span>Routage des publications</a><a class="headerlink" href="#routage-des-publications" title="Link to this heading"></a></h3>
 <p>Le routage des publications est le routage des messages de notification annoncés par les données <em>sources</em>.
 Les données correspondant à la source qui suivent la même séquence de pompes que les messages de notification
-elles-mêmes.  Lorsqu’un message de notification est traité sur une pompe, il est téléchargé, puis le
+elles-mêmes. Lorsqu’un message de notification est traité sur une pompe, il est téléchargé, puis le
 message de notification est modifié pour refléter la disponibilité de la pompe du saut suivant.</p>
-<p>Les messages de publication sont définis dans la page de manuel sr_post(7).  Ils sont initialement émis par <em>sources</em>,
-publié à xs_source.  Après la pré-validation, ils passent (avec les modifications décrites dans Sécurité) à
+<p>Les messages de publication sont définis dans la page de manuel sr_post(7). Ils sont initialement émis par <em>sources</em>,
+publié à xs_source. Après la pré-validation, ils passent (avec les modifications décrites dans Sécurité) à
 xPrivate ou xPublic.</p>
 <div class="admonition note">
 <p class="admonition-title">Note</p>
@@ -407,9 +407,9 @@ post2cluster.conf est juste une liste de noms de cluster configurés par l’adm
 </pre></div>
 </div>
 <p>Cette liste de clusters est censée être les clusters qui sont accessibles en traversant
-cette pompe.  Si un cluster dans post2cluster.conf est répertorié dans la to_clust du
+cette pompe. Si un cluster dans post2cluster.conf est répertorié dans la to_clust du
 champ de message, puis les données doivent (?).
-Des <em>feeders</em> distincts en aval se connectent à xPrivate pour les données privées.  Seuls les <em>feeders</em> sont
+Des <em>feeders</em> distincts en aval se connectent à xPrivate pour les données privées. Seuls les <em>feeders</em> sont
 autorisé à se connecter à xprivate.</p>
 <div class="admonition note">
 <p class="admonition-title">Note</p>
@@ -418,15 +418,15 @@ L’utilisation d’un xPrivate signifie que les pompes peuvent voir les message
 pas autorisées à télécharger (problème moindre qu’avec xPublic, mais dépend de la fiabilité de la pompe en aval.)</p>
 </div>
 </section>
-<section id="journaux-de-routage">
-<h3><a class="toc-backref" href="#id8" role="doc-backlink"><span class="sectnum">1.5.2 </span>Journaux de routage</a><a class="headerlink" href="#journaux-de-routage" title="Link to this heading"></a></h3>
-<p>Les messages de journal sont définis dans la page de manuel sr_log(7).  Ils sont émis par les <em>consommateurs</em> à la fin,
-ainsi que des <em>feeders</em> lorsque les messages traversent les pompes.  Les messages de journal sont publiés sur
-l’échange xl_&lt;user&gt; et après validation du journal mis en fil d’attente pour l’échange XLOG.</p>
-<p>Les messages en xlog destinés à d’autres clusters sont acheminés vers des destinations par
-le composant Log2Cluster en utilisant le fichier de configuration log2cluster.conf.  log2cluster.conf
+<section id="rapports-de-routage">
+<h3><a class="toc-backref" href="#id8" role="doc-backlink"><span class="sectnum">1.5.2 </span>Rapports de routage</a><a class="headerlink" href="#rapports-de-routage" title="Link to this heading"></a></h3>
+<p>Les rapport (<em>reports</em>) sont définis dans la page de manuel sr_post(7). Ils sont émis par les <em>consommateurs</em> à la fin,
+ainsi que des <em>feeders</em> lorsque les messages traversent les pompes. Les messages de rapport sont publiés sur
+l’échange xr_&lt;user&gt; et après validation du rapport mis en fil d’attente pour l’échange xreport.</p>
+<p>Les messages en xreport destinés à d’autres clusters sont acheminés vers des destinations par
+le composant Log2Cluster en utilisant le fichier de configuration log2cluster.conf. log2cluster.conf
 utilise des champs séparés par des espaces : le premier champ est le nom du cluster (défini selon soclust dans
-messages de notification, le second est la destination pour envoyer les messages de journal pour publication
+messages de notification, le second est la destination pour envoyer les messages de rapport pour publication
 provenant de ce cluster) Exemple, log2cluster.conf:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">clustername</span> <span class="n">amqp</span><span class="p">:</span><span class="o">//</span><span class="n">user</span><span class="nd">@broker</span><span class="o">/</span><span class="n">vhost</span> <span class="n">exchange</span><span class="o">=</span><span class="n">xlog</span>
 </pre></div>
@@ -444,7 +444,7 @@ Cela peut être fait en utilisant <em>sr_subscribe -n –topic_prefix=v02.log</e
 <dl class="simple">
 <dt>Chaque utilisateur Alice, sur un courtier auquel elle a accès :</dt><dd><ul class="simple">
 <li><p>a un xs_Alice d’échange, où elle écrit ses messages de notification et lit ses journaux.</p></li>
-<li><p>a un xl_Alice d’échange, où elle écrit ses messages de journal.</p></li>
+<li><p>a un xl_Alice d’échange, où elle écrit ses messages de rapport.</p></li>
 <li><p>peut créer des files d’attente qs_Alice_.* pour se lier aux échanges.</p></li>
 </ul>
 </dd>
@@ -501,7 +501,7 @@ Certains outils peuvent appeler cela <em>validation des messages</em></p>
 <dt>Résultats:</dt><dd><ul class="simple">
 <li><p>Accepter signifie : mettre en fil d’attente le message vers un autre échange (xinput) pour téléchargement.</p></li>
 <li><p>Rejeter signifie : ne pas copier le message (toujours accepter &amp; ack pour qu’il quitte la fil d’attente)
-message du journal du produit.</p></li>
+message du rapport du produit.</p></li>
 <li><p>Hold signifie : ne pas consommer… mais dormez un moment.</p></li>
 </ul>
 </dd>
@@ -516,7 +516,7 @@ Une fois les données téléchargées, elles passent par la post-validation.</p>
 <section id="post-validation">
 <h3><a class="toc-backref" href="#id12" role="doc-backlink"><span class="sectnum">1.6.3 </span>Post-Validation</a><a class="headerlink" href="#post-validation" title="Link to this heading"></a></h3>
 <p>Lorsqu’un fichier est téléchargé, avant de l’annoncer à nouveau pour des sauts ultérieurs,
-il passe par une analyse.  Les outils peuvent appeler ceci <em>validation de fichier</em>:</p>
+il passe par une analyse. Les outils peuvent appeler ceci <em>validation de fichier</em>:</p>
 <blockquote>
 <div><ul class="simple">
 <li><p>lorsqu’un fichier est téléchargé, il passe par post-validation,</p></li>
@@ -529,38 +529,38 @@ Essentiellement une <em>quarantaine</em></p></li>
 </ul>
 </div></blockquote>
 </section>
-<section id="validation-du-journal">
-<h3><a class="toc-backref" href="#id13" role="doc-backlink"><span class="sectnum">1.6.4 </span>Validation du journal</a><a class="headerlink" href="#validation-du-journal" title="Link to this heading"></a></h3>
-<p>Lorsqu’un client comme sarra ou subscribe termine une opération, il crée un message de journal
-correspondant au résultat de l’opération.  (C’est une granularité beaucoup plus faible qu’un
+<section id="validation-du-rapport">
+<h3><a class="toc-backref" href="#id13" role="doc-backlink"><span class="sectnum">1.6.4 </span>Validation du rapport</a><a class="headerlink" href="#validation-du-rapport" title="Link to this heading"></a></h3>
+<p>Lorsqu’un client comme sarra ou subscribe termine une opération, il crée un message de rapport
+correspondant au résultat de l’opération. (C’est une granularité beaucoup plus faible qu’un
 fichier journal local.) Il est important qu’un client ne puisse pas usurper l’identité d’un autre
-lors de la création de messages de journal.</p>
+lors de la création de messages de rapport.</p>
 <blockquote>
 <div><ul class="simple">
 <li><p>Les messages dans les échanges n’ont aucun moyen fiable de déterminer qui les a insérés.</p></li>
-<li><p>Ainsi, les utilisateurs publient leurs messages de journal sur l’échange sl_&lt;user&gt;.</p></li>
-<li><p>Pour chaque utilisateur, le lecteur de journal lit le message et écrase l’utilisateur consommateur
+<li><p>Ainsi, les utilisateurs publient leurs messages de rapport sur l’échange sl_&lt;user&gt;.</p></li>
+<li><p>Pour chaque utilisateur, le lecteur de rapport lit le message et écrase l’utilisateur consommateur
 pour forcer la correspondance. (si vous lisez un message de sl_Alice, cela force le champ utilisateur consommateur
 à être Alice) voir sr_log(7) pour le champ d’utilisateur</p></li>
 <li><p>sl_* sont en écriture seule pour tous les utilisateurs, ils ne peuvent pas lire leurs propres messages
 de notification pour cela.</p></li>
 <li><p>Y a-t-il une vérification de la consommation d’host?</p></li>
-<li><p>Accepter un message de journal signifie publier sur l’échange xlog.</p></li>
+<li><p>Accepter un message de rapport signifie publier sur l’échange xlog.</p></li>
 <li><p>Seules les fonctions d’administration peuvent lire à partir de xlog.</p></li>
 <li><p>Le traitement en aval provient de l’échange XLOG qui est supposé être propre.</p></li>
-<li><p>Rejeter un message de journal signifie de le copier nulle part.</p></li>
+<li><p>Rejeter un message de rapport signifie de le copier nulle part.</p></li>
 <li><p>Le contrôle des ressources n’a pas de sens lorsque des canaux sont utilisés pour le routage inter-pompes.
 Essentiellement, tout ce que les pompes en aval peuvent faire est de transmettre au cluster source.
-Les pompes recevant les messages de journal ne doivent pas convertir l’utilisateur consommateur sur ces liens.
+Les pompes recevant les messages de rapport ne doivent pas convertir l’utilisateur consommateur sur ces liens.
 Preuve de la nécessité d’une sorte de réglage : réglage entre l’utilisateur et entre les pompes.</p></li>
 </ul>
 </div></blockquote>
 <div class="admonition note">
 <p class="admonition-title">Note</p>
-<p>FIXME : si vous rejetez un message de journal, génère-t-il un message de journal ?
-Potentiel de déni de service en générant simplement des messages de journal de tourbières infinis.
+<p>FIXME : si vous rejetez un message de rapport, génère-t-il un message de rapport ?
+Potentiel de déni de service en générant simplement des messages de rapport de tourbières infinis.
 Il est triste que si une connexion est mal configurée en tant qu’utilisateur, lorsqu’elle est inter-pompe,
-Cela entraînera l’abandon des messages.  Comment détecter une erreur de configuration?</p>
+Cela entraînera l’abandon des messages. Comment détecter une erreur de configuration?</p>
 </div>
 </section>
 <section id="transfert-de-donnees-prive-vs-public">
@@ -572,9 +572,9 @@ fins du transfert ne sont pas partagées avec d’autres personnes arbitraires.<
 <p class="admonition-title">Note</p>
 <p>FIXME: Cette section est une idée à moitié cuite! Je ne sais pas comment les choses vont tourner.
 problème de base: Alice se connectant à S1 veut partager avec Bob, qui a un
-compte sur S3.  Pour aller de S1 à S3, il faut traverser S2.  La façon normale
+compte sur S3. Pour aller de S1 à S3, il faut traverser S2. La façon normale
 de ce routage est effectué est via un abonnement sr_sarra à xpublic sur S1, et
-S2.  Ainsi, Eve, un utilisateur sur S1 ou S2, peut voir les données, et probablement les télécharger.
+S2. Ainsi, Eve, un utilisateur sur S1 ou S2, peut voir les données, et probablement les télécharger.
 sauf si les autorisations http sont définies sur refuser sur S1 et S2. Eve n’aurait pas accès.
 Implémenter via http/auth permettant des comptes inter-pompes sur S2
 pour accéder au compte S1/&lt;private&gt; et S3 à S2/&lt;private&gt;. puis autorisez Bob sur
@@ -583,10 +583,10 @@ S3.</p>
 <p>Il existe deux modes d’envoi de produits via un réseau, privé et public.
 Avec l’envoi public, l’information transmise est supposée être publique et disponible
 à tous les arrivants. Si quelqu’un voit les données sur une pompe intermédiaire, alors ils sont susceptibles
-de pouvoir les télécharger à volonté sans autres arrangements.  Les données publiques sont publiées
+de pouvoir les télécharger à volonté sans autres arrangements. Les données publiques sont publiées
 pour les copies inter-pompes utilisant l’échange xPublic, auquel tous les utilisateurs peuvent également accéder.</p>
 <p>Les données privées ne sont mises à la disposition que des personnes explicitement autorisées à y accéder.
-Les données privées sont mises à disposition uniquement sur l’échange xPrivate.  Seul les utilisateurs
+Les données privées sont mises à disposition uniquement sur l’échange xPrivate. Seul les utilisateurs
 de canal Interpump ont accès à ces messages.</p>
 <div class="admonition note">
 <p class="admonition-title">Note</p>
@@ -607,7 +607,7 @@ finaux peuvent simplement utiliser des bits de mode.</p>
 <div class="admonition note">
 <p class="admonition-title">Note</p>
 <p>FIXME: Pas encore conçu.
-Vraiment pas encore cuit.  Pour https, besoin de créer/gérer .htaccess (prédéfini mais généré tous les jours)
+Vraiment pas encore cuit. Pour https, besoin de créer/gérer .htaccess (prédéfini mais généré tous les jours)
 et les fichiers .htpasswd (générés tous les jours).</p>
 </div>
 <p>Besoin d’une sorte de message adm que les sources peuvent envoyer N pompes plus tard pour modifier le contenu de .htpasswd
@@ -623,7 +623,7 @@ Besoin de parler avec les gars de l’équipe de messagerie Web.</p>
 simple sur une paire de nœuds, simple actif/passif ?  On peut aller à des conceptions évolutives
 sur un tableau de nœuds, ce qui nécessite une charge d’équilibreur avant les nœuds de traitement.
 Les disques d’un cluster peuvent être partagés ou individuels sur les nœuds de traitement, tout
-comme l’état du courtage.  Explorer s’il faut prendre en charge toutes les configurations,
+comme l’état du courtage. Explorer s’il faut prendre en charge toutes les configurations,
 ou pour déterminer s’il existe un modèle de conception particulier qui peut être appliqué de
 manière générale.</p>
 <p>Pour prendre ces décisions, une exploration considérable est nécessaire.</p>
@@ -639,32 +639,32 @@ On s’attend à ce que la demande porte sur ces deux cas.</p>
 <dt>Bunny</dt><dd><p>Une instance de broker partagée/en cluster, où plusieurs nœuds utilisent un broker commun pour se coordonner.</p>
 </dd>
 <dt>Effet Capybara</dt><dd><p><em>capybara à travers un serpent</em> où un gros rongeur déforme le corps d’un serpent
-au fur et à mesure qu’il est en cours de digestion.  Symbolique d’un mauvais équilibrage de charge, où un nœud
+au fur et à mesure qu’il est en cours de digestion. Symbolique d’un mauvais équilibrage de charge, où un nœud
 subit un pic de charge et ralentit excessivement.</p>
 </dd>
 <dt>Vannage (winnowing) d’empreintes digitales</dt><dd><p>Chaque produit a une somme de contrôle et une taille destinées à l’identifier de manière unique, appelées
-comme empreinte digitale.  Si deux produits ont la même empreinte digitale, ils sont considérés comme
-équivalent, et un seul peut être transmis.  Dans les cas où plusieurs sources de données équivalentes
+comme empreinte digitale. Si deux produits ont la même empreinte digitale, ils sont considérés comme
+équivalent, et un seul peut être transmis. Dans les cas où plusieurs sources de données équivalentes
 sont disponibles, mais les consommateurs en aval préféreraient recevoir des messages de notification uniques
 des produits, les processus peuvent choisir de publier des notifications du premier produit
 avec une empreinte digitale donnée, et ignorer les suivantes.</p>
 <p>C’est la base de la stratégie la plus robuste pour la haute disponibilité, mais la mise en place de
 plusieurs sources pour les mêmes données, acceptant les messages de notification pour tous, mais uniquement
-en acheminant un en aval.  En fonctionnement normal, une source peut être plus rapide que les
+en acheminant un en aval. En fonctionnement normal, une source peut être plus rapide que les
 autres, et donc les produits de la deuxième source sont généralement “winnowed”. Lorsqu’une source
 disparaît, les données de l’autre source sont automatiquement sélectionnées, au fur et à mesure que
 les empreintes digitales sont maintenant <em>fraiches</em> et utilisés, jusqu’à ce qu’une source plus rapide
 devienne disponible.</p>
 <p>L’avantage de cette méthode est que maintenant une décision A / B est nécessaire, de sorte que
-le temps de <em>pompage</em> est nul.  D’autres stratégies font l’objet de retards considérables
+le temps de <em>pompage</em> est nul. D’autres stratégies font l’objet de retards considérables
 en prenant la décision de repomper, et les pathologies que l’on pourrait résumer comme battant,
 et/ou des impasses.</p>
 </dd>
 </dl>
 <section id="autonome">
 <h3><a class="toc-backref" href="#id17" role="doc-backlink"><span class="sectnum">1.7.1 </span>Autonome</a><a class="headerlink" href="#autonome" title="Link to this heading"></a></h3>
-<p>Dans une configuration autonome, il n’y a qu’un seul nœud dans la configuration.  J’exécute tous les composants
-et n’en partage aucun avec d’autres nœuds.  Cela signifie que le courtier et les services de données tels que sftp et
+<p>Dans une configuration autonome, il n’y a qu’un seul nœud dans la configuration. J’exécute tous les composants
+et n’en partage aucun avec d’autres nœuds. Cela signifie que le courtier et les services de données tels que sftp et
 Apache sont sur un nœud.</p>
 <p>Une utilisation appropriée serait une petite installation d’acquisition de données non-24x7,
 pour prendre la responsabilité de la fil d’attente des données et s’éloigner de l’instrument.</p>
@@ -673,7 +673,7 @@ pour prendre la responsabilité de la fil d’attente des données et s’éloig
 <h3><a class="toc-backref" href="#id18" role="doc-backlink"><span class="sectnum">1.7.2 </span>DDSR : Configuration de commutation/routage</a><a class="headerlink" href="#ddsr-configuration-de-commutation-routage" title="Link to this heading"></a></h3>
 <p>Il s’agit d’une configuration plus évolutive impliquant plusieurs nœuds de Data Mover et
 potentiellement plusieurs brokers. Ces clusters ne sont pas des destinations de transferts
-de données, mais des intermédiaires.  Les données circulent à travers eux, mais les interroger
+de données, mais des intermédiaires. Les données circulent à travers eux, mais les interroger
 est plus compliqué car aucun nœud ne dispose de toutes les données disponibles. Les clients en aval
 des DDSR sont essentiellement d’autres cas de sarracenia.</p>
 <p>Plusieurs options sont encore disponibles dans ce modèle de configuration.
@@ -689,7 +689,7 @@ Lorsque le dernier confirmé, supprimez. (rend re-xmit difficile ;-)</p>
 <p>Dans Independent DDSR, il existe un équilibreur de charge qui distribue chaque connexion entrante à
 un courtier individuel exécuté sur un seul nœud.</p>
 <p>DDSR - courtier</p>
-<p>La validation préalable à la récupération se produirait sur le courtier.  Puis re-post pour les Sarra sur les movers.</p>
+<p>La validation préalable à la récupération se produirait sur le courtier. Puis re-post pour les Sarra sur les movers.</p>
 <blockquote>
 <div><ul class="simple">
 <li><p>Chaque courtier de nœud et moteur de transfert agit indépendamment. Robustesse maximale à l’échec.</p></li>
@@ -700,7 +700,7 @@ un courtier individuel exécuté sur un seul nœud.</p>
 </div></blockquote>
 <p>CONFIRMEZ : les processus exécutés sur les nœuds individuels sont abonnés au broker local.
 Très sensible à l’effet Capybara où tous les blocs de
-des fichiers volumineux sont canalisés via un seul nœud de traitement.  Les transferts de
+des fichiers volumineux sont canalisés via un seul nœud de traitement. Les transferts de
 fichiers volumineux le déclencheront.</p>
 <p>CONFIRMEZ : Les performances maximales pour un seul transfert sont limitées à un seul nœud.</p>
 </section>
@@ -721,30 +721,30 @@ d’attente spécifiques à un nœud.</p></li>
 </ul>
 </div></blockquote>
 <p>Dans courtier partagé DDSR, <em>l’effet Capybara</em> est minimisé en tant que blocs individuels d’un transfert et
-sont répartis sur tous les nœuds de déménagement.  Lorsqu’un fichier volumineux arrive, tous les déménageurs
+sont répartis sur tous les nœuds de déménagement. Lorsqu’un fichier volumineux arrive, tous les déménageurs
 sur tous les nœuds peuvent ramasser des blocs individuels, de sorte que le travail est automatiquement
 répartis entre eux.</p>
-<p>Cela suppose que les fichiers volumineux sont segmentés.  Comme différents nœuds de transfert auront
+<p>Cela suppose que les fichiers volumineux sont segmentés. Comme différents nœuds de transfert auront
 différents blocs d’un fichier, et la vue de données n’est pas partagée, pas de réassemblage des fichiers
 est fait.</p>
 <p>Le regroupement de courtiers est considéré comme une technologie mature et donc relativement fiable.</p>
 </section>
 <section id="dd-configuration-de-la-diffusion-des-donnees-aka-data-mart">
 <h3><a class="toc-backref" href="#id21" role="doc-backlink"><span class="sectnum">1.7.5 </span>DD : Configuration de la diffusion des données (AKA : Data Mart)</a><a class="headerlink" href="#dd-configuration-de-la-diffusion-des-donnees-aka-data-mart" title="Link to this heading"></a></h3>
-<p>La configuration de déploiement sr3 est davantage une configuration de point de terminaison.  Chaque nœud est censé :
-Avoir une copie complète de toutes les données téléchargées par tous les nœuds.   Donner une vue unifiée rend
+<p>La configuration de déploiement sr3 est davantage une configuration de point de terminaison. Chaque nœud est censé :
+Avoir une copie complète de toutes les données téléchargées par tous les nœuds.  Donner une vue unifiée rend
 ca beaucoup plus compatible avec une variété de méthodes d’accès, telles qu’un navigateur de fichiers (sur HTTP,
-ou sftp) plutôt que de se limiter aux messages de notification AMQP.  C’est le type de vue présenté par
+ou sftp) plutôt que de se limiter aux messages de notification AMQP. C’est le type de vue présenté par
 dd.weather.gc.ca.</p>
 <p>Avec ce point de vue, tous les fichiers doivent être entièrement réassemblés à la réception,
-avant d’annoncer la disponibilité en aval.  Les fichiers peuvent avoir été fragmentés pour
+avant d’annoncer la disponibilité en aval. Les fichiers peuvent avoir été fragmentés pour
 être transférés entre les pompes intermédiaires.</p>
 <p>Il existe plusieurs options pour obtenir cet effet visible de l’utilisateur final, chacune avec des compromis.
 Dans tous les cas, il y a un équilibreur de charge devant les nœuds qui distribue les demandes entrantes
 de connexion à un nœud pour le traitement.</p>
 <blockquote>
 <div><ul class="simple">
-<li><p>plusieurs nœuds de serveur.  Chacun autonome.</p></li>
+<li><p>plusieurs nœuds de serveur. Chacun autonome.</p></li>
 </ul>
 </div></blockquote>
 <ul class="simple">
@@ -761,7 +761,7 @@ de connexion à un nœud pour le traitement.</p>
 <blockquote>
 <div><ul class="simple">
 <li><p>L’équilibreur de charge transmet les demandes entrantes à plusieurs configurations independantes.</p></li>
-<li><p>Chaque nœud télécharge toutes les données.  L’espace disque requis pour les nœuds dans cette configuration
+<li><p>Chaque nœud télécharge toutes les données. L’espace disque requis pour les nœuds dans cette configuration
 sont beaucoup plus grands que pour les nœuds DDSR, où chaque nœud ne contient que 1/n des données.</p></li>
 <li><p>Chaque nœud annonce chaque produit qu’il a téléchargé, en utilisant son propre nom de nœud, car
 Il ne sait pas si d’autres nœuds ont ce produit.</p></li>
@@ -778,7 +778,7 @@ Partagez les files d’attente pour les sources distantes, puis effectuez des tr
 </div></blockquote>
 <div class="admonition note">
 <p class="admonition-title">Note</p>
-<p>FIXME : courtier partagé et système de fichiers partagé… Hmm…  Pourrait utiliser un deuxième courtier
+<p>FIXME : courtier partagé et système de fichiers partagé… Hmm… Pourrait utiliser un deuxième courtier
 Instance pour faire un téléchargement coopératif via le vannage Fingerprint.</p>
 </div>
 </section>
@@ -787,13 +787,13 @@ Instance pour faire un téléchargement coopératif via le vannage Fingerprint.<
 <blockquote>
 <div><ul class="simple">
 <li><p>Un seul broker en cluster est partagé par tous les nœuds.</p></li>
-<li><p>Chaque nœud télécharge toutes les données.  Espace disque requis pour les nœuds dans cette configuration
+<li><p>Chaque nœud télécharge toutes les données. Espace disque requis pour les nœuds dans cette configuration
 sont beaucoup plus grands que pour les nœuds DDSR, où chaque nœud ne contient que 1/n des données.</p></li>
 <li><p>Les clients se connectent à une instance d’agent à l’échelle du cluster, de sorte que les liens de
 téléchargement peuvent provenir de n’importe quel dans le cluster.</p></li>
 <li><p>Si le broker en cluster échoue, le service est en panne. (devrait être fiable)</p></li>
 <li><p>Un nœud ne peut pas annoncer chaque produit qu’il a téléchargé, en utilisant son propre nom de nœud, car
-Il ne sait pas si d’autres nœuds ont ce produit.   (Annonce en tant que DD1 vs. DD)</p></li>
+Il ne sait pas si d’autres nœuds ont ce produit.  (Annonce en tant que DD1 vs. DD)</p></li>
 </ul>
 <p>-Ou:</p>
 <blockquote>

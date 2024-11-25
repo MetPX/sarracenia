@@ -130,8 +130,8 @@ et rend l’envoi en temps réel beaucoup plus efficace.</p>
 <img alt="../../_images/e-ddsr-components.jpg" src="../../_images/e-ddsr-components.jpg" />
 <p>Les sources de données annoncent leurs produits, les systèmes de pompage extraient les données sur leurs
 arbres WAF, puis annoncent leurs arbres pour les clients en aval. Lorsque les clients
-téléchargent des données, ils peuvent écrire un message de journal sur le serveur. Les serveurs sont configurés
-pour transférer ces messages du journal du client via les serveurs intermédiaires vers
+téléchargent des données, ils peuvent écrire un message de rapport (report) sur le serveur. Les serveurs sont configurés
+pour transférer ces rapports du client via les serveurs intermédiaires vers
 la source. La Source peut voir l’intégralité du chemin emprunté par les données pour accéder à chaque
 client. Avec les applications de pompage traditionnelles, les sources ne voient que ce qu’elles ont livré
 au premier saut d’une chaîne. Au-delà de ce premier saut, le routage est opaque et le traçage
@@ -174,13 +174,13 @@ se retrouvent avec un seuil de “taille maximale” et mettent en œuvre deux m
 vous ne devriez pas avoir à faire dsh, ou px-push.
 Ce genre de gestion est intégré. le bus de messages est là pour cela.
 peut utiliser ‘scope’ pour que les commandes se propagent à travers plusieurs clusters.</p></li>
-<li><p>Le journal est une donnée.</p>
+<li><p>Le rapport est une donnée.</p>
 <p><em>Il ne suffit pas que justice soit faite.  Justice doit être perçue comme étant faite.</em></p>
 <p>Il ne suffit pas que les données soient fournies.  Cette livraison doit être enregistrée,
-et ce journal doit être renvoyé à la source.  Alors que nous voulons fournir
+et ce rapport doit être renvoyé à la source.  Alors que nous voulons fournir
 suffisamment d’informations pour les sources de données, nous ne voulons pas noyer le réseau
 dans les métadonnées.  Les journaux des composants locaux auront beaucoup plus d’informations,
-les messages de journal traversant le réseau jusqu’à la source sont des “dispositions finales”
+les messages de rapport traversant le réseau jusqu’à la source sont des “dispositions finales”
 chaque fois qu’une opération est terminée ou finalement abandonnée.</p>
 </li>
 <li><p>Il s’agit d’un outil de distribution de données, pas d’un réplicateur d’arborescence de fichiers.</p>
@@ -214,7 +214,7 @@ Il n’essaie pas d’être un site Web, pas plus qu’il n’essaie d’être u
 <li><p>Une gestion commune n’est pas nécessaire, il suffit de passer des journaux.</p>
 <p>Différents groupes peuvent gérer différentes pompes.
 lorsque nous interconnectons des pompes, elles deviennent une source pour nous.
-les messages de journal sont routés vers les sources de données, de sorte qu’elles obtiennent nos journaux sur leur
+les messages de rapport sont routés vers les sources de données, de sorte qu’elles obtiennent nos journaux sur leur
 données.  (la sécurité peut avoir quelque chose à dire à ce sujet.)</p>
 </li>
 <li><p>Il doit fonctionner n’importe où.

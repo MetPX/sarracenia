@@ -123,14 +123,14 @@ sending far more efficient.</p>
 <img alt="../_images/e-ddsr-components.jpg" src="../_images/e-ddsr-components.jpg" />
 <p>Sources of data announce their products, pumping systems pull the data onto their
 WAF trees, and then announce their trees for downstream clients. When clients
-download data, they may write a log message back to the server. Servers are configured
-to forward those client log messages back through the intervening servers back to
+download data, they may write a report message back to the server. Servers are configured
+to forward those client report messages back through the intervening servers back to
 the source. The Source can see the entire path that the data took to get to each
 client. With traditional pumping applications, sources only see that they delivered
 to the first hop in a chain. Beyond that first hop, routing is opaque, and tracing
 the path of data required assistance from administrators of each intervening system.
-With Sarracenia’s log forwarding, the pumping network is completely transparent
-to the sources, in that they can see where it went. With end to end logs, diagnostics
+With Sarracenia’s report forwarding, the pumping network is completely transparent
+to the sources, in that they can see where it went. With end to end reports, diagnostics
 are vastly simplified for everyone.</p>
 <p>For large files / high performance, files are segmented on ingest if they are sufficiently
 large to make this worthwhile. Each file can traverse the pump network independently,
@@ -161,20 +161,21 @@ The source can obtain any information about themselves:</p>
 <li><p>AMQP brokers do not transfer any user data, just metadata.</p>
 <p>reasoning:
 need to keep the notification messages small so that the forwarding rate is high.
-large notification messages will gum up the works.  also permissions become interesting.
+large notification messages will gum up the works. also permissions become interesting.
 end up with a ‘maximum size’ threshold, and implementing two methods for everything.</p>
 </li>
-<li><p>Config changes should propagate, not be unique to a host
-you should not have to do dsh, or px-push.
+<li><p>Config changes should propagate, not be unique to a host</p>
+<p>You should not have to do dsh, or px-push.
 That sort of management is built in. the message bus is there for that.
-might use ‘scope’ to have commands propagate through multiple clusters.</p></li>
-<li><p>Log is data.</p>
-<p><em>It is not enough for justice to be done.  Justice must be seen to be done.</em></p>
-<p>It is not enough for data to be delivered.  That delivery must be logged,
-and that log must be returned to the source.  While we want to supply
+might use ‘scope’ to have commands propagate through multiple clusters.</p>
+</li>
+<li><p>Report is data</p>
+<p><em>It is not enough for justice to be done. Justice must be seen to be done.</em> - Lord Heward</p>
+<p>It is not enough for data to be delivered. That delivery must be reported,
+and that report must be returned to the source. While we want to supply
 enough information to data sources, we do not want to drown the network
-in meta data.  The local component logs will have much more information,
-The log messages traverse the network to the source are ´final dispositions´
+in meta data. The local component logs will have much more information,
+The report messages traverse the network to the source are ´final dispositions´
 whenever an operation is either completed or finally abandoned.</p>
 </li>
 <li><p>This is a data distribution tool, not a file tree replicator.</p>
@@ -185,7 +186,7 @@ whenever an operation is either completed or finally abandoned.</p>
 <li><p>we do not care what ACL’s it has (they aren’t relevant on the destination.)</p></li>
 <li><p>we do not care about extended attributes. (portability, win,mac,lin,netapp?)</p></li>
 </ul>
-<p>again doubtful about this one.  Does it help?</p>
+<p>again doubtful about this one. Does it help?</p>
 </li>
 <li><p>Not worried about performance in phase 1
 - performance is enabled by the scalability of the design:</p>
@@ -206,11 +207,11 @@ go faster.</p></li>
 <p>This application uses HTTP as one of the transport protocols, that’s all.
 It is not trying to be a web site, any more than it is trying to be an sftp server.</p>
 </li>
-<li><p>Common management not needed, just pass logs around.</p>
+<li><p>Common management not needed, just pass reports around.</p>
 <p>Different groups can manage different pumps.
 when we interconnect pumps, they become a source for us.
-log messages are routed to the data sources, so they get our logs on their
-data.  (security can have something to say about that.)</p>
+report messages are routed to the data sources, so they get reports on their
+data. (security can have something to say about that.)</p>
 </li>
 <li><p>It needs to run anywhere.
 ubuntu,centos – primary.
@@ -244,27 +245,27 @@ going faster and being simpler is likely more reliable in practice.</p>
 but even in EC, files are getting bigger, and will likely grow a lot.
 Satellite sensor data is now very critical, and that is substantially larger.
 A traditional WMO format weather warning was limited to 15Kbytes (limited by internals
-systems to 32 Kbytes now) and those sizes were rarely reached.  It was more like 7-12K.
+systems to 32 Kbytes now) and those sizes were rarely reached. It was more like 7-12K.
 an average modern XML weather warning (CAP) is 60K so, so a five to eight fold increase.
 WMO since raised the limit to 500,000 bytes for WMO-GTS messages. and other mechanisms,
 such as FTP, have no fixed limit.</p>
 <p>Other scientific domains use very large files (measured in terabytes.) aim to be able
-to flow those through the pumps.  Worth thinking about transporting huge files.</p>
+to flow those through the pumps. Worth thinking about transporting huge files.</p>
 </div></blockquote>
 <ol class="arabic simple" start="12">
 <li><p>Normal operation should not require programming knowledge.</p></li>
 </ol>
 <blockquote>
-<div><p>Configuratin and coding are distinct activities.  One should not have to modify scripts
-to configure standard elements of the application.  Software can be much simpler if it
-just leaves all features implemented as plug-in scripts.  leaving the local details
-for the scripts.  But most people will not be able to use it.</p>
+<div><p>Configuratin and coding are distinct activities. One should not have to modify scripts
+to configure standard elements of the application. Software can be much simpler if it
+just leaves all features implemented as plug-in scripts. leaving the local details
+for the scripts. But most people will not be able to use it.</p>
 <p>Need to provide all core functionality through CLI at the very least.
 config files are consiered part of the CLI, which is why we try to choose carefully
-there as well.   For programmers, difference between script and config is subtle,
+there as well.  For programmers, difference between script and config is subtle,
 not so for most other people.</p>
 <p>Scripting should only be required to extend features beyond what is standard.
-to provide added flexibility.  If the flexibility proves generally useful over time,
+to provide added flexibility. If the flexibility proves generally useful over time,
 then it should be brought out of scripts and into the configuration realm.</p>
 </div></blockquote>
 </section>
