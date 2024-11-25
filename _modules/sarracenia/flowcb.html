@@ -265,11 +265,11 @@
 <span class="sd">         to indicate failure to process a message, append to worklist.failed.</span>
 <span class="sd">         worklist.failed processing should occur in here as it will be zeroed out after this step.</span>
 
-<span class="sd">    def send(self,msg) -&gt; bool::</span>
+<span class="sd">    def send(self,msg) -&gt; int::</span>
 
 <span class="sd">         Task: looking at msg[&#39;new_dir&#39;], msg[&#39;new_file&#39;], and the self.o options perform a transfer</span>
 <span class="sd">               of a single file.</span>
-<span class="sd">               return True on a successful transfer, False otherwise.</span>
+<span class="sd">               return &gt;0 on a successful transfer, 0 if failed but temporarily, &lt;0 if failure is permanent.</span>
 
 <span class="sd">               if self.o.dry_run is set, simulate the output of a send without</span>
 <span class="sd">               performing it.</span>

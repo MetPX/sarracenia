@@ -1366,6 +1366,15 @@ check if stop_requested once in a while, but never return otherwise.</p>
 </dd></dl>
 
 <dl class="py method">
+<dt class="sig sig-object py" id="sarracenia.flow.Flow.send">
+<span class="sig-name descname"><span class="pre">send</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">msg</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">options</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">int</span></span></span><a class="reference internal" href="../_modules/sarracenia/flow.html#Flow.send"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#sarracenia.flow.Flow.send" title="Link to this definition"></a></dt>
+<dd><p>send/transfer one file based on message, return int:</p>
+<p>return 0 – failed temporarily, retry later.
+return &gt;0 – OK download successful.
+return &lt;0 – download failed permanently, retry not useful.</p>
+</dd></dl>
+
+<dl class="py method">
 <dt class="sig sig-object py" id="sarracenia.flow.Flow.set_local_file_attributes">
 <span class="sig-name descname"><span class="pre">set_local_file_attributes</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">local_file</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">msg</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/sarracenia/flow.html#Flow.set_local_file_attributes"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#sarracenia.flow.Flow.set_local_file_attributes" title="Link to this definition"></a></dt>
 <dd><p>after a file has been written, restore permissions and ownership if necessary.</p>
