@@ -773,6 +773,21 @@ atteint le nombre donné par l’option **batch** (100 par défaut).
 Toutes les opérations de téléchargement (upload) utilisent un buffer. La taille, en octets,
 du buffer utilisé est donné par l’option **bufsize** (8192 par défaut).
 
+Accéder aux « masques » d'accept/reject
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Lorsqu'un message est accepté ou rejeté, le « masque » qui a été utilisé pour l'accept/reject sera stocké dans la valeur de la clé ``_mask`` du message. Le ``_mask`` est un tuple qui contient l'expression régulière de l'instruction d'accept/reject, le chemin du ``directory`` correspondant, la valeur des options ``mirror`` et ``filename`` . Le dernier élément de le tuple est une liste contenant tout texte supplémentaire, divisé par espaces, inclus à la fin de la ligne d'accept/reject dans le fichier de configuration. Ce texte supplémentaire peut être utilisé pour transmettre des informations supplémentaires aux plugins.
+
+Par exemple, avec une instruction accept dans un fichier de configuration comme ceci :
+
+    accept .*abc.* votre_texte=ici from_accept_abc
+
+Le dernier élément de ``msg['_mask']`` serait :
+
+.. code-block:: python
+
+    msg['_mask'][-1] # == [ 'votre_text=ici', 'from_accept_abc' ]
+
 Pourquoi l’API v3 doit être utilisée dans la mesure du possible
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
