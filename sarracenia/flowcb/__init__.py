@@ -12,7 +12,7 @@ import sys
 
 entry_points = [
 
-    'ack', 'after_accept', 'after_post', 'after_work', 'destfn', 'do_poll', 
+    'ack', 'after_accept', 'after_gather', 'after_post', 'after_work', 'destfn', 'do_poll', 
     'download', 'gather', 'metricsReport', 'on_cleanup', 'on_declare', 'on_features',
     'on_housekeeping', 'on_sanity', 'on_start', 'on_stop', 
     'please_stop', 'poll', 'post', 'report', 'send', 

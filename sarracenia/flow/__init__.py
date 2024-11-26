@@ -1145,6 +1145,8 @@ class Flow:
 
                 return
 
+        self._runCallbacksWorklist('after_gather')
+
         # gather is an extended version of poll.
         if self.o.component != 'poll':
             return
