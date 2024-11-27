@@ -136,7 +136,7 @@
 <dd class="field-odd"><p>3.00.57rc0</p>
 </dd>
 <dt class="field-even">date<span class="colon">:</span></dt>
-<dd class="field-even"><p>Nov 25, 2024</p>
+<dd class="field-even"><p>Nov 27, 2024</p>
 </dd>
 </dl>
 </section>
@@ -930,6 +930,18 @@ the connection, once opened, is kept open. It is reset
 reaches the number given by the  <strong>batch</strong>  option (default 100).</p>
 <p>All download (upload) operations use a buffer. The size, in bytes,
 of the buffer used is given by the <strong>bufsize</strong> option (default 8192).</p>
+</section>
+<section id="accessing-accept-reject-masks">
+<h4>Accessing accept/reject “masks”<a class="headerlink" href="#accessing-accept-reject-masks" title="Link to this heading"></a></h4>
+<p>When a message is accepted or rejected, the “mask” that was used to accept/reject it will be stored in the value of the message’s <code class="docutils literal notranslate"><span class="pre">_mask</span></code> key. The <code class="docutils literal notranslate"><span class="pre">_mask</span></code> is a tuple that contains the regex from the accept/reject statement, the corresponding <code class="docutils literal notranslate"><span class="pre">directory</span></code> path, the value of the <code class="docutils literal notranslate"><span class="pre">mirror</span></code> and <code class="docutils literal notranslate"><span class="pre">filename</span></code> options. The last item in the tuple is a list containing any additional text, split by whitespace, that was included at the end of the accept/reject line in the config file. This additional text can be used to pass additional information to plugins.</p>
+<p>For example, with an accept statement in a config file like this:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">accept</span> <span class="o">.*</span><span class="n">abc</span><span class="o">.*</span>  <span class="n">your_text</span><span class="o">=</span><span class="n">here</span> <span class="n">from_accept_abc</span>
+</pre></div>
+</div>
+<p>The last item in <code class="docutils literal notranslate"><span class="pre">msg['_mask']</span></code> would be:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">msg</span><span class="p">[</span><span class="s1">&#39;_mask&#39;</span><span class="p">][</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="c1"># == [ &#39;your_text=here&#39;, &#39;from_accept_abc&#39; ]</span>
+</pre></div>
+</div>
 </section>
 <section id="why-v3-api-should-be-used-whenever-possible">
 <h4>Why v3 API should be used whenever possible<a class="headerlink" href="#why-v3-api-should-be-used-whenever-possible" title="Link to this heading"></a></h4>

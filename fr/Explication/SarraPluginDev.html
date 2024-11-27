@@ -120,7 +120,7 @@
 <dd class="field-odd"><p>3.00.57rc0</p>
 </dd>
 <dt class="field-even">date<span class="colon">:</span></dt>
-<dd class="field-even"><p>Nov 25, 2024</p>
+<dd class="field-even"><p>Nov 27, 2024</p>
 </dd>
 </dl>
 <section id="audience">
@@ -829,6 +829,18 @@ la connexion, une fois ouverte, reste ouverte. Il est réinitialisé
 atteint le nombre donné par l’option <strong>batch</strong> (100 par défaut).</p>
 <p>Toutes les opérations de téléchargement (upload) utilisent un buffer. La taille, en octets,
 du buffer utilisé est donné par l’option <strong>bufsize</strong> (8192 par défaut).</p>
+</section>
+<section id="acceder-aux-masques-d-accept-reject">
+<h4>Accéder aux « masques » d’accept/reject<a class="headerlink" href="#acceder-aux-masques-d-accept-reject" title="Link to this heading"></a></h4>
+<p>Lorsqu’un message est accepté ou rejeté, le « masque » qui a été utilisé pour l’accept/reject sera stocké dans la valeur de la clé <code class="docutils literal notranslate"><span class="pre">_mask</span></code> du message. Le <code class="docutils literal notranslate"><span class="pre">_mask</span></code> est un tuple qui contient l’expression régulière de l’instruction d’accept/reject, le chemin du <code class="docutils literal notranslate"><span class="pre">directory</span></code> correspondant, la valeur des options <code class="docutils literal notranslate"><span class="pre">mirror</span></code> et <code class="docutils literal notranslate"><span class="pre">filename</span></code> . Le dernier élément de le tuple est une liste contenant tout texte supplémentaire, divisé par espaces, inclus à la fin de la ligne d’accept/reject dans le fichier de configuration. Ce texte supplémentaire peut être utilisé pour transmettre des informations supplémentaires aux plugins.</p>
+<p>Par exemple, avec une instruction accept dans un fichier de configuration comme ceci :</p>
+<blockquote>
+<div><p>accept .*abc.* votre_texte=ici from_accept_abc</p>
+</div></blockquote>
+<p>Le dernier élément de <code class="docutils literal notranslate"><span class="pre">msg['_mask']</span></code> serait :</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">msg</span><span class="p">[</span><span class="s1">&#39;_mask&#39;</span><span class="p">][</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="c1"># == [ &#39;votre_text=ici&#39;, &#39;from_accept_abc&#39; ]</span>
+</pre></div>
+</div>
 </section>
 <section id="pourquoi-lapi-v3-doit-etre-utilisee-dans-la-mesure-du-possible">
 <h4>Pourquoi l’API v3 doit être utilisée dans la mesure du possible<a class="headerlink" href="#pourquoi-lapi-v3-doit-etre-utilisee-dans-la-mesure-du-possible" title="Link to this heading"></a></h4>
