@@ -569,6 +569,17 @@ for detailed information about call signatures and return values, etc...
 |                     |                                                    |
 |                     |                                                    |
 +---------------------+----------------------------------------------------+
+|                     |                                                    |
+| after_gather        | Called after gather and before filter.             |
+| (self,worklist)     |                                                    |
+|                     | Not used often. after_accept should be used        |
+|                     | for most use cases.                                |
+|                     |                                                    |
+|                     | after_gather should only really be used when:      |
+|                     | - There needs to be a change to the worklist       |
+|                     |   of messages before attempting to filter.         |
+|                     |                                                    |
++---------------------+----------------------------------------------------+
 |                     | called after When a transfer has been attempted.   |
 | after_work          |                                                    |
 | (self,worklist)     | All messages are acknowledged by this point.       |

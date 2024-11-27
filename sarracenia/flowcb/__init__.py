@@ -105,6 +105,17 @@ class FlowCB:
                and move messages to worklist.rejected to prevent further processing.
                do not delete any messages, only move between worklists.
 
+    def after_gather(self,worklist) -> None::
+
+         Task: operate on worklist.incoming to help decide which messages to process further.
+         Move messages to worklist.rejected to prevent further processing.
+
+         Should only really be used for special use cases when message processing 
+         needs to be done before going through `filter` of the flow algorithm.
+
+         Otherwise, after_accept entry point should be used.
+
+ 
     def after_work(self,worklist) -> None::
 
         Task: operate on worklist.ok (files which have arrived.)

@@ -531,6 +531,19 @@ pour des informations détaillées sur les signatures d’appel et les valeurs d
 |                     | binaires pour les fichiers volumineux.)            |
 |                     |                                                    |
 +---------------------+----------------------------------------------------+
+|                     |                                                    |
+| after_gather        | Appelé après gather et avant filter (filtre)       |
+| (self,worklist)     |                                                    |
+|                     | C'est une option peu utilisée.                     |
+|                     | after_accept devrait être utilisé pour la          |
+|                     | plupart des cas                                    |
+|                     |                                                    |
+|                     | after_gather devrait seulement être utilisé        |
+|                     | lorsque:                                           |
+|                     | - Un changement doit être fait à la worklist       |
+|                     |   de messages avant d'atteindre le filtre.         |
+|                     |                                                    |
++---------------------+----------------------------------------------------+
 |                     | appelé après qu’un transfert a été tenté.          |
 | after_work          |                                                    |
 | (self,worklist)     | A ce point, tous les messages sont reconnus.       |
