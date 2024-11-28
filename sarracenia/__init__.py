@@ -76,6 +76,9 @@ if features['humanize']['present']:
     import humanize
 
     def naturalSize( num ):
+        if num < 1:
+            return f"{num:.3f}B"
+
         return humanize.naturalsize(num,binary=True).replace(" ","")
 
     def naturalTime( dur ):

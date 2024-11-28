@@ -906,6 +906,7 @@ class Config:
         self.pstrip = False
         self.queueName = None
         self.queueShare = "${USER}_${HOSTNAME}_${RAND8}"
+        self.rand8 = None
         self.randomize = False
         self.rename = None
         self.randid = "%04x" % randint(0, 65536)
@@ -1036,7 +1037,8 @@ class Config:
             result = result.replace('${POST_BROKER_USER}', self.post_broker.url.username)
 
         if ( '${RAND8}' in word ):
-            result = result.replace('${RAND8}', str(randint(0, 100000000)).zfill(8))
+            self._resolveRand8(self.component,self.config)
+            result = result.replace('${RAND8}', self.rand8 )
 
         if ( '${INSTANCE}' in word ):
             if hasattr(self,'no'): 
@@ -1400,6 +1402,7 @@ class Config:
             logger.error( f"{','.join(self.files)}:{self.lineno} broker needed before subtopic" )
             return
 
+        self._resolveRand8(self.component,self.config)
         self._resolve_exchange()
         self.queueName = self._resolveQueueName(self.component,self.config)
 
@@ -1843,6 +1846,37 @@ class Config:
             logger.debug( f'queue name {self.queueName} persisted to {self.queue_filename}' )
 
 
+
+    def _resolveRand8(self,component,cfg):
+
+        if self.rand8 != None:
+            return
+
+        rand8file = sarracenia.user_cache_dir(
+            Config.appdir_stuff['appname'],
+            Config.appdir_stuff['appauthor'])
+
+        if self.statehost:
+            rand8file += os.sep + self.hostdir
+
+        rand8file += os.sep + component + os.sep + cfg
+        rand8file += os.sep + 'rand8'
+
+        if not os.path.isdir(os.path.dirname(rand8file)):
+            pathlib.Path(os.path.dirname(rand8file)).mkdir(parents=True, exist_ok=True)
+
+        if os.path.isfile(rand8file):
+            f = open(rand8file, 'r')
+            self.rand8 = f.read()
+            f.close()
+            logger.debug( f"read rand8 {self.rand8} from state file {rand8file}" )
+        else:
+            # FIXME: insert logic to look at queuefile setting and take the last 8 chars from it, if available...
+            #
+            self.rand8 = str(randint(0, 100000000)).zfill(8)
+            f = open(rand8file, 'w')
+            f.write(self.rand8)
+            f.close()
 
     def _resolveQueueName(self,component,cfg):
 
