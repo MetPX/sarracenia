@@ -1840,8 +1840,8 @@ class sr_GlobalState:
                     if qd[1] in xx:
                         if 'admin' not in self.brokers[h]:
                             continue
-                        print(' remove %s from %s subscribers: %s ' %
-                              (qd[1], x, xx))
+                        print(' remove %s from %s subscribers ' %
+                              (qd[1], x))
                         xx.remove(qd[1])
                         if o.post_broker and len(xx) < 1:
                             print("No local queues found for exchange %s, attemping to remove it..." % x)
