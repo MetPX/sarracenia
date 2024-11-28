@@ -43,7 +43,10 @@ class Email(FlowCB):
 
         # have a list of email destinations...
         logger.debug("email: %s" % self.o.file_email_to)
-        ipath = os.path.normpath(msg['relPath'])
+        if not msg['relPath'].startswith(self.o.baseDir): 
+            ipath = os.path.normpath(f"{self.o.baseDir}/{msg['relPath']}")
+        else:
+            ipath = os.path.normpath(f"{msg['relPath']}")
 
         # loop over all the variables from config file, if files match, send via email
         for header in self.o.file_email_to:
