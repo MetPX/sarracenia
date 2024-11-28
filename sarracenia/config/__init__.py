@@ -1404,7 +1404,7 @@ class Config:
 
         self._resolveRand8(self.component,self.config)
         self._resolve_exchange()
-        self.queueName = self._resolveQueueName(self.component,self.config)
+        queueName = self._resolveQueueName(self.component,self.config)
 
         if type(subtopic_string) is str:
             if self.broker.url.scheme == 'amq' :
@@ -1414,7 +1414,7 @@ class Config:
             
         if hasattr(self, 'exchange') and hasattr(self, 'topicPrefix'):
             self.bindings.append((self.exchange, self.topicPrefix, subtopic))
-            self.subscriptions.add(Subscription(self, self.queueName, subtopic))
+            self.subscriptions.add(Subscription(self, queueName, subtopic))
 
     def _parse_v2plugin(self, entryPoint, value):
         """
