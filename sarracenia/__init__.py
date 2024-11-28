@@ -76,6 +76,10 @@ if features['humanize']['present']:
     import humanize
 
     def naturalSize( num ):
+        # checking for > 0 allows message rate to print just 0m/s when num is 0 instead of 0.00m/s in sr3 status
+        # also ensures that data rate displays properly
+        if num > 0 and num < 1:
+            return f"{num:.2f}m"
         return humanize.naturalsize(num,binary=True).replace(" ","")
 
     def naturalTime( dur ):
