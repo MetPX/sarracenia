@@ -1023,14 +1023,17 @@ class Flow:
                     urlToMatch = url
                 oldname_matched = False
                 for mask in self.o.masks:
-                    pattern, maskDir, maskFileOption, mask_regexp, accepting, mirror, strip, pstrip, flatten = mask
+                    pattern, maskDir, maskFileOption, mask_regexp, accepting, mirror, strip, pstrip, flatten, args = mask
                     if (pattern == '.*'):
                         oldname_matched = accepting
+                        m['_mask'] = mask
+                        m['_deleteOnPost'].add('_mask')
                         break
                     matches = mask_regexp.match(urlToMatch)
                     if matches:
                             m[ '_matches'] = matches
-                            m['_deleteOnPost'] |= set(['_matches'])
+                            m['_mask'] = mask
+                            m['_deleteOnPost'] |= set(['_matches', '_mask'])
                             oldname_matched = accepting
                     break
 
@@ -1052,7 +1055,7 @@ class Flow:
             # apply masks for accept/reject options.
             matched = False
             for mask in self.o.masks:
-                pattern, maskDir, maskFileOption, mask_regexp, accepting, mirror, strip, pstrip, flatten = mask
+                pattern, maskDir, maskFileOption, mask_regexp, accepting, mirror, strip, pstrip, flatten, args = mask
                 if (pattern != '.*') :
                     matches = mask_regexp.match(urlToMatch)
                     if matches:
@@ -1074,6 +1077,10 @@ class Flow:
                                 m, 404, "mask=%s strip=%s url=%s" %
                                 (str(mask), strip, urlToMatch))
                         break
+
+
+                    m['_mask'] = mask
+                    m['_deleteOnPost'].add('_mask')
 
                     if self.updateFieldsAccepted(m, url, pattern, maskDir,
                                            maskFileOption, mirror, strip,
