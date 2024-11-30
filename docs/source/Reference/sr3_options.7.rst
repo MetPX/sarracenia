@@ -140,8 +140,8 @@ option, with the use of *${..}* notation:
 * PROGRAM     - the name of the component (subscribe, shovel, etc...)
 * CONFIG      - the name of the configuration file being run.
 * HOSTNAME    - the hostname running the client.
-* RANDID      - a random id (0-64Ki) that will be consistent within a single instance.
-* RAND8       - a random 8 digit wide number that is generated whenever it is evaluated in a string.
+* RANDID      - a random id (0-64Ki) consistent within a single confiuguration.
+* RAND8       - a random 8 digit wide number consistent within a single confiuguration.
 * INSTANCE    - the flow process's instance number 
 
 The %Y%m%d and %h time stamps refer to the time at which the data is processed by
@@ -1559,8 +1559,8 @@ Where:
 
 * *configName* is the configuration file used to tune component behaviour.
 
-* *queueShare* defaults to ${USER}_${HOSTNAME}_${RAND8} but should be overridden with the 
-  *queueShare* configuration option.
+* *queueShare* defaults to ${USER}_${HOSTNAME}_${RAND8} but should be overridden 
+  when, say HOSTNAME does not correctly identify the scope of queue sharing.
 
 Users can override the default provided that it starts with **q_<brokerUser>**.
 

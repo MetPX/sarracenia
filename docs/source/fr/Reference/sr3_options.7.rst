@@ -138,8 +138,8 @@ en utilisant la notation *${..} * :
 * PROGRAM     - le nom du composant (subscribe, shovel, etc...)
 * CONFIG      - le nom du fichier de configuration en cours d'exécution.
 * HOSTNAME    - le hostname qui exécute le client.
-* RANDID      - Un ID aléatoire qui va être consistant pendant la duration d'une seule invocation.
-* RAND8 - un nombre aléatoire à 8 chiffres qui est généré chaque fois qu'il est évalué dans une chaîne de caractères.
+* RANDID      - Un ID aléatoire cohérent à l'intérieur d'une seule configuration.
+* RAND8  - un nombre aléatoire de 8 chiffres cohérent à l'intérieur d'une seule configuration.
 * INSTANCE   - le numéro d'instance du processus de flux (composant/configuration)
 
 
@@ -1547,8 +1547,9 @@ Ou:
 
 * *nomDeConfig* est le fichier de configuration utilisé pour régler le comportement des composants.
 
-*  *queueShare* est par défaut ${USER}_${HOSTNAME}_${RAND8} mais doit être remplacé par le
- Option de configuration *queueShare*.
+*  *queueShare* est par défaut ${USER}_${HOSTNAME}_${RAND8} mais doit être remplacé lorsque, par exemple,
+   le ${HOSTNAME} ne va pas être pareil pour tout les instances qui devrait consommer à partir de la même
+   file d´attente de messages..
 
 Les utilisateurs peuvent remplacer le défaut à condition qu’il commence par **q_<utilisateurDeCourtier>**.
 
