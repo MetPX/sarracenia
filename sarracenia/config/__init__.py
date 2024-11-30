@@ -1873,12 +1873,31 @@ class Config:
         else:
             # FIXME: insert logic to look at queuefile setting and take the last 8 chars from it, if available...
             #
-            self.rand8 = str(randint(0, 100000000)).zfill(8)
+            if (self.queueName and self.queueName.endswith('_${RAND8}')) or self.queueShare.endswith('_${RAND8}'):
+
+                qfn = self._getQueueFilename(component,cfg)
+
+                queueName=None
+                if not self.__queue_file_read and os.path.isfile(qfn):
+                    f = open(qfn, 'r')
+                    queueName = f.read()
+                    f.close()
+                    self.__queue_file_read=True
+            
+                #if the queuefile is corrupt, then will need to guess anyways.
+                if queueName:
+                    last=queueName.split('_')[-1]
+                    if len(last) > 5 and last.isnumeric():
+                        self.rand8=last
+
+            if not self.rand8:
+                self.rand8 = str(randint(0, 100000000)).zfill(8)
+
             f = open(rand8file, 'w')
             f.write(self.rand8)
             f.close()
 
-    def _resolveQueueName(self,component,cfg):
+    def _getQueueFilename(self,component,cfg):
 
         queuefile = sarracenia.user_cache_dir(
             Config.appdir_stuff['appname'],
@@ -1895,7 +1914,15 @@ class Config:
             queuefile += "%02d" % self.no
         queuefile += '.qname'
 
-        self.queue_filename = queuefile
+        return queuefile
+
+
+
+    def _resolveQueueName(self,component,cfg):
+
+
+        self.queue_filename = self._getQueueFilename(component,cfg)
+        queuefile=self.queue_filename
 
         if not hasattr(self, 'old_subscriptions'):
             self.subscriptionsPath=self._getSubscriptionsFileName(self.component,self.config)
@@ -1927,7 +1954,7 @@ class Config:
         if hasattr(self,'no') and self.no > 1:
 
             config_read_try=0
-            if os.path.isfile(queuefile):
+            if os.path.isfile(self.queue_filename):
                 f = open(queuefile, 'r')
                 queueName = f.read()
                 f.close()
