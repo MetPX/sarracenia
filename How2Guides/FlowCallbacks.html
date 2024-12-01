@@ -124,7 +124,11 @@ add custom processing at a variety of times during processing by sub-classing
 the <a class="reference external" href="../../sarracenia/flowcb/__init__.py">sarracenia.flowcb</a> class.</p>
 <p>Briefly, the algorithm has the following steps:</p>
 <ul class="simple">
-<li><p><strong>gather</strong> – passively collect notification messages to be processed.</p></li>
+<li><p><strong>gather</strong> – passively collect notification messages to be processed.</p>
+<ul>
+<li><p><em>after_gather</em> callback entry point</p></li>
+</ul>
+</li>
 <li><p><strong>poll</strong> – actively collect notification messages to be processed.</p></li>
 <li><p><strong>filter</strong> – apply accept/reject regular expression matches to the notification message list.</p>
 <ul>

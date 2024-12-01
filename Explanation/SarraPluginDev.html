@@ -136,7 +136,7 @@
 <dd class="field-odd"><p>3.00.57rc0</p>
 </dd>
 <dt class="field-even">date<span class="colon">:</span></dt>
-<dd class="field-even"><p>Nov 29, 2024</p>
+<dd class="field-even"><p>Dec 01, 2024</p>
 </dd>
 </dl>
 </section>
@@ -613,7 +613,19 @@ downloaders based on file size (built-in for small
 ones, binary downloaders for large files.)</p>
 </td>
 </tr>
-<tr class="row-even"><td><p>after_work
+<tr class="row-even"><td><p>after_gather
+(self,worklist)</p></td>
+<td><p>Called after gather and before filter.</p>
+<p>Not used often. after_accept should be used
+for most use cases.</p>
+<p>after_gather should only really be used when:
+- There needs to be a change to the worklist</p>
+<blockquote>
+<div><p>of messages before attempting to filter.</p>
+</div></blockquote>
+</td>
+</tr>
+<tr class="row-odd"><td><p>after_work
 (self,worklist)</p></td>
 <td><p>called after When a transfer has been attempted.</p>
 <p>All messages are acknowledged by this point.
@@ -625,24 +637,24 @@ during transfer.</p>
 download has completed.</p>
 </td>
 </tr>
-<tr class="row-odd"><td><p>destfn(self,msg):</p></td>
+<tr class="row-even"><td><p>destfn(self,msg):</p></td>
 <td><p>called when renaming the file from inflight to
 permanent name.</p>
 <p>return the new name for the downloaded/sent file.</p>
 </td>
 </tr>
-<tr class="row-even"><td><p>download(self,msg)</p></td>
+<tr class="row-odd"><td><p>download(self,msg)</p></td>
 <td><p>replace built-in downloader return true on success
 takes message as argument.</p></td>
 </tr>
-<tr class="row-odd"><td><p>gather(self)</p></td>
+<tr class="row-even"><td><p>gather(self)</p></td>
 <td><p>gather messages from a source, returns a list of
 messages.
 can also return a tuple where the first element
 is a boolean flag keep_going indicating whether
 to stop gather processing.</p></td>
 </tr>
-<tr class="row-even"><td><p>on_housekeeping
+<tr class="row-odd"><td><p>on_housekeeping
 (self)</p></td>
 <td><p>Called every housekeeping interval (minutes)
 used to clean cache, check for occasional issues.
@@ -651,7 +663,7 @@ manage retry queues.</p>
 return True to proceed</p>
 </td>
 </tr>
-<tr class="row-odd"><td><p>on_start(self)</p></td>
+<tr class="row-even"><td><p>on_start(self)</p></td>
 <td><p>when a componente (e.g. sr_subscribe) is started.
 Can be used to read state from files.</p>
 <p>state files in self.o.user_cache_dir</p>
@@ -659,21 +671,21 @@ Can be used to read state from files.</p>
 <p>example: file_total_save.py <a class="footnote-reference brackets" href="#id3" id="id2" role="doc-noteref"><span class="fn-bracket">[</span>1<span class="fn-bracket">]</span></a></p>
 </td>
 </tr>
-<tr class="row-even"><td><p>on_stop(self)</p></td>
+<tr class="row-odd"><td><p>on_stop(self)</p></td>
 <td><p>when a component (e.g. sr_subscribe) is stopped.
 can be used to persist state.</p>
 <p>state files in self.o.user_cache_dir</p>
 <p>return value ignored</p>
 </td>
 </tr>
-<tr class="row-odd"><td><p>poll(self)</p></td>
+<tr class="row-even"><td><p>poll(self)</p></td>
 <td><p>replace the built-in poll method.
 return a list of notification messages.</p></td>
 </tr>
-<tr class="row-even"><td><p>post(self,worklist)</p></td>
+<tr class="row-odd"><td><p>post(self,worklist)</p></td>
 <td><p>replace the built-in post routine.</p></td>
 </tr>
-<tr class="row-odd"><td><p>send(self,msg)</p></td>
+<tr class="row-even"><td><p>send(self,msg)</p></td>
 <td><p>replace the built-in send routine.</p></td>
 </tr>
 </tbody>

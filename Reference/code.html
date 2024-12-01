@@ -1405,7 +1405,7 @@ DESTFN=fname   – Change the filename to fname</p>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="sarracenia.flow.Flow.updateFieldsAccepted">
-<span class="sig-name descname"><span class="pre">updateFieldsAccepted</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">msg</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">urlstr</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">pattern</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">maskDir</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">maskFileOption</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mirror</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">path_strip_count</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">pstrip</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">flatten</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="reference internal" href="../_modules/sarracenia/flow.html#Flow.updateFieldsAccepted"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#sarracenia.flow.Flow.updateFieldsAccepted" title="Link to this definition"></a></dt>
+<span class="sig-name descname"><span class="pre">updateFieldsAccepted</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">msg</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">urlstr</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">pattern</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">maskDir</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">maskFileOption</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mirror</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">path_strip_count</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">pstrip</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">flatten</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">bool</span></span></span><a class="reference internal" href="../_modules/sarracenia/flow.html#Flow.updateFieldsAccepted"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#sarracenia.flow.Flow.updateFieldsAccepted" title="Link to this definition"></a></dt>
 <dd><p>Set new message fields according to values when the message is accepted.</p>
 <ul class="simple">
 <li><p>urlstr: the urlstr being matched (baseUrl+relPath+sundew_extension)</p></li>
@@ -1417,6 +1417,7 @@ DESTFN=fname   – Change the filename to fname</p>
 <li><p>flatten: a character to replace path separators with toe change a multi-directory
 deep file name into a single long file name</p></li>
 </ul>
+<p>return True on success</p>
 </dd></dl>
 
 <dl class="py method">

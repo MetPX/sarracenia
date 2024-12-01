@@ -95,7 +95,7 @@
 
 <span class="n">entry_points</span> <span class="o">=</span> <span class="p">[</span>
 
-    <span class="s1">&#39;ack&#39;</span><span class="p">,</span> <span class="s1">&#39;after_accept&#39;</span><span class="p">,</span> <span class="s1">&#39;after_post&#39;</span><span class="p">,</span> <span class="s1">&#39;after_work&#39;</span><span class="p">,</span> <span class="s1">&#39;destfn&#39;</span><span class="p">,</span> <span class="s1">&#39;do_poll&#39;</span><span class="p">,</span> 
+    <span class="s1">&#39;ack&#39;</span><span class="p">,</span> <span class="s1">&#39;after_accept&#39;</span><span class="p">,</span> <span class="s1">&#39;after_gather&#39;</span><span class="p">,</span> <span class="s1">&#39;after_post&#39;</span><span class="p">,</span> <span class="s1">&#39;after_work&#39;</span><span class="p">,</span> <span class="s1">&#39;destfn&#39;</span><span class="p">,</span> <span class="s1">&#39;do_poll&#39;</span><span class="p">,</span> 
     <span class="s1">&#39;download&#39;</span><span class="p">,</span> <span class="s1">&#39;gather&#39;</span><span class="p">,</span> <span class="s1">&#39;metricsReport&#39;</span><span class="p">,</span> <span class="s1">&#39;on_cleanup&#39;</span><span class="p">,</span> <span class="s1">&#39;on_declare&#39;</span><span class="p">,</span> <span class="s1">&#39;on_features&#39;</span><span class="p">,</span>
     <span class="s1">&#39;on_housekeeping&#39;</span><span class="p">,</span> <span class="s1">&#39;on_sanity&#39;</span><span class="p">,</span> <span class="s1">&#39;on_start&#39;</span><span class="p">,</span> <span class="s1">&#39;on_stop&#39;</span><span class="p">,</span> 
     <span class="s1">&#39;please_stop&#39;</span><span class="p">,</span> <span class="s1">&#39;poll&#39;</span><span class="p">,</span> <span class="s1">&#39;post&#39;</span><span class="p">,</span> <span class="s1">&#39;report&#39;</span><span class="p">,</span> <span class="s1">&#39;send&#39;</span><span class="p">,</span> 
@@ -190,6 +190,17 @@
 <span class="sd">               and move messages to worklist.rejected to prevent further processing.</span>
 <span class="sd">               do not delete any messages, only move between worklists.</span>
 
+<span class="sd">    def after_gather(self,worklist) -&gt; None::</span>
+
+<span class="sd">         Task: operate on worklist.incoming to help decide which messages to process further.</span>
+<span class="sd">         Move messages to worklist.rejected to prevent further processing.</span>
+
+<span class="sd">         Should only really be used for special use cases when message processing </span>
+<span class="sd">         needs to be done before going through `filter` of the flow algorithm.</span>
+
+<span class="sd">         Otherwise, after_accept entry point should be used.</span>
+
+<span class="sd"> </span>
 <span class="sd">    def after_work(self,worklist) -&gt; None::</span>
 
 <span class="sd">        Task: operate on worklist.ok (files which have arrived.)</span>

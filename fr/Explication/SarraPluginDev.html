@@ -120,7 +120,7 @@
 <dd class="field-odd"><p>3.00.57rc0</p>
 </dd>
 <dt class="field-even">date<span class="colon">:</span></dt>
-<dd class="field-even"><p>Nov 29, 2024</p>
+<dd class="field-even"><p>Dec 01, 2024</p>
 </dd>
 </dl>
 <section id="audience">
@@ -580,7 +580,21 @@ fichier (intégré pour les petits, téléchargeurs
 binaires pour les fichiers volumineux.)</p>
 </td>
 </tr>
-<tr class="row-even"><td><p>after_work
+<tr class="row-even"><td><p>after_gather
+(self,worklist)</p></td>
+<td><p>Appelé après gather et avant filter (filtre)</p>
+<p>C’est une option peu utilisée.
+after_accept devrait être utilisé pour la
+plupart des cas</p>
+<p>after_gather devrait seulement être utilisé
+lorsque:
+- Un changement doit être fait à la worklist</p>
+<blockquote>
+<div><p>de messages avant d’atteindre le filtre.</p>
+</div></blockquote>
+</td>
+</tr>
+<tr class="row-odd"><td><p>after_work
 (self,worklist)</p></td>
 <td><p>appelé après qu’un transfert a été tenté.</p>
 <p>A ce point, tous les messages sont reconnus.
@@ -592,25 +606,25 @@ pendant le transfert.</p>
 le fichier après que le téléchargement est terminé.</p>
 </td>
 </tr>
-<tr class="row-odd"><td><p>destfn_script</p></td>
+<tr class="row-even"><td><p>destfn_script</p></td>
 <td><p>changer msg[‘new_file’] a son gout
 appelé lors du changement de nom du fichier en vol
 son nom permanent</p>
 <p>NOT IMPLEMENTED? FIXME?</p>
 </td>
 </tr>
-<tr class="row-even"><td><p>download(self,msg)</p></td>
+<tr class="row-odd"><td><p>download(self,msg)</p></td>
 <td><p>remplacer le téléchargeur intégré, retourner true
 pour un succès. Prends un messafe comme argument.</p></td>
 </tr>
-<tr class="row-odd"><td><p>gather(self)</p></td>
+<tr class="row-even"><td><p>gather(self)</p></td>
 <td><p>Rassembler les messages a la source, retourne une
 une liste de messages.
 on peut également retourner un tuple dont le
 première élément est une valeur booléen keep_going
 qui peut arreter l´execution des gather.</p></td>
 </tr>
-<tr class="row-even"><td><p>on_housekeeping
+<tr class="row-odd"><td><p>on_housekeeping
 (self)</p></td>
 <td><p>Appelé à chaque intervalle housekeeping (minutes).
 utilisé pour nettoyer le cache, vérifier les
@@ -619,7 +633,7 @@ problèmes occasionnels. Gérer les files d’attentes</p>
 ultérieur. Retourne True pour continuer.</p>
 </td>
 </tr>
-<tr class="row-odd"><td><p>on_start(self)</p></td>
+<tr class="row-even"><td><p>on_start(self)</p></td>
 <td><p>Quand un composant (e.g. sr_subscribe) est démarré.
 Peut être utlisé pour lire l’état a partir d’un
 fichier.
@@ -628,7 +642,7 @@ fichier d’état dans self.o.user_cache_dir</p>
 <p>exemple: file_total_save.py <a class="footnote-reference brackets" href="#id2" id="id1" role="doc-noteref"><span class="fn-bracket">[</span>1<span class="fn-bracket">]</span></a></p>
 </td>
 </tr>
-<tr class="row-even"><td><p>on_stop(self)</p></td>
+<tr class="row-odd"><td><p>on_stop(self)</p></td>
 <td><dl>
 <dt>Quand un composant (e.g. sr_subscribe) est arrêté.</dt><dd><p>peut être utilisé pour conserver l’état.</p>
 <p>fichier d’état dans self.o.user_cache_dir</p>
@@ -637,14 +651,14 @@ fichier d’état dans self.o.user_cache_dir</p>
 <p>valeur retourné ignoré</p>
 </td>
 </tr>
-<tr class="row-odd"><td><p>poll(self)</p></td>
+<tr class="row-even"><td><p>poll(self)</p></td>
 <td><p>remplace la méthode d’interrogation (poll) intégrée
 retourne une liste de messages.</p></td>
 </tr>
-<tr class="row-even"><td><p>post(self,worklist)</p></td>
+<tr class="row-odd"><td><p>post(self,worklist)</p></td>
 <td><p>remplacez la routine de publication (post) intégrée</p></td>
 </tr>
-<tr class="row-odd"><td><p>send(self,msg)</p></td>
+<tr class="row-even"><td><p>send(self,msg)</p></td>
 <td><p>remplacez la routine d’envoi (send) intégrée</p></td>
 </tr>
 </tbody>

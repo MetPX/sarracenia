@@ -131,7 +131,11 @@ ajouter un traitement personnalisé à divers moments au cours du traitement en 
 la classe <a class="reference external" href="../../sarracenia/flowcb/__init__.py">sarracenia.flowcb</a>.</p>
 <p>En bref, l’algorithme comporte les étapes suivantes :</p>
 <ul class="simple">
-<li><p><strong>gather</strong> – collecter passivement les messages de notification à traiter.</p></li>
+<li><p><strong>gather</strong> – collecter passivement les messages de notification à traiter.</p>
+<ul>
+<li><p><em>after_gather</em> point d’entré de callback</p></li>
+</ul>
+</li>
 <li><p><strong>poll</strong> – collecter activement les messages de notification à traiter.</p></li>
 <li><p><strong>filter</strong> – appliquer des correspondances d’expression régulière accept/reject à la liste des messages de notification.</p>
 <ul>
