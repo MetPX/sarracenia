@@ -806,7 +806,7 @@ class Flow:
 
     """
     def updateFieldsAccepted(self, msg, urlstr, pattern, maskDir,
-                             maskFileOption, mirror, path_strip_count, pstrip, flatten) -> None:
+                             maskFileOption, mirror, path_strip_count, pstrip, flatten) -> bool:
         """
            Set new message fields according to values when the message is accepted.
            
@@ -818,6 +818,8 @@ class Flow:
            * pstrip: pattern strip regexp to apply instead of a count.
            * flatten: a character to replace path separators with toe change a multi-directory 
              deep file name into a single long file name
+             
+           return True on success
 
         """
 
@@ -961,12 +963,20 @@ class Flow:
 
         tfname = filename
         # when sr_sender did not derived from sr_subscribe it was always called
-        new_dir = self.o.sundew_dirPattern(pattern, urlstr, tfname, new_dir)
-        msg.updatePaths(self.o, new_dir, filename)
+        try:
+            new_dir = self.o.sundew_dirPattern(pattern, urlstr, tfname, new_dir)
+            msg.updatePaths(self.o, new_dir, filename)
+        except Exception as ex:
+            logger.error( f"sundew_dirPattern crashed: {ex}." )
+            logger.debug( "details:", exc_info=True )
+            return False
 
         if maskFileOption:
             msg['new_file'] = self.sundew_getDestInfos(msg, maskFileOption, filename)
             msg['new_relPath'] = '/'.join(  msg['new_relPath'].split('/')[0:-1] + [ msg['new_file'] ]  )
+
+
+        return True
 
 
     def filter(self) -> None:
@@ -1068,14 +1078,18 @@ class Flow:
                                 (str(mask), strip, urlToMatch))
                         break
 
+
                     m['_mask'] = mask
                     m['_deleteOnPost'].add('_mask')
 
-                    self.updateFieldsAccepted(m, url, pattern, maskDir,
+                    if self.updateFieldsAccepted(m, url, pattern, maskDir,
                                            maskFileOption, mirror, strip,
-                                           pstrip, flatten)
+                                           pstrip, flatten):
+                        filtered_worklist.append(m)
+                    else:
+                        self.reject(m, 404, "unable to update fields %s" % url)
 
-                    filtered_worklist.append(m)
+
                     break
 
             if not matched:
@@ -1084,23 +1098,32 @@ class Flow:
                         m['renameUnlink'] = True
                         m['_deleteOnPost'] |= set(['renameUnlink'])
                     logger.debug("rename deletion 2 %s" % (m['fileOp']['rename']))
-                    filtered_worklist.append(m)
-                    self.updateFieldsAccepted(m, url, None,
+
+                    if self.updateFieldsAccepted(m, url, None,
                                            default_accept_directory,
                                            self.o.filename, self.o.mirror,
                                            self.o.strip, self.o.pstrip,
-                                           self.o.flatten)
+                                           self.o.flatten):
+                        filtered_worklist.append(m)
+                    else:
+                        self.reject(m, 404, "unable to update fields %s" % url)
+
+
                     continue
 
                 if self.o.acceptUnmatched:
                     logger.debug("accept: unmatched pattern=%s" % (url))
                     # FIXME... missing dir mapping with mirror, strip, etc...
-                    self.updateFieldsAccepted(m, url, None,
+                    if self.updateFieldsAccepted(m, url, None,
                                            default_accept_directory,
                                            self.o.filename, self.o.mirror,
                                            self.o.strip, self.o.pstrip,
-                                           self.o.flatten)
-                    filtered_worklist.append(m)
+                                           self.o.flatten):
+
+                        filtered_worklist.append(m)
+                    else:
+                        self.reject(m, 404, "unable to update fields %s" % url)
+
                 else:
                     self.reject(m, 404, "unmatched pattern %s" % url)
 
@@ -1150,6 +1173,8 @@ class Flow:
                     self.worklist.poll_catching_up=True
 
                 return
+
+        self._runCallbacksWorklist('after_gather')
 
         # gather is an extended version of poll.
         if self.o.component != 'poll':

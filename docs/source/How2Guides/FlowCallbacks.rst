@@ -17,6 +17,9 @@ the `sarracenia.flowcb <../../sarracenia/flowcb/__init__.py>`_ class.
 Briefly, the algorithm has the following steps:
 
 * **gather** -- passively collect notification messages to be processed.
+
+  * *after_gather* callback entry point
+
 * **poll** -- actively collect notification messages to be processed.
 * **filter** -- apply accept/reject regular expression matches to the notification message list.
 

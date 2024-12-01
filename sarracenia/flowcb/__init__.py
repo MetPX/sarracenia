@@ -12,7 +12,7 @@ import sys
 
 entry_points = [
 
-    'ack', 'after_accept', 'after_post', 'after_work', 'destfn', 'do_poll', 
+    'ack', 'after_accept', 'after_gather', 'after_post', 'after_work', 'destfn', 'do_poll', 
     'download', 'gather', 'metricsReport', 'on_cleanup', 'on_declare', 'on_features',
     'on_housekeeping', 'on_sanity', 'on_start', 'on_stop', 
     'please_stop', 'poll', 'post', 'report', 'send', 
@@ -105,6 +105,17 @@ class FlowCB:
                and move messages to worklist.rejected to prevent further processing.
                do not delete any messages, only move between worklists.
 
+    def after_gather(self,worklist) -> None::
+
+         Task: operate on worklist.incoming to help decide which messages to process further.
+         Move messages to worklist.rejected to prevent further processing.
+
+         Should only really be used for special use cases when message processing 
+         needs to be done before going through `filter` of the flow algorithm.
+
+         Otherwise, after_accept entry point should be used.
+
+ 
     def after_work(self,worklist) -> None::
 
         Task: operate on worklist.ok (files which have arrived.)
