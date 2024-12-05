@@ -759,7 +759,7 @@ class Flow:
                 # extra trailing : removed if present
                 if destFileName[-1] == ':': destFileName = destFileName[:-1]
             elif re.compile('SATNET=.*').match(spec):
-                satnet = ':' + spec
+                satnet += ':' + spec
             elif re.compile('DESTFN=.*').match(spec):
                 destFileName = spec[7:]
             elif re.compile('DESTFNSCRIPT=.*').match(spec):
@@ -788,7 +788,8 @@ class Flow:
                 # if file already had a time extension keep his...
                 if len(parts[-1]) == 14 and parts[-1][0] == '2':
                     timeSuffix = ':' + parts[-1]
-
+            elif spec == '':
+                satnet +=':'
             else:
                 logger.error( f"invalid DESTFN parameter: {spec}" )
                 return None
