@@ -1297,7 +1297,7 @@ une fil d’attente, la première fois qu’une publication est reçue, elle peu
 et si un doublon est ensuite reçu, il sera probablement choisi par une autre instance.
 **Pour une suppression efficace des doublons avec les instances**, il faut **déployer deux couches d’abonnés**.
 Utiliser une **première couche d’abonnés (shovels)** avec la suppression de doublons éteinte et
-utiliser *post_exchangeSplit* pour la sortie. Cela achemine les publications en utilisant la somme de contrôle vers
+utiliser *post_exchangeSplit* pour la sortie. Cela achemine les publications du même chemin
 une **deuxième couche d’abonnés (winnow) dont les caches de suppression des doublons sont actives.**
 
 
@@ -1448,8 +1448,15 @@ pour modifier les messages d'annonce générés à propos des fichiers avant leu
 post_exchangeSplit <compte> (défaut: 0)
 ---------------------------------------
 
-L’option **post_exchangeSplit** ajoute un suffixe à deux chiffres qui est crée en hachant le dernier caractère
-de la somme de contrôle avec le nom de post_exchange, afin de répartir la production entre un certain nombre d’échanges.
+L'option **post_exchangeSplit** ajoute un suffixe à deux chiffres au nom post_exchange,
+afin de répartir la production entre plusieurs échanges.
+
+Chaque message est publié sur l'un des échanges en fonction d'un index
+dérivé du message, destiné à être le même pour un chemin donné.
+Le hachage est calculé comme la somme des caractères du champ *relPath*
+ou, s'il manque, *retrievePath*, ou s'il manque 0) modulo le nombre de
+échanges.
+
 Ceci est actuellement utilisé dans les pompes à trafic élevé pour avoir plusieurs instances de winnow,
 qui ne peuvent pas être instancié de la manière normale.  Exemple::
 

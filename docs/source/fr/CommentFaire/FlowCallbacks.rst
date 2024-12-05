@@ -309,7 +309,7 @@ Personnalisation de post_exchangeSplit
 
 La fonction ExchangeSplit permet à un seul flux d'envoyer des sorties à différents échanges,
 numérotés 1...n pour assurer la répartition de la charge. Le traitement intégré le fait de manière
-manière fixe basée sur le hachage du champ d'identification. Le but d'exchangeSplit est de
+manière fixe basée sur le hachage du champs *relPath*. Le but d'exchangeSplit est de
 permettre à un ensemble commun de chemins en aval de recevoir un sous-ensemble du flux total, et pour
 les produits avec un « routage » similaire atterrissent sur le même nœud en aval. Par exemple, un fichier
 avec une somme de contrôle donnée, pour que le vannage fonctionne, il doit atterrir sur le même nœud en aval.
