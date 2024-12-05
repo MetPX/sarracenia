@@ -867,7 +867,7 @@
                 <span class="c1"># extra trailing : removed if present</span>
                 <span class="k">if</span> <span class="n">destFileName</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">==</span> <span class="s1">&#39;:&#39;</span><span class="p">:</span> <span class="n">destFileName</span> <span class="o">=</span> <span class="n">destFileName</span><span class="p">[:</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
             <span class="k">elif</span> <span class="n">re</span><span class="o">.</span><span class="n">compile</span><span class="p">(</span><span class="s1">&#39;SATNET=.*&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">match</span><span class="p">(</span><span class="n">spec</span><span class="p">):</span>
-                <span class="n">satnet</span> <span class="o">=</span> <span class="s1">&#39;:&#39;</span> <span class="o">+</span> <span class="n">spec</span>
+                <span class="n">satnet</span> <span class="o">+=</span> <span class="s1">&#39;:&#39;</span> <span class="o">+</span> <span class="n">spec</span>
             <span class="k">elif</span> <span class="n">re</span><span class="o">.</span><span class="n">compile</span><span class="p">(</span><span class="s1">&#39;DESTFN=.*&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">match</span><span class="p">(</span><span class="n">spec</span><span class="p">):</span>
                 <span class="n">destFileName</span> <span class="o">=</span> <span class="n">spec</span><span class="p">[</span><span class="mi">7</span><span class="p">:]</span>
             <span class="k">elif</span> <span class="n">re</span><span class="o">.</span><span class="n">compile</span><span class="p">(</span><span class="s1">&#39;DESTFNSCRIPT=.*&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">match</span><span class="p">(</span><span class="n">spec</span><span class="p">):</span>
@@ -896,7 +896,8 @@
                 <span class="c1"># if file already had a time extension keep his...</span>
                 <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">parts</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">])</span> <span class="o">==</span> <span class="mi">14</span> <span class="ow">and</span> <span class="n">parts</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="s1">&#39;2&#39;</span><span class="p">:</span>
                     <span class="n">timeSuffix</span> <span class="o">=</span> <span class="s1">&#39;:&#39;</span> <span class="o">+</span> <span class="n">parts</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
-
+            <span class="k">elif</span> <span class="n">spec</span> <span class="o">==</span> <span class="s1">&#39;&#39;</span><span class="p">:</span>
+                <span class="n">satnet</span> <span class="o">+=</span><span class="s1">&#39;:&#39;</span>
             <span class="k">else</span><span class="p">:</span>
                 <span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span> <span class="sa">f</span><span class="s2">&quot;invalid DESTFN parameter: </span><span class="si">{</span><span class="n">spec</span><span class="si">}</span><span class="s2">&quot;</span> <span class="p">)</span>
                 <span class="k">return</span> <span class="kc">None</span>
