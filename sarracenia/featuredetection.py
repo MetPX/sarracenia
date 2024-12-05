@@ -91,6 +91,10 @@ features = {
     's3' : { 'modules_needed': [ 'boto3' ], 'present': False, 
         'lament' : 'cannot connect natively to S3-compatible locations (AWS S3, Minio, etc..)', 
         'rejoice': 'able to connect natively to S3-compatible locations (AWS S3, Minio, etc..)', },
+   'sdnotify' : { 'modules_needed': [ 'sdnotify' ],
+        'lament': 'cannot inform system of correct startup.',
+        'rejoice': 'can tell system when correctly started.'
+        },
    'sftp' : { 'modules_needed': [ 'paramiko' ],
         'lament': 'cannot use or access sftp/ssh based services',
         'rejoice': 'can use sftp or ssh based services'

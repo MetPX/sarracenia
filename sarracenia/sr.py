@@ -2276,6 +2276,13 @@ class sr_GlobalState:
 
         print('( %d ) Done' % pcount)
 
+        if sarracenia.features['sdnotify']['present']:
+            import sdnotify
+
+            n = sdnotify.SystemdNotifier()
+            n.notify("READY=1")
+
+
     def run(self):
         """
             docker compatible run in foreground.
@@ -2306,6 +2313,12 @@ class sr_GlobalState:
             return
 
         self._clean_missing_proc_state()
+
+        if sarracenia.features['sdnotify']['present']:
+            import sdnotify
+
+            n = sdnotify.SystemdNotifier()
+            n.notify("STOPPING=1")
 
         if len(self.procs) == 0:
             print('no procs running...already stopped')

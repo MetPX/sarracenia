@@ -11,7 +11,7 @@ After=network-online.target local-fs.target remote-fs.target
 Requires=network-online.target
 
 [Service]
-Type=forking
+Type=Notify
 ExecStart=/usr/bin/sr3 start
 User=sarra
 Group=sarra
