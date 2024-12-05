@@ -2784,12 +2784,14 @@ class sr_GlobalState:
 
         synonyms = sarracenia.config.Config.synonyms
         accept_all_seen=False
+        post_broker_seen=False
+        inflight_seen=False
         acceptUnmatched_explicit=False
         pos_args_present=False
         with open(v3_config_path, 'w') as v3_cfg:
             v3_cfg.write( f'# created by: sr3 convert {cfg}\n')
             if component in [ 'shovel', 'winnow' ]:
-                v3_cfg.write('# topicCopy on is only there for bug-for-bug compat with v2. turn it off if you can.\n')
+                v3_cfg.write('# topicCopy on is only there for bug-for-bug compat with v2. Leave it off if you can.\n')
                 v3_cfg.write('#topicCopy on\n')
 
             if component in [ 'sarra', 'sender', 'subscribe' ]:
@@ -2809,9 +2811,17 @@ class sr_GlobalState:
                     k = line[0]
                     if k in synonyms:
                         k = synonyms[k]
+                    if k in [ 'post_broker' ]:
+                        post_broker_seen=True
+                    if k in [ 'inflight' ]:
+                        inflight_seen=True
                     if k in [ 'queueName' ]:
                         queueName=line[1]
 
+            if not inflight_seen and post_broker_seen and component in [ 'sarra', 'sender', 'subscribe' ]:
+                v3_cfg.write('#sr3 inflight defaults to None, v2 defaulted to .tmp when post_broker set.\n')
+                v3_cfg.write('inflight .tmp\n')
+                
             #2nd re-write pass.
             subtopicFound=False
             with open(v2_config_path, 'r') as v2_cfg:
