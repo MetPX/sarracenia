@@ -946,8 +946,8 @@ include config
 inclure une autre configuration dans cette configuration.
 
 
-inflight <string> (défaut: .tmp ou NONE si post_broker est définit)
--------------------------------------------------------------------
+inflight <string> (défaut: None)
+--------------------------------
 
 L’option **inflight** définit comment ignorer les fichiers lorsqu’ils sont transférés
 ou (en plein vol entre deux systèmes). Un réglage incorrect de cette option provoque des
