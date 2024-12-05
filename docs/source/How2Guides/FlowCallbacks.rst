@@ -342,12 +342,12 @@ Customizing post_exchangeSplit
 
 The exchangeSplit function allows a single flow to send outputs to different exchanges, 
 numbered 1...n to provide load distribution. The built-in processing does this in a 
-fixed way based on the hash of the identify field. The purpose of exchangeSplit is to 
+fixed way based on the hash of the relPath field. The purpose of exchangeSplit is to 
 allow a common set of downstream paths to receive a subset of the total flow, and for 
 products with similar "routing" to land on the same downstream node. For example, a file 
 with a given checksum, for winnowing to work, has to land on the same downstream node.
 
-It could be that, rather than using a checksum, one would prefer to use some other
+It could be that, rather than using the path, one would prefer to use some other
 method to decide which exchange is used::
 
   import logging

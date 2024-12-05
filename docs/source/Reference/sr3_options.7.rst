@@ -1307,7 +1307,7 @@ picked by one instance, and if a duplicate one is received it would likely
 be picked up by another instance. **For effective duplicate suppression with instances**,
 one must **deploy two layers of subscribers**. Use
 a **first layer of subscribers (shovels)** with duplicate suppression turned
-off and output with *post_exchangeSplit*, which route notification with the same checksum to
+off and output with *post_exchangeSplit*, which route notification with the same path to
 the same member of a **second layer of subscribers (winnow) whose duplicate suppression caches 
 are active.**
 
@@ -1453,11 +1453,18 @@ to modify messages generated about files prior to posting.
 post_exchangeSplit <count> (default: 0)
 ---------------------------------------
 
-The **post_exchangeSplit** option appends a two digit suffix resulting from
-hashing the last character of the checksum to the post_exchange name,
-in order to divide the output amongst a number of exchanges.  This is currently used
-in high traffic pumps to allow multiple instances of winnow, which cannot be
-instanced in the normal way.  Example::
+The **post_exchangeSplit** option appends a two digit suffix to the post_exchange name,
+in order to divide the output amongst a number of exchanges. 
+
+Each message is posted to one of the exchanges based on an index
+derived from the message, intended to be the same for a given path.
+The hash is calculated as the sum of the characters in *relPath* field
+or, if missing, *retrievePath*, or if missing 0) modulo the number of
+exchanges.
+
+This is currently used in high traffic pumps to allow multiple 
+instances of winnow, which cannot be instanced in the normal way.
+Example::
 
     post_exchangeSplit 5
     post_exchange xwinnow
@@ -1465,6 +1472,7 @@ instanced in the normal way.  Example::
 will result in posting messages to five exchanges named: xwinnow00, xwinnow01,
 xwinnow02, xwinnow03 and xwinnow04, where each exchange will receive only one fifth
 of the total flow.
+
 
 post_format <name> (default: v03)
 ---------------------------------
