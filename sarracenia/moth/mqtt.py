@@ -679,14 +679,7 @@ class MQTT(Moth):
             if (type(self.o['exchange']) is list):
                 if (len(self.o['exchange']) > 1):
                     if 'post_exchangeSplit' in self.o:
-                        # FIXME: assert ( len(self.o['exchange']) == self.o['post_exchangeSplit'] )
-                        #        if that isn't true... then there is something wrong... should we check ?
-                        if 'exchangeSplitOverride' in message:
-                            idx = int(message['exchangeSplitOverride'])%len(self.o['exchange'])
-                        else:
-                            idx = sum(bytearray(body['identity']['value'],
-                                      'ascii')) % len(self.o['exchange'])
-                        exchange = self.o['exchange'][idx]
+                        exchange = self.o['exchange'][self.splitPick(message)]
                     else:
                         logger.error( f"do not know which exchange to publish to: {self.o['exchange']}" )
                         return

@@ -436,6 +436,25 @@ class Moth():
         self.next_connect_time = now + next_try
         logger.error( f"could not connect. next try in {next_try} seconds.")
 
+    def splitPick(self,message) -> int:
+        """
+           given a message and exchangeSplit, return the number to split to.
+        """
+
+        # FIXME: assert ( len(self.o['exchange']) == self.o['post_exchangeSplit'] )
+        #        if that isn't true... then there is something wrong... should we check ?
+        if 'exchangeSplitOverride' in message:
+            idx = int(message['exchangeSplitOverride'])%len(self.o['exchange'])
+        elif 'relPath' in message:
+            idx = sum( bytearray( message['relPath'], 'ascii')) % len(self.o['exchange'])
+        elif 'retrievePath' in message:
+            idx = sum( bytearray( message['retrievePath'], 'ascii')) % len(self.o['exchange'])
+        else:
+            logger.warning( f"missing fields for exchangeSplit, assigning 0")
+            idx = 0
+        return idx 
+ 
+
 if features['amqp']['present']:
     import sarracenia.moth.amqp
     import sarracenia.moth.amqpconsumer
