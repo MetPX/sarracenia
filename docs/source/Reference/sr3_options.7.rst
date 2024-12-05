@@ -953,18 +953,18 @@ include config
 include another configuration within this configuration.
 
 
-inflight <string> (default: .tmp or NONE if post_broker set)
-------------------------------------------------------------
+inflight <string> (default: None)
+---------------------------------
 
-The  **inflight**  option sets how to ignore files when they are being transferred
+The **inflight** option sets how to ignore files when they are being transferred
 or (in mid-flight betweeen two systems). Incorrect setting of this option causes
 unreliable transfers, and care must be taken.  See `Delivery Completion <../Explanation/FileCompletion.html>`_
 for more details.
 
 The value can be a file name suffix, which is appended to create a temporary name during
-the transfer.  If **inflight**  is set to **.**, then it is a prefix, to conform with
+the transfer. If **inflight**  is set to **.**, then it is a prefix, to conform with
 the standard for "hidden" files on unix/linux.
-If **inflight**  ends in / (example: *tmp/* ), then it is a prefix, and specifies a
+If **inflight** ends in / (example: *tmp/* ), then it is a prefix, and specifies a
 sub-directory of the destination into which the file should be written while in flight.
 
 Whether a prefix or suffix is specified, when the transfer is
@@ -979,7 +979,7 @@ This is the same as setting the **fileAgeMin** setting.
 
 Lastly, **inflight** can be set to *NONE*, which case the file is written directly
 with the final name, where the recipient will wait to receive a post notifying it
-of the file's arrival.  This is the fastest, lowest overhead option when it is available.
+of the file's arrival. This is the fastest, lowest overhead option when it is available.
 It is also the default when a *post_broker* is given, indicating that some
 other process is to be notified after delivery.
 
