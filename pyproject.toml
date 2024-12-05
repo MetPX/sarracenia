@@ -63,13 +63,21 @@ sr3_tailf = "sarracenia.sr_tailf:main"
 [project.optional-dependencies]
 
 amqp = [ "amqp" ]
-ftppoll = [ 'dateparser' ]
-mqtt = [ 'paho.mqtt>=1.5.1' ]
-vip = [ 'netifaces' ]
-redis = [ 'redis' ]
+antivirus = [ "pyclamd" ]
+AWS_S3 = [ "boto3" ]
+azure = [ "azure.storage.blob" ]
 filetypes-redhat = [ 'file-magic' ]
 filetypes = [ 'python-magic' ]
-
+ftppoll = [ 'dateparser' ]
+jsonlogs = [ 'pythonjsonlogger' ]
+mqtt = [ 'paho.mqtt>=1.5.1' ]
+reassembly = [ 'flufl.lock' ]
+redis = [ 'redis' ]
+sdnotify = [ "sdnotify" ]
+geofiltering = [ "geojson", "turfpy" ]
+vip = [ 'netifaces' ]
+KIWIS = [ 'kiwis_pie' ]
+USGS = [ 'pandas' ]
 
 [project.urls]
 Documentation = "https://metpx.github.io/sarracenia"
