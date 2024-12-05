@@ -2439,8 +2439,7 @@ class Flow:
             # if renaming used, check that the protocol supports it ...
             #=================================
 
-            if not hasattr(self.proto[self.scheme],
-                           'rename') and options.inflight.startswith('.'):
+            if not hasattr(self.proto[self.scheme], 'rename') and options.inflight:
                 logger.warning("%s, rename not supported" % self.scheme)
                 inflight = None
 
