@@ -53,8 +53,6 @@ from  sarracenia.config.subscription import Subscription,Subscriptions
 import sarracenia.flow
 import sarracenia.flowcb
 
-from sarracenia.flow.sarra import default_options as sarradefopts
-
 import sarracenia.identity.arbitrary
 
 import sarracenia.moth
@@ -962,18 +960,10 @@ class Config:
         """
           overlay defaults options for the given component to the given configuration.
         """
-        if component in ['post']:
-            self.override(sarracenia.flow.post.default_options)
-        elif component in ['poll']:
-            self.override(sarracenia.flow.poll.default_options)
-        elif component in ['sarra']:
-            self.override(sarradefopts)
-        elif component in ['sender']:
-            self.override(sarracenia.flow.sender.default_options)
-        elif component in ['subscribe']:
-            self.override(sarracenia.flow.subscribe.default_options)
-        elif component in ['watch']:
-            self.override(sarracenia.flow.watch.default_options)
+        if hasattr(sarracenia.flow, component):
+            component_module = getattr(sarracenia.flow, component)
+            if hasattr(component_module, 'default_options'):
+                self.override(component_module.default_options)
 
     @property
     def admin(self):
