@@ -2577,8 +2577,7 @@
             <span class="c1"># if renaming used, check that the protocol supports it ...</span>
             <span class="c1">#=================================</span>
 
-            <span class="k">if</span> <span class="ow">not</span> <span class="nb">hasattr</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">proto</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">scheme</span><span class="p">],</span>
-                           <span class="s1">&#39;rename&#39;</span><span class="p">)</span> <span class="ow">and</span> <span class="n">options</span><span class="o">.</span><span class="n">inflight</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s1">&#39;.&#39;</span><span class="p">):</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="nb">hasattr</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">proto</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">scheme</span><span class="p">],</span> <span class="s1">&#39;rename&#39;</span><span class="p">)</span> <span class="ow">and</span> <span class="n">options</span><span class="o">.</span><span class="n">inflight</span><span class="p">:</span>
                 <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="s2">&quot;</span><span class="si">%s</span><span class="s2">, rename not supported&quot;</span> <span class="o">%</span> <span class="bp">self</span><span class="o">.</span><span class="n">scheme</span><span class="p">)</span>
                 <span class="n">inflight</span> <span class="o">=</span> <span class="kc">None</span>
 

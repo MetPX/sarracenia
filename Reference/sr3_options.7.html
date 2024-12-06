@@ -935,16 +935,16 @@ the list of on_housekeeping plugins. By default, it prints a log message every h
 <h4>include config<a class="headerlink" href="#include-config" title="Link to this heading"></a></h4>
 <p>include another configuration within this configuration.</p>
 </section>
-<section id="inflight-string-default-tmp-or-none-if-post-broker-set">
-<h4>inflight &lt;string&gt; (default: .tmp or NONE if post_broker set)<a class="headerlink" href="#inflight-string-default-tmp-or-none-if-post-broker-set" title="Link to this heading"></a></h4>
-<p>The  <strong>inflight</strong>  option sets how to ignore files when they are being transferred
+<section id="inflight-string-default-none">
+<h4>inflight &lt;string&gt; (default: None)<a class="headerlink" href="#inflight-string-default-none" title="Link to this heading"></a></h4>
+<p>The <strong>inflight</strong> option sets how to ignore files when they are being transferred
 or (in mid-flight betweeen two systems). Incorrect setting of this option causes
 unreliable transfers, and care must be taken.  See <a class="reference external" href="../Explanation/FileCompletion.html">Delivery Completion</a>
 for more details.</p>
 <p>The value can be a file name suffix, which is appended to create a temporary name during
-the transfer.  If <strong>inflight</strong>  is set to <strong>.</strong>, then it is a prefix, to conform with
+the transfer. If <strong>inflight</strong>  is set to <strong>.</strong>, then it is a prefix, to conform with
 the standard for “hidden” files on unix/linux.
-If <strong>inflight</strong>  ends in / (example: <em>tmp/</em> ), then it is a prefix, and specifies a
+If <strong>inflight</strong> ends in / (example: <em>tmp/</em> ), then it is a prefix, and specifies a
 sub-directory of the destination into which the file should be written while in flight.</p>
 <p>Whether a prefix or suffix is specified, when the transfer is
 complete, the file is renamed to its permanent name to allow further processing.</p>
@@ -956,7 +956,7 @@ not be processed until it has stayed the same for at least 10 seconds.
 This is the same as setting the <strong>fileAgeMin</strong> setting.</p>
 <p>Lastly, <strong>inflight</strong> can be set to <em>NONE</em>, which case the file is written directly
 with the final name, where the recipient will wait to receive a post notifying it
-of the file’s arrival.  This is the fastest, lowest overhead option when it is available.
+of the file’s arrival. This is the fastest, lowest overhead option when it is available.
 It is also the default when a <em>post_broker</em> is given, indicating that some
 other process is to be notified after delivery.</p>
 <p>NOTE:</p>
