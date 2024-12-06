@@ -1023,18 +1023,18 @@ class Flow:
                 else:
                     urlToMatch = url
                 oldname_matched = False
-                for mask in self.o.masks:
+                for mask_index, mask in enumerate(self.o.masks):
                     pattern, maskDir, maskFileOption, mask_regexp, accepting, mirror, strip, pstrip, flatten, args = mask
                     if (pattern == '.*'):
                         oldname_matched = accepting
-                        m['_mask'] = mask
-                        m['_deleteOnPost'].add('_mask')
+                        m['_mask_index'] = mask_index
+                        m['_deleteOnPost'].add('_mask_index')
                         break
                     matches = mask_regexp.match(urlToMatch)
                     if matches:
                             m[ '_matches'] = matches
-                            m['_mask'] = mask
-                            m['_deleteOnPost'] |= set(['_matches', '_mask'])
+                            m['_mask_index'] = mask_index
+                            m['_deleteOnPost'] |= set(['_matches', '_mask_index'])
                             oldname_matched = accepting
                     break
 
@@ -1055,7 +1055,7 @@ class Flow:
             logger.debug( f" urlToMatch: {urlToMatch} " )
             # apply masks for accept/reject options.
             matched = False
-            for mask in self.o.masks:
+            for mask_index, mask in enumerate(self.o.masks):
                 pattern, maskDir, maskFileOption, mask_regexp, accepting, mirror, strip, pstrip, flatten, args = mask
                 if (pattern != '.*') :
                     matches = mask_regexp.match(urlToMatch)
@@ -1080,8 +1080,8 @@ class Flow:
                         break
 
 
-                    m['_mask'] = mask
-                    m['_deleteOnPost'].add('_mask')
+                    m['_mask_index'] = mask_index
+                    m['_deleteOnPost'].add('_mask_index')
 
                     if self.updateFieldsAccepted(m, url, pattern, maskDir,
                                            maskFileOption, mirror, strip,
