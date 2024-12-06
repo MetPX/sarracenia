@@ -146,7 +146,7 @@ winnow is used to suppress duplicates.
 first time a posting is received, it could be picked by one instance, and if a duplicate one is received
 it would likely be picked up by another instance. **For effective duplicate suppression with instances**,
 one must **deploy two layers of subscribers**. Use a **first layer of subscribers (shovels)** with duplicate
-suppression turned off and output with *post_exchangeSplit*, which route posts by checksum to
+suppression turned off and output with *post_exchangeSplit*, which route posts by path to
 a **second layer of subscribers (sr_winnow) whose duplicate suppression caches are active.**
 
 

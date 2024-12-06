@@ -2247,7 +2247,7 @@ post_exchangeSplit   <number>   (default: 0)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 The **post_exchangeSplit** option appends a two digit suffix resulting from 
-hashing the last character of the checksum to the post_exchange name,
+hashing the path to the post_exchange name,
 in order to divide the output amongst a number of exchanges.  This is currently used
 in high traffic pumps to allow multiple instances of winnow, which cannot be
 instanced in the normal way.  Example::

@@ -424,11 +424,11 @@ that functionality is below:</p>
 <h2>Customizing post_exchangeSplit<a class="headerlink" href="#customizing-post-exchangesplit" title="Link to this heading"></a></h2>
 <p>The exchangeSplit function allows a single flow to send outputs to different exchanges,
 numbered 1…n to provide load distribution. The built-in processing does this in a
-fixed way based on the hash of the identify field. The purpose of exchangeSplit is to
+fixed way based on the hash of the relPath field. The purpose of exchangeSplit is to
 allow a common set of downstream paths to receive a subset of the total flow, and for
 products with similar “routing” to land on the same downstream node. For example, a file
 with a given checksum, for winnowing to work, has to land on the same downstream node.</p>
-<p>It could be that, rather than using a checksum, one would prefer to use some other
+<p>It could be that, rather than using the path, one would prefer to use some other
 method to decide which exchange is used:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">logging</span>
 <span class="kn">from</span> <span class="nn">sarracenia.flowcb</span> <span class="kn">import</span> <span class="n">FlowCB</span>

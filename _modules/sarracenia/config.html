@@ -136,8 +136,6 @@
 <span class="kn">import</span> <span class="nn">sarracenia.flow</span>
 <span class="kn">import</span> <span class="nn">sarracenia.flowcb</span>
 
-<span class="kn">from</span> <span class="nn">sarracenia.flow.sarra</span> <span class="kn">import</span> <span class="n">default_options</span> <span class="k">as</span> <span class="n">sarradefopts</span>
-
 <span class="kn">import</span> <span class="nn">sarracenia.identity.arbitrary</span>
 
 <span class="kn">import</span> <span class="nn">sarracenia.moth</span>
@@ -1091,18 +1089,10 @@
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">          overlay defaults options for the given component to the given configuration.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">if</span> <span class="n">component</span> <span class="ow">in</span> <span class="p">[</span><span class="s1">&#39;post&#39;</span><span class="p">]:</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">override</span><span class="p">(</span><span class="n">sarracenia</span><span class="o">.</span><span class="n">flow</span><span class="o">.</span><span class="n">post</span><span class="o">.</span><span class="n">default_options</span><span class="p">)</span>
-        <span class="k">elif</span> <span class="n">component</span> <span class="ow">in</span> <span class="p">[</span><span class="s1">&#39;poll&#39;</span><span class="p">]:</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">override</span><span class="p">(</span><span class="n">sarracenia</span><span class="o">.</span><span class="n">flow</span><span class="o">.</span><span class="n">poll</span><span class="o">.</span><span class="n">default_options</span><span class="p">)</span>
-        <span class="k">elif</span> <span class="n">component</span> <span class="ow">in</span> <span class="p">[</span><span class="s1">&#39;sarra&#39;</span><span class="p">]:</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">override</span><span class="p">(</span><span class="n">sarradefopts</span><span class="p">)</span>
-        <span class="k">elif</span> <span class="n">component</span> <span class="ow">in</span> <span class="p">[</span><span class="s1">&#39;sender&#39;</span><span class="p">]:</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">override</span><span class="p">(</span><span class="n">sarracenia</span><span class="o">.</span><span class="n">flow</span><span class="o">.</span><span class="n">sender</span><span class="o">.</span><span class="n">default_options</span><span class="p">)</span>
-        <span class="k">elif</span> <span class="n">component</span> <span class="ow">in</span> <span class="p">[</span><span class="s1">&#39;subscribe&#39;</span><span class="p">]:</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">override</span><span class="p">(</span><span class="n">sarracenia</span><span class="o">.</span><span class="n">flow</span><span class="o">.</span><span class="n">subscribe</span><span class="o">.</span><span class="n">default_options</span><span class="p">)</span>
-        <span class="k">elif</span> <span class="n">component</span> <span class="ow">in</span> <span class="p">[</span><span class="s1">&#39;watch&#39;</span><span class="p">]:</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">override</span><span class="p">(</span><span class="n">sarracenia</span><span class="o">.</span><span class="n">flow</span><span class="o">.</span><span class="n">watch</span><span class="o">.</span><span class="n">default_options</span><span class="p">)</span></div>
+        <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">sarracenia</span><span class="o">.</span><span class="n">flow</span><span class="p">,</span> <span class="n">component</span><span class="p">):</span>
+            <span class="n">component_module</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">sarracenia</span><span class="o">.</span><span class="n">flow</span><span class="p">,</span> <span class="n">component</span><span class="p">)</span>
+            <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">component_module</span><span class="p">,</span> <span class="s1">&#39;default_options&#39;</span><span class="p">):</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">override</span><span class="p">(</span><span class="n">component_module</span><span class="o">.</span><span class="n">default_options</span><span class="p">)</span></div>
 
 
     <span class="nd">@property</span>

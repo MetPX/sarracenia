@@ -262,7 +262,7 @@ in throughput.</p>
 first time a posting is received, it could be picked by one instance, and if a duplicate one is received
 it would likely be picked up by another instance. <strong>For effective duplicate suppression with instances</strong>,
 one must <strong>deploy two layers of subscribers</strong>. Use a <strong>first layer of subscribers (shovels)</strong> with duplicate
-suppression turned off and output with <em>post_exchangeSplit</em>, which route posts by checksum to
+suppression turned off and output with <em>post_exchangeSplit</em>, which route posts by path to
 a <strong>second layer of subscribers (sr_winnow) whose duplicate suppression caches are active.</strong></p>
 </section>
 </section>

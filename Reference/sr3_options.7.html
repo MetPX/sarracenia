@@ -113,7 +113,7 @@
 <dd class="field-odd"><p>7</p>
 </dd>
 <dt class="field-even">Date<span class="colon">:</span></dt>
-<dd class="field-even"><p>Dec 05, 2024</p>
+<dd class="field-even"><p>Dec 06, 2024</p>
 </dd>
 <dt class="field-odd">Version<span class="colon">:</span></dt>
 <dd class="field-odd"><p>3.00.57rc0</p>
@@ -1241,7 +1241,7 @@ picked by one instance, and if a duplicate one is received it would likely
 be picked up by another instance. <strong>For effective duplicate suppression with instances</strong>,
 one must <strong>deploy two layers of subscribers</strong>. Use
 a <strong>first layer of subscribers (shovels)</strong> with duplicate suppression turned
-off and output with <em>post_exchangeSplit</em>, which route notification with the same checksum to
+off and output with <em>post_exchangeSplit</em>, which route notification with the same path to
 the same member of a <strong>second layer of subscribers (winnow) whose duplicate suppression caches
 are active.</strong></p>
 </section>
@@ -1358,11 +1358,16 @@ to modify messages generated about files prior to posting.</p>
 </section>
 <section id="post-exchangesplit-count-default-0">
 <h4>post_exchangeSplit &lt;count&gt; (default: 0)<a class="headerlink" href="#post-exchangesplit-count-default-0" title="Link to this heading"></a></h4>
-<p>The <strong>post_exchangeSplit</strong> option appends a two digit suffix resulting from
-hashing the last character of the checksum to the post_exchange name,
-in order to divide the output amongst a number of exchanges.  This is currently used
-in high traffic pumps to allow multiple instances of winnow, which cannot be
-instanced in the normal way.  Example:</p>
+<p>The <strong>post_exchangeSplit</strong> option appends a two digit suffix to the post_exchange name,
+in order to divide the output amongst a number of exchanges.</p>
+<p>Each message is posted to one of the exchanges based on an index
+derived from the message, intended to be the same for a given path.
+The hash is calculated as the sum of the characters in <em>relPath</em> field
+or, if missing, <em>retrievePath</em>, or if missing 0) modulo the number of
+exchanges.</p>
+<p>This is currently used in high traffic pumps to allow multiple
+instances of winnow, which cannot be instanced in the normal way.
+Example:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">post_exchangeSplit</span> <span class="mi">5</span>
 <span class="n">post_exchange</span> <span class="n">xwinnow</span>
 </pre></div>
