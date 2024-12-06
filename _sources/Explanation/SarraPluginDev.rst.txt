@@ -908,17 +908,18 @@ of the buffer used is given by the **bufsize** option (default 8192).
 Accessing accept/reject "masks"
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-When a message is accepted or rejected, the "mask" that was used to accept/reject it will be stored in the value of the message's ``_mask`` key. The ``_mask`` is a tuple that contains the regex from the accept/reject statement, the corresponding ``directory`` path, the value of the ``mirror`` and ``filename`` options. The last item in the tuple is a list containing any additional text, split by whitespace, that was included at the end of the accept/reject line in the config file. This additional text can be used to pass additional information to plugins.
+When a message is accepted or rejected, the list *index* of the "mask" that was used to accept/reject it will be stored in the value of the message's ``_mask_index`` key. A mask is a tuple that contains the regex from the accept/reject statement, the corresponding ``directory`` path, the value of the ``mirror`` and ``filename`` options. The last item in the tuple is a list containing any additional text, split by whitespace, that was included at the end of the accept/reject line in the config file. This additional text can be used to pass additional information to plugins.
 
 For example, with an accept statement in a config file like this::
     
     accept .*abc.*  your_text=here from_accept_abc
 
-The last item in ``msg['_mask']`` would be:
+The mask can be accessed with ``self.o.masks[msg['_mask_index']]``. The last item in the mask contains the arguments from the accept statement:
 
 .. code-block:: python
 
-    msg['_mask'][-1] # == [ 'your_text=here', 'from_accept_abc' ]
+    mask = self.o.masks[msg['_mask_index']
+    print(mask[-1]) # --> [ 'your_text=here', 'from_accept_abc' ]
 
 Why v3 API should be used whenever possible
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
