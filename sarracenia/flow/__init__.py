@@ -2008,8 +2008,7 @@ class Flow:
             if msg['blocks']['method'] in [ 'inplace' ]: # download only a specific block from a file, not the whole thing.
                 logger.debug( f"splitting 1 file into {len(msg['blocks']['manifest'])} block messages." )
                 blkno = msg['blocks']['number']
-                blksz_l = sarracenia.naturalSize(msg['blocks']['size']).split()
-                blksz = blksz_l[0]+blksz_l[1][0].lower()
+                blksz = sarracenia.naturalSize(msg['blocks']['size']).lower()
                 if not '§block_' in new_file:
                     new_file += f"§block_{blkno:04d},{blksz}_§"
                 msg['new_file'] = new_file
