@@ -1,8 +1,23 @@
 metpx-sr3 (3.00.57rc0) UNRELEASED; urgency=medium
 
-  * increment away from previous release
+  * New #1289 accept statements now provide arguments to plugins
+  * change in post_exchangeSplit... now based on relPath, not checksum.
+  * New #1323 DESTFN=NONE::TIME now works.
+  * New #1299 after_gather entry point added.
+  * fix #1327 inflight NONE in sender causes messages to be retried.
+  * fix #1322 sr3 sender fails to most message when no identity field in message.
+  * fix #1321 apply default options for all components correctly.
+  * fix #1206 exclude retries from lag calculation.
+  * fix #1309 email send flowcb problem.
+  * fix #1301 sr3 status display fractional message rates when (< 1 / second.)
+  * fix #1307 remove needless warning message.
+  * work on #624 adding INSTANCE to variable substitution.
+  * work on #339 moving re-connection attempts from protocol to main loop.
+  * fix #1288 AM server uses normalish instance numbers.
+  * fix #1285 add fileSizeMax support to sender.
+  * fix #1241 sr3 status more compact.
 
- -- SSC-5CD2310S60 <peter@bsqt.homeip.net>  Tue, 05 Nov 2024 16:42:09 -0500
+ -- SSC-5CD2310S60 <peter@bsqt.homeip.net>  Tue, 06 Dec 2024 16:42:09 -0500
 
 metpx-sr3 (3.00.56) unstable; urgency=medium
 
