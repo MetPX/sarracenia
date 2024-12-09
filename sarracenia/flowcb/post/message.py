@@ -46,7 +46,7 @@ class Message(FlowCB):
             except Exception as e:
                 all_good = False
                 worklist.failed.append(m)
-                logger.error(f"failed: {e}")
+                logger.error(f"crashed: {e}")
                 logger.debug("Exception details:", exc_info=True)
 
     def metricsReport(self) -> dict:
