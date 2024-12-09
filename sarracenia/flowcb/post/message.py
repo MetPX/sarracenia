@@ -33,16 +33,21 @@ class Message(FlowCB):
             self.poster = sarracenia.moth.Moth.pubFactory(props)
 
     def post(self, worklist):
-
-        still_ok = []
+        old_ok = worklist.ok
+        worklist.ok = []
         all_good=True
-        for m in worklist.ok:
-            if all_good and hasattr(self.poster,'putNewMessage') and self.poster.putNewMessage(m):
-                still_ok.append(m)
-            else:
-                all_good=False
+        for m in old_ok:
+            try:
+                if all_good and hasattr(self.poster,'putNewMessage') and self.poster.putNewMessage(m):
+                    worklist.ok.append(m)
+                else:
+                    all_good=False
+                    worklist.failed.append(m)
+            except Exception as e:
+                all_good = False
                 worklist.failed.append(m)
-        worklist.ok = still_ok
+                logger.error(f"failed: {e}")
+                logger.debug("Exception details:", exc_info=True)
 
     def metricsReport(self) -> dict:
         if hasattr(self,'poster') and self.poster:
