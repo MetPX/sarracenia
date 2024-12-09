@@ -156,6 +156,9 @@ class File(FlowCB):
 
         msg = sarracenia.Message.fromFileData(path, self.o, lstat)
 
+        if not msg: # failed to create message
+            return []
+
         # used when moving a file
         if key != None:
             if not 'fileOp' in msg:
@@ -254,7 +257,12 @@ class File(FlowCB):
             msg['size']=length
 
             # set partstr
-            msg.computeIdentity(path, self.o, offset=offset )
+            try:
+                msg.computeIdentity(path, self.o, offset=offset )
+            except Exception as ex:
+                logger.error( f"could not identify {path}: {ex}" )
+                return []
+
             msg['blocks']['manifest'][current_block] = { 'size':length, 'identity': msg['identity']['value'] }
 
         

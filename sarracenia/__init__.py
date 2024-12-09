@@ -662,12 +662,17 @@ class Message(dict):
     def fromFileData(path, o, lstat=None):
         """
             create a message based on a given file, calculating the checksum.
-            returns a well-formed message, or none.
+            returns a well-formed message, or None.
         """
         m = sarracenia.Message.fromFileInfo(path, o, lstat)
         if lstat :
             if os_stat.S_ISREG(lstat.st_mode):
-                m.computeIdentity(path, o)
+                try:
+                    m.computeIdentity(path, o)
+                except Exception as ex:
+                    logger.error( f" failed to identify {path}: {ex} ")
+                    return None
+
                 if features['filetypes']['present']:
                     try:
                         t = magic.from_file(path,mime=True)
