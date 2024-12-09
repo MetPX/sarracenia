@@ -1477,7 +1477,16 @@ class Flow:
         """
         # assert
 
-        lstat = sarracenia.stat(msg['new_path'])
+        try:
+            lstat = sarracenia.stat(msg['new_path'])
+        except PermissionError: 
+            # file is gone, so must obtain again?... if it's EPERM... this is a loop... hmm...
+            logger.error( f" file cannot be overwritten {msg['new_path']}: {ex}" )
+            return False
+        except Exception as ex:
+            logger.error( f" likely race condition, failed to stat a second time {msg['new_path']}: {ex}" )
+            return True
+
         fsiz = lstat.st_size
 
         # FIXME... local_offset... offset within the local file... partitioned... who knows?
