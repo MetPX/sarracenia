@@ -1010,7 +1010,7 @@ class Flow:
                     self.reject( m, 410, f"file too old: {age:g} sec. skipping: {m.getIDStr()}, ")
                     continue
 
-                if self.o.fileAgeMin > 0 and age < self.o.fileAgeMin:
+                if self.o.component != 'poll' and self.o.fileAgeMin > 0 and age < self.o.fileAgeMin:
                     logger.warning( f"file too young: queueing for retry.")
                     self.worklist.failed.append(m)
                     continue
