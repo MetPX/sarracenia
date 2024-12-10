@@ -918,7 +918,7 @@ The mask can be accessed with ``self.o.masks[msg['_mask_index']]``. The last ite
 
 .. code-block:: python
 
-    mask = self.o.masks[msg['_mask_index']
+    mask = self.o.masks[msg['_mask_index']]
     print(mask[-1]) # --> [ 'your_text=here', 'from_accept_abc' ]
 
 Why v3 API should be used whenever possible
