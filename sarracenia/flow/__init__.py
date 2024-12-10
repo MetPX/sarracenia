@@ -956,7 +956,7 @@ class Flow:
                         if msg['fileOp'][f].startswith(u.path):
                             msg['fileOp'][f] = msg['fileOp'][f].replace(u.path, new_dir, 1)
                             
-        if self.o.mirror and len(token) > 1:
+        if mirror and len(token) > 1:
             new_dir = new_dir + '/' + '/'.join(token[:-1])
 
         new_dir = self.o.variableExpansion(new_dir, msg)
