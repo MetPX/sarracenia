@@ -799,7 +799,7 @@ Le mask est accessible avec ``self.o.masks[msg['_mask_index']]``. Le dernier él
 
 .. code-block:: python
     
-    mask = self.o.masks[msg['_mask_index']
+    mask = self.o.masks[msg['_mask_index']]
     print(mask[-1]) # --> [ 'votre_text=ici', 'from_accept_abc' ]
 
 Pourquoi l’API v3 doit être utilisée dans la mesure du possible

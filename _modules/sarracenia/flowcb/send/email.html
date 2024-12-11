@@ -83,25 +83,54 @@
              
   <h1>Source code for sarracenia.flowcb.send.email</h1><div class="highlight"><pre>
 <span></span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">    sarracenia.flowcb.send.email.Email is an sr3 sender plugin. Once a file is </span>
-<span class="sd">    posted, the plugin matches the topic(what the filename begins with) to the</span>
-<span class="sd">    file name and sends the appropriate emails.</span>
+<span class="sd">Email Sender</span>
+<span class="sd">============</span>
 
-<span class="sd">    Usage:</span>
-<span class="sd">      1. Need the following variables in an sr_sender config defined: file_email_to, file_email_relay</span>
-<span class="sd">         Optionally, you can also provide a sender name/email as file_email_form:</span>
+<span class="sd">``sarracenia.flowcb.send.email.Email`` is an sr3 sender plugin. It will send the *contents* of a </span>
+<span class="sd">file in the *body* of an email to the configured recipient(s).</span>
 
-<span class="sd">            file_email_to AACN27 muhammad.taseer@canada.ca, test@test.com</span>
-<span class="sd">            file_email_relay email.relay.server.ca</span>
-<span class="sd">            file_email_from santa@canada.ca</span>
+<span class="sd">The email subject will be the name of the file being sent.</span>
 
-<span class="sd">      2. In the config file, include the following line:</span>
+<span class="sd">Usage:</span>
+<span class="sd">^^^^^^</span>
 
-<span class="sd">            callback send.email</span>
+<span class="sd">    1. In the config file, include the following line: ::</span>
 
-<span class="sd">      3. sr_sender foreground emails.conf</span>
+<span class="sd">        callback send.email</span>
 
-<span class="sd">    Original Author: Wahaj Taseer - June, 2019</span>
+<span class="sd">    And define the email server ::</span>
+
+<span class="sd">        sendTo</span>
+
+<span class="sd">    2. Define the email server (required) using the ``sendTo`` option, and the sender&#39;s email address (optional)</span>
+<span class="sd">       in the config file: ::</span>
+
+<span class="sd">        sendTo      smtp://email.relay.server.ca</span>
+
+<span class="sd">        email_from  santa@canada.ca</span>
+
+<span class="sd">        # or, with a &quot;human readable&quot; sender name:</span>
+
+<span class="sd">        email_from  Santa Claus &lt;santa@canada.ca&gt;</span>
+<span class="sd">    </span>
+<span class="sd">    3. Configure recipients using accept statements. You must have at least one recipient per accept statement.</span>
+<span class="sd">       Multiple recipients can be specified by separating each address by a comma. ::</span>
+<span class="sd">    </span>
+<span class="sd">        accept .*AACN27.* test@example.com</span>
+<span class="sd">        accept .*SXCN.*   user1@example.com, user2@example.com</span>
+<span class="sd">        accept .*CACN.* DESTFN=A_CACN_Bulletin  me@ssc-spc.gc.ca,you@ssc-spc.gc.ca,someone@ssc-spc.gc.ca</span>
+
+<span class="sd">To change the filename that is sent in the subject, you can use the filename option, a renamer plugin or</span>
+<span class="sd">DESTFN/DESTFNSCRIPT on a per-accept basis. The ``email_subject_prepend`` option can be used to add text before</span>
+<span class="sd">the filename in the email subject. For example: ::</span>
+
+<span class="sd">    email_subject_prepend  Sent by Sarracenia: </span>
+
+<span class="sd">Future Improvement Ideas:</span>
+<span class="sd">  - SMTP on different ports and with authentication</span>
+<span class="sd">  - Attach the file instead of putting the contents in the body (useful for binary files)</span>
+<span class="sd">    </span>
+<span class="sd">Original Author: Wahaj Taseer - June, 2019</span>
 <span class="sd">&quot;&quot;&quot;</span>
 
 <span class="kn">from</span> <span class="nn">email.message</span> <span class="kn">import</span> <span class="n">EmailMessage</span>
@@ -122,66 +151,128 @@
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">options</span><span class="p">):</span>
 
         <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">options</span><span class="p">,</span><span class="n">logger</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">o</span><span class="o">.</span><span class="n">add_option</span><span class="p">(</span><span class="s1">&#39;file_email_command&#39;</span><span class="p">,</span> <span class="s1">&#39;str&#39;</span><span class="p">,</span> <span class="s1">&#39;/usr/bin/mail&#39;</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">o</span><span class="o">.</span><span class="n">add_option</span><span class="p">(</span><span class="s1">&#39;file_email_to&#39;</span><span class="p">,</span> <span class="s1">&#39;list&#39;</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">o</span><span class="o">.</span><span class="n">add_option</span><span class="p">(</span><span class="s1">&#39;file_email_from&#39;</span><span class="p">,</span> <span class="s1">&#39;str&#39;</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">o</span><span class="o">.</span><span class="n">add_option</span><span class="p">(</span><span class="s1">&#39;file_email_relay&#39;</span><span class="p">,</span> <span class="s1">&#39;str&#39;</span><span class="p">)</span></div>
+        <span class="bp">self</span><span class="o">.</span><span class="n">o</span><span class="o">.</span><span class="n">add_option</span><span class="p">(</span><span class="s1">&#39;email_from&#39;</span><span class="p">,</span>            <span class="s1">&#39;str&#39;</span><span class="p">,</span> <span class="n">default_value</span><span class="o">=</span><span class="s1">&#39;&#39;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">o</span><span class="o">.</span><span class="n">add_option</span><span class="p">(</span><span class="s1">&#39;email_subject_prepend&#39;</span><span class="p">,</span> <span class="s1">&#39;str&#39;</span><span class="p">,</span> <span class="n">default_value</span><span class="o">=</span><span class="s1">&#39;&#39;</span><span class="p">)</span>
+
+        <span class="c1"># Parse accept/reject mask arguments into email recipient lists</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="k">for</span> <span class="n">mask</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">o</span><span class="o">.</span><span class="n">masks</span><span class="p">:</span>
+                <span class="c1"># mask[4] == True if accept, False if reject, only need to parse for accept</span>
+                <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">mask</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">])</span> <span class="o">&gt;</span> <span class="mi">0</span> <span class="ow">and</span> <span class="n">mask</span><span class="p">[</span><span class="mi">4</span><span class="p">]:</span>
+                    <span class="c1"># logger.debug(f&quot;mask args before parse: {mask[-1]}&quot;)</span>
+                    <span class="n">arg_string</span> <span class="o">=</span> <span class="s1">&#39;&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">mask</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">])</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s1">&#39; &#39;</span><span class="p">,</span> <span class="s1">&#39;&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span>
+                    <span class="n">recipients</span> <span class="o">=</span> <span class="n">arg_string</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;,&#39;</span><span class="p">)</span>
+                    <span class="n">mask</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">clear</span><span class="p">()</span>
+                    <span class="k">for</span> <span class="n">recipient</span> <span class="ow">in</span> <span class="n">recipients</span><span class="p">:</span>
+                        <span class="k">if</span> <span class="s1">&#39;@&#39;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">recipient</span><span class="p">:</span>
+                            <span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Invalid email recipient: </span><span class="si">{</span><span class="n">recipient</span><span class="si">}</span><span class="s2"> for accept </span><span class="si">{</span><span class="n">mask</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+                        <span class="k">else</span><span class="p">:</span>
+                            <span class="n">mask</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">recipient</span><span class="p">)</span>
+                    <span class="c1"># logger.debug(f&quot;mask args after parse: {mask[-1]}&quot;)</span>
+                <span class="k">elif</span> <span class="n">mask</span><span class="p">[</span><span class="mi">4</span><span class="p">]:</span>
+                    <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;No email recipients defined for accept </span><span class="si">{</span><span class="n">mask</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">critical</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Failed to parse recipients from mask: </span><span class="si">{</span><span class="n">mask</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+            <span class="k">raise</span> <span class="n">e</span>
+
+        <span class="c1"># Server must be defined</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">o</span><span class="o">.</span><span class="n">sendTo</span> <span class="ow">or</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">o</span><span class="o">.</span><span class="n">sendTo</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s2">&quot;No email server (sendTo) is defined in the config!&quot;</span><span class="p">)</span>
+        <span class="c1"># sendTo --&gt; email_server</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">email_server</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">o</span><span class="o">.</span><span class="n">sendTo</span><span class="o">.</span><span class="n">strip</span><span class="p">(</span><span class="s1">&#39;/&#39;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="s1">&#39;//&#39;</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">email_server</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">email_server</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">email_server</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">email_server</span><span class="o">.</span><span class="n">find</span><span class="p">(</span><span class="s1">&#39;//&#39;</span><span class="p">)</span> <span class="o">+</span> <span class="mi">2</span> <span class="p">:]</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Using email server: </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">email_server</span><span class="si">}</span><span class="s2"> (sendTo was: </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">o</span><span class="o">.</span><span class="n">sendTo</span><span class="si">}</span><span class="s2">)&quot;</span><span class="p">)</span>
+
+        <span class="c1"># Add trailing space to email_subject_prepend</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">o</span><span class="o">.</span><span class="n">email_subject_prepend</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">o</span><span class="o">.</span><span class="n">email_subject_prepend</span> <span class="o">+=</span> <span class="s1">&#39; &#39;</span></div>
+
+            
+<div class="viewcode-block" id="Email.after_work">
+<a class="viewcode-back" href="../../../../Reference/flowcb.html#sarracenia.flowcb.send.email.Email.after_work">[docs]</a>
+    <span class="k">def</span> <span class="nf">after_work</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">worklist</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot; This plugin can also be used in a sarra/subscriber, mostly for testing purposes.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">o</span><span class="o">.</span><span class="n">component</span> <span class="o">!=</span> <span class="s1">&#39;sender&#39;</span><span class="p">:</span>
+            <span class="k">for</span> <span class="n">msg</span> <span class="ow">in</span> <span class="n">worklist</span><span class="o">.</span><span class="n">ok</span><span class="p">:</span>
+                <span class="n">actual_baseDir</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">o</span><span class="o">.</span><span class="n">baseDir</span>
+                <span class="n">actual_relPath</span> <span class="o">=</span> <span class="n">msg</span><span class="p">[</span><span class="s1">&#39;relPath&#39;</span><span class="p">]</span>
+                <span class="n">msg</span><span class="p">[</span><span class="s1">&#39;relPath&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">msg</span><span class="p">[</span><span class="s1">&#39;new_dir&#39;</span><span class="p">],</span> <span class="n">msg</span><span class="p">[</span><span class="s1">&#39;new_file&#39;</span><span class="p">])</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">o</span><span class="o">.</span><span class="n">baseDir</span> <span class="o">=</span> <span class="n">msg</span><span class="p">[</span><span class="s1">&#39;new_dir&#39;</span><span class="p">]</span>
+
+                <span class="bp">self</span><span class="o">.</span><span class="n">send</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span>
+
+                <span class="bp">self</span><span class="o">.</span><span class="n">o</span><span class="o">.</span><span class="n">baseDir</span> <span class="o">=</span> <span class="n">actual_baseDir</span>
+                <span class="n">msg</span><span class="p">[</span><span class="s1">&#39;relPath&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">actual_relPath</span></div>
 
 
+<div class="viewcode-block" id="Email.send">
+<a class="viewcode-back" href="../../../../Reference/flowcb.html#sarracenia.flowcb.send.email.Email.send">[docs]</a>
     <span class="k">def</span> <span class="nf">send</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">msg</span><span class="p">):</span>
-
-        <span class="c1"># have a list of email destinations...</span>
-        <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;email: </span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="bp">self</span><span class="o">.</span><span class="n">o</span><span class="o">.</span><span class="n">file_email_to</span><span class="p">)</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot; Send an email to each recipient defined in the config file for a particular accept statement.</span>
+<span class="sd">            The file contents are sent in the body of the email. The subject is the filename.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        
         <span class="k">if</span> <span class="ow">not</span> <span class="n">msg</span><span class="p">[</span><span class="s1">&#39;relPath&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">o</span><span class="o">.</span><span class="n">baseDir</span><span class="p">):</span> 
             <span class="n">ipath</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">normpath</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">o</span><span class="o">.</span><span class="n">baseDir</span><span class="si">}</span><span class="s2">/</span><span class="si">{</span><span class="n">msg</span><span class="p">[</span><span class="s1">&#39;relPath&#39;</span><span class="p">]</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="n">ipath</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">normpath</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">msg</span><span class="p">[</span><span class="s1">&#39;relPath&#39;</span><span class="p">]</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
 
-        <span class="c1"># loop over all the variables from config file, if files match, send via email</span>
-        <span class="k">for</span> <span class="n">header</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">o</span><span class="o">.</span><span class="n">file_email_to</span><span class="p">:</span>
-            <span class="n">file_type</span><span class="p">,</span> <span class="n">emails</span> <span class="o">=</span> <span class="n">header</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39; &#39;</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
-            <span class="n">emails</span> <span class="o">=</span> <span class="p">[</span><span class="n">x</span><span class="o">.</span><span class="n">strip</span><span class="p">(</span><span class="s1">&#39; &#39;</span><span class="p">)</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">emails</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;,&#39;</span><span class="p">)]</span>
+        <span class="k">if</span> <span class="s1">&#39;_mask_index&#39;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">msg</span><span class="p">:</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="s2">&quot;Recipients unknown, can&#39;t email file </span><span class="si">{ipath}</span><span class="s2">&quot;</span><span class="p">)</span>
+            <span class="c1"># negative return == permanent failure, don&#39;t retry</span>
+            <span class="k">return</span> <span class="o">-</span><span class="mi">1</span>
+        
+        <span class="c1"># Get list of recipients for this message, from the mask that matched the filename/path</span>
+        <span class="n">recipients</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">o</span><span class="o">.</span><span class="n">masks</span><span class="p">[</span><span class="n">msg</span><span class="p">[</span><span class="s1">&#39;_mask_index&#39;</span><span class="p">]][</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
 
-            <span class="c1"># check if the file arrived matches any email rules</span>
-            <span class="k">if</span> <span class="n">re</span><span class="o">.</span><span class="n">search</span><span class="p">(</span><span class="s1">&#39;^&#39;</span> <span class="o">+</span> <span class="n">file_type</span> <span class="o">+</span> <span class="s1">&#39;.*&#39;</span><span class="p">,</span> <span class="n">msg</span><span class="p">[</span><span class="s1">&#39;new_file&#39;</span><span class="p">]):</span>
+        <span class="c1"># Prepare the email message</span>
+        <span class="n">emsg</span> <span class="o">=</span> <span class="n">EmailMessage</span><span class="p">()</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">ipath</span><span class="p">)</span> <span class="k">as</span> <span class="n">fp</span><span class="p">:</span>
+                <span class="n">emsg</span><span class="o">.</span><span class="n">set_content</span><span class="p">(</span><span class="n">fp</span><span class="o">.</span><span class="n">read</span><span class="p">())</span>
+        <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Failed to read </span><span class="si">{</span><span class="n">ipath</span><span class="si">}</span><span class="s2">, can&#39;t send to </span><span class="si">{</span><span class="n">recipients</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+            <span class="c1"># No retry if the file doesn&#39;t exist</span>
+            <span class="k">return</span> <span class="o">-</span><span class="mi">1</span>
+        
+        <span class="n">emsg</span><span class="p">[</span><span class="s1">&#39;Subject&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">o</span><span class="o">.</span><span class="n">email_subject_prepend</span> <span class="o">+</span> <span class="n">msg</span><span class="p">[</span><span class="s1">&#39;new_file&#39;</span><span class="p">]</span>
 
-                <span class="k">for</span> <span class="n">recipient</span> <span class="ow">in</span> <span class="n">emails</span><span class="p">:</span>
-                    <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s1">&#39;sending file </span><span class="si">%s</span><span class="s1"> to </span><span class="si">%s</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">ipath</span><span class="p">,</span> <span class="n">recipient</span><span class="p">))</span>
+        <span class="c1"># if not set in the config, just don&#39;t set From, the From address will usually be derived from the hostname</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">o</span><span class="o">.</span><span class="n">email_from</span> <span class="ow">and</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">o</span><span class="o">.</span><span class="n">email_from</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="n">emsg</span><span class="p">[</span><span class="s1">&#39;From&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">o</span><span class="o">.</span><span class="n">email_from</span>
+        
+        <span class="c1"># if sending to any one recipient fails, we will return False, triggering a retry.</span>
+        <span class="n">all_ok</span> <span class="o">=</span> <span class="kc">True</span>
+        <span class="k">for</span> <span class="n">recipient</span> <span class="ow">in</span> <span class="n">recipients</span><span class="p">:</span>
+            <span class="k">if</span> <span class="s1">&#39;@&#39;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">recipient</span><span class="p">:</span>
+                <span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Cannot send </span><span class="si">{</span><span class="n">ipath</span><span class="si">}</span><span class="s2"> to recipient </span><span class="si">{</span><span class="n">recipient</span><span class="si">}</span><span class="s2">. Email address is invalid!&quot;</span><span class="p">)</span>
+                <span class="k">continue</span>
 
-                    <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">ipath</span><span class="p">)</span> <span class="k">as</span> <span class="n">fp</span><span class="p">:</span>
-                        <span class="n">emsg</span> <span class="o">=</span> <span class="n">EmailMessage</span><span class="p">()</span>
-                        <span class="n">emsg</span><span class="o">.</span><span class="n">set_content</span><span class="p">(</span><span class="n">fp</span><span class="o">.</span><span class="n">read</span><span class="p">())</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="n">logstr</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;file </span><span class="si">{</span><span class="n">ipath</span><span class="si">}</span><span class="s2"> to </span><span class="si">{</span><span class="n">recipient</span><span class="si">}</span><span class="s2"> with subject </span><span class="si">{</span><span class="n">emsg</span><span class="p">[</span><span class="s1">&#39;Subject&#39;</span><span class="p">]</span><span class="si">}</span><span class="s2">&quot;</span>
+                <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;sending </span><span class="si">{</span><span class="n">logstr</span><span class="si">}</span><span class="s1"> from </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">o</span><span class="o">.</span><span class="n">email_from</span><span class="si">}</span><span class="s1"> using server </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">email_server</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
 
-                    <span class="k">try</span><span class="p">:</span>
-                        <span class="n">sender</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">o</span><span class="o">.</span><span class="n">file_email_from</span>
-                        <span class="k">if</span> <span class="ow">not</span> <span class="n">sender</span><span class="p">:</span>
-                            <span class="n">sender</span> <span class="o">=</span> <span class="s1">&#39;sarracenia-emailer&#39;</span>
-                    <span class="k">except</span> <span class="ne">AttributeError</span><span class="p">:</span>
-                        <span class="n">sender</span> <span class="o">=</span> <span class="s1">&#39;sarracenia-emailer&#39;</span>
+                <span class="k">if</span> <span class="s1">&#39;To&#39;</span> <span class="ow">in</span> <span class="n">emsg</span><span class="p">:</span>
+                    <span class="k">del</span> <span class="n">emsg</span><span class="p">[</span><span class="s1">&#39;To&#39;</span><span class="p">]</span>
+                <span class="n">emsg</span><span class="p">[</span><span class="s1">&#39;To&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">recipient</span>
+                <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="n">emsg</span><span class="p">)</span>
 
-                    <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;Using sender email: &quot;</span> <span class="o">+</span> <span class="n">sender</span><span class="p">)</span>
+                <span class="n">s</span> <span class="o">=</span> <span class="n">smtplib</span><span class="o">.</span><span class="n">SMTP</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">email_server</span><span class="p">)</span>
+                <span class="n">s</span><span class="o">.</span><span class="n">send_message</span><span class="p">(</span><span class="n">emsg</span><span class="p">)</span>
+                <span class="n">s</span><span class="o">.</span><span class="n">quit</span><span class="p">()</span>
 
-                    <span class="n">emsg</span><span class="p">[</span><span class="s1">&#39;Subject&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">msg</span><span class="p">[</span><span class="s1">&#39;new_file&#39;</span><span class="p">]</span>
-                    <span class="n">emsg</span><span class="p">[</span><span class="s1">&#39;From&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">sender</span>
-                    <span class="n">emsg</span><span class="p">[</span><span class="s1">&#39;To&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">recipient</span>
+                <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;Sent file </span><span class="si">{</span><span class="n">logstr</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
 
-                    <span class="k">try</span><span class="p">:</span>
-                        <span class="n">email_relay</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">o</span><span class="o">.</span><span class="n">file_email_relay</span>
-                        <span class="k">if</span> <span class="ow">not</span> <span class="n">email_relay</span><span class="p">:</span>
-                            <span class="k">raise</span> <span class="ne">AttributeError</span><span class="p">()</span>
-                    <span class="k">except</span> <span class="ne">AttributeError</span><span class="p">:</span>
-                        <span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span>
-                            <span class="s1">&#39;file_email_relay config NOT defined, please define an SMTP (relay) server&#39;</span>
-                        <span class="p">)</span>
+            <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+                <span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;failed to send </span><span class="si">{</span><span class="n">logstr</span><span class="si">}</span><span class="s1"> from </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">o</span><span class="o">.</span><span class="n">email_from</span><span class="si">}</span><span class="s1"> using server </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">email_server</span><span class="si">}</span><span class="s1">&#39;</span> 
+                             <span class="o">+</span> <span class="sa">f</span><span class="s1">&#39; because </span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
+                <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s1">&#39;Exception details:&#39;</span><span class="p">,</span> <span class="n">exc_info</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+                <span class="n">all_ok</span> <span class="o">=</span> <span class="kc">False</span>
 
-                    <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;Using email relay server: &quot;</span> <span class="o">+</span> <span class="n">email_relay</span><span class="p">)</span>
-                    <span class="n">s</span> <span class="o">=</span> <span class="n">smtplib</span><span class="o">.</span><span class="n">SMTP</span><span class="p">(</span><span class="n">email_relay</span><span class="p">)</span>
-                    <span class="n">s</span><span class="o">.</span><span class="n">send_message</span><span class="p">(</span><span class="n">emsg</span><span class="p">)</span>
-                    <span class="n">s</span><span class="o">.</span><span class="n">quit</span><span class="p">()</span>
-
-                    <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s1">&#39;sent file </span><span class="si">%s</span><span class="s1"> to </span><span class="si">%s</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">ipath</span><span class="p">,</span> <span class="n">recipient</span><span class="p">))</span>
-
-        <span class="k">return</span> <span class="kc">True</span></div>
+        <span class="k">return</span> <span class="n">all_ok</span></div>
+</div>
 
 </pre></div>
 

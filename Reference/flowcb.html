@@ -253,6 +253,7 @@
 <li class="toctree-l3"><a class="reference internal" href="#sarracenia-flowcb-poll-usgs">sarracenia.flowcb.poll.usgs</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#module-sarracenia.flowcb.post">sarracenia.flowcb.post</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#module-sarracenia.flowcb.send.email">sarracenia.flowcb.send.email</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#email-sender">Email Sender</a></li>
 <li class="toctree-l4"><a class="reference internal" href="#sarracenia.flowcb.send.email.Email"><code class="docutils literal notranslate"><span class="pre">Email</span></code></a></li>
 </ul>
 </li>
@@ -375,14 +376,22 @@ with sr3.</p>
 <li><p><a class="reference internal" href="#module-sarracenia.flowcb.poll.noaa_hydrometric" id="id54">sarracenia.flowcb.poll.noaa_hydrometric</a></p></li>
 <li><p><a class="reference internal" href="#sarracenia-flowcb-poll-usgs" id="id55">sarracenia.flowcb.poll.usgs</a></p></li>
 <li><p><a class="reference internal" href="#module-sarracenia.flowcb.post" id="id56">sarracenia.flowcb.post</a></p></li>
-<li><p><a class="reference internal" href="#module-sarracenia.flowcb.send.email" id="id57">sarracenia.flowcb.send.email</a></p></li>
-<li><p><a class="reference internal" href="#module-sarracenia.flowcb.post.message" id="id58">sarracenia.flowcb.post.message</a></p></li>
-<li><p><a class="reference internal" href="#module-sarracenia.flowcb.send" id="id59">sarracenia.flowcb.send</a></p></li>
-<li><p><a class="reference internal" href="#sarracenia-flowcb-wistree" id="id60">sarracenia.flowcb.wistree</a></p></li>
-<li><p><a class="reference internal" href="#module-sarracenia.flowcb.work" id="id61">sarracenia.flowcb.work</a></p></li>
-<li><p><a class="reference internal" href="#module-sarracenia.flowcb.work.age" id="id62">sarracenia.flowcb.work.age</a></p></li>
-<li><p><a class="reference internal" href="#module-sarracenia.flowcb.work.rxpipe" id="id63">sarracenia.flowcb.work.rxpipe</a></p></li>
-<li><p><a class="reference internal" href="#module-sarracenia.flowcb.v2wrapper" id="id64">sarracenia.flowcb.v2wrapper</a></p></li>
+<li><p><a class="reference internal" href="#module-sarracenia.flowcb.send.email" id="id57">sarracenia.flowcb.send.email</a></p>
+<ul>
+<li><p><a class="reference internal" href="#email-sender" id="id58">Email Sender</a></p>
+<ul>
+<li><p><a class="reference internal" href="#usage" id="id59">Usage:</a></p></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><p><a class="reference internal" href="#module-sarracenia.flowcb.post.message" id="id60">sarracenia.flowcb.post.message</a></p></li>
+<li><p><a class="reference internal" href="#module-sarracenia.flowcb.send" id="id61">sarracenia.flowcb.send</a></p></li>
+<li><p><a class="reference internal" href="#sarracenia-flowcb-wistree" id="id62">sarracenia.flowcb.wistree</a></p></li>
+<li><p><a class="reference internal" href="#module-sarracenia.flowcb.work" id="id63">sarracenia.flowcb.work</a></p></li>
+<li><p><a class="reference internal" href="#module-sarracenia.flowcb.work.age" id="id64">sarracenia.flowcb.work.age</a></p></li>
+<li><p><a class="reference internal" href="#module-sarracenia.flowcb.work.rxpipe" id="id65">sarracenia.flowcb.work.rxpipe</a></p></li>
+<li><p><a class="reference internal" href="#module-sarracenia.flowcb.v2wrapper" id="id66">sarracenia.flowcb.v2wrapper</a></p></li>
 </ul>
 </li>
 </ul>
@@ -2129,29 +2138,64 @@ so that normalk downloader works, so only the poll one needed.</p>
 </section>
 <section id="module-sarracenia.flowcb.send.email">
 <span id="sarracenia-flowcb-send-email"></span><h2><a class="toc-backref" href="#id57" role="doc-backlink">sarracenia.flowcb.send.email</a><a class="headerlink" href="#module-sarracenia.flowcb.send.email" title="Link to this heading"></a></h2>
-<p>sarracenia.flowcb.send.email.Email is an sr3 sender plugin. Once a file is
-posted, the plugin matches the topic(what the filename begins with) to the
-file name and sends the appropriate emails.</p>
-<dl>
-<dt>Usage:</dt><dd><ol class="arabic">
-<li><p>Need the following variables in an sr_sender config defined: file_email_to, file_email_relay
-Optionally, you can also provide a sender name/email as file_email_form:</p>
+<section id="email-sender">
+<h3><a class="toc-backref" href="#id58" role="doc-backlink">Email Sender</a><a class="headerlink" href="#email-sender" title="Link to this heading"></a></h3>
+<p><code class="docutils literal notranslate"><span class="pre">sarracenia.flowcb.send.email.Email</span></code> is an sr3 sender plugin. It will send the <em>contents</em> of a
+file in the <em>body</em> of an email to the configured recipient(s).</p>
+<p>The email subject will be the name of the file being sent.</p>
+<section id="usage">
+<h4><a class="toc-backref" href="#id59" role="doc-backlink">Usage:</a><a class="headerlink" href="#usage" title="Link to this heading"></a></h4>
 <blockquote>
-<div><p>file_email_to AACN27 <a class="reference external" href="mailto:muhammad&#46;taseer&#37;&#52;&#48;canada&#46;ca">muhammad<span>&#46;</span>taseer<span>&#64;</span>canada<span>&#46;</span>ca</a>, <a class="reference external" href="mailto:test&#37;&#52;&#48;test&#46;com">test<span>&#64;</span>test<span>&#46;</span>com</a>
-file_email_relay email.relay.server.ca
-file_email_from <a class="reference external" href="mailto:santa&#37;&#52;&#48;canada&#46;ca">santa<span>&#64;</span>canada<span>&#46;</span>ca</a></p>
-</div></blockquote>
-</li>
+<div><ol class="arabic">
 <li><p>In the config file, include the following line:</p>
-<blockquote>
-<div><p>callback send.email</p>
-</div></blockquote>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">callback</span> <span class="n">send</span><span class="o">.</span><span class="n">email</span>
+</pre></div>
+</div>
 </li>
-<li><p>sr_sender foreground emails.conf</p></li>
 </ol>
+<p>And define the email server</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">sendTo</span>
+</pre></div>
+</div>
+<ol class="arabic" start="2">
+<li><p>Define the email server (required) using the <code class="docutils literal notranslate"><span class="pre">sendTo</span></code> option, and the sender’s email address (optional)
+in the config file:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">sendTo</span>      <span class="n">smtp</span><span class="p">:</span><span class="o">//</span><span class="n">email</span><span class="o">.</span><span class="n">relay</span><span class="o">.</span><span class="n">server</span><span class="o">.</span><span class="n">ca</span>
+
+<span class="n">email_from</span>  <span class="n">santa</span><span class="nd">@canada</span><span class="o">.</span><span class="n">ca</span>
+
+<span class="c1"># or, with a &quot;human readable&quot; sender name:</span>
+
+<span class="n">email_from</span>  <span class="n">Santa</span> <span class="n">Claus</span> <span class="o">&lt;</span><span class="n">santa</span><span class="nd">@canada</span><span class="o">.</span><span class="n">ca</span><span class="o">&gt;</span>
+</pre></div>
+</div>
+</li>
+<li><p>Configure recipients using accept statements. You must have at least one recipient per accept statement.
+Multiple recipients can be specified by separating each address by a comma.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">accept</span> <span class="o">.*</span><span class="n">AACN27</span><span class="o">.*</span> <span class="n">test</span><span class="nd">@example</span><span class="o">.</span><span class="n">com</span>
+<span class="n">accept</span> <span class="o">.*</span><span class="n">SXCN</span><span class="o">.*</span>   <span class="n">user1</span><span class="nd">@example</span><span class="o">.</span><span class="n">com</span><span class="p">,</span> <span class="n">user2</span><span class="nd">@example</span><span class="o">.</span><span class="n">com</span>
+<span class="n">accept</span> <span class="o">.*</span><span class="n">CACN</span><span class="o">.*</span> <span class="n">DESTFN</span><span class="o">=</span><span class="n">A_CACN_Bulletin</span>  <span class="n">me</span><span class="nd">@ssc</span><span class="o">-</span><span class="n">spc</span><span class="o">.</span><span class="n">gc</span><span class="o">.</span><span class="n">ca</span><span class="p">,</span><span class="n">you</span><span class="nd">@ssc</span><span class="o">-</span><span class="n">spc</span><span class="o">.</span><span class="n">gc</span><span class="o">.</span><span class="n">ca</span><span class="p">,</span><span class="n">someone</span><span class="nd">@ssc</span><span class="o">-</span><span class="n">spc</span><span class="o">.</span><span class="n">gc</span><span class="o">.</span><span class="n">ca</span>
+</pre></div>
+</div>
+</li>
+</ol>
+</div></blockquote>
+<p>To change the filename that is sent in the subject, you can use the filename option, a renamer plugin or
+DESTFN/DESTFNSCRIPT on a per-accept basis. The <code class="docutils literal notranslate"><span class="pre">email_subject_prepend</span></code> option can be used to add text before
+the filename in the email subject. For example:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">email_subject_prepend</span>  <span class="n">Sent</span> <span class="n">by</span> <span class="n">Sarracenia</span><span class="p">:</span>
+</pre></div>
+</div>
+<dl class="simple">
+<dt>Future Improvement Ideas:</dt><dd><ul class="simple">
+<li><p>SMTP on different ports and with authentication</p></li>
+<li><p>Attach the file instead of putting the contents in the body (useful for binary files)</p></li>
+</ul>
 </dd>
 </dl>
 <p>Original Author: Wahaj Taseer - June, 2019</p>
+</section>
+</section>
 <dl class="py class">
 <dt class="sig sig-object py" id="sarracenia.flowcb.send.email.Email">
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">sarracenia.flowcb.send.email.</span></span><span class="sig-name descname"><span class="pre">Email</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">options</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/sarracenia/flowcb/send/email.html#Email"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#sarracenia.flowcb.send.email.Email" title="Link to this definition"></a></dt>
@@ -2161,11 +2205,24 @@ file_email_from <a class="reference external" href="mailto:santa&#37;&#52;&#48;c
 <span class="sig-name descname"><span class="pre">__init__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">options</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/sarracenia/flowcb/send/email.html#Email.__init__"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#sarracenia.flowcb.send.email.Email.__init__" title="Link to this definition"></a></dt>
 <dd></dd></dl>
 
+<dl class="py method">
+<dt class="sig sig-object py" id="sarracenia.flowcb.send.email.Email.after_work">
+<span class="sig-name descname"><span class="pre">after_work</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">worklist</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/sarracenia/flowcb/send/email.html#Email.after_work"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#sarracenia.flowcb.send.email.Email.after_work" title="Link to this definition"></a></dt>
+<dd><p>This plugin can also be used in a sarra/subscriber, mostly for testing purposes.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="sarracenia.flowcb.send.email.Email.send">
+<span class="sig-name descname"><span class="pre">send</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">msg</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/sarracenia/flowcb/send/email.html#Email.send"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#sarracenia.flowcb.send.email.Email.send" title="Link to this definition"></a></dt>
+<dd><p>Send an email to each recipient defined in the config file for a particular accept statement.
+The file contents are sent in the body of the email. The subject is the filename.</p>
+</dd></dl>
+
 </dd></dl>
 
 </section>
 <section id="module-sarracenia.flowcb.post.message">
-<span id="sarracenia-flowcb-post-message"></span><h2><a class="toc-backref" href="#id58" role="doc-backlink">sarracenia.flowcb.post.message</a><a class="headerlink" href="#module-sarracenia.flowcb.post.message" title="Link to this heading"></a></h2>
+<span id="sarracenia-flowcb-post-message"></span><h2><a class="toc-backref" href="#id60" role="doc-backlink">sarracenia.flowcb.post.message</a><a class="headerlink" href="#module-sarracenia.flowcb.post.message" title="Link to this heading"></a></h2>
 <dl class="py class">
 <dt class="sig sig-object py" id="sarracenia.flowcb.post.message.Message">
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">sarracenia.flowcb.post.message.</span></span><span class="sig-name descname"><span class="pre">Message</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">options</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/sarracenia/flowcb/post/message.html#Message"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#sarracenia.flowcb.post.message.Message" title="Link to this definition"></a></dt>
@@ -2186,15 +2243,15 @@ file_email_from <a class="reference external" href="mailto:santa&#37;&#52;&#48;c
 
 </section>
 <section id="module-sarracenia.flowcb.send">
-<span id="sarracenia-flowcb-send"></span><h2><a class="toc-backref" href="#id59" role="doc-backlink">sarracenia.flowcb.send</a><a class="headerlink" href="#module-sarracenia.flowcb.send" title="Link to this heading"></a></h2>
+<span id="sarracenia-flowcb-send"></span><h2><a class="toc-backref" href="#id61" role="doc-backlink">sarracenia.flowcb.send</a><a class="headerlink" href="#module-sarracenia.flowcb.send" title="Link to this heading"></a></h2>
 <p>plugins intended for on_message entry_point.</p>
 <p>(when messages are received.)</p>
 </section>
 <section id="sarracenia-flowcb-wistree">
-<h2><a class="toc-backref" href="#id60" role="doc-backlink">sarracenia.flowcb.wistree</a><a class="headerlink" href="#sarracenia-flowcb-wistree" title="Link to this heading"></a></h2>
+<h2><a class="toc-backref" href="#id62" role="doc-backlink">sarracenia.flowcb.wistree</a><a class="headerlink" href="#sarracenia-flowcb-wistree" title="Link to this heading"></a></h2>
 </section>
 <section id="module-sarracenia.flowcb.work">
-<span id="sarracenia-flowcb-work"></span><h2><a class="toc-backref" href="#id61" role="doc-backlink">sarracenia.flowcb.work</a><a class="headerlink" href="#module-sarracenia.flowcb.work" title="Link to this heading"></a></h2>
+<span id="sarracenia-flowcb-work"></span><h2><a class="toc-backref" href="#id63" role="doc-backlink">sarracenia.flowcb.work</a><a class="headerlink" href="#module-sarracenia.flowcb.work" title="Link to this heading"></a></h2>
 <p>plugins that use primarily the after_work entry point, normally
 executed after the file transfer (either send or get) has completed.</p>
 <p>usually such plugins will contain a loop:</p>
@@ -2205,7 +2262,7 @@ executed after the file transfer (either send or get) has completed.</p>
 <p>to operate on all the files transferrred or processed successfully.</p>
 </section>
 <section id="module-sarracenia.flowcb.work.age">
-<span id="sarracenia-flowcb-work-age"></span><h2><a class="toc-backref" href="#id62" role="doc-backlink">sarracenia.flowcb.work.age</a><a class="headerlink" href="#module-sarracenia.flowcb.work.age" title="Link to this heading"></a></h2>
+<span id="sarracenia-flowcb-work-age"></span><h2><a class="toc-backref" href="#id64" role="doc-backlink">sarracenia.flowcb.work.age</a><a class="headerlink" href="#module-sarracenia.flowcb.work.age" title="Link to this heading"></a></h2>
 <p>print the age of files written (compare current time to mtime of message.)
 usage:</p>
 <p>flowcb work.age</p>
@@ -2217,7 +2274,7 @@ usage:</p>
 
 </section>
 <section id="module-sarracenia.flowcb.work.rxpipe">
-<span id="sarracenia-flowcb-work-rxpipe"></span><h2><a class="toc-backref" href="#id63" role="doc-backlink">sarracenia.flowcb.work.rxpipe</a><a class="headerlink" href="#module-sarracenia.flowcb.work.rxpipe" title="Link to this heading"></a></h2>
+<span id="sarracenia-flowcb-work-rxpipe"></span><h2><a class="toc-backref" href="#id65" role="doc-backlink">sarracenia.flowcb.work.rxpipe</a><a class="headerlink" href="#module-sarracenia.flowcb.work.rxpipe" title="Link to this heading"></a></h2>
 <dl class="py class">
 <dt class="sig sig-object py" id="sarracenia.flowcb.work.rxpipe.Rxpipe">
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">sarracenia.flowcb.work.rxpipe.</span></span><span class="sig-name descname"><span class="pre">Rxpipe</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">options</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/sarracenia/flowcb/work/rxpipe.html#Rxpipe"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#sarracenia.flowcb.work.rxpipe.Rxpipe" title="Link to this definition"></a></dt>
@@ -2236,7 +2293,7 @@ usage:</p>
 
 </section>
 <section id="module-sarracenia.flowcb.v2wrapper">
-<span id="sarracenia-flowcb-v2wrapper"></span><h2><a class="toc-backref" href="#id64" role="doc-backlink">sarracenia.flowcb.v2wrapper</a><a class="headerlink" href="#module-sarracenia.flowcb.v2wrapper" title="Link to this heading"></a></h2>
+<span id="sarracenia-flowcb-v2wrapper"></span><h2><a class="toc-backref" href="#id66" role="doc-backlink">sarracenia.flowcb.v2wrapper</a><a class="headerlink" href="#module-sarracenia.flowcb.v2wrapper" title="Link to this heading"></a></h2>
 <dl class="py class">
 <dt class="sig sig-object py" id="sarracenia.flowcb.v2wrapper.V2Wrapper">
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">sarracenia.flowcb.v2wrapper.</span></span><span class="sig-name descname"><span class="pre">V2Wrapper</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">o</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/sarracenia/flowcb/v2wrapper.html#V2Wrapper"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#sarracenia.flowcb.v2wrapper.V2Wrapper" title="Link to this definition"></a></dt>

@@ -120,7 +120,7 @@
 <dd class="field-odd"><p>3.00.57rc0</p>
 </dd>
 <dt class="field-even">date<span class="colon">:</span></dt>
-<dd class="field-even"><p>Dec 09, 2024</p>
+<dd class="field-even"><p>Dec 11, 2024</p>
 </dd>
 </dl>
 <section id="audience">
@@ -852,7 +852,7 @@ du buffer utilisé est donné par l’option <strong>bufsize</strong> (8192 par 
 <div><p>accept .*abc.* votre_texte=ici from_accept_abc</p>
 </div></blockquote>
 <p>Le mask est accessible avec <code class="docutils literal notranslate"><span class="pre">self.o.masks[msg['_mask_index']]</span></code>. Le dernier élément du mask contient les arguments de l’instruction accept :</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">mask</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">o</span><span class="o">.</span><span class="n">masks</span><span class="p">[</span><span class="n">msg</span><span class="p">[</span><span class="s1">&#39;_mask_index&#39;</span><span class="p">]</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">mask</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">o</span><span class="o">.</span><span class="n">masks</span><span class="p">[</span><span class="n">msg</span><span class="p">[</span><span class="s1">&#39;_mask_index&#39;</span><span class="p">]]</span>
 <span class="nb">print</span><span class="p">(</span><span class="n">mask</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">])</span> <span class="c1"># --&gt; [ &#39;votre_text=ici&#39;, &#39;from_accept_abc&#39; ]</span>
 </pre></div>
 </div>
