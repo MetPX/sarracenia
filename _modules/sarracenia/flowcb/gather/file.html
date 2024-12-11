@@ -251,6 +251,9 @@
 
         <span class="n">msg</span> <span class="o">=</span> <span class="n">sarracenia</span><span class="o">.</span><span class="n">Message</span><span class="o">.</span><span class="n">fromFileData</span><span class="p">(</span><span class="n">path</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">o</span><span class="p">,</span> <span class="n">lstat</span><span class="p">)</span>
 
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">msg</span><span class="p">:</span> <span class="c1"># failed to create message</span>
+            <span class="k">return</span> <span class="p">[]</span>
+
         <span class="c1"># used when moving a file</span>
         <span class="k">if</span> <span class="n">key</span> <span class="o">!=</span> <span class="kc">None</span><span class="p">:</span>
             <span class="k">if</span> <span class="ow">not</span> <span class="s1">&#39;fileOp&#39;</span> <span class="ow">in</span> <span class="n">msg</span><span class="p">:</span>
@@ -349,7 +352,12 @@
             <span class="n">msg</span><span class="p">[</span><span class="s1">&#39;size&#39;</span><span class="p">]</span><span class="o">=</span><span class="n">length</span>
 
             <span class="c1"># set partstr</span>
-            <span class="n">msg</span><span class="o">.</span><span class="n">computeIdentity</span><span class="p">(</span><span class="n">path</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">o</span><span class="p">,</span> <span class="n">offset</span><span class="o">=</span><span class="n">offset</span> <span class="p">)</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="n">msg</span><span class="o">.</span><span class="n">computeIdentity</span><span class="p">(</span><span class="n">path</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">o</span><span class="p">,</span> <span class="n">offset</span><span class="o">=</span><span class="n">offset</span> <span class="p">)</span>
+            <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">ex</span><span class="p">:</span>
+                <span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span> <span class="sa">f</span><span class="s2">&quot;could not identify </span><span class="si">{</span><span class="n">path</span><span class="si">}</span><span class="s2">: </span><span class="si">{</span><span class="n">ex</span><span class="si">}</span><span class="s2">&quot;</span> <span class="p">)</span>
+                <span class="k">return</span> <span class="p">[]</span>
+
             <span class="n">msg</span><span class="p">[</span><span class="s1">&#39;blocks&#39;</span><span class="p">][</span><span class="s1">&#39;manifest&#39;</span><span class="p">][</span><span class="n">current_block</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span> <span class="s1">&#39;size&#39;</span><span class="p">:</span><span class="n">length</span><span class="p">,</span> <span class="s1">&#39;identity&#39;</span><span class="p">:</span> <span class="n">msg</span><span class="p">[</span><span class="s1">&#39;identity&#39;</span><span class="p">][</span><span class="s1">&#39;value&#39;</span><span class="p">]</span> <span class="p">}</span>
 
         
