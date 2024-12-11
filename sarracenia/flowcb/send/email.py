@@ -1,23 +1,52 @@
 """
-    sarracenia.flowcb.send.email.Email is an sr3 sender plugin. Once a file is 
-    posted, the plugin matches the topic(what the filename begins with) to the
-    file name and sends the appropriate emails.
+Email Sender
+============
 
-    Usage:
-      1. Need the following variables in an sr_sender config defined: file_email_to, file_email_relay
-         Optionally, you can also provide a sender name/email as file_email_form:
+``sarracenia.flowcb.send.email.Email`` is an sr3 sender plugin. It will send the *contents* of a 
+file in the *body* of an email to the configured recipient(s).
 
-            file_email_to AACN27 muhammad.taseer@canada.ca, test@test.com
-            file_email_relay email.relay.server.ca
-            file_email_from santa@canada.ca
+The email subject will be the name of the file being sent.
 
-      2. In the config file, include the following line:
+Usage:
+^^^^^^
 
-            callback send.email
+    1. In the config file, include the following line: ::
 
-      3. sr_sender foreground emails.conf
+        callback send.email
 
-    Original Author: Wahaj Taseer - June, 2019
+    And define the email server ::
+
+        sendTo
+
+    2. Define the email server (required) using the ``sendTo`` option, and the sender's email address (optional)
+       in the config file: ::
+
+        sendTo      smtp://email.relay.server.ca
+
+        email_from  santa@canada.ca
+
+        # or, with a "human readable" sender name:
+
+        email_from  Santa Claus <santa@canada.ca>
+    
+    3. Configure recipients using accept statements. You must have at least one recipient per accept statement.
+       Multiple recipients can be specified by separating each address by a comma. ::
+    
+        accept .*AACN27.* test@example.com
+        accept .*SXCN.*   user1@example.com, user2@example.com
+        accept .*CACN.* DESTFN=A_CACN_Bulletin  me@ssc-spc.gc.ca,you@ssc-spc.gc.ca,someone@ssc-spc.gc.ca
+
+To change the filename that is sent in the subject, you can use the filename option, a renamer plugin or
+DESTFN/DESTFNSCRIPT on a per-accept basis. The ``email_subject_prepend`` option can be used to add text before
+the filename in the email subject. For example: ::
+
+    email_subject_prepend  Sent by Sarracenia: 
+
+Future Improvement Ideas:
+  - SMTP on different ports and with authentication
+  - Attach the file instead of putting the contents in the body (useful for binary files)
+    
+Original Author: Wahaj Taseer - June, 2019
 """
 
 from email.message import EmailMessage
@@ -34,62 +63,118 @@ class Email(FlowCB):
     def __init__(self, options):
 
         super().__init__(options,logger)
-        self.o.add_option('file_email_command', 'str', '/usr/bin/mail')
-        self.o.add_option('file_email_to', 'list')
-        self.o.add_option('file_email_from', 'str')
-        self.o.add_option('file_email_relay', 'str')
+        self.o.add_option('email_from',            'str', default_value='')
+        self.o.add_option('email_subject_prepend', 'str', default_value='')
+
+        # Parse accept/reject mask arguments into email recipient lists
+        try:
+            for mask in self.o.masks:
+                # mask[4] == True if accept, False if reject, only need to parse for accept
+                if len(mask[-1]) > 0 and mask[4]:
+                    # logger.debug(f"mask args before parse: {mask[-1]}")
+                    arg_string = ''.join(mask[-1]).replace(' ', '').strip()
+                    recipients = arg_string.split(',')
+                    mask[-1].clear()
+                    for recipient in recipients:
+                        if '@' not in recipient:
+                            logger.error(f"Invalid email recipient: {recipient} for accept {mask[0]}")
+                        else:
+                            mask[-1].append(recipient)
+                    # logger.debug(f"mask args after parse: {mask[-1]}")
+                elif mask[4]:
+                    logger.warning(f"No email recipients defined for accept {mask[0]}")
+        except Exception as e:
+            logger.critical(f"Failed to parse recipients from mask: {mask}")
+            raise e
+
+        # Server must be defined
+        if not self.o.sendTo or len(self.o.sendTo) == 0:
+            raise Exception("No email server (sendTo) is defined in the config!")
+        # sendTo --> email_server
+        self.email_server = self.o.sendTo.strip('/')
+        if '//' in self.email_server:
+            self.email_server = self.email_server[self.email_server.find('//') + 2 :]
+        logger.debug(f"Using email server: {self.email_server} (sendTo was: {self.o.sendTo})")
+
+        # Add trailing space to email_subject_prepend
+        if len(self.o.email_subject_prepend) > 0:
+            self.o.email_subject_prepend += ' '
+            
+    def after_work(self, worklist):
+        """ This plugin can also be used in a sarra/subscriber, mostly for testing purposes.
+        """
+        if self.o.component != 'sender':
+            for msg in worklist.ok:
+                actual_baseDir = self.o.baseDir
+                actual_relPath = msg['relPath']
+                msg['relPath'] = os.path.join(msg['new_dir'], msg['new_file'])
+                self.o.baseDir = msg['new_dir']
+
+                self.send(msg)
+
+                self.o.baseDir = actual_baseDir
+                msg['relPath'] = actual_relPath
 
     def send(self, msg):
-
-        # have a list of email destinations...
-        logger.debug("email: %s" % self.o.file_email_to)
+        """ Send an email to each recipient defined in the config file for a particular accept statement.
+            The file contents are sent in the body of the email. The subject is the filename.
+        """
+        
         if not msg['relPath'].startswith(self.o.baseDir): 
             ipath = os.path.normpath(f"{self.o.baseDir}/{msg['relPath']}")
         else:
             ipath = os.path.normpath(f"{msg['relPath']}")
 
-        # loop over all the variables from config file, if files match, send via email
-        for header in self.o.file_email_to:
-            file_type, emails = header.split(' ', 1)
-            emails = [x.strip(' ') for x in emails.split(',')]
+        if '_mask_index' not in msg:
+            logger.error("Recipients unknown, can't email file {ipath}")
+            # negative return == permanent failure, don't retry
+            return -1
+        
+        # Get list of recipients for this message, from the mask that matched the filename/path
+        recipients = self.o.masks[msg['_mask_index']][-1]
 
-            # check if the file arrived matches any email rules
-            if re.search('^' + file_type + '.*', msg['new_file']):
+        # Prepare the email message
+        emsg = EmailMessage()
+        try:
+            with open(ipath) as fp:
+                emsg.set_content(fp.read())
+        except Exception as e:
+            logger.error(f"Failed to read {ipath}, can't send to {recipients}")
+            # No retry if the file doesn't exist
+            return -1
+        
+        emsg['Subject'] = self.o.email_subject_prepend + msg['new_file']
 
-                for recipient in emails:
-                    logger.debug('sending file %s to %s' % (ipath, recipient))
+        # if not set in the config, just don't set From, the From address will usually be derived from the hostname
+        if self.o.email_from and len(self.o.email_from) > 0:
+            emsg['From'] = self.o.email_from
+        
+        # if sending to any one recipient fails, we will return False, triggering a retry.
+        all_ok = True
+        for recipient in recipients:
+            if '@' not in recipient:
+                logger.error(f"Cannot send {ipath} to recipient {recipient}. Email address is invalid!")
+                continue
 
-                    with open(ipath) as fp:
-                        emsg = EmailMessage()
-                        emsg.set_content(fp.read())
+            try:
+                logstr = f"file {ipath} to {recipient} with subject {emsg['Subject']}"
+                logger.debug(f'sending {logstr} from {self.o.email_from} using server {self.email_server}')
 
-                    try:
-                        sender = self.o.file_email_from
-                        if not sender:
-                            sender = 'sarracenia-emailer'
-                    except AttributeError:
-                        sender = 'sarracenia-emailer'
+                if 'To' in emsg:
+                    del emsg['To']
+                emsg['To'] = recipient
+                logger.debug(emsg)
 
-                    logger.debug("Using sender email: " + sender)
+                s = smtplib.SMTP(self.email_server)
+                s.send_message(emsg)
+                s.quit()
 
-                    emsg['Subject'] = msg['new_file']
-                    emsg['From'] = sender
-                    emsg['To'] = recipient
+                logger.info(f'Sent file {logstr}')
 
-                    try:
-                        email_relay = self.o.file_email_relay
-                        if not email_relay:
-                            raise AttributeError()
-                    except AttributeError:
-                        logger.error(
-                            'file_email_relay config NOT defined, please define an SMTP (relay) server'
-                        )
+            except Exception as e:
+                logger.error(f'failed to send {logstr} from {self.o.email_from} using server {self.email_server}' 
+                             + f' because {e}')
+                logger.debug('Exception details:', exc_info=True)
+                all_ok = False
 
-                    logger.debug("Using email relay server: " + email_relay)
-                    s = smtplib.SMTP(email_relay)
-                    s.send_message(emsg)
-                    s.quit()
-
-                    logger.info('sent file %s to %s' % (ipath, recipient))
-
-        return True
+        return all_ok
