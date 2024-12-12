@@ -1237,7 +1237,8 @@ class Flow:
                     else:
                         m['new_relPath'] = m['new_file']
 
-            if ('new_relPath' in m) and (m['relPath'] != m['new_relPath']):
+            if ('new_relPath' in m) and ('relPath' in m) \
+                    and (m['relPath'] != m['new_relPath']):
                 m['old_relPath'] = m['relPath']
                 m['_deleteOnPost'] |= set(['old_relPath'])
                 m['relPath'] = m['new_relPath']
