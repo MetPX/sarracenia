@@ -1241,8 +1241,11 @@ class Flow:
                     and (m['relPath'] != m['new_relPath']):
                 m['old_relPath'] = m['relPath']
                 m['_deleteOnPost'] |= set(['old_relPath'])
+
+            if 'new_relPath' in m:
                 m['relPath'] = m['new_relPath']
-                m['old_subtopic'] = m['subtopic']
+                if 'subtopic' in m:
+                    m['old_subtopic'] = m['subtopic']
                 m['_deleteOnPost'] |= set(['old_subtopic','subtopic'])
                 m['subtopic'] = m['new_subtopic']
 
