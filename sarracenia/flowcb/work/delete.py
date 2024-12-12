@@ -45,8 +45,9 @@ class Delete(FlowCB):
 
                 #FIXME: there should be some reference to baseDir here... for url's that aren't file ones.
                 #   just getting it to work for particular case for now 2021/12/09 - pas
+                sep = '/' if ( message['baseUrl'][-1] != '/' ) else ''
                 message['delete_source'] = message['baseUrl'].lstrip(
-                    'file:') + message['relPath']
+                    'file:') + sep + message['relPath']
 
     def after_work(self, worklist):
 
