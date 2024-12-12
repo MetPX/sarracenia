@@ -27,4 +27,4 @@ ExecReload=/usr/bin/sr3 reload
 ExecStop=/usr/bin/sr3 stop
 
 [Install]
-WantedBy=multi-user.target
+WantedBy=default.target
