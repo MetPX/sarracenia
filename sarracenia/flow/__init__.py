@@ -1224,7 +1224,8 @@ class Flow:
                 m['_deleteOnPost'] |= set(['old_retrievePath'])
 
             # if new_file does not match relPath, then adjust relPath so it does.
-            if 'relPath' in m and m['new_file'] != m['relPath'].split('/')[-1]:
+            if ( 'relPath' in m ) and ('new_file' in m) and \
+                    m['new_file'] != m['relPath'].split('/')[-1]:
                 if not 'new_relPath' in m:
                     if len(m['relPath']) > 1:
                         m['new_relPath'] = '/'.join( m['relPath'].split('/')[0:-1] + [ m['new_file'] ])
