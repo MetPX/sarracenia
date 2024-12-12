@@ -748,7 +748,10 @@ class Message(dict):
         # rename path given with no filename
 
         if o.rename:
-            msg['retrievePath'] = msg['new_retrievePath']
+            # ensure we have the old name for retrieval usage.
+            if 'new_retrievePath' in msg:
+                msg['retrievePath'] = msg['new_retrievePath']
+
             newname = o.variableExpansion(o.rename)
             if o.rename[-1] == '/':
                 newname += os.path.basename(path)
