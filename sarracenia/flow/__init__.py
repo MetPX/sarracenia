@@ -2731,6 +2731,10 @@ class Flow:
                 else:
                     len_written = msg['size']
 
+            if msg['size'] > 0 and len_written == 0:
+                logger.error( f"failed to send inflight={inflight} {sendTo} {msg['new_dir']}/{new_file}" )
+                return 0
+
             msg.setReport(201, 'file sent')
             self.metrics['flow']['transferTxBytes'] += len_written
             self.metrics['flow']['transferTxFiles'] += 1
