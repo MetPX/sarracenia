@@ -64,9 +64,11 @@ class Subscriptions(list):
                    if newb == b:
                       found=True
                if not found:
-                      s['bindings'].append( newb )
+                  s['bindings'].append( newb )
+                  found=True
 
         if not found:
+            #logger.critical( f"appending {new_subscription=} " )
             self.append(new_subscription)
 
             
