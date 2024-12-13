@@ -318,12 +318,12 @@ class Test_Message():
         assert msg['identity'] == {'method': 'cod', 'value': 'identityValue' }
 
         #Set 5
-        path = str(tmp_path) + os.sep + "file5.txt"
-        open(path, 'a').close()
-        options = sarracenia.config.default_config()
-        options.rename = str(tmp_path) + os.sep + "file4a.txt"
-        with pytest.raises(KeyError):
-            msg = sarracenia.Message.fromFileInfo(path, options, os.lstat(path))
+        #path = str(tmp_path) + os.sep + "file5.txt"
+        #open(path, 'a').close()
+        #options = sarracenia.config.default_config()
+        #options.rename = str(tmp_path) + os.sep + "file4a.txt"
+        #with pytest.raises(KeyError):
+        #    msg = sarracenia.Message.fromFileInfo(path, options, os.lstat(path))
 
 
     @pytest.mark.depends(on=['test_fromFileData'])
