@@ -873,7 +873,10 @@
         <span class="c1"># rename path given with no filename</span>
 
         <span class="k">if</span> <span class="n">o</span><span class="o">.</span><span class="n">rename</span><span class="p">:</span>
-            <span class="n">msg</span><span class="p">[</span><span class="s1">&#39;retrievePath&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">msg</span><span class="p">[</span><span class="s1">&#39;new_retrievePath&#39;</span><span class="p">]</span>
+            <span class="c1"># ensure we have the old name for retrieval usage.</span>
+            <span class="k">if</span> <span class="s1">&#39;new_retrievePath&#39;</span> <span class="ow">in</span> <span class="n">msg</span><span class="p">:</span>
+                <span class="n">msg</span><span class="p">[</span><span class="s1">&#39;retrievePath&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">msg</span><span class="p">[</span><span class="s1">&#39;new_retrievePath&#39;</span><span class="p">]</span>
+
             <span class="n">newname</span> <span class="o">=</span> <span class="n">o</span><span class="o">.</span><span class="n">variableExpansion</span><span class="p">(</span><span class="n">o</span><span class="o">.</span><span class="n">rename</span><span class="p">)</span>
             <span class="k">if</span> <span class="n">o</span><span class="o">.</span><span class="n">rename</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">==</span> <span class="s1">&#39;/&#39;</span><span class="p">:</span>
                 <span class="n">newname</span> <span class="o">+=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">basename</span><span class="p">(</span><span class="n">path</span><span class="p">)</span>
