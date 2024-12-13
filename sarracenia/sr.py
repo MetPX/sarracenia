@@ -1608,15 +1608,25 @@ class sr_GlobalState:
                 logging.error("cannot disable %s while it is running! " % f)
                 continue
 
-            state_file_cfg = self.user_cache_dir + os.sep + c + os.sep + cfg
-            state_file_cfg_disabled = state_file_cfg + os.sep + 'disabled'
-            if os.path.exists(state_file_cfg_disabled):
+            if self.configs[c][cfg]['options'].statehost:
+                state_file_dir = self.user_cache_dir + os.sep + self.hostdir + os.sep + f.replace('/', os.sep)
+            else:
+                state_file_dir = self.user_cache_dir + os.sep + f.replace('/', os.sep)
+
+            logger.critical( f"{state_file_dir=}" )
+            if not os.path.isdir(state_file_dir):
+                os.makedirs(state_file_dir, exist_ok=True)
+
+            state_file_disabled = state_file_dir + os.sep + 'disabled'
+            logger.critical( f"{state_file_disabled=}" )
+            
+            if os.path.exists(state_file_disabled):
                 logging.error("%s is already disabled! " % f)
                 continue
-            if os.path.exists(state_file_cfg):
-                with open(state_file_cfg_disabled, 'w') as f:
-                    f.write('')
-                logging.info(c + '/' + cfg)
+
+            with open(state_file_disabled, 'w') as f:
+                f.write('')
+            logging.info(c + '/' + cfg)
 
 
     def edit(self):
