@@ -1613,12 +1613,10 @@ class sr_GlobalState:
             else:
                 state_file_dir = self.user_cache_dir + os.sep + f.replace('/', os.sep)
 
-            logger.critical( f"{state_file_dir=}" )
             if not os.path.isdir(state_file_dir):
                 os.makedirs(state_file_dir, exist_ok=True)
 
             state_file_disabled = state_file_dir + os.sep + 'disabled'
-            logger.critical( f"{state_file_disabled=}" )
             
             if os.path.exists(state_file_disabled):
                 logging.error("%s is already disabled! " % f)
