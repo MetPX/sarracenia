@@ -174,6 +174,11 @@ set_choices = {
  
 perm_options = [ 'permDefault', 'permDirDefault','permLog']
 
+# options that apply to queues, and so must appear before subtopic resolves queues characteristics.
+#
+queue_options = [ 'auto_delete', 'broker', 'durable', 'exchange', 'exchangeSuffix', 'expire', 'message_ttl', 'prefetch', \
+                    'qos', 'queueBind',  'exchangeDeclare' ]
+
 size_options = ['accelThreshold', 'blockSize', 'bufSize', 'byteRateMax', 'fileSizeMax', 'inlineByteMax']
 
 str_options = [
@@ -1625,6 +1630,10 @@ class Config:
             if k in ['logDuplicates'] and self.logDuplicates:
                 self.logEvents = self.logEvents | set(['nodupe'])
             return
+
+        if k in queue_options and self.subtopic_seen:
+            logger.warning( f"{','.join(self.files)}:{lineno} {k} needs to appear before *subtopic*" \
+                " unless you need different queues to have different settings")
 
         if len(line) < 2:
             logger.error( f"{','.join(self.files)}:{lineno} {k} missing argument(s)" )
