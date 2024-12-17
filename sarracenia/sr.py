@@ -2803,19 +2803,24 @@ class sr_GlobalState:
                 v3_cfg.write('#topicCopy on\n')
 
             if component in [ 'sarra', 'sender', 'subscribe' ]:
-                v3_cfg.write('#v2 sftp handling is always absolute, sr3 is relative. might need this, remove when all sr3:\n')
+                v3_cfg.write(' \n#\n#v2 sftp handling is always absolute, sr3 is relative. might need this, remove when all sr3:\n')
                 v3_cfg.write('#flowcb accept.sftp_absolute\n')
 
             queueName=None
 
             #1st prep pass (for cases when re-ordering needed.)
+            already_moved=False
+            verbs_to_move =  [ 'auto_delete', 'durable', 'expire', 'message_ttl', 'prefetch', \
+                    'qos', 'queueBind',  'exchangeDeclare' ]
+
+
             with open(v2_config_path, 'r') as v2_cfg:
-                for line in v2_cfg.readlines():
-                    if len(line.strip()) < 1:
+                for input_line in v2_cfg.readlines():
+                    if len(input_line.strip()) < 1:
                         continue
-                    if line[0].startswith('#'):
+                    if input_line[0].startswith('#'):
                         continue
-                    line = line.strip().split()
+                    line = input_line.strip().split()
                     k = line[0]
                     if k in synonyms:
                         k = synonyms[k]
@@ -2825,9 +2830,15 @@ class sr_GlobalState:
                         inflight_seen=True
                     if k in [ 'queueName' ]:
                         queueName=line[1]
+                    if k in verbs_to_move:
+                        if not already_moved:
+                            v3_cfg.write(f" \n#\n#Move formerly global options ({','.join(verbs_to_move)} to start of config file.\n")
+                            alread_moved=True
+                        v3_cfg.write(input_line+"\n")
+                        
 
             if not inflight_seen and post_broker_seen and component in [ 'sarra', 'sender', 'subscribe' ]:
-                v3_cfg.write('#sr3 inflight defaults to None, v2 defaulted to .tmp when post_broker set.\n')
+                v3_cfg.write(' \n#\n#sr3 inflight defaults to None, v2 defaulted to .tmp when post_broker set.\n')
                 v3_cfg.write('inflight .tmp\n')
                 
             #2nd re-write pass.
@@ -2842,6 +2853,9 @@ class sr_GlobalState:
                         continue
                     line = line.strip().split()
                     k = line[0]
+
+                    if k in verbs_to_move: # moved to start of file.
+                        continue
                     if k in synonyms:
                         k = synonyms[k]
 
