@@ -13,7 +13,7 @@ class Subscription(dict):
         self['bindings'] = [ { 'exchange': options.exchange, 'prefix': options.topicPrefix, 'sub': subtopic } ]
 
         self['queue']={ 'name': queueName, 'cleanup_needed': None }
-        for a in [ 'auto_delete', 'durable', 'expire', 'message_ttl', 'prefetch', 'qos', 'queueBind', 'queueDeclare' ]:
+        for a in [ 'auto_delete', 'durable', 'expire', 'prefetch', 'qos', 'queueBind', 'queueDeclare' ]:
             aa = a.replace('queue','').lower()
             if hasattr(options, a) and getattr(options,a):
                 self['queue'][aa] = getattr(options,a)
