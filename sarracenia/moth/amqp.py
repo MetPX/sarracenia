@@ -284,7 +284,7 @@ class AMQP(Moth):
                     x = int(self.o['messageAgeMax'] * 1000)
                     if x > 0: args['x-message-ttl'] = x
 
-                #FIXME: conver expire, message_ttl to proper units.
+                #FIXME: convert expire, message_ttl to proper units.
                 if self.o['dry_run']:
                     logger.info('queue declare (dry run) %s (as: %s) ' %
                             (self.o['queueName'], broker_str))
