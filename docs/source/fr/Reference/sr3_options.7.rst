@@ -140,6 +140,7 @@ en utilisant la notation *${..} * :
 * HOSTNAME    - le hostname qui exécute le client.
 * RANDID      - Un ID aléatoire qui va être consistant pendant la duration d'une seule invocation.
 * RAND8 - un nombre aléatoire à 8 chiffres qui est généré chaque fois qu'il est évalué dans une chaîne de caractères.
+* INSTANCE   - le numéro d'instance du processus de flux (composant/configuration)
 
 
 Les horodatages %Y%m%d et %H font référence à l’heure à laquelle les données sont traitées par
@@ -157,8 +158,8 @@ dans Sarracenia a priorité par rapport à une variable du même nom dans l’en
 Notez que les paramètres de *flatten* peuvent être modifiés entre les options de *directory*.
 
 
-Substitutions Compatible Sundew
--------------------------------
+Substitutions compatibles avec Sundew
+-------------------------------------
 
 Dans `MetPX Sundew <../Explication/Glossary.html#sundew>`_, le format de la nomination de fichier est beaucoup plus
 stricte, et est spécialisée pour une utilisation aves les données du World Meteorological Organization (WMO).
@@ -517,7 +518,7 @@ optimisé en n’envoyant que les pièces qui ont changé.
 L’option *outlet* permet à la sortie finale d’être autre qu’un poste.
 Voir `sr3_cpump(1) <sr3_cpump.1.html>`_ pour plus de détails.
 
-Broker
+broker
 ------
 
 **broker [amqp|mqtt]{s}://<utilisateur>:<mot-de-passe>@<hoteDuCourtier>[:port]/<vhost>**
@@ -543,6 +544,10 @@ L’option broker indique à chaque composant quel courtier contacter.
 
 Une fois connecté à un courtier AMQP, l’utilisateur doit lier une fil d’attente
 aux échanges et aux thèmes pour déterminer le messages d'annonce en question.
+
+l´option *subtopic* devrait apparaître après le paramètre *broker* dans les fichiers
+pour que les liaisons de sujet s'appliquent à la file d'attente spécifié.
+
 
 bufSize <size> (défaut: 1m)
 ---------------------------
@@ -734,6 +739,8 @@ Cela signifie que la fil d’attente est sur le disque si le courtier est redém
 Remarque: seuls les messages *persistants* resteront dans une file d'attente durable après le redémarrage du courtier.
 Les messages persistants peuvent être publiés en activant l'option **persistant** (elle est activée par défaut).
 
+l´option *subtopic* devrait apparaître après le paramètre *durable* dans les fichiers
+pour que les liaisons de sujet s'appliquent à la file d'attente spécifié.
 
 fileEvents <évènement, évènement,...>
 -------------------------------------
@@ -792,6 +799,9 @@ Le paramètre **expire** doit être remplacé pour une utilisation opérationnel
 Le défaut est défini par une valeur basse car il définit combien de temps les ressources vont être
 assigné au courtier, et dans les premières utilisations (lorsque le défaut était de de 1 semaine), les courtiers
 étaient souvent surchargés de très longues files d’attente pour les tests restants.
+
+l´option *subtopic* devrait apparaître après le paramètre *expire* dans les fichiers
+pour que les liaisons de sujet s'appliquent à la file d'attente spécifié.
 
 
 filename <mots-clé> (défaut:None)
@@ -945,8 +955,8 @@ include config
 inclure une autre configuration dans cette configuration.
 
 
-inflight <string> (défaut: .tmp ou NONE si post_broker est définit)
--------------------------------------------------------------------
+inflight <string> (défaut: None)
+--------------------------------
 
 L’option **inflight** définit comment ignorer les fichiers lorsqu’ils sont transférés
 ou (en plein vol entre deux systèmes). Un réglage incorrect de cette option provoque des
@@ -1296,7 +1306,7 @@ une fil d’attente, la première fois qu’une publication est reçue, elle peu
 et si un doublon est ensuite reçu, il sera probablement choisi par une autre instance.
 **Pour une suppression efficace des doublons avec les instances**, il faut **déployer deux couches d’abonnés**.
 Utiliser une **première couche d’abonnés (shovels)** avec la suppression de doublons éteinte et
-utiliser *post_exchangeSplit* pour la sortie. Cela achemine les publications en utilisant la somme de contrôle vers
+utiliser *post_exchangeSplit* pour la sortie. Cela achemine les publications du même chemin
 une **deuxième couche d’abonnés (winnow) dont les caches de suppression des doublons sont actives.**
 
 
@@ -1447,8 +1457,15 @@ pour modifier les messages d'annonce générés à propos des fichiers avant leu
 post_exchangeSplit <compte> (défaut: 0)
 ---------------------------------------
 
-L’option **post_exchangeSplit** ajoute un suffixe à deux chiffres qui est crée en hachant le dernier caractère
-de la somme de contrôle avec le nom de post_exchange, afin de répartir la production entre un certain nombre d’échanges.
+L'option **post_exchangeSplit** ajoute un suffixe à deux chiffres au nom post_exchange,
+afin de répartir la production entre plusieurs échanges.
+
+Chaque message est publié sur l'un des échanges en fonction d'un index
+dérivé du message, destiné à être le même pour un chemin donné.
+Le hachage est calculé comme la somme des caractères du champ *relPath*
+ou, s'il manque, *retrievePath*, ou s'il manque 0) modulo le nombre de
+échanges.
+
 Ceci est actuellement utilisé dans les pompes à trafic élevé pour avoir plusieurs instances de winnow,
 qui ne peuvent pas être instancié de la manière normale.  Exemple::
 
@@ -1521,12 +1538,20 @@ Si la fil d’attente existe déjà, ces indicateurs peuvent être défini a Fal
 ne soit effectuée pour fil d’attente ou pour ses liaisons. Ces options sont utiles sur les courtiers qui ne
 permettent pas aux utilisateurs de déclarer leurs files d’attente.
 
+l´option *subtopic* devrait apparaître après le paramètre *queueBind* dans les fichiers
+pour que les liaisons de sujet s'appliquent à la file d'attente spécifié.
+
+
 queueDeclare <flag> (défaut: True)
 ----------------------------------
 
 Avec l´option queueDeclare à *True*, un composant déclare un fil d´attente pour accumuler des messages d'annonce lors
 de chaque démarrage. Des fois les permissions sont restrictifs sur les courtiers, alors on ne peut pas
 faire de tels déclarations de ressources. Dans ce cas, il faut supprimer cette déclaration.
+
+l´option *subtopic* devrait apparaître après le paramètre *queueDeclare* dans les fichiers
+pour que les liaisons de sujet s'appliquent à la file d'attente spécifié.
+
 
 queueName|queue|queue_name|qn
 -----------------------------
@@ -1561,7 +1586,7 @@ Les instances démarrées sur n’importe quel nœud ayant accès au même fichi
 même fil d’attente. Certains voudront peut-être utiliser l’option *queueName* comme méthode plus explicite
 de partager le travail sur plusieurs nœuds. Il est pourtant recommandé d´utiliser queueShare a cette fin.
 
-l´option *subtopic* devrait apparaître après le paramètre queueName dans les fichiers
+l´option *subtopic* devrait apparaître après le paramètre *queueName* dans les fichiers
 pour que les liaisons de sujet s'appliquent à la file d'attente spécifié.
 
 

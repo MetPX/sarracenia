@@ -53,8 +53,6 @@ from  sarracenia.config.subscription import Subscription,Subscriptions
 import sarracenia.flow
 import sarracenia.flowcb
 
-from sarracenia.flow.sarra import default_options as sarradefopts
-
 import sarracenia.identity.arbitrary
 
 import sarracenia.moth
@@ -175,6 +173,11 @@ set_choices = {
 #    'fileEvents': sarracenia.flow.allFileEvents
  
 perm_options = [ 'permDefault', 'permDirDefault','permLog']
+
+# options that apply to queues, and so must appear before subtopic resolves queues characteristics.
+#
+queue_options = [ 'auto_delete', 'broker', 'durable', 'exchange', 'exchangeSuffix', 'expire', 'prefetch', \
+                    'qos', 'queueBind',  'queueDeclare' ]
 
 size_options = ['accelThreshold', 'blockSize', 'bufSize', 'byteRateMax', 'fileSizeMax', 'inlineByteMax']
 
@@ -962,18 +965,10 @@ class Config:
         """
           overlay defaults options for the given component to the given configuration.
         """
-        if component in ['post']:
-            self.override(sarracenia.flow.post.default_options)
-        elif component in ['poll']:
-            self.override(sarracenia.flow.poll.default_options)
-        elif component in ['sarra']:
-            self.override(sarradefopts)
-        elif component in ['sender']:
-            self.override(sarracenia.flow.sender.default_options)
-        elif component in ['subscribe']:
-            self.override(sarracenia.flow.subscribe.default_options)
-        elif component in ['watch']:
-            self.override(sarracenia.flow.watch.default_options)
+        if hasattr(sarracenia.flow, component):
+            component_module = getattr(sarracenia.flow, component)
+            if hasattr(component_module, 'default_options'):
+                self.override(component_module.default_options)
 
     @property
     def admin(self):
@@ -1038,6 +1033,12 @@ class Config:
         if ( '${RAND8}' in word ):
             result = result.replace('${RAND8}', str(randint(0, 100000000)).zfill(8))
 
+        if ( '${INSTANCE}' in word ):
+            if hasattr(self,'no'): 
+                instance=self.no
+            else:
+                instance=00
+            result = result.replace('${INSTANCE}', f"{instance:02d}" )
         if not '$' in result:
             return result
 
@@ -1058,6 +1059,8 @@ class Config:
                 repval = getattr(self, e)
                 if type(repval) is list:
                     repval = repval[0]
+                if type(repval) is not str:
+                    repval = str(repval)
                 result = result.replace('${' + E + '}', repval)
                 continue
 
@@ -1077,9 +1080,18 @@ class Config:
             return None
 
         if len(arguments) > 1:
-            fn = arguments[1]
+            # First arg is a Sundew filename option
+            if arguments[1].split(':')[0].split('=')[0] in ['None', 'DESTFN', 'DESTFNSCRIPT', 'HEADFN',
+                                                            'NONE', 'NONESENDER', 'SATNET', 'SENDER', 'WHATFN']:
+                fn = arguments[1]
+                # Other arguments can be used by plugins
+                args = arguments[2:]
+            else:
+                fn = self.filename
+                args = arguments[1:]
         else:
             fn = self.filename
+            args = []
         if fn and re.compile('DESTFNSCRIPT=.*').match(fn):
             script=fn[13:]
             self.destfn_scripts.append(script)
@@ -1090,13 +1102,13 @@ class Config:
            d = self.directory
         return (arguments[0], d, fn, regex,
                 option.lower() in ['accept' ], self.mirror, self.strip,
-                self.pstrip, self.flatten)
+                self.pstrip, self.flatten, args)
 
     def mask_ppstr(self, mask):
         """
            return a pretty print string version of the given mask, easier for humans to read.
         """
-        pattern, maskDir, maskFileOption, mask_regexp, accepting, mirror, strip, pstrip, flatten = mask
+        pattern, maskDir, maskFileOption, mask_regexp, accepting, mirror, strip, pstrip, flatten, args = mask
 
         s = 'accept' if accepting else 'reject'
         if pstrip : strip=pstrip
@@ -1104,7 +1116,8 @@ class Config:
         fn = '' if (maskFileOption == 'WHATFN') else f' filename:{maskFileOption}'
         flatten = '' if flatten == '/' else f' flatten:{flatten}'
         w = 'with ' if fn or flatten or strip else ''
-        return f'{s} {pattern} into {maskDir} {w}mirror:{mirror}{strip}{flatten}{fn}'
+        args = '' if len(args) == 0 else ' args:' + str(args)
+        return f'{s} {pattern} into {maskDir} {w}mirror:{mirror}{strip}{flatten}{fn}{args}'
 
     def _parse_set_string( self, v:str, old_value: set ) -> set:
         """
@@ -1617,6 +1630,10 @@ class Config:
             if k in ['logDuplicates'] and self.logDuplicates:
                 self.logEvents = self.logEvents | set(['nodupe'])
             return
+
+        if k in queue_options and self.subtopic_seen:
+            logger.warning( f"{','.join(self.files)}:{lineno} {k} needs to appear before *subtopic*" \
+                " unless you need different queues to have different settings")
 
         if len(line) < 2:
             logger.error( f"{','.join(self.files)}:{lineno} {k} missing argument(s)" )

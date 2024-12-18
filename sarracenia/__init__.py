@@ -76,6 +76,10 @@ if features['humanize']['present']:
     import humanize
 
     def naturalSize( num ):
+        # checking for > 0 allows message rate to print just 0m/s when num is 0 instead of 0.00m/s in sr3 status
+        # also ensures that data rate displays properly
+        if num > 0 and num < 1:
+            return f"{num:.2f}m"
         return humanize.naturalsize(num,binary=True).replace(" ","")
 
     def naturalTime( dur ):
@@ -658,12 +662,17 @@ class Message(dict):
     def fromFileData(path, o, lstat=None):
         """
             create a message based on a given file, calculating the checksum.
-            returns a well-formed message, or none.
+            returns a well-formed message, or None.
         """
         m = sarracenia.Message.fromFileInfo(path, o, lstat)
         if lstat :
             if os_stat.S_ISREG(lstat.st_mode):
-                m.computeIdentity(path, o)
+                try:
+                    m.computeIdentity(path, o)
+                except Exception as ex:
+                    logger.error( f" failed to identify {path}: {ex} ")
+                    return None
+
                 if features['filetypes']['present']:
                     try:
                         t = magic.from_file(path,mime=True)
@@ -739,7 +748,10 @@ class Message(dict):
         # rename path given with no filename
 
         if o.rename:
-            msg['retrievePath'] = msg['new_retrievePath']
+            # ensure we have the old name for retrieval usage.
+            if 'new_retrievePath' in msg:
+                msg['retrievePath'] = msg['new_retrievePath']
+
             newname = o.variableExpansion(o.rename)
             if o.rename[-1] == '/':
                 newname += os.path.basename(path)

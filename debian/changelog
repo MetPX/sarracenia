@@ -1,3 +1,35 @@
+metpx-sr3 (3.00.57rc1) unstable; urgency=medium
+
+  * New #1323 DESTFN=NONE::TIME now works.
+  * New #1299 after_gather entry point added.
+  * New #1289 accept statements now provide arguments to plugins
+  * change in post_exchangeSplit... now based on relPath, not checksum.
+  * systemd metpx-sr3_user.service file was not quite right.
+  * fixed partitioned transfer breakage by no space in naturalsize output.
+  * fix #1346 queue parameters should be earlier in configs now.
+  * fix #1340 rename not working.
+  * fix #1337 mirror per umask, not global
+  * fix #1334 send should fail when zero bytes sent. logging odd.
+  * fix #1327 inflight NONE in sender causes messages to be retried.
+  * fix #1325 by handling exception.
+  * fix #1322 sr3 sender fails to most message when no identity field in message.
+  * fix #1321 apply default options for all components correctly.
+  * fix #1315 if stat fails, do not download if EPERM, yes otherwise.
+  * fix #1309 email send flowcb problem.
+  * fix #1307 remove needless warning message.
+  * fix #1301 sr3 status display fractional message rates when (< 1 / second.)
+  * fix #1300 if checksum calculation fails, do not post.
+  * work on #624 adding INSTANCE to variable substitution.
+  * work on #339 moving re-connection attempts from protocol to main loop.
+  * fix #1288 AM server uses normalish instance numbers.
+  * fix #1283 disable new config broken.
+  * fix #1285 add fileSizeMax support to sender.
+  * fix #1254 fileAgeMin in a poll must behave differently.
+  * fix #1241 sr3 status more compact.
+  * fix #1206 exclude retries from lag calculation.
+
+ -- SSC-5CD2310S60 <peter@bsqt.homeip.net>  Tue, 06 Dec 2024 16:42:09 -0500
+
 metpx-sr3 (3.00.56) unstable; urgency=medium
 
   * fix related to #1275 so "attempts 0" works for outages.

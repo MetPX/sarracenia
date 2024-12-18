@@ -225,39 +225,40 @@ recueillir de l'information statistique.
 Intégration Init
 ~~~~~~~~~~~~~~~~
 
-Par défaut, lorsque sarracenia est installé, il s'agit d'un outil utilisateur
-et non d'une ressource à l'échelle du système. Le répertoire
-tools/sous-répertoire permet l'intégration avec des outils pour différents
-scénarios d'utilisation.
+
+Si installé à l'aide d'un package \.deb, les fichiers de service `Systemd <https://systemd.io/>`_ seront placés au bons endroits.
+Le package est installé dans l'état *disabled* (désactivé.) Utilisez *systemctl* de la manière habituelle pour le gérer.
 
 .. NOTE::
-   tools/sr.init -- script pour sysv-init où upstart
-   tools/sarra_system.service -- pour systemd et déploiment système
-   tools/sarra_user.service -- pour systemd par usage.
+   debian/metpx-sr3.service -- pour systemd et déploiment système
+   tools/metpx-sr3_user.service -- pour systemd individuel par usager.
 
 
-Processus d'installation du système, par l'administrateur::
+Si vous l'installez des packages Python (wheel ou pip), l'intégration du système est moindre 
+et il peut être nécessaire de créer manuellement les groupes appropriés et de 
+copier les fichiers de l'arborescence source vers les emplacements système appropriés::
 
    groupadd sarra
    useradd sarra
-   cp tools/sarra_system.service /etc/systemd/system/sarra.service  (if a package installs it, it should go in /usr/lib/systemd/system )
-   cp tools/sarra_user.service /etc/systemd/user/sarra.service (or /usr/lib/systemd/user, if installed by a package )
+   cp debian/metpx-sr3.service /etc/systemd/system   
+   cp tools/metpx-sr3_user.service /etc/systemd/user/metpx-sr3.service 
    systemctl daemon-reload
    
-Il est alors supposé que l'on utilise le compte 'sarra' pour
-stocker la configuration sarra orientée démon (ou à l'échelle du système).
-Les utilisateurs peuvent également exécuter leur configuration personnelle
-dans les sessions via::
+L'utilisateur *sarra* est le compte par défaut pour la configuration sarra orientée démon (ou à l'échelle du système).
+Les utilisateurs peuvent également exécuter leur configuration personnelle (mode utilisateur systemd) dans les sessions via ::
 
-  systemctl --user enable sarra
-  systemctl --user start sarra
+  systemctl --user enable metpx-sr3
+  systemctl --user start metpx-sr3
 
+Pour le démarrer à au démarrage du système, ce qui suit peut être utile (en supposant que Polkit soit présent, ce qui est généralement le cas) ::
 
-Sur un système basé sur upstart ou sysv-init::
+  loginctl enable-linger
 
-   cp tools/sr.init /etc/init.d/sr
-   <insert magic here to get that activated.>
-  
+Si Polkit est manquant, il doit être activé par l'administrateur ::
+
+  sudo loginctl enable-linger *user_to_run_metpx-sr3*
+
+plus d'informations (en anglais) : https://wiki.archlinux.org/title/Systemd/User#Automatic_start-up_of_systemd_user_instances
 
 
 Installation Rabbitmq

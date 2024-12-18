@@ -170,11 +170,20 @@ class Log(FlowCB):
         for msg in worklist.incoming:
 
             lag = now - timestr2flt(msg['pubTime'])
-            self.lagTotal += lag
-            if lag > self.lagMax:
-                self.lagMax = lag
+            if not ( '_isRetry' in msg and msg['_isRetry']):
+               self.lagTotal += lag
+               if lag > self.lagMax:
+                   self.lagMax = lag
             if set(['after_accept']) & self.o.logEvents:
                 logger.info( f"accepted: (lag: {lag:.2f} ) {self._messageAcceptStr(msg)}" )
+
+    def after_gather(self, worklist):
+        if set(['after_gather']) & self.o.logEvents:
+            for msg in worklist.incoming:
+                logger.info("gathered: %s" % self._messagePostStr(msg))
+            for msg in worklist.rejected:
+                logger.info("rejected: %s" % self._messagePostStr(msg))
+
 
     def after_post(self, worklist):
         if set(['after_post']) & self.o.logEvents:

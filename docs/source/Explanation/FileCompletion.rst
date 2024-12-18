@@ -23,16 +23,16 @@ Inflight Table
 |   NONE      |Send `sr3_post(7) <sr3_post.7.rst>`_   |post only when file is complete       |
 |             |by AMQP after file is complete.        |                                      |
 |             |                                       |(Best when available)                 |
-|             | - fewer round trips (no renames)      | - Default on sr_sarra.               |
-|             | - least overhead / highest speed      | - Default on sr_subscribe and sender |
-|             |                                       |   when post_broker is set.           |
+|             | - fewer round trips (no renames)      |                                      |
+|             | - least overhead / highest speed      | DEFAULT                              |
+|             |                                       |                                      |
 +-------------+---------------------------------------+--------------------------------------+
 |             |Files transferred with a *.tmp* suffix.|sending to most other systems         |
 | .tmp        |When complete, renamed without suffix. |(.tmp support built-in)               |
 | (Suffix)    |Actual suffix is settable.             |Use to send to Sundew                 |
 |             |                                       |                                      |
-|             | - requires extra round trips for      |(usually a good choice)               |
-|             |   rename (a little slower)            | - default when no post broker set    |
+|             | - requires extra round trips for      |                                      |
+|             |   rename (a little slower)            |                                      |
 +-------------+---------------------------------------+--------------------------------------+
 |             |Files transferred to a subdir or dir   |sending to some other systems         |
 | tmp/        |When complete, renamed to parent dir.  |                                      |

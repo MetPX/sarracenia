@@ -22,11 +22,9 @@ After=network.target
 [Service]
 Type=forking
 ExecStart=/usr/bin/sr3 start
-User=%i
-Group=users
 
 ExecReload=/usr/bin/sr3 reload
 ExecStop=/usr/bin/sr3 stop
 
 [Install]
-WantedBy=multi-user.target
+WantedBy=default.target

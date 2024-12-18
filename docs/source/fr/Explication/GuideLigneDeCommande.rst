@@ -1725,6 +1725,7 @@ right hand side to be evaluated, surrounded by ${..} The built-in variables are:
  - ${CONFIG}      - le nom du fichier de configuration en cours d'exécution.
  - ${HOSTNAME}    - le hostname qui exécute le client.
  - ${RANDID}      - Un ID aléatoire qui va être consistant pendant la duration d'une seule invocation.
+ - ${INSTANCE}    - le numéro d'instance du processus.
 
 flowCallbacks
 =============
@@ -2229,8 +2230,8 @@ une telle configuration.
 post_exchangeSplit   <number>   (défaut: 0)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-L'option **post_exchangeSplit** ajoute un suffixe à deux chiffres résultant d'une
-division entière du dernier digit de la somme de contrôle, afin de répartir les
+L'option **post_exchangeSplit** ajoute un suffixe à deux chiffres résultant de
+hacher le chemin (relPath), afin de répartir les
 avis entre un certain nombre d'échanges, selon la valeur de leur somme de contrôle.
 C'est utilisé dans les pompes à trafic élevé pour permettre des instances
 multiples de winnow, ce qui ne peut pas être instancié de la manière normale. exemple::
