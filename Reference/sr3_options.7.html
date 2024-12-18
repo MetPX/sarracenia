@@ -113,7 +113,7 @@
 <dd class="field-odd"><p>7</p>
 </dd>
 <dt class="field-even">Date<span class="colon">:</span></dt>
-<dd class="field-even"><p>Dec 16, 2024</p>
+<dd class="field-even"><p>Dec 18, 2024</p>
 </dd>
 <dt class="field-odd">Version<span class="colon">:</span></dt>
 <dd class="field-odd"><p>3.00.57rc0</p>
@@ -582,6 +582,8 @@ The broker option tell each component which broker to contact.</p>
 </dl>
 <p>Once connected to an AMQP broker, the user needs to bind a queue
 to exchanges and topics to determine the notification messages of interest.</p>
+<p>This <em>subtopic</em> option should appear after the <em>broker</em> setting in files
+for the setting to apply to a given queue.</p>
 </section>
 <section id="bufsize-size-default-1mb">
 <h4>bufSize &lt;size&gt; (default: 1MB)<a class="headerlink" href="#bufsize-size-default-1mb" title="Link to this heading"></a></h4>
@@ -743,6 +745,8 @@ the broker will preserve the queue across broker reboots.
 The queue will be written to and recovered from disk if the broker is restarted.</p>
 <p>Note: only <em>persistent</em> messages will remain in a durable queue after a broker restart.
 Persistent messages can be published by enabling the <strong>persistent</strong> option (it is enabled by default).</p>
+<p>This <em>subtopic</em> option should appear after the <em>durable</em> setting in files
+for the setting to apply to a given queue.</p>
 </section>
 <section id="fileevents-event-event">
 <h4>fileEvents &lt;event,event,…&gt;<a class="headerlink" href="#fileevents-event-event" title="Link to this heading"></a></h4>
@@ -777,6 +781,8 @@ These settings must appear in the configuration file before the corresponding
 are uptodate. If the exchange already exists, this flag can be set to False,
 so no attempt to exchange the queue is made, or it´s bindings.
 These options are useful on brokers that do not permit users to declare their exchanges.</p>
+<p>This <em>subtopic</em> option should appear after the <em>exchangeDeclare</em> setting in files
+for the topic bindings to apply to the given queue.</p>
 </section>
 <section id="expire-duration-default-5m-five-minutes-recommend-overriding">
 <h4>expire &lt;duration&gt; (default: 5m  == five minutes. RECOMMEND OVERRIDING)<a class="headerlink" href="#expire-duration-default-5m-five-minutes-recommend-overriding" title="Link to this heading"></a></h4>
@@ -793,6 +799,8 @@ to indicate 0.02 to specify a duration of 20 milliseconds.</p>
 The default is set low because it defines how long resources on the broker will be assigned,
 and in early use (when default was 1 week) brokers would often get overloaded with very
 long queues for left-over experiments.</p>
+<p>This <em>subtopic</em> option should appear after the <em>expire</em> setting in files
+for the topic bindings to apply to the given queue.</p>
 </section>
 <section id="filename-keyword-default-none">
 <h4>filename &lt;keyword&gt; (default:None)<a class="headerlink" href="#filename-keyword-default-none" title="Link to this heading"></a></h4>
@@ -1421,6 +1429,8 @@ messages at a time.  To minimize the number of messages lost if an instance dies
 optimal load sharing, the prefetch should be set as low as possible.  However, over long
 haul links, it is necessary to raise this number, to hide round-trip latency, so a setting
 of 10 or more may be needed.</p>
+<p>This <em>subtopic</em> option should appear after the <em>prefetch</em> setting in files
+for the setting to apply to a given queue.</p>
 </section>
 <section id="queuebind">
 <h4>queueBind<a class="headerlink" href="#queuebind" title="Link to this heading"></a></h4>
@@ -1429,6 +1439,8 @@ On startup, by default, Sarracenia redeclares resources and bindings to ensure t
 are uptodate.  If the queue already exists, These flags can be
 set to False, so no attempt to declare the queue is made, or it´s bindings.
 These options are useful on brokers that do not permit users to declare their queues.</p>
+<p>This <em>subtopic</em> option should appear after the <em>queueBind</em> setting in files
+for the setting to apply to a given queue.</p>
 </section>
 <section id="queuedeclare">
 <h4>queueDeclare<a class="headerlink" href="#queuedeclare" title="Link to this heading"></a></h4>
@@ -1437,6 +1449,8 @@ On startup, by default, Sarracenia redeclares resources and bindings to ensure t
 are uptodate.  If the queue already exists, These flags can be
 set to False, so no attempt to declare the queue is made, or it´s bindings.
 These options are useful on brokers that do not permit users to declare their queues.</p>
+<p>This <em>subtopic</em> option should appear after the <em>queueDeclare</em> setting in files
+for the setting to apply to a given queue.</p>
 </section>
 <section id="queuename-queue-queue-name-qn">
 <h4>queueName|queue|queue_name|qn<a class="headerlink" href="#queuename-queue-queue-name-qn" title="Link to this heading"></a></h4>

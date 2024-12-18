@@ -158,8 +158,8 @@ dans Sarracenia a priorité par rapport à une variable du même nom dans l’en
 Notez que les paramètres de *flatten* peuvent être modifiés entre les options de *directory*.
 
 
-Substitutions Compatible Sundew
--------------------------------
+Substitutions compatibles avec Sundew
+-------------------------------------
 
 Dans `MetPX Sundew <../Explication/Glossary.html#sundew>`_, le format de la nomination de fichier est beaucoup plus
 stricte, et est spécialisée pour une utilisation aves les données du World Meteorological Organization (WMO).
@@ -518,7 +518,7 @@ optimisé en n’envoyant que les pièces qui ont changé.
 L’option *outlet* permet à la sortie finale d’être autre qu’un poste.
 Voir `sr3_cpump(1) <sr3_cpump.1.html>`_ pour plus de détails.
 
-Broker
+broker
 ------
 
 **broker [amqp|mqtt]{s}://<utilisateur>:<mot-de-passe>@<hoteDuCourtier>[:port]/<vhost>**
@@ -544,6 +544,10 @@ L’option broker indique à chaque composant quel courtier contacter.
 
 Une fois connecté à un courtier AMQP, l’utilisateur doit lier une fil d’attente
 aux échanges et aux thèmes pour déterminer le messages d'annonce en question.
+
+l´option *subtopic* devrait apparaître après le paramètre *broker* dans les fichiers
+pour que les liaisons de sujet s'appliquent à la file d'attente spécifié.
+
 
 bufSize <size> (défaut: 1m)
 ---------------------------
@@ -735,6 +739,8 @@ Cela signifie que la fil d’attente est sur le disque si le courtier est redém
 Remarque: seuls les messages *persistants* resteront dans une file d'attente durable après le redémarrage du courtier.
 Les messages persistants peuvent être publiés en activant l'option **persistant** (elle est activée par défaut).
 
+l´option *subtopic* devrait apparaître après le paramètre *durable* dans les fichiers
+pour que les liaisons de sujet s'appliquent à la file d'attente spécifié.
 
 fileEvents <évènement, évènement,...>
 -------------------------------------
@@ -793,6 +799,9 @@ Le paramètre **expire** doit être remplacé pour une utilisation opérationnel
 Le défaut est défini par une valeur basse car il définit combien de temps les ressources vont être
 assigné au courtier, et dans les premières utilisations (lorsque le défaut était de de 1 semaine), les courtiers
 étaient souvent surchargés de très longues files d’attente pour les tests restants.
+
+l´option *subtopic* devrait apparaître après le paramètre *expire* dans les fichiers
+pour que les liaisons de sujet s'appliquent à la file d'attente spécifié.
 
 
 filename <mots-clé> (défaut:None)
@@ -1529,12 +1538,20 @@ Si la fil d’attente existe déjà, ces indicateurs peuvent être défini a Fal
 ne soit effectuée pour fil d’attente ou pour ses liaisons. Ces options sont utiles sur les courtiers qui ne
 permettent pas aux utilisateurs de déclarer leurs files d’attente.
 
+l´option *subtopic* devrait apparaître après le paramètre *queueBind* dans les fichiers
+pour que les liaisons de sujet s'appliquent à la file d'attente spécifié.
+
+
 queueDeclare <flag> (défaut: True)
 ----------------------------------
 
 Avec l´option queueDeclare à *True*, un composant déclare un fil d´attente pour accumuler des messages d'annonce lors
 de chaque démarrage. Des fois les permissions sont restrictifs sur les courtiers, alors on ne peut pas
 faire de tels déclarations de ressources. Dans ce cas, il faut supprimer cette déclaration.
+
+l´option *subtopic* devrait apparaître après le paramètre *queueDeclare* dans les fichiers
+pour que les liaisons de sujet s'appliquent à la file d'attente spécifié.
+
 
 queueName|queue|queue_name|qn
 -----------------------------
@@ -1569,7 +1586,7 @@ Les instances démarrées sur n’importe quel nœud ayant accès au même fichi
 même fil d’attente. Certains voudront peut-être utiliser l’option *queueName* comme méthode plus explicite
 de partager le travail sur plusieurs nœuds. Il est pourtant recommandé d´utiliser queueShare a cette fin.
 
-l´option *subtopic* devrait apparaître après le paramètre queueName dans les fichiers
+l´option *subtopic* devrait apparaître après le paramètre *queueName* dans les fichiers
 pour que les liaisons de sujet s'appliquent à la file d'attente spécifié.
 
 

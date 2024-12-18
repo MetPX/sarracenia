@@ -112,7 +112,7 @@
 <dd class="field-odd"><p>7</p>
 </dd>
 <dt class="field-even">Date<span class="colon">:</span></dt>
-<dd class="field-even"><p>Dec 16, 2024</p>
+<dd class="field-even"><p>Dec 18, 2024</p>
 </dd>
 <dt class="field-odd">Version<span class="colon">:</span></dt>
 <dd class="field-odd"><p>3.00.57rc0</p>
@@ -255,8 +255,8 @@ par strftime, peut signifier qu&#39;il faut leur échapper les caractères préc
 <p>Référez  à <em>sourceFromExchange</em> pour un exemple d’utilisation. Notez que toute valeur déjà intégrée
 dans Sarracenia a priorité par rapport à une variable du même nom dans l’environnement.
 Notez que les paramètres de <em>flatten</em> peuvent être modifiés entre les options de <em>directory</em>.</p>
-<section id="substitutions-compatible-sundew">
-<h4>Substitutions Compatible Sundew<a class="headerlink" href="#substitutions-compatible-sundew" title="Link to this heading"></a></h4>
+<section id="substitutions-compatibles-avec-sundew">
+<h4>Substitutions compatibles avec Sundew<a class="headerlink" href="#substitutions-compatibles-avec-sundew" title="Link to this heading"></a></h4>
 <p>Dans <a class="reference external" href="../Explication/Glossary.html#sundew">MetPX Sundew</a>, le format de la nomination de fichier est beaucoup plus
 stricte, et est spécialisée pour une utilisation aves les données du World Meteorological Organization (WMO).
 Notez que la convention du format des fichiers est antérieure, et n’a aucun rapport avec la convention de
@@ -571,7 +571,7 @@ optimisé en n’envoyant que les pièces qui ont changé.</p>
 Voir <a class="reference external" href="sr3_cpump.1.html">sr3_cpump(1)</a> pour plus de détails.</p>
 </section>
 <section id="broker">
-<h4>Broker<a class="headerlink" href="#broker" title="Link to this heading"></a></h4>
+<h4>broker<a class="headerlink" href="#broker" title="Link to this heading"></a></h4>
 <p><strong>broker [amqp|mqtt]{s}://&lt;utilisateur&gt;:&lt;mot-de-passe&gt;&#64;&lt;hoteDuCourtier&gt;[:port]/&lt;vhost&gt;</strong></p>
 <p>Un URI est utilisé pour configurer une connexion à une pompe de messages d’annonce, soit
 un courtier MQTT ou AMQP. Certains composants de Sarracenia fixent un défaut raisonnable pour
@@ -590,6 +590,8 @@ L’option broker indique à chaque composant quel courtier contacter.</p>
 </dl>
 <p>Une fois connecté à un courtier AMQP, l’utilisateur doit lier une fil d’attente
 aux échanges et aux thèmes pour déterminer le messages d’annonce en question.</p>
+<p>l´option <em>subtopic</em> devrait apparaître après le paramètre <em>broker</em> dans les fichiers
+pour que les liaisons de sujet s’appliquent à la file d’attente spécifié.</p>
 </section>
 <section id="bufsize-size-defaut-1m">
 <h4>bufSize &lt;size&gt; (défaut: 1m)<a class="headerlink" href="#bufsize-size-defaut-1m" title="Link to this heading"></a></h4>
@@ -754,6 +756,8 @@ le courtier conservera la fil d’attente lors des redémarrages du courtier.
 Cela signifie que la fil d’attente est sur le disque si le courtier est redémarré.</p>
 <p>Remarque: seuls les messages <em>persistants</em> resteront dans une file d’attente durable après le redémarrage du courtier.
 Les messages persistants peuvent être publiés en activant l’option <strong>persistant</strong> (elle est activée par défaut).</p>
+<p>l´option <em>subtopic</em> devrait apparaître après le paramètre <em>durable</em> dans les fichiers
+pour que les liaisons de sujet s’appliquent à la file d’attente spécifié.</p>
 </section>
 <section id="fileevents-evenement-evenement">
 <h4>fileEvents &lt;évènement, évènement,…&gt;<a class="headerlink" href="#fileevents-evenement-evenement" title="Link to this heading"></a></h4>
@@ -803,6 +807,8 @@ l’abonné est sensé s’arrêter et ne pas subir de perte de données.</p>
 Le défaut est défini par une valeur basse car il définit combien de temps les ressources vont être
 assigné au courtier, et dans les premières utilisations (lorsque le défaut était de de 1 semaine), les courtiers
 étaient souvent surchargés de très longues files d’attente pour les tests restants.</p>
+<p>l´option <em>subtopic</em> devrait apparaître après le paramètre <em>expire</em> dans les fichiers
+pour que les liaisons de sujet s’appliquent à la file d’attente spécifié.</p>
 </section>
 <section id="filename-mots-cle-defaut-none">
 <h4>filename &lt;mots-clé&gt; (défaut:None)<a class="headerlink" href="#filename-mots-cle-defaut-none" title="Link to this heading"></a></h4>
@@ -1445,12 +1451,16 @@ Au démarrage, par défaut, Sarracenia redéclare les ressources et les liaisons
 Si la fil d’attente existe déjà, ces indicateurs peuvent être défini a False, afin qu’aucune tentative de déclaration
 ne soit effectuée pour fil d’attente ou pour ses liaisons. Ces options sont utiles sur les courtiers qui ne
 permettent pas aux utilisateurs de déclarer leurs files d’attente.</p>
+<p>l´option <em>subtopic</em> devrait apparaître après le paramètre <em>queueBind</em> dans les fichiers
+pour que les liaisons de sujet s’appliquent à la file d’attente spécifié.</p>
 </section>
 <section id="queuedeclare-flag-defaut-true">
 <h4>queueDeclare &lt;flag&gt; (défaut: True)<a class="headerlink" href="#queuedeclare-flag-defaut-true" title="Link to this heading"></a></h4>
 <p>Avec l´option queueDeclare à <em>True</em>, un composant déclare un fil d´attente pour accumuler des messages d’annonce lors
 de chaque démarrage. Des fois les permissions sont restrictifs sur les courtiers, alors on ne peut pas
 faire de tels déclarations de ressources. Dans ce cas, il faut supprimer cette déclaration.</p>
+<p>l´option <em>subtopic</em> devrait apparaître après le paramètre <em>queueDeclare</em> dans les fichiers
+pour que les liaisons de sujet s’appliquent à la file d’attente spécifié.</p>
 </section>
 <section id="queuename-queue-queue-name-qn">
 <h4>queueName|queue|queue_name|qn<a class="headerlink" href="#queuename-queue-queue-name-qn" title="Link to this heading"></a></h4>
@@ -1482,7 +1492,7 @@ queueName est écrit à :</p>
 <p>Les instances démarrées sur n’importe quel nœud ayant accès au même fichier partagé utiliseront la
 même fil d’attente. Certains voudront peut-être utiliser l’option <em>queueName</em> comme méthode plus explicite
 de partager le travail sur plusieurs nœuds. Il est pourtant recommandé d´utiliser queueShare a cette fin.</p>
-<p>l´option <em>subtopic</em> devrait apparaître après le paramètre queueName dans les fichiers
+<p>l´option <em>subtopic</em> devrait apparaître après le paramètre <em>queueName</em> dans les fichiers
 pour que les liaisons de sujet s’appliquent à la file d’attente spécifié.</p>
 </section>
 <section id="queueshare-str-default-user-hostname-rand8">

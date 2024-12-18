@@ -546,6 +546,9 @@ The broker option tell each component which broker to contact.
 Once connected to an AMQP broker, the user needs to bind a queue
 to exchanges and topics to determine the notification messages of interest.
 
+This *subtopic* option should appear after the *broker* setting in files
+for the setting to apply to a given queue.
+
 
 bufSize <size> (default: 1MB)
 -----------------------------
@@ -742,6 +745,9 @@ The queue will be written to and recovered from disk if the broker is restarted.
 Note: only *persistent* messages will remain in a durable queue after a broker restart. 
 Persistent messages can be published by enabling the **persistent** option (it is enabled by default).
 
+This *subtopic* option should appear after the *durable* setting in files
+for the setting to apply to a given queue.
+
 fileEvents <event,event,...>
 ----------------------------
 
@@ -781,6 +787,9 @@ are uptodate. If the exchange already exists, this flag can be set to False,
 so no attempt to exchange the queue is made, or it´s bindings.
 These options are useful on brokers that do not permit users to declare their exchanges.
 
+This *subtopic* option should appear after the *exchangeDeclare* setting in files
+for the topic bindings to apply to the given queue.
+
 
 
 expire <duration> (default: 5m  == five minutes. RECOMMEND OVERRIDING)
@@ -802,6 +811,9 @@ The **expire** setting must be overridden for operational use.
 The default is set low because it defines how long resources on the broker will be assigned,
 and in early use (when default was 1 week) brokers would often get overloaded with very
 long queues for left-over experiments.
+
+This *subtopic* option should appear after the *expire* setting in files
+for the topic bindings to apply to the given queue.
 
 
 filename <keyword> (default:None)
@@ -1531,6 +1543,9 @@ optimal load sharing, the prefetch should be set as low as possible.  However, o
 haul links, it is necessary to raise this number, to hide round-trip latency, so a setting
 of 10 or more may be needed.
 
+This *subtopic* option should appear after the *prefetch* setting in files
+for the setting to apply to a given queue.
+
 queueBind
 ---------
 
@@ -1540,6 +1555,9 @@ are uptodate.  If the queue already exists, These flags can be
 set to False, so no attempt to declare the queue is made, or it´s bindings.
 These options are useful on brokers that do not permit users to declare their queues.
 
+This *subtopic* option should appear after the *queueBind* setting in files
+for the setting to apply to a given queue.
+
 queueDeclare
 ------------
 
@@ -1548,6 +1566,9 @@ On startup, by default, Sarracenia redeclares resources and bindings to ensure t
 are uptodate.  If the queue already exists, These flags can be
 set to False, so no attempt to declare the queue is made, or it´s bindings.
 These options are useful on brokers that do not permit users to declare their queues.
+
+This *subtopic* option should appear after the *queueDeclare* setting in files
+for the setting to apply to a given queue.
 
 queueName|queue|queue_name|qn 
 -----------------------------
