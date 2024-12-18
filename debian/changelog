@@ -1,4 +1,4 @@
-metpx-sr3 (3.00.57rc0) UNRELEASED; urgency=medium
+metpx-sr3 (3.00.57rc1) unstable; urgency=medium
 
   * New #1323 DESTFN=NONE::TIME now works.
   * New #1299 after_gather entry point added.
@@ -6,6 +6,7 @@ metpx-sr3 (3.00.57rc0) UNRELEASED; urgency=medium
   * change in post_exchangeSplit... now based on relPath, not checksum.
   * systemd metpx-sr3_user.service file was not quite right.
   * fixed partitioned transfer breakage by no space in naturalsize output.
+  * fix #1346 queue parameters should be earlier in configs now.
   * fix #1340 rename not working.
   * fix #1337 mirror per umask, not global
   * fix #1334 send should fail when zero bytes sent. logging odd.
