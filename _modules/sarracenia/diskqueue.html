@@ -294,6 +294,7 @@
                 <span class="k">for</span> <span class="n">line</span> <span class="ow">in</span> <span class="n">f</span><span class="p">:</span>
                     <span class="k">if</span> <span class="s2">&quot;{&quot;</span> <span class="ow">in</span> <span class="n">line</span><span class="p">:</span>
                         <span class="n">count</span> <span class="o">+=</span><span class="mi">1</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;counted </span><span class="si">{</span><span class="n">count</span><span class="si">}</span><span class="s2"> msgs in </span><span class="si">{</span><span class="n">file_path</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
 
         <span class="k">return</span> <span class="n">count</span></div>
 
@@ -336,35 +337,29 @@
 <span class="sd">           if no message (and new or state file there)</span>
 <span class="sd">           we wait for housekeeping to present retry messages</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-
-        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">msg_count</span> <span class="o">&lt;</span> <span class="mi">0</span><span class="p">:</span>
-            <span class="k">return</span> <span class="p">[]</span>
-        <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">msg_count</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
-            <span class="k">try</span><span class="p">:</span>
-                <span class="n">os</span><span class="o">.</span><span class="n">unlink</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">queue_file</span><span class="p">)</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">queue_fp</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
-            <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">ex</span><span class="p">:</span>
-                <span class="k">pass</span>
-
-            <span class="bp">self</span><span class="o">.</span><span class="n">queue_fp</span><span class="o">=</span><span class="kc">None</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">msg_count</span><span class="o">=-</span><span class="mi">1</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">msg_count</span> <span class="o">==</span> <span class="mi">0</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">queue_fp</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
             <span class="k">return</span> <span class="p">[]</span>
 
         <span class="n">ml</span> <span class="o">=</span> <span class="p">[]</span>
         <span class="n">count</span> <span class="o">=</span> <span class="mi">0</span>
-
-        <span class="c1"># if the retry queue is empty, no sense looping.</span>
-        <span class="n">mx</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">msg_count</span> <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">msg_count</span> <span class="o">&lt;</span> <span class="n">maximum_messages_to_get</span> <span class="k">else</span> <span class="n">maximum_messages_to_get</span>
-
-        <span class="k">while</span> <span class="n">count</span> <span class="o">&lt;</span> <span class="n">mx</span><span class="p">:</span>
+        <span class="k">while</span> <span class="n">count</span> <span class="o">&lt;</span> <span class="n">maximum_messages_to_get</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">queue_fp</span><span class="p">,</span> <span class="n">message</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">msg_get_from_file</span><span class="p">(</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">queue_fp</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">queue_file</span><span class="p">)</span>
 
+            <span class="c1"># FIXME MG as discussed with Peter</span>
+            <span class="c1"># no housekeeping in get ...</span>
+            <span class="c1"># if no message (and new or state file there)</span>
+            <span class="c1"># we wait for housekeeping to present retry messages</span>
             <span class="k">if</span> <span class="ow">not</span> <span class="n">message</span><span class="p">:</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">msg_count</span><span class="o">=</span><span class="mi">0</span>
-                <span class="k">return</span>
+                <span class="k">try</span><span class="p">:</span>
+                    <span class="n">os</span><span class="o">.</span><span class="n">unlink</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">queue_file</span><span class="p">)</span>
+                <span class="k">except</span><span class="p">:</span>
+                    <span class="k">pass</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">queue_fp</span> <span class="o">=</span> <span class="kc">None</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">msg_count</span> <span class="o">=</span> <span class="mi">0</span>
+                <span class="c1">#logger.debug(&quot;MG DEBUG retry get return None&quot;)</span>
+                <span class="k">break</span>
 
-            <span class="n">count</span> <span class="o">+=</span> <span class="mi">1</span>
             <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">is_expired</span><span class="p">(</span><span class="n">message</span><span class="p">):</span>
                 <span class="c1">#logger.error(&quot;MG invalid %s&quot; % message)</span>
                 <span class="k">continue</span>
@@ -374,8 +369,17 @@
                 <span class="n">message</span><span class="p">[</span><span class="s1">&#39;_deleteOnPost&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">remove</span><span class="p">(</span><span class="s1">&#39;ack_id&#39;</span><span class="p">)</span>
 
             <span class="n">ml</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">message</span><span class="p">)</span>
+            <span class="n">count</span> <span class="o">+=</span> <span class="mi">1</span>
 
         <span class="bp">self</span><span class="o">.</span><span class="n">msg_count</span> <span class="o">-=</span> <span class="n">count</span>
+
+        <span class="c1"># after getting the last message from the file, close it</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">msg_count</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="n">os</span><span class="o">.</span><span class="n">unlink</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">queue_file</span><span class="p">)</span>
+            <span class="k">except</span><span class="p">:</span>
+                <span class="k">pass</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">queue_fp</span> <span class="o">=</span> <span class="kc">None</span>
 
         <span class="k">return</span> <span class="n">ml</span></div>
 
@@ -399,7 +403,7 @@
         <span class="k">elif</span> <span class="s1">&#39;pubTime&#39;</span> <span class="ow">in</span> <span class="n">message</span><span class="p">:</span>
             <span class="n">sumstr</span> <span class="o">=</span> <span class="n">jsonpickle</span><span class="o">.</span><span class="n">encode</span><span class="p">(</span><span class="n">message</span><span class="p">[</span><span class="s1">&#39;pubTime&#39;</span><span class="p">])</span>
         <span class="k">else</span><span class="p">:</span>
-            <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s1">&#39;no key found for message, cannot add&#39;</span><span class="p">)</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="s1">&#39;no key found for message, cannot add&#39;</span><span class="p">)</span>
             <span class="k">return</span> <span class="kc">False</span>
 
         <span class="n">cache_key</span> <span class="o">=</span> <span class="n">urlstr</span> <span class="o">+</span> <span class="s1">&#39; &#39;</span> <span class="o">+</span> <span class="n">sumstr</span>
@@ -494,14 +498,12 @@
 <span class="sd">           remove .new</span>
 <span class="sd">           rename housekeeping to queue for next period.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;</span><span class="si">%s</span><span class="s2"> on_housekeeping&quot;</span> <span class="o">%</span> <span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="p">)</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2"> on_housekeeping, </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">msg_count</span><span class="si">}</span><span class="s2"> msgs in queue file, </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">msg_count_new</span><span class="si">}</span><span class="s2"> in new file&quot;</span><span class="p">)</span>
 
         <span class="c1"># finish retry before reshuffling all retries entries</span>
 
-        <span class="k">if</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">isfile</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">queue_file</span><span class="p">)</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">queue_fp</span> <span class="o">!=</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span>
-                <span class="s2">&quot;have not finished retry list. Resuming retries with </span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">queue_file</span><span class="p">)</span>
+        <span class="k">if</span> <span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">isfile</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">queue_file</span><span class="p">)</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">queue_fp</span> <span class="o">!=</span> <span class="kc">None</span><span class="p">)</span> <span class="ow">or</span> <span class="bp">self</span><span class="o">.</span><span class="n">msg_count</span> <span class="o">!=</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;still </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">msg_count</span><span class="si">}</span><span class="s2"> messages in </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2"> list. Resuming retries with </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">queue_file</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
             <span class="k">return</span>
 
         <span class="bp">self</span><span class="o">.</span><span class="n">now</span> <span class="o">=</span> <span class="n">sarracenia</span><span class="o">.</span><span class="n">nowflt</span><span class="p">()</span>
