@@ -1089,6 +1089,17 @@ class sr_GlobalState:
                                 self.states[c][cfg]['hung_instances'].append(i)
 
                     flow_status = 'unknown' if self.configs[c][cfg]['status'] != 'disabled' else 'disabled'
+                    if hasattr(self.configs[c][cfg]['options'],'download') and self.configs[c][cfg]['options'].download and \
+                         (self.states[c][cfg]['metrics']['retry']+self.states[c][cfg]['metrics']['messagesQueued'] > 0 ) :
+                        if not self.states[c][cfg]['metrics']['transferConnected']:
+                            flow_status='down'
+                        elif (self.states[c][cfg]['metrics']['connectPercent']< self.configs[c][cfg]['options'].runStateThreshold_disconnected/100):
+                            flow_status='disconnected'
+                    elif not self.states[c][cfg]['metrics']['connected']:
+                        flow_status='disconnected'
+                    elif (self.states[c][cfg]['metrics']['byteConnectPercent']>0) and (self.states[c][cfg]['metrics']['byteConnectPercent']< self.configs[c][cfg]['options'].runStateThreshold_disconnected/100):
+                        flow_status='down'
+
                     if hung_instances > 0 and (observed_instances > 0):
                          flow_status = 'hung'
                     elif observed_instances < int(self.configs[c][cfg]['instances']):
@@ -1126,15 +1137,8 @@ class sr_GlobalState:
                         flow_status = 'reject'
                     elif self.configs[c][cfg]['options'].attempts == 0:
                         flow_status='standby'
-                    elif not self.states[c][cfg]['metrics']['connected']:
-                        flow_status='disconnected'
-                    elif (self.states[c][cfg]['metrics']['byteConnectPercent']>0) and (self.states[c][cfg]['metrics']['byteConnectPercent']< self.configs[c][cfg]['options'].runStateThreshold_disconnected/100):
-                        flow_status='down'
-                    elif (self.states[c][cfg]['metrics']['retry']+self.states[c][cfg]['metrics']['messagesQueued'] > 0 ) :
-                        if not self.states[c][cfg]['metrics']['transferConnected']:
-                            flow_status='down'
-                        elif (self.states[c][cfg]['metrics']['connectPercent']< self.configs[c][cfg]['options'].runStateThreshold_disconnected/100):
-                            flow_status='disconnected'
+                    elif flow_status in [ 'down', 'disconnected' ]:
+                        pass
                     elif hasattr(self.configs[c][cfg]['options'],'post_broker') and self.configs[c][cfg]['options'].post_broker \
                             and (now-self.states[c][cfg]['metrics']['txLast']) > self.configs[c][cfg]['options'].runStateThreshold_idle:
                         flow_status = 'idle'
