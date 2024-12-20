@@ -1746,6 +1746,12 @@ Exemples qui pourraient y contribuer :
 
 Par défaut, il est inactif, mais peut être défini pour identifier des problèmes temporaires.
 
+runStateThreshold_disconnected <intervalle> (par défaut : 80)
+------------------------------------------------
+
+Si un flux est connecté moins de fois que le pourcentage de temps *runStateThreshold_disconnected*,
+le statut sr3 affichera l'état comme *déconnecté* (lorsque la connexion au broker est le problème),
+ou *down* lorsque ce sont les connexions de données qui sont interrompues.
 
 runStateThreshold_hung <intervalle> (défaut: 450s)
 --------------------------------------------------
