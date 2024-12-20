@@ -62,7 +62,7 @@ empty_metrics={ "byteRate":0, "cpuTime":0, "connected": True, "rejectCount":0, "
         "lagMax":0, "lagTotal":0, "lagMessageCount":0, "disconnectTime":0, "transferConnectTime":0, 
         "transferRxLast": 0, "transferTxLast": 0, "rxLast":0, "txLast":0, 
         "transferRxBytes":0, "transferRxFiles":0, "transferTxBytes": 0, "transferTxFiles": 0, 
-        "msgs_in_post_retry": 0, "msgs_in_download_retry":0, "brokerQueuedMessageCount": 0, 
+               "msgs_in_post_retry": 0, "msgs_in_download_retry":0, "msgs_in_post_retry":0, "brokerQueuedMessageCount": 0, 
         'time_base': 0, 'byteTotal': 0, 'byteRate': 0, 'msgRate': 0, 'msgRateCpu': 0, 'retry': 0, 
         'messageLast': 0, 'transferLast': 0, 'connectPercent': 0, 'byteConnectPercent': 0
         }
