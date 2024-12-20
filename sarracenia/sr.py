@@ -55,17 +55,17 @@ import urllib.parse
 
 logger = logging.getLogger(__name__)
 
-empty_metrics={ "byteRate":0, "cpuTime":0, "connected": True, "rejectCount":0, "last_housekeeping":0, "messagesQueued": 0, 
-               "lagMean": 0, "latestTransfer": 0, "rejectPercent":0, "transferConnected": True, "transferRxByteRate":0, 
-               "transferTxByteRate": 0,
-        "rxByteCount":0, "rxGoodCount":0, "rxBadCount":0, "txByteCount":0, "txGoodCount":0, "txBadCount":0, 
-        "lagMax":0, "lagTotal":0, "lagMessageCount":0, "disconnectTime":0, "transferConnectTime":0, 
-        "transferRxLast": 0, "transferTxLast": 0, "rxLast":0, "txLast":0, 
-        "transferRxBytes":0, "transferRxFiles":0, "transferTxBytes": 0, "transferTxFiles": 0, 
-               "msgs_in_post_retry": 0, "msgs_in_download_retry":0, "msgs_in_post_retry":0, "brokerQueuedMessageCount": 0, 
-        'time_base': 0, 'byteTotal': 0, 'byteRate': 0, 'msgRate': 0, 'msgRateCpu': 0, 'retry': 0, 
-        'messageLast': 0, 'transferLast': 0, 'connectPercent': 0, 'byteConnectPercent': 0
-        }
+empty_metrics={ 
+    "byteConnectPercent": 0, "byteRate": 0, "byteTotal": 0, "connectPercent": 0, "messageLast": 0, "msgRate": 0,
+    "msgRateCpu": 0, "retry": 0, "time_base": 0, "transferLast": 0, "brokerQueuedMessageCount": 0, "byteRate": 0,
+    "connected": True, "cpuTime": 0, "disconnectTime": 0, "lagMax": 0, "lagMean": 0, "lagMessageCount": 0,
+    "lagTotal": 0, "last_housekeeping": 0, "latestTransfer": 0, "messagesQueued": 0, "msgs_in_download_retry": 0,
+    "msgs_in_post_retry": 0, "msgs_in_post_retry": 0, "rejectCount": 0, "rejectPercent": 0, "rxBadCount": 0,
+    "rxByteCount": 0, "rxGoodCount": 0, "rxLast": 0, "transferConnected": True, "transferConnectTime": 0,
+    "transferRxByteRate": 0, "transferRxBytes": 0, "transferRxFiles": 0, "transferRxLast": 0, "transferTxByteRate": 0,
+    "transferTxBytes": 0, "transferTxFiles": 0, "transferTxLast": 0, "txBadCount": 0, "txByteCount": 0, 
+    "txGoodCount": 0, "txLast": 0
+    }
 
 sr3_tools_entry_points = [ "sr3_action_convert", "sr3_action_remove", "sr3_commit", "sr3_pull", "sr3_push", "sr3_remove", "sr3_scp", "sr3_ssh", "sr3_utils", "sr3d", "sr3l", "sr3r" ]
 
