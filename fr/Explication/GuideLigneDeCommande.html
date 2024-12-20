@@ -622,6 +622,10 @@ utiliser <em>–dangerWillRobinson=n</em> dans le mode normale… où <em>n</em>
 <p>Les configurations sont répertoriées sur la gauche. Pour chaque configuration, l’état.
 sera :</p>
 <ul class="simple">
+<li><p>cpuS : le processus est coûteux en termes d’utilisation du processeur (runStateThreshold_cpuSlow)</p></li>
+<li><p>disa : disabled (désactivé), configuré pour ne pas s’exécuter.</p></li>
+<li><p>disc : déconnecté, impossible d’atteindre le courtier de messages. (runStateThreshold_disconnected.)</p></li>
+<li><p>down : impossible de se connecter ou d’échanger des données avec une source ou un récepteur de données distant.</p></li>
 <li><p>hung : les processus semblent bloqués et n’écrivent rien dans les journaux.</p></li>
 <li><p>idle : tous les processus en cours d’exécution, mais ne transfert pas depuis trop longtemps (runStateThreshold_idle.)</p></li>
 <li><p>lag : tous les processus en cours d’exécution, mais les messages en cours de traitement sont trop anciens ( runStateThreshold_lag )</p></li>

@@ -1625,6 +1625,12 @@ Exemples qui pourraient y contribuer :</p>
 </ul>
 <p>Par défaut, il est inactif, mais peut être défini pour identifier des problèmes temporaires.</p>
 </section>
+<section id="runstatethreshold-disconnected-intervalle-par-defaut-80">
+<h4>runStateThreshold_disconnected &lt;intervalle&gt; (par défaut : 80)<a class="headerlink" href="#runstatethreshold-disconnected-intervalle-par-defaut-80" title="Link to this heading"></a></h4>
+<p>Si un flux est connecté moins de fois que le pourcentage de temps <em>runStateThreshold_disconnected</em>,
+le statut sr3 affichera l’état comme <em>déconnecté</em> (lorsque la connexion au broker est le problème),
+ou <em>down</em> lorsque ce sont les connexions de données qui sont interrompues.</p>
+</section>
 <section id="runstatethreshold-hung-intervalle-defaut-450s">
 <h4>runStateThreshold_hung &lt;intervalle&gt; (défaut: 450s)<a class="headerlink" href="#runstatethreshold-hung-intervalle-defaut-450s" title="Link to this heading"></a></h4>
 <p>L’option runStateThreshold_hung (anciennement : <strong>sanity_log_dead</strong>) définit la durée à considérer comme trop longue avant de redémarrer

@@ -1608,6 +1608,12 @@ Examples that could contribute to this:</p>
 </ul>
 <p>It defaults to inactive, but may be set to identify transient issues.</p>
 </section>
+<section id="runstatethreshold-disconnected-interval-default-80">
+<h4>runStateThreshold_disconnected &lt;interval&gt; (default: 80)<a class="headerlink" href="#runstatethreshold-disconnected-interval-default-80" title="Link to this heading"></a></h4>
+<p>If a flow is connected less than the <em>runStateThreshold_disconnected</em> percent of the time,
+sr3 status should show the state as <em>disconnected</em> (when the broker connection is the issue),
+or <em>down</em> when it is the data connections that are broken.</p>
+</section>
 <section id="runstatethreshold-hung-interval-default-450">
 <h4>runStateThreshold_hung &lt;interval&gt; (default: 450)<a class="headerlink" href="#runstatethreshold-hung-interval-default-450" title="Link to this heading"></a></h4>
 <p>The runStateThreshold_hung (formerly: <strong>sanity_log_dead</strong>) option sets how long to consider too long before restarting
