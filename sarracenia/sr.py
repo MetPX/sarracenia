@@ -55,8 +55,9 @@ import urllib.parse
 
 logger = logging.getLogger(__name__)
 
-empty_metrics={ "byteRate":0, "cpuTime":0, "rejectCount":0, "last_housekeeping":0, "messagesQueued": 0, 
-        "lagMean": 0, "latestTransfer": 0, "rejectPercent":0, "transferRxByteRate":0, "transferTxByteRate": 0,
+empty_metrics={ "byteRate":0, "cpuTime":0, "connected": True, "rejectCount":0, "last_housekeeping":0, "messagesQueued": 0, 
+               "lagMean": 0, "latestTransfer": 0, "rejectPercent":0, "transferConnected": True, "transferRxByteRate":0, 
+               "transferTxByteRate": 0,
         "rxByteCount":0, "rxGoodCount":0, "rxBadCount":0, "txByteCount":0, "txGoodCount":0, "txBadCount":0, 
         "lagMax":0, "lagTotal":0, "lagMessageCount":0, "disconnectTime":0, "transferConnectTime":0, 
         "transferRxLast": 0, "transferTxLast": 0, "rxLast":0, "txLast":0, 
@@ -942,10 +943,13 @@ class sr_GlobalState:
                                 #print( f"k={k}" )
                                 if k in metrics:
                                     newval = self.states[c][cfg]['instance_metrics'][i][j][k]
-                                    #print( f"k={k}, newval={newval}" )
+                                    #print( f"k={k}, type={type(newval)} newval={newval}" )
                                     if k in [ "lagMax" ]:
                                         if newval > metrics[k]:
                                             metrics[k] = newval
+                                    elif k in [ "connected", "transferConnected" ]:
+                                        if not newval:
+                                            metrics[k] = False
                                     elif k in [ "last_housekeeping" ]:
                                         if metrics[k] == 0 or newval < metrics[k] :
                                             metrics[k] = newval
@@ -970,7 +974,6 @@ class sr_GlobalState:
 
                         if 'transferConnectTime' in metrics:
                             metrics['transferConnectTime'] = metrics['transferConnectTime'] / len(self.states[c][cfg]['instance_metrics']) 
-
                         if 'disconnectTime' in metrics:
                             metrics['disconnectTime'] = metrics['disconnectTime'] / len(self.states[c][cfg]['instance_metrics']) 
 
@@ -1123,6 +1126,15 @@ class sr_GlobalState:
                         flow_status = 'reject'
                     elif self.configs[c][cfg]['options'].attempts == 0:
                         flow_status='standby'
+                    elif not self.states[c][cfg]['metrics']['connected']:
+                        flow_status='disconnected'
+                    elif (self.states[c][cfg]['metrics']['byteConnectPercent']>0) and (self.states[c][cfg]['metrics']['byteConnectPercent']< self.configs[c][cfg]['options'].runStateThreshold_disconnected/100):
+                        flow_status='down'
+                    elif (self.states[c][cfg]['metrics']['retry']+self.states[c][cfg]['metrics']['messagesQueued'] > 0 ) :
+                        if not self.states[c][cfg]['metrics']['transferConnected']:
+                            flow_status='down'
+                        elif (self.states[c][cfg]['metrics']['connectPercent']< self.configs[c][cfg]['options'].runStateThreshold_disconnected/100):
+                            flow_status='disconnected'
                     elif hasattr(self.configs[c][cfg]['options'],'post_broker') and self.configs[c][cfg]['options'].post_broker \
                             and (now-self.states[c][cfg]['metrics']['txLast']) > self.configs[c][cfg]['options'].runStateThreshold_idle:
                         flow_status = 'idle'
@@ -1312,7 +1324,7 @@ class sr_GlobalState:
             'sender', 'shovel', 'subscribe', 'watch', 'winnow'
         ]
         # active means >= 1 process exists on the node.
-        self.status_active =  ['cpuSlow', 'hung', 'idle', 'lagging', 'partial', 'reject', 'retry', 'running', 'slow', 'standby', 'waitVip' ]
+        self.status_active =  ['cpuSlow', 'disconnected', 'down', 'hung', 'idle', 'lagging', 'partial', 'reject', 'retry', 'running', 'slow', 'standby', 'waitVip' ]
         self.status_values = self.status_active + [ 'disabled', 'include', 'missing', 'stopped', 'unknown' ]
 
         self.bin_dir = os.path.dirname(os.path.realpath(__file__))
