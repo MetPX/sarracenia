@@ -240,24 +240,34 @@ def test_on_housekeeping__FinishRetry(tmp_path, caplog):
     BaseOptions.pid_filename = str(tmp_path) + os.sep + "pidfilename.txt"
     download_retry = DiskQueue(BaseOptions, 'test_on_housekeeping__FinishRetry')
 
-    message = make_message()
-
-    download_retry.queue_fp = open(download_retry.queue_file, 'a')
-    line = jsonpickle.encode(message) + '\n'
-    download_retry.queue_fp.write(line + line)
-    download_retry.queue_fp.flush()
-
     hk_out = download_retry.on_housekeeping()
 
     assert hk_out == None
 
+    # This should not be logged unless there is actually messages in the queue
     log_found_notFinished = False
-
     for record in caplog.records:
-        if "have not finished retry list" in record.message:
+        if "Resuming retries" in record.message:
+            log_found_notFinished = True
+    
+    assert log_found_notFinished == False
+
+    m1 = make_message()
+    download_retry.put([m1])
+
+    # put message into Queue from new
+    download_retry.on_housekeeping()
+
+    # run housekeeping again and now it should say it's not done
+    download_retry.on_housekeeping()
+    # This should not be logged unless there is actually messages in the queue
+    log_found_notFinished = False
+    for record in caplog.records:
+        if "Resuming retries" in record.message:
             log_found_notFinished = True
     
     assert log_found_notFinished == True
+
 
 def test_on_housekeeping(tmp_path, caplog):
     BaseOptions = Options()
@@ -290,3 +300,106 @@ def test_on_housekeeping(tmp_path, caplog):
     assert log_found_HasQueue == True
     assert log_found_NumMessages == True
     assert log_found_Elapsed == True
+
+def test_diskqueue(tmp_path, caplog):
+    """ DiskQueue integration test, tests the behaviour of the class, mimicking how it's actually used in sr3.
+    """
+    BaseOptions = Options()
+    BaseOptions.pid_filename = str(tmp_path) + os.sep + "pidfilename.txt"
+    dq = DiskQueue(BaseOptions, 'DiskQueue_Integration')
+    m1 = make_message()
+    m2 = make_message()
+    m2['pubTime'] = "20200118151049.356378078"
+    m3 = make_message()
+    m3['pubTime'] = "20240118151049.356378078"
+
+    dq.put([m1])
+
+    assert len(dq) == 1
+    assert dq.msg_count_new == 1
+    assert dq.msg_count == 0
+
+    dq.put([m2, m3])
+    assert len(dq) == 3
+    assert dq.msg_count_new == 3
+    assert dq.msg_count == 0
+
+    # should not be possible to get a message until after housekeeping
+    got = dq.get(2)
+    assert len(got) == 0
+    assert len(dq) == 3
+    assert dq.msg_count_new == 3
+    assert dq.msg_count == 0
+
+    # now all messages should be moved from new file to normal file
+    dq.on_housekeeping()
+    assert len(dq) == 3
+    assert dq.msg_count_new == 0
+    assert dq.msg_count == 3
+
+    # now we can get
+    got = dq.get(2)
+    assert len(got) == 2
+    assert len(dq) == 1
+    assert dq.msg_count_new == 0
+    assert dq.msg_count == 1
+
+    # try running housekeeping again
+    dq.on_housekeeping()
+    assert len(dq) == 1
+    assert dq.msg_count_new == 0
+    assert dq.msg_count == 1
+
+    log_found_resuming_retries = False
+    for record in caplog.records:
+        if "Resuming retries" in record.message:
+            log_found_resuming_retries = True
+    assert log_found_resuming_retries
+
+    # add messages back
+    dq.put([m1, m2])
+    assert len(dq) == 3
+    assert dq.msg_count_new == 2
+    assert dq.msg_count == 1
+
+    dq.on_housekeeping()
+    assert len(dq) == 3
+    assert dq.msg_count_new == 2
+    assert dq.msg_count == 1
+
+    log_found_resuming_retries = False
+    for record in caplog.records:
+        if "Resuming retries" in record.message:
+            log_found_resuming_retries = True
+    assert log_found_resuming_retries
+
+    # get 1, now the queue is empty
+    got = dq.get()
+    assert len(got) == 1
+    assert len(dq) == 2
+    assert dq.msg_count_new == 2
+    assert dq.msg_count == 0
+
+    # now housekeeping can move new msgs to regular file
+    dq.on_housekeeping()
+    assert len(dq) == 2
+    assert dq.msg_count_new == 0
+    assert dq.msg_count == 2
+
+    # add message back before closing, 1 in new, 2 in regular
+    dq.put([m1])
+    assert len(dq) == 3
+    assert dq.msg_count_new == 1
+    assert dq.msg_count == 2
+
+    # close and re-open, messages in both new and regular file
+    dq.close()
+    dq = DiskQueue(BaseOptions, 'DiskQueue_Integration')
+    assert len(dq) == 3
+    assert dq.msg_count_new == 1
+    assert dq.msg_count == 2
+
+
+
+
+
