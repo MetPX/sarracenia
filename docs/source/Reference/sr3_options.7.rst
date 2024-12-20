@@ -1766,6 +1766,13 @@ Examples that could contribute to this:
 
 It defaults to inactive, but may be set to identify transient issues.
 
+runStateThreshold_disconnected <interval> (default: 80)
+------------------------------------------------
+
+If a flow is connected less than the *runStateThreshold_disconnected* percent of the time,
+sr3 status should show the state as *disconnected* (when the broker connection is the issue),
+or *down* when it is the data connections that are broken.
+
 runStateThreshold_hung <interval> (default: 450)
 ------------------------------------------------
 

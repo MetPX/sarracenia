@@ -544,6 +544,8 @@ will be:
 
 * cpuS:  process is expensive in CPU usage (runStateThreshold_cpuSlow)
 * disa:  disabled, configured not to run.
+* disc:  disconnected, cannot reach the message broker.
+* down:  cannot connectd or exchange data with remote data source or sink.
 * hung:  processes appear hung, not writing anything to logs.
 * idle:  all processes running, but no data or message transfers for too long (runStateThreshold_idle)
 * lag:   all processes running, but messages being processed are too old ( runStateThreshold_lag )
