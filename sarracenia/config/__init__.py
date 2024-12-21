@@ -114,6 +114,7 @@ default_options = {
     'realpathPost': False,
     'recursive' : True,
     'runStateThreshold_reject': 80,
+    'runStateThreshold_disconnected': 80,
     'report': False,
     'retryEmptyBeforeExit': False,
     'retry_refilter': False,
@@ -135,6 +136,7 @@ default_options = {
 count_options = [
     'batch', 'count', 'exchangeSplit', 'instances', 'logRotateCount', 'no', 
     'post_exchangeSplit', 'prefetch', 'messageCountMax', 'runStateThreshold_cpuSlow', 
+    'runStateThreshold_disconnected', 
     'runStateThreshold_reject', 'runStateThreshold_retry', 'runStateThreshold_slow', 
 ]
 

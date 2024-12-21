@@ -1,11 +1,14 @@
 metpx-sr3 (3.00.57rc1) unstable; urgency=medium
 
+  * New #1350 Add "down" and "disconnected" run states to sr3 status
   * New #1323 DESTFN=NONE::TIME now works.
   * New #1299 after_gather entry point added.
   * New #1289 accept statements now provide arguments to plugins
   * change in post_exchangeSplit... now based on relPath, not checksum.
   * systemd metpx-sr3_user.service file was not quite right.
   * fixed partitioned transfer breakage by no space in naturalsize output.
+  * fix #1354 something is wrong with diskqueue
+  * fix #1350 post_retry counts missing from sr3 status *retry*
   * fix #1346 queue parameters should be earlier in configs now.
   * fix #1340 rename not working.
   * fix #1337 mirror per umask, not global

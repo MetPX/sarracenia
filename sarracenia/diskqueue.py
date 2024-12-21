@@ -195,6 +195,7 @@ class DiskQueue():
                 for line in f:
                     if "{" in line:
                         count +=1
+            logger.debug(f"counted {count} msgs in {file_path}")
 
         return count
 
@@ -231,35 +232,29 @@ class DiskQueue():
            if no message (and new or state file there)
            we wait for housekeeping to present retry messages
         """
-
-        if self.msg_count < 0:
-            return []
-        elif self.msg_count == 0:
-            try:
-                os.unlink(self.queue_file)
-                self.queue_fp.close()
-            except Exception as ex:
-                pass
-
-            self.queue_fp=None
-            self.msg_count=-1
+        if self.msg_count == 0 and self.queue_fp is None:
             return []
 
         ml = []
         count = 0
-
-        # if the retry queue is empty, no sense looping.
-        mx = self.msg_count if self.msg_count < maximum_messages_to_get else maximum_messages_to_get
-
-        while count < mx:
+        while count < maximum_messages_to_get:
             self.queue_fp, message = self.msg_get_from_file(
                 self.queue_fp, self.queue_file)
 
+            # FIXME MG as discussed with Peter
+            # no housekeeping in get ...
+            # if no message (and new or state file there)
+            # we wait for housekeeping to present retry messages
             if not message:
-                self.msg_count=0
-                return
+                try:
+                    os.unlink(self.queue_file)
+                except:
+                    pass
+                self.queue_fp = None
+                self.msg_count = 0
+                #logger.debug("MG DEBUG retry get return None")
+                break
 
-            count += 1
             if self.is_expired(message):
                 #logger.error("MG invalid %s" % message)
                 continue
@@ -269,8 +264,17 @@ class DiskQueue():
                 message['_deleteOnPost'].remove('ack_id')
 
             ml.append(message)
+            count += 1
 
         self.msg_count -= count
+
+        # after getting the last message from the file, close it
+        if self.msg_count == 0:
+            try:
+                os.unlink(self.queue_file)
+            except:
+                pass
+            self.queue_fp = None
 
         return ml
 
@@ -291,7 +295,7 @@ class DiskQueue():
         elif 'pubTime' in message:
             sumstr = jsonpickle.encode(message['pubTime'])
         else:
-            logger.info('no key found for message, cannot add')
+            logger.warning('no key found for message, cannot add')
             return False
 
         cache_key = urlstr + ' ' + sumstr
@@ -374,14 +378,12 @@ class DiskQueue():
            remove .new
            rename housekeeping to queue for next period.
         """
-        logger.debug("%s on_housekeeping" % self.name)
+        logger.debug(f"{self.name} on_housekeeping, {self.msg_count} msgs in queue file, {self.msg_count_new} in new file")
 
         # finish retry before reshuffling all retries entries
 
-        if os.path.isfile(self.queue_file) and self.queue_fp != None:
-            logger.info(
-                "have not finished retry list. Resuming retries with %s" %
-                self.queue_file)
+        if (os.path.isfile(self.queue_file) and self.queue_fp != None) or self.msg_count != 0:
+            logger.info(f"still {self.msg_count} messages in {self.name} list. Resuming retries with {self.queue_file}")
             return
 
         self.now = sarracenia.nowflt()

@@ -55,16 +55,17 @@ import urllib.parse
 
 logger = logging.getLogger(__name__)
 
-empty_metrics={ "byteRate":0, "cpuTime":0, "rejectCount":0, "last_housekeeping":0, "messagesQueued": 0, 
-        "lagMean": 0, "latestTransfer": 0, "rejectPercent":0, "transferRxByteRate":0, "transferTxByteRate": 0,
-        "rxByteCount":0, "rxGoodCount":0, "rxBadCount":0, "txByteCount":0, "txGoodCount":0, "txBadCount":0, 
-        "lagMax":0, "lagTotal":0, "lagMessageCount":0, "disconnectTime":0, "transferConnectTime":0, 
-        "transferRxLast": 0, "transferTxLast": 0, "rxLast":0, "txLast":0, 
-        "transferRxBytes":0, "transferRxFiles":0, "transferTxBytes": 0, "transferTxFiles": 0, 
-        "msgs_in_post_retry": 0, "msgs_in_download_retry":0, "brokerQueuedMessageCount": 0, 
-        'time_base': 0, 'byteTotal': 0, 'byteRate': 0, 'msgRate': 0, 'msgRateCpu': 0, 'retry': 0, 
-        'messageLast': 0, 'transferLast': 0, 'connectPercent': 0, 'byteConnectPercent': 0
-        }
+empty_metrics={ 
+    "byteConnectPercent": 0, "byteRate": 0, "byteTotal": 0, "connectPercent": 0, "messageLast": 0, "msgRate": 0,
+    "msgRateCpu": 0, "retry": 0, "time_base": 0, "transferLast": 0, "brokerQueuedMessageCount": 0, "byteRate": 0,
+    "connected": True, "cpuTime": 0, "disconnectTime": 0, "lagMax": 0, "lagMean": 0, "lagMessageCount": 0,
+    "lagTotal": 0, "last_housekeeping": 0, "latestTransfer": 0, "messagesQueued": 0, "msgs_in_download_retry": 0,
+    "msgs_in_post_retry": 0, "msgs_in_post_retry": 0, "rejectCount": 0, "rejectPercent": 0, "rxBadCount": 0,
+    "rxByteCount": 0, "rxGoodCount": 0, "rxLast": 0, "transferConnected": True, "transferConnectTime": 0,
+    "transferRxByteRate": 0, "transferRxBytes": 0, "transferRxFiles": 0, "transferRxLast": 0, "transferTxByteRate": 0,
+    "transferTxBytes": 0, "transferTxFiles": 0, "transferTxLast": 0, "txBadCount": 0, "txByteCount": 0, 
+    "txGoodCount": 0, "txLast": 0
+    }
 
 sr3_tools_entry_points = [ "sr3_action_convert", "sr3_action_remove", "sr3_commit", "sr3_pull", "sr3_push", "sr3_remove", "sr3_scp", "sr3_ssh", "sr3_utils", "sr3d", "sr3l", "sr3r" ]
 
@@ -942,10 +943,13 @@ class sr_GlobalState:
                                 #print( f"k={k}" )
                                 if k in metrics:
                                     newval = self.states[c][cfg]['instance_metrics'][i][j][k]
-                                    #print( f"k={k}, newval={newval}" )
+                                    #print( f"k={k}, type={type(newval)} newval={newval}" )
                                     if k in [ "lagMax" ]:
                                         if newval > metrics[k]:
                                             metrics[k] = newval
+                                    elif k in [ "connected", "transferConnected" ]:
+                                        if not newval:
+                                            metrics[k] = False
                                     elif k in [ "last_housekeeping" ]:
                                         if metrics[k] == 0 or newval < metrics[k] :
                                             metrics[k] = newval
@@ -970,7 +974,6 @@ class sr_GlobalState:
 
                         if 'transferConnectTime' in metrics:
                             metrics['transferConnectTime'] = metrics['transferConnectTime'] / len(self.states[c][cfg]['instance_metrics']) 
-
                         if 'disconnectTime' in metrics:
                             metrics['disconnectTime'] = metrics['disconnectTime'] / len(self.states[c][cfg]['instance_metrics']) 
 
@@ -1086,6 +1089,17 @@ class sr_GlobalState:
                                 self.states[c][cfg]['hung_instances'].append(i)
 
                     flow_status = 'unknown' if self.configs[c][cfg]['status'] != 'disabled' else 'disabled'
+                    if hasattr(self.configs[c][cfg]['options'],'download') and self.configs[c][cfg]['options'].download and \
+                         (self.states[c][cfg]['metrics']['retry']+self.states[c][cfg]['metrics']['messagesQueued'] > 0 ) :
+                        if not self.states[c][cfg]['metrics']['transferConnected']:
+                            flow_status='down'
+                        elif (self.states[c][cfg]['metrics']['connectPercent']< self.configs[c][cfg]['options'].runStateThreshold_disconnected/100):
+                            flow_status='disconnected'
+                    elif not self.states[c][cfg]['metrics']['connected']:
+                        flow_status='disconnected'
+                    elif (self.states[c][cfg]['metrics']['byteConnectPercent']>0) and (self.states[c][cfg]['metrics']['byteConnectPercent']< self.configs[c][cfg]['options'].runStateThreshold_disconnected/100):
+                        flow_status='down'
+
                     if hung_instances > 0 and (observed_instances > 0):
                          flow_status = 'hung'
                     elif observed_instances < int(self.configs[c][cfg]['instances']):
@@ -1123,6 +1137,8 @@ class sr_GlobalState:
                         flow_status = 'reject'
                     elif self.configs[c][cfg]['options'].attempts == 0:
                         flow_status='standby'
+                    elif flow_status in [ 'down', 'disconnected' ]:
+                        pass
                     elif hasattr(self.configs[c][cfg]['options'],'post_broker') and self.configs[c][cfg]['options'].post_broker \
                             and (now-self.states[c][cfg]['metrics']['txLast']) > self.configs[c][cfg]['options'].runStateThreshold_idle:
                         flow_status = 'idle'
@@ -1312,7 +1328,7 @@ class sr_GlobalState:
             'sender', 'shovel', 'subscribe', 'watch', 'winnow'
         ]
         # active means >= 1 process exists on the node.
-        self.status_active =  ['cpuSlow', 'hung', 'idle', 'lagging', 'partial', 'reject', 'retry', 'running', 'slow', 'standby', 'waitVip' ]
+        self.status_active =  ['cpuSlow', 'disconnected', 'down', 'hung', 'idle', 'lagging', 'partial', 'reject', 'retry', 'running', 'slow', 'standby', 'waitVip' ]
         self.status_values = self.status_active + [ 'disabled', 'include', 'missing', 'stopped', 'unknown' ]
 
         self.bin_dir = os.path.dirname(os.path.realpath(__file__))
