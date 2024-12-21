@@ -281,6 +281,16 @@ Directories should be made read/write for sara.  The preferences will go in
 ~sarra/.config, and the state files will be in ~sarra/.cache, and the 
 periodic processing (see next session) also be implemented.
 
+If another user is expected to run metpx-sr3, then user mode *SystemD* is available.
+log in as the user::
+
+    systemctl --user enable metpx-sr3
+    systemctl --user start metpx-sr3
+
+Please investigate *SystemD* documentation for more information on running
+metpx-sr3 in either mode.
+
+
 
 Periodic Processing/Cron Jobs
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~

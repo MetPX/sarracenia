@@ -105,8 +105,7 @@ def test_am_binary_bulletin():
     bulletin, firstchars, lines, missing_ahl, station, charset = _get_bulletin_info(message_test1)
 
     bulletinHeader = lines[0].decode('iso-8859-1').replace(' ', '_')
-    message_test1['new_file'] = bulletinHeader + '__12345'
-    message_test1['new_dir'] = BaseOptions.directory
+    message_test1['relPath'] = BaseOptions.directory + bulletinHeader + '__12345'
     message_test1['content']['value'] = b64encode(message_test1['content']['value']).decode('ascii')
     message_test1["isProblem"] = False
 
@@ -114,8 +113,8 @@ def test_am_binary_bulletin():
     worklist.incoming = [message_test1]
 
     # Check renamer.
-    renamer.after_accept(worklist)
-    assert worklist.incoming[0]['new_file'] == 'ISAA41_CYWA_030000___00001'
+    renamer.after_gather(worklist)
+    assert worklist.incoming[0]['relPath'].split('/')[-1] == 'ISAA41_CYWA_030000___00001'
 
 
 # Test 2: Check a regular CACN bulletin
@@ -132,8 +131,7 @@ def test_cacn_regular():
     bulletin, firstchars, lines, missing_ahl, station, charset = _get_bulletin_info(message_test2)
 
     bulletinHeader = lines[0].decode('iso-8859-1').replace(' ', '_')
-    message_test2['new_file'] = bulletinHeader + '__12345'
-    message_test2['new_dir'] = BaseOptions.directory
+    message_test2['relPath'] = BaseOptions.directory + bulletinHeader + '__12345'
 
     # Check correcting the bulletin contents of a CACN
     new_bulletin, isProblem = am_instance.correctContents(bulletin, firstchars, lines, missing_ahl, station, charset)
@@ -147,8 +145,8 @@ def test_cacn_regular():
     worklist = make_worklist()
     worklist.incoming = [message_test2]
 
-    renamer.after_accept(worklist)
-    assert worklist.incoming[0]['new_file'] == 'CACN00_CWAO_021600__WVO_00001'
+    renamer.after_gather(worklist)
+    assert worklist.incoming[0]['relPath'].split('/')[-1] == 'CACN00_CWAO_021600__WVO_00001'
 
 # Test 3: Check an erronous CACN bulletin (missing timestamp in bulletin contents)
 def test_cacn_erronous():
@@ -180,8 +178,8 @@ def test_cacn_erronous():
     worklist.incoming = [message_test3]
 
 
-    renamer.after_accept(worklist)
-    assert re.match('CACN00_CWAO_......__WPK_00001_PROBLEM' , worklist.incoming[0]['new_file'])
+    renamer.after_gather(worklist)
+    assert re.match('CACN00_CWAO_......__WPK_00001_PROBLEM' , worklist.incoming[0]['relPath'].split('/')[-1])
 
 # Test 4: Bulletin with double line separator after header (my-header\n\n)
 def test_bulletin_double_linesep():
@@ -212,8 +210,8 @@ def test_bulletin_double_linesep():
     worklist = make_worklist()
     worklist.incoming = [message_test4]
 
-    renamer.after_accept(worklist)
-    assert message_test4['new_file'] == 'SXCN35_CWVR_021100___00001'
+    renamer.after_gather(worklist)
+    assert message_test4['relPath'].split('/')[-1] == 'SXCN35_CWVR_021100___00001'
 
 # Test 5: Bulletin with invalid year in timestamp (Fix: https://github.com/MetPX/sarracenia/pull/973)
 def test_bulletin_invalid_timestamp(caplog):
@@ -230,8 +228,8 @@ def test_bulletin_invalid_timestamp(caplog):
     bulletin, firstchars, lines, missing_ahl, station, charset = _get_bulletin_info(message_test5)
 
     bulletinHeader = lines[0].decode('iso-8859-1').replace(' ', '_')
-    message_test5['new_file'] = bulletinHeader + '__12345'
-    message_test5['new_dir'] = BaseOptions.directory
+    message_test5['relPath'].split('/')[-1] = bulletinHeader + '__12345'
+    message_test5['relPath'].split('/')[-2:] = BaseOptions.directory
 
     new_bulletin, isProblem = am_instance.correctContents(bulletin, firstchars, lines, missing_ahl, station, charset)
     assert new_bulletin == b'CACN00 CWAO\nWVO\n100,1024,123,1600,0,100,13.5,5.6,79.4,0.722,11.81,11.74,1.855,6.54,16.76,1544,2.344,14.26,0,375.6,375.6,375.5,375.5,0,11.58,11.24,3.709,13.89,13.16,11.22,11,9.45,11.39,5.033,79.4,0.694,-6999,41.19,5.967,5.887,5.93,6.184,5.64,5.066,5.253,-6999,7.3,0.058,0,5.715,4.569,0,0,1.942,-6999,57.4,0,0.531,-6999,1419,1604,1787,-6999,-6999,-6999,-6999,-6999,1601,-6999,-6999,6,5.921,5.956,6.177,5.643,5.07,5.256,-6999,9.53,11.22,10.09,10.61,125.4,9.1\n'
@@ -242,7 +240,7 @@ def test_bulletin_invalid_timestamp(caplog):
     worklist = make_worklist()
     worklist.incoming = [message_test5]
 
-    renamer.after_accept(worklist)
+    renamer.after_gather(worklist)
     # We want to make sure the proper errors are raised from the logs
     assert 'Unable to fetch header contents. Skipping message' in caplog.text and 'Unable to verify year from julian time.' in caplog.text
 
@@ -299,8 +297,8 @@ def test_bulletin_wrong_station():
     worklist = make_worklist()
     worklist.incoming = [message_test7]
 
-    renamer.after_accept(worklist)
-    assert message_test7['new_file'] == 'UECN99_CYCX_071200___00001_PROBLEM'
+    renamer.after_gather(worklist)
+    assert worklist.incoming[0]['relPath'].split('/')[-1] == 'UECN99_CYCX_071200___00001_PROBLEM'
 
 # Test 8: SM Bulletin - Add station mapping + SM/SI bulletin accomodities 
 def test_SM_bulletin():
@@ -330,8 +328,8 @@ def test_SM_bulletin():
     worklist = make_worklist()
     worklist.incoming = [message_test8]
 
-    renamer.after_accept(worklist)
-    assert message_test8['new_file'] == 'SMCN06_CWAO_030000__71816_00001'
+    renamer.after_gather(worklist)
+    assert worklist.incoming[0]['relPath'].split('/')[-1] == 'SMCN06_CWAO_030000__71816_00001'
 
 # Test 9: Bulletin with 5 fields in header (invalid)
 def test_bulletin_header_five_fileds():
@@ -347,8 +345,7 @@ def test_bulletin_header_five_fileds():
     bulletin, firstchars, lines, missing_ahl, station, charset = _get_bulletin_info(message_test9)
 
     bulletinHeader = lines[0].decode('iso-8859-1').replace(' ', '_')
-    message_test9['new_file'] = bulletinHeader + '__12345'
-    message_test9['new_dir'] = BaseOptions.directory
+    message_test9['relPath'] = BaseOptions.directory + bulletinHeader + '__12345'
 
     # Check correcting the bulletin contents of the bulletin
     new_bulletin, isProblem = am_instance.correctContents(bulletin, firstchars, lines, missing_ahl, station, charset)
@@ -422,8 +419,8 @@ def test_random_bulletin_with_BBB():
     worklist = make_worklist()
     worklist.incoming = [message_test12]
 
-    renamer.after_accept(worklist)
-    assert message_test12['new_file'] == 'FXCN06_CYTR_230939_AAA__00001'
+    renamer.after_gather(worklist)
+    assert worklist.incoming[0]['relPath'].split('/')[-1] == 'FXCN06_CYTR_230939_AAA__00001'
 
 # Test 13: SM Bulletin with BBB - Add station mapping + SM/SI bulletin accomodities + conserve BBB header
 def test_SM_bulletin_with_BBB():
@@ -453,5 +450,5 @@ def test_SM_bulletin_with_BBB():
     worklist = make_worklist()
     worklist.incoming = [message_test13]
 
-    renamer.after_accept(worklist)
-    assert message_test13['new_file'] == 'SMCN06_CWAO_030000_AAA_71816_00001'
+    renamer.after_gather(worklist)
+    assert worklist.incoming[0]['relPath'].split('/')[-1] == 'SMCN06_CWAO_030000_AAA_71816_00001'

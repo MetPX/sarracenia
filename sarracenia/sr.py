@@ -55,16 +55,17 @@ import urllib.parse
 
 logger = logging.getLogger(__name__)
 
-empty_metrics={ "byteRate":0, "cpuTime":0, "rejectCount":0, "last_housekeeping":0, "messagesQueued": 0, 
-        "lagMean": 0, "latestTransfer": 0, "rejectPercent":0, "transferRxByteRate":0, "transferTxByteRate": 0,
-        "rxByteCount":0, "rxGoodCount":0, "rxBadCount":0, "txByteCount":0, "txGoodCount":0, "txBadCount":0, 
-        "lagMax":0, "lagTotal":0, "lagMessageCount":0, "disconnectTime":0, "transferConnectTime":0, 
-        "transferRxLast": 0, "transferTxLast": 0, "rxLast":0, "txLast":0, 
-        "transferRxBytes":0, "transferRxFiles":0, "transferTxBytes": 0, "transferTxFiles": 0, 
-        "msgs_in_post_retry": 0, "msgs_in_download_retry":0, "brokerQueuedMessageCount": 0, 
-        'time_base': 0, 'byteTotal': 0, 'byteRate': 0, 'msgRate': 0, 'msgRateCpu': 0, 'retry': 0, 
-        'messageLast': 0, 'transferLast': 0, 'connectPercent': 0, 'byteConnectPercent': 0
-        }
+empty_metrics={ 
+    "byteConnectPercent": 0, "byteRate": 0, "byteTotal": 0, "connectPercent": 0, "messageLast": 0, "msgRate": 0,
+    "msgRateCpu": 0, "retry": 0, "time_base": 0, "transferLast": 0, "brokerQueuedMessageCount": 0, "byteRate": 0,
+    "connected": True, "cpuTime": 0, "disconnectTime": 0, "lagMax": 0, "lagMean": 0, "lagMessageCount": 0,
+    "lagTotal": 0, "last_housekeeping": 0, "latestTransfer": 0, "messagesQueued": 0, "msgs_in_download_retry": 0,
+    "msgs_in_post_retry": 0, "msgs_in_post_retry": 0, "rejectCount": 0, "rejectPercent": 0, "rxBadCount": 0,
+    "rxByteCount": 0, "rxGoodCount": 0, "rxLast": 0, "transferConnected": True, "transferConnectTime": 0,
+    "transferRxByteRate": 0, "transferRxBytes": 0, "transferRxFiles": 0, "transferRxLast": 0, "transferTxByteRate": 0,
+    "transferTxBytes": 0, "transferTxFiles": 0, "transferTxLast": 0, "txBadCount": 0, "txByteCount": 0, 
+    "txGoodCount": 0, "txLast": 0
+    }
 
 sr3_tools_entry_points = [ "sr3_action_convert", "sr3_action_remove", "sr3_commit", "sr3_pull", "sr3_push", "sr3_remove", "sr3_scp", "sr3_ssh", "sr3_utils", "sr3d", "sr3l", "sr3r" ]
 
@@ -942,10 +943,13 @@ class sr_GlobalState:
                                 #print( f"k={k}" )
                                 if k in metrics:
                                     newval = self.states[c][cfg]['instance_metrics'][i][j][k]
-                                    #print( f"k={k}, newval={newval}" )
+                                    #print( f"k={k}, type={type(newval)} newval={newval}" )
                                     if k in [ "lagMax" ]:
                                         if newval > metrics[k]:
                                             metrics[k] = newval
+                                    elif k in [ "connected", "transferConnected" ]:
+                                        if not newval:
+                                            metrics[k] = False
                                     elif k in [ "last_housekeeping" ]:
                                         if metrics[k] == 0 or newval < metrics[k] :
                                             metrics[k] = newval
@@ -970,7 +974,6 @@ class sr_GlobalState:
 
                         if 'transferConnectTime' in metrics:
                             metrics['transferConnectTime'] = metrics['transferConnectTime'] / len(self.states[c][cfg]['instance_metrics']) 
-
                         if 'disconnectTime' in metrics:
                             metrics['disconnectTime'] = metrics['disconnectTime'] / len(self.states[c][cfg]['instance_metrics']) 
 
@@ -1086,6 +1089,17 @@ class sr_GlobalState:
                                 self.states[c][cfg]['hung_instances'].append(i)
 
                     flow_status = 'unknown' if self.configs[c][cfg]['status'] != 'disabled' else 'disabled'
+                    if hasattr(self.configs[c][cfg]['options'],'download') and self.configs[c][cfg]['options'].download and \
+                         (self.states[c][cfg]['metrics']['retry']+self.states[c][cfg]['metrics']['messagesQueued'] > 0 ) :
+                        if not self.states[c][cfg]['metrics']['transferConnected']:
+                            flow_status='down'
+                        elif (self.states[c][cfg]['metrics']['connectPercent']< self.configs[c][cfg]['options'].runStateThreshold_disconnected/100):
+                            flow_status='disconnected'
+                    elif not self.states[c][cfg]['metrics']['connected']:
+                        flow_status='disconnected'
+                    elif (self.states[c][cfg]['metrics']['byteConnectPercent']>0) and (self.states[c][cfg]['metrics']['byteConnectPercent']< self.configs[c][cfg]['options'].runStateThreshold_disconnected/100):
+                        flow_status='down'
+
                     if hung_instances > 0 and (observed_instances > 0):
                          flow_status = 'hung'
                     elif observed_instances < int(self.configs[c][cfg]['instances']):
@@ -1123,6 +1137,8 @@ class sr_GlobalState:
                         flow_status = 'reject'
                     elif self.configs[c][cfg]['options'].attempts == 0:
                         flow_status='standby'
+                    elif flow_status in [ 'down', 'disconnected' ]:
+                        pass
                     elif hasattr(self.configs[c][cfg]['options'],'post_broker') and self.configs[c][cfg]['options'].post_broker \
                             and (now-self.states[c][cfg]['metrics']['txLast']) > self.configs[c][cfg]['options'].runStateThreshold_idle:
                         flow_status = 'idle'
@@ -1312,7 +1328,7 @@ class sr_GlobalState:
             'sender', 'shovel', 'subscribe', 'watch', 'winnow'
         ]
         # active means >= 1 process exists on the node.
-        self.status_active =  ['cpuSlow', 'hung', 'idle', 'lagging', 'partial', 'reject', 'retry', 'running', 'slow', 'standby', 'waitVip' ]
+        self.status_active =  ['cpuSlow', 'disconnected', 'down', 'hung', 'idle', 'lagging', 'partial', 'reject', 'retry', 'running', 'slow', 'standby', 'waitVip' ]
         self.status_values = self.status_active + [ 'disabled', 'include', 'missing', 'stopped', 'unknown' ]
 
         self.bin_dir = os.path.dirname(os.path.realpath(__file__))
@@ -1608,15 +1624,23 @@ class sr_GlobalState:
                 logging.error("cannot disable %s while it is running! " % f)
                 continue
 
-            state_file_cfg = self.user_cache_dir + os.sep + c + os.sep + cfg
-            state_file_cfg_disabled = state_file_cfg + os.sep + 'disabled'
-            if os.path.exists(state_file_cfg_disabled):
+            if self.configs[c][cfg]['options'].statehost:
+                state_file_dir = self.user_cache_dir + os.sep + self.hostdir + os.sep + f.replace('/', os.sep)
+            else:
+                state_file_dir = self.user_cache_dir + os.sep + f.replace('/', os.sep)
+
+            if not os.path.isdir(state_file_dir):
+                os.makedirs(state_file_dir, exist_ok=True)
+
+            state_file_disabled = state_file_dir + os.sep + 'disabled'
+            
+            if os.path.exists(state_file_disabled):
                 logging.error("%s is already disabled! " % f)
                 continue
-            if os.path.exists(state_file_cfg):
-                with open(state_file_cfg_disabled, 'w') as f:
-                    f.write('')
-                logging.info(c + '/' + cfg)
+
+            with open(state_file_disabled, 'w') as f:
+                f.write('')
+            logging.info(c + '/' + cfg)
 
 
     def edit(self):
@@ -1840,8 +1864,8 @@ class sr_GlobalState:
                     if qd[1] in xx:
                         if 'admin' not in self.brokers[h]:
                             continue
-                        print(' remove %s from %s subscribers: %s ' %
-                              (qd[1], x, xx))
+                        print(' remove %s from %s subscribers ' %
+                              (qd[1], x))
                         xx.remove(qd[1])
                         if o.post_broker and len(xx) < 1:
                             print("No local queues found for exchange %s, attemping to remove it..." % x)
@@ -2566,8 +2590,8 @@ class sr_GlobalState:
         flowNameWidth=self.cumulative_stats['flowNameWidth']
         latestTransferWidth=self.cumulative_stats['latestTransferWidth']
 
-        lfmt = f"%-{flowNameWidth}s %-11s %7s %10s %19s %14s %38s "
-        line = lfmt % ("Component/Config", "Processes", "Connection", "Lag", "", "Rates", "" )
+        lfmt = f"%-{flowNameWidth}s %-49s %s"
+        line = lfmt % ("Component/Config", "Processes", "Rates" )
 
         if self.options.displayFull:
             line += "%10s %-40s %17s %33s %40s" % ("", "Counters (per housekeeping)", "", "Data Counters", "" )
@@ -2579,9 +2603,9 @@ class sr_GlobalState:
         try:
             print(line)
 
-            lfmt      = f"%-{flowNameWidth}s %-5s %5s %5s %4s %4s %5s %8s %8s %{latestTransferWidth}s %5s %10s %10s %10s %10s " 
-            line      =  lfmt % ("", "State", "Run", "Retry", "msg", "data", "Que", "LagMax", "LagAvg", "Last", "%rej", "pubsub", "messages", "RxData", "TxData" )
-            underline =  lfmt % ("", "-----", "---", "-----", "---", "----", "---", "------", "------", "----", "----", "------", "--------", "------", "------" )
+            lfmt      = f"%-{flowNameWidth}s %-5s %5s %5s %4s %7s %{latestTransferWidth + 1}s %7s %9s %9s " 
+            line      =  lfmt % ("", "State", "Run", "Retry", "Que", "Lag", "Last", "%rej", "messages", "Data" )
+            underline =  lfmt % ("", "-----", "---", "-----", "---", "---", "----", "----", "--------", "----" )
 
             if self.options.displayFull:
                 line      += "%10s %10s %10s %10s %10s %10s %10s %10s %10s %10s %10s %10s %8s " % \
@@ -2648,14 +2672,12 @@ class sr_GlobalState:
 
                 if 'metrics' in self.states[c][cfg]:
                     m=self.states[c][cfg]['metrics']
-                    lfmt = f"%5d %3d%% %3d%% %5d %8s %8s %{latestTransferWidth}s %4.1f%% %8s/s %8s/s %8s/s %8s/s "
-                    line += lfmt % ( m['retry'], m['connectPercent'], m['byteConnectPercent'], \
-                            m['messagesQueued'], durationToString(m['lagMax']), durationToString(m['lagMean']), m['latestTransfer'], m['rejectPercent'],\
-                            naturalSize(m['byteRate']).replace("Bytes","B"), \
+                    lfmt = f"%4d %4d %8s %{latestTransferWidth + 1}s %6.1f%% %6s/s %8s/s "
+                    line += lfmt % ( m['retry'], \
+                            m['messagesQueued'], durationToString(m['lagMean']), m['latestTransfer'], m['rejectPercent'],\
                             naturalSize(m['msgRate']).replace("B","m").replace("mytes","m"), \
-                            naturalSize(m['transferRxByteRate']).replace("Bytes","B"), \
-                            naturalSize(m['transferTxByteRate']).replace("Bytes","B") 
-                            )
+                            naturalSize(m['transferRxByteRate'] + m['transferTxByteRate']).replace("Bytes","B")) 
+                            
 
                     if self.options.displayFull :
                         line += "%10s %10s %10s %10s %10s %10s %10s %10s %10s %10s %10s %10s %7.2fs " % ( \
@@ -2673,7 +2695,7 @@ class sr_GlobalState:
                             naturalSize(m["transferTxFiles"]).replace("B","F").replace("Fytes","f"), \
                             m["time_base"] )
                 else:
-                    line += "%10s %10s %9s %5s %5s %10s %8s " % ( "-", "-", "-", "-", "-", "-", "-" )
+                    line += "%4s %4s %7s %6s %7s %7s %11s " % ( "-", "-", "-", "-", "-", "-", "-" )
                     if self.options.displayFull:
                         line += "%8s %7s %10s %10s %10s %10s %10s %10s %10s %10s %10s %10s" % \
                             ( "-", "-", "-", "-", "-", "-", "-", "-", "-", "-", "-", "-" )
@@ -2690,8 +2712,8 @@ class sr_GlobalState:
                              ru['user_cpu'], ru['system_cpu'] \
                              )
                 else:
-                    line += "%10s %10s %10s" % ( "-", "-", "-" )
                     if self.options.displayFull:
+                        line += "%10s %10s %10s" % ( "-", "-", "-" )
                         line += "%10s %10s" % ( "-", "-" )
                 try:
                      print(line)
@@ -2786,34 +2808,55 @@ class sr_GlobalState:
 
         synonyms = sarracenia.config.Config.synonyms
         accept_all_seen=False
+        post_broker_seen=False
+        inflight_seen=False
         acceptUnmatched_explicit=False
         pos_args_present=False
         with open(v3_config_path, 'w') as v3_cfg:
             v3_cfg.write( f'# created by: sr3 convert {cfg}\n')
             if component in [ 'shovel', 'winnow' ]:
-                v3_cfg.write('# topicCopy on is only there for bug-for-bug compat with v2. turn it off if you can.\n')
+                v3_cfg.write('# topicCopy on is only there for bug-for-bug compat with v2. Leave it off if you can.\n')
                 v3_cfg.write('#topicCopy on\n')
 
             if component in [ 'sarra', 'sender', 'subscribe' ]:
-                v3_cfg.write('#v2 sftp handling is always absolute, sr3 is relative. might need this, remove when all sr3:\n')
+                v3_cfg.write(' \n#\n#v2 sftp handling is always absolute, sr3 is relative. might need this, remove when all sr3:\n')
                 v3_cfg.write('#flowcb accept.sftp_absolute\n')
 
             queueName=None
 
             #1st prep pass (for cases when re-ordering needed.)
+            already_moved=False
+            verbs_to_move =  [ 'auto_delete', 'durable', 'expire', 'message_ttl', 'prefetch', \
+                    'qos', 'queueBind',  'exchangeDeclare' ]
+
+
             with open(v2_config_path, 'r') as v2_cfg:
-                for line in v2_cfg.readlines():
-                    if len(line.strip()) < 1:
+                for input_line in v2_cfg.readlines():
+                    if len(input_line.strip()) < 1:
                         continue
-                    if line[0].startswith('#'):
+                    if input_line[0].startswith('#'):
                         continue
-                    line = line.strip().split()
+                    line = input_line.strip().split()
                     k = line[0]
                     if k in synonyms:
                         k = synonyms[k]
+                    if k in [ 'post_broker' ]:
+                        post_broker_seen=True
+                    if k in [ 'inflight' ]:
+                        inflight_seen=True
                     if k in [ 'queueName' ]:
                         queueName=line[1]
+                    if k in verbs_to_move:
+                        if not already_moved:
+                            v3_cfg.write(f" \n#\n#Move formerly global options ({','.join(verbs_to_move)} to start of config file.\n")
+                            alread_moved=True
+                        v3_cfg.write(input_line+"\n")
+                        
 
+            if not inflight_seen and post_broker_seen and component in [ 'sarra', 'sender', 'subscribe' ]:
+                v3_cfg.write(' \n#\n#sr3 inflight defaults to None, v2 defaulted to .tmp when post_broker set.\n')
+                v3_cfg.write('inflight .tmp\n')
+                
             #2nd re-write pass.
             subtopicFound=False
             with open(v2_config_path, 'r') as v2_cfg:
@@ -2826,6 +2869,9 @@ class sr_GlobalState:
                         continue
                     line = line.strip().split()
                     k = line[0]
+
+                    if k in verbs_to_move: # moved to start of file.
+                        continue
                     if k in synonyms:
                         k = synonyms[k]
 

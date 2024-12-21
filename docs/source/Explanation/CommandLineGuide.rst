@@ -544,6 +544,8 @@ will be:
 
 * cpuS:  process is expensive in CPU usage (runStateThreshold_cpuSlow)
 * disa:  disabled, configured not to run.
+* disc:  disconnected, cannot reach the message broker.
+* down:  cannot connect or exchange data with remote data source or sink.
 * hung:  processes appear hung, not writing anything to logs.
 * idle:  all processes running, but no data or message transfers for too long (runStateThreshold_idle)
 * lag:   all processes running, but messages being processed are too old ( runStateThreshold_lag )
@@ -661,9 +663,9 @@ Creating the Queue
 Once connected to an AMQP broker, the user needs to create a queue.
 Common settings for the queue on broker :
 
-- **queueShare <strin>         (default: ${USER}_${HOSTNAME}_${RAND8})**
-- **expire        <duration>      (default: 5m  == five minutes. RECOMMEND OVERRIDING)**
-- **message_ttl   <duration>      (default: None)**
+- **queueShare    <string>       (default: ${USER}_${HOSTNAME}_${RAND8})**
+- **expire        <duration>     (default: 5m  == five minutes. RECOMMEND OVERRIDING)**
+- **message_ttl   <duration>     (default: None)**
 - **prefetch      <N>            (default: 1)**
 
 
@@ -1733,6 +1735,7 @@ right hand side to be evaluated, surrounded by ${..} The built-in variables are:
  - ${CONFIG}      - the name of the configuration file being run.
  - ${HOSTNAME}    - the hostname running the client.
  - ${RANDID}      - a random id that will be consistent within a single invocation.
+ - ${INSTANCE}    - The instance id of the running flow.
 
 
 flowCallbacks
@@ -2246,7 +2249,7 @@ post_exchangeSplit   <number>   (default: 0)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 The **post_exchangeSplit** option appends a two digit suffix resulting from 
-hashing the last character of the checksum to the post_exchange name,
+hashing the path to the post_exchange name,
 in order to divide the output amongst a number of exchanges.  This is currently used
 in high traffic pumps to allow multiple instances of winnow, which cannot be
 instanced in the normal way.  Example::
