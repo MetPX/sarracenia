@@ -326,6 +326,8 @@ days_in_a_month=30.7
 def durationToString(d) -> str:
     """
       given a numbner of seconds, return a short, human readable string.
+
+      naturaldelta does not do weeks...
     """
     if (d < 60):
         return f"{d:7.2f}s"
@@ -399,8 +401,10 @@ def durationToSeconds(str_value, default=None) -> float:
         factor *= 60 * 60 * 24
         if 'y' in str_value:
             first_unit='y'
-        else:
+        elif 'M' in str_value:
             first_unit='M'
+        else:
+            first_unit='w'
     elif second_unit in 'M': 
         factor *= 60 * 60 * 24 * days_in_a_month
         if 'y' in str_value:
@@ -420,6 +424,8 @@ def durationToSeconds(str_value, default=None) -> float:
                  big = big*60*60
             elif first_unit == 'd':
                  big = big*60*60*24
+            elif first_unit == 'w':
+                 big = big*60*60*24*7
             elif first_unit == 'M':
                  big = big*60*60*24*days_in_a_month
             elif first_unit == 'y':
