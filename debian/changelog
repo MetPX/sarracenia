@@ -1,3 +1,9 @@
+metpx-sr3 (3.00.57rc2) UNRELEASED; urgency=medium
+
+  * increment away from previous release.
+
+ -- peter <peter@bsqt.homeip.net>  Mon, 23 Dec 2024 00:56:15 -0500
+
 metpx-sr3 (3.00.57rc1) unstable; urgency=medium
 
   * New #1350 Add "down" and "disconnected" run states to sr3 status
