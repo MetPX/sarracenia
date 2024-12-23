@@ -405,6 +405,12 @@ def durationToSeconds(str_value, default=None) -> float:
             first_unit='M'
         else:
             first_unit='w'
+    elif second_unit in 'w': 
+        factor *= 60 * 60 * 24 * 7
+        if 'y' in str_value:
+            first_unit='y'
+        elif 'M' in str_value:
+            first_unit='M'
     elif second_unit in 'M': 
         factor *= 60 * 60 * 24 * days_in_a_month
         if 'y' in str_value:

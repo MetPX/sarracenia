@@ -46,6 +46,7 @@ def test_durationToSeconds():
     assert sarracenia.durationToSeconds('1s', default=None) == 1.0
     assert sarracenia.durationToSeconds('-1s') == -1.0
     assert sarracenia.durationToSeconds('-1.5h') == -5400.0
+    assert sarracenia.durationToSeconds('1w') == 24*3600*7
     assert sarracenia.durationToSeconds('2h2m') == 7320
     assert sarracenia.durationToSeconds('3m2s') == 182
     assert sarracenia.durationToSeconds( '6w1d' ) == 24*3600*(6*7.0+1)
@@ -54,6 +55,8 @@ def test_durationToSeconds():
     assert sarracenia.durationToSeconds( '1y' ) == 31557600.0
     assert sarracenia.durationToSeconds( '1y28d' ) == 33976800.0
     assert sarracenia.durationToSeconds( '1y1M' ) == 34210080.0
+    assert sarracenia.durationToSeconds( '1000w' ) == 604800000.0
+
 
 
 def test_durationToString():
