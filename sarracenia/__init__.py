@@ -316,6 +316,13 @@ def timev2tov3str(s):
     else:
         return s[0:8] + 'T' + s[8:]
 
+"""
+ So for natural delta, tested stuff, and empirically it looks like humanize thinks this is how many days there are in a month.
+ At least assuming that makes calculations here match with what humanize does.
+
+"""
+days_in_a_month=30.7
+
 def durationToString(d) -> str:
     """
       given a numbner of seconds, return a short, human readable string.
@@ -323,21 +330,35 @@ def durationToString(d) -> str:
     if (d < 60):
         return f"{d:7.2f}s"
 
-    first_part= humanize.naturaldelta(d).replace("minutes","m").replace("seconds","s").replace("hours","h").replace("days","d").replace("an hour","1h").replace("a day","1d").replace("a minute","1m").replace(" ","")
+    hnd =  humanize.naturaldelta(d).replace("minute","m").replace("second","T").replace("hour","h").replace("day","d").replace("month","M").replace("year","y").replace(" ","").replace("s","").replace("T","s").replace("an", "1").replace("a","1")
+    
+    if ',' in hnd:
+        ( first_part, second_part ) = hnd.split(',')
+    else:
+        first_part=hnd
+        second_part=""
 
-    second_part=""
-    if first_part[-1] == 'm':
-        rem=int(d-int(first_part[0:-1])*60)
-        if rem > 0:
-            second_part=f"{rem:d}s"
-    if first_part[-1] == 'h':
-        rem=int(( d-int(first_part[0:-1])*60*60 ) / 60 )
-        if rem > 0:
-            second_part=f"{rem:d}m"
-    if first_part[-1] == 'd':
-        rem=int (( d-int(first_part[0:-1])*60*60*24 ) / (60*60) )
-        if rem > 0:
-            second_part=f"{rem:d}h"
+    if not second_part:
+        if first_part[-1] == 'm':
+            rem=int(d-int(first_part[0:-1])*60)
+            if rem > 0:
+                second_part=f"{rem:d}s"
+        if first_part[-1] == 'h':
+            rem=int(( d-int(first_part[0:-1])*60*60 ) / 60 )
+            if rem > 0:
+                second_part=f"{rem:d}m"
+        if first_part[-1] == 'd':
+            rem=int (( d-int(first_part[0:-1])*60*60*24 ) / (60*60) )
+            if rem > 0:
+                second_part=f"{rem:d}h"
+        if first_part[-1] == 'M':
+            rem=int (( d-int(first_part[0:-1])*60*60*24*days_in_a_month ) / (60*60*24) )
+            if rem > 0:
+                second_part=f"{rem:d}d"
+        if first_part[-1] == 'y':
+            rem=int (( d-int(first_part[0:-1])*60*60*24*365.25 ) / (60*60*24*days_in_a_month ) )
+            if rem > 0:
+                second_part=f"{rem:d}M"
     return first_part+second_part 
 
 def durationToSeconds(str_value, default=None) -> float:
@@ -364,7 +385,7 @@ def durationToSeconds(str_value, default=None) -> float:
         return float(default)
 
     first_unit=None
-    second_unit=str_value[-1].lower()
+    second_unit=str_value[-1]
     if second_unit in 's': 
         factor *= 1
         first_unit='m'
@@ -376,9 +397,16 @@ def durationToSeconds(str_value, default=None) -> float:
         first_unit='d'
     elif second_unit in 'd': 
         factor *= 60 * 60 * 24
-        first_unit='w'
-    elif second_unit in 'w': 
-        factor *= 60 * 60 * 24 * 7
+        if 'y' in str_value:
+            first_unit='y'
+        else:
+            first_unit='M'
+    elif second_unit in 'M': 
+        factor *= 60 * 60 * 24 * days_in_a_month
+        if 'y' in str_value:
+            first_unit='y'
+    elif second_unit in 'y': 
+        factor *= 60 * 60 * 24 * 365.25
 
     if str_value[-1].isalpha(): str_value = str_value[:-1]
 
@@ -392,8 +420,10 @@ def durationToSeconds(str_value, default=None) -> float:
                  big = big*60*60
             elif first_unit == 'd':
                  big = big*60*60*24
-            elif first_unit == 'w':
-                 big = big*60*60*24*7
+            elif first_unit == 'M':
+                 big = big*60*60*24*days_in_a_month
+            elif first_unit == 'y':
+                 big = big*60*60*24*365.25
             str_value = little
     else: 
         big=0
