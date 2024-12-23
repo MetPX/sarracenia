@@ -50,12 +50,13 @@ def test_durationToSeconds():
     assert sarracenia.durationToSeconds('2h2m') == 7320
     assert sarracenia.durationToSeconds('3m2s') == 182
     assert sarracenia.durationToSeconds( '6w1d' ) == 24*3600*(6*7.0+1)
-    assert sarracenia.durationToSeconds( '6M1d' ) == 16001280.0
-    assert sarracenia.durationToSeconds( '6M5d' ) == 16346880.0
-    assert sarracenia.durationToSeconds( '1y' ) == 31557600.0
-    assert sarracenia.durationToSeconds( '1y28d' ) == 33976800.0
-    assert sarracenia.durationToSeconds( '1y1M' ) == 34210080.0
-    assert sarracenia.durationToSeconds( '1000w' ) == 604800000.0
+    assert sarracenia.durationToSeconds( '6M1d' ) == 16001280
+    assert sarracenia.durationToSeconds( '6M5d' ) == round( (6*30.7+5)*24*3600 ) # the math came out .99999 ...
+    assert sarracenia.durationToSeconds( '1y' ) == 365.25*24*3600
+    assert sarracenia.durationToSeconds( '1y28d' ) == (365.25+28)*24*3600
+    assert sarracenia.durationToSeconds( '1y1M' ) == (365.25+30.7)*24*3600
+    assert sarracenia.durationToSeconds( '1000w' ) == 1000*7*24*3600
+    assert sarracenia.durationToSeconds( '11y' ) == 11*365.25*24*3600
 
 
 
