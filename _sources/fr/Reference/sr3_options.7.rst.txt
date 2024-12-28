@@ -232,7 +232,7 @@ count
 
 duration
     un nombre à virgule flottante qui indique une quantité en secondes (0.001 est 1 milliseconde)
-    modifié par un suffixe unitaire ( m-minute, h-heure, w-semaine ).
+    modifié par un suffixe unitaire ( m-minute, h-heure, M-mois ).
 
 flag
     une option qui a la valeur soit Vrai (True ou on) ou Faux (False ou off) (une valeur booléenne).
@@ -786,10 +786,10 @@ expire <duration> (défaut: 5m  == cinq minutes. RECOMMENDE DE REMPLACER)
 L'option *expire* est exprimée sous forme d'une duration... ça fixe combien de temps une fil d’attente devrait
 vivre sans connexions.
 
-Un entier brut est exprimé en secondes, et si un des suffixe m,h,d,w est utilisés, l’intervalle est en minutes,
-heures, jours ou semaines respectivement. Après l’expiration de la fil d’attente, le contenu est supprimé et
+Un entier brut est exprimé en secondes, et si un des suffixe m,h,d,m est utilisés, l’intervalle est en minutes,
+heures, jours ou mois respectivement. Après l’expiration de la fil d’attente, le contenu est supprimé et
 des différences peuvent donc survenir dans le flux de données de téléchargement.  Une valeur de
-1d (jour) ou 1w (semaine) peut être approprié pour éviter la perte de données. Cela dépend de combien de temps
+1d (jour) ou 1m (mois) peut être approprié pour éviter la perte de données. Cela dépend de combien de temps
 l’abonné est sensé s’arrêter et ne pas subir de perte de données.
 
 Si aucune unité n’est donnée, un nombre décimal de secondes peut être fourni, tel que
@@ -797,7 +797,7 @@ Si aucune unité n’est donnée, un nombre décimal de secondes peut être four
 
 Le paramètre **expire** doit être remplacé pour une utilisation opérationnelle.
 Le défaut est défini par une valeur basse car il définit combien de temps les ressources vont être
-assigné au courtier, et dans les premières utilisations (lorsque le défaut était de de 1 semaine), les courtiers
+assigné au courtier, et dans les premières utilisations (lorsque le défaut était de de 1 mois), les courtiers
 étaient souvent surchargés de très longues files d’attente pour les tests restants.
 
 l´option *subtopic* devrait apparaître après le paramètre *expire* dans les fichiers

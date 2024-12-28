@@ -436,7 +436,11 @@ distance between data centres=600, speed of light=300000 km/s,  time to travel (
 <li><p><em>Failover time depends on length of replica lag</em></p></li>
 <li><p><em>Any data updates that occurred after the latest restorable time (typically within the last 5 minutes) will not be available</em></p></li>
 </ul>
-<p>From Google: <a class="reference external" href="https://cloud.google.com/compute/docs/disks#repds">https://cloud.google.com/compute/docs/disks#repds</a> * <em>Regional persistent disks have storage qualities that are similar to zonal persistent disks. However, regional persistent disks provide durable storage and replication of data between two zones in the same region.</em> * <em>Zonal SSD PD multi-writer mode Throughput per GB (MB/s): 0.48</em></p>
+<p>From Google: <a class="reference external" href="https://cloud.google.com/compute/docs/disks#repds">https://cloud.google.com/compute/docs/disks#repds</a></p>
+<ul class="simple">
+<li><p><em>Regional persistent disks have storage qualities that are similar to zonal persistent disks. However, regional persistent disks provide durable storage and replication of data between two zones in the same region.</em></p></li>
+<li><p><em>Zonal SSD PD multi-writer mode Throughput per GB (MB/s): 0.48</em></p></li>
+</ul>
 <p>the google performance numbers are within a zone (multi-DC but not too far apart.) not multi-zone.</p>
 </section>
 </section>

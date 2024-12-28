@@ -112,7 +112,7 @@
 <dd class="field-odd"><p>7</p>
 </dd>
 <dt class="field-even">Date<span class="colon">:</span></dt>
-<dd class="field-even"><p>Dec 23, 2024</p>
+<dd class="field-even"><p>Dec 28, 2024</p>
 </dd>
 <dt class="field-odd">Version<span class="colon">:</span></dt>
 <dd class="field-odd"><p>3.00.57rc1</p>
@@ -323,7 +323,7 @@ répertoire ~/.cache/sr-hoho.</p>
 <dt>count</dt><dd><p>type de nombre entier. Même format que <em>size</em> détaillé plus bas.</p>
 </dd>
 <dt>duration</dt><dd><p>un nombre à virgule flottante qui indique une quantité en secondes (0.001 est 1 milliseconde)
-modifié par un suffixe unitaire ( m-minute, h-heure, w-semaine ).</p>
+modifié par un suffixe unitaire ( m-minute, h-heure, M-mois ).</p>
 </dd>
 <dt>flag</dt><dd><p>une option qui a la valeur soit Vrai (True ou on) ou Faux (False ou off) (une valeur booléenne).</p>
 </dd>
@@ -796,16 +796,16 @@ Ces options sont utiles sur les courtiers qui ne permettent pas aux utilisateurs
 <h4>expire &lt;duration&gt; (défaut: 5m  == cinq minutes. RECOMMENDE DE REMPLACER)<a class="headerlink" href="#expire-duration-defaut-5m-cinq-minutes-recommende-de-remplacer" title="Link to this heading"></a></h4>
 <p>L’option <em>expire</em> est exprimée sous forme d’une duration… ça fixe combien de temps une fil d’attente devrait
 vivre sans connexions.</p>
-<p>Un entier brut est exprimé en secondes, et si un des suffixe m,h,d,w est utilisés, l’intervalle est en minutes,
-heures, jours ou semaines respectivement. Après l’expiration de la fil d’attente, le contenu est supprimé et
+<p>Un entier brut est exprimé en secondes, et si un des suffixe m,h,d,m est utilisés, l’intervalle est en minutes,
+heures, jours ou mois respectivement. Après l’expiration de la fil d’attente, le contenu est supprimé et
 des différences peuvent donc survenir dans le flux de données de téléchargement.  Une valeur de
-1d (jour) ou 1w (semaine) peut être approprié pour éviter la perte de données. Cela dépend de combien de temps
+1d (jour) ou 1m (mois) peut être approprié pour éviter la perte de données. Cela dépend de combien de temps
 l’abonné est sensé s’arrêter et ne pas subir de perte de données.</p>
 <p>Si aucune unité n’est donnée, un nombre décimal de secondes peut être fourni, tel que
 0,02 pour spécifier une durée de 20 millisecondes.</p>
 <p>Le paramètre <strong>expire</strong> doit être remplacé pour une utilisation opérationnelle.
 Le défaut est défini par une valeur basse car il définit combien de temps les ressources vont être
-assigné au courtier, et dans les premières utilisations (lorsque le défaut était de de 1 semaine), les courtiers
+assigné au courtier, et dans les premières utilisations (lorsque le défaut était de de 1 mois), les courtiers
 étaient souvent surchargés de très longues files d’attente pour les tests restants.</p>
 <p>l´option <em>subtopic</em> devrait apparaître après le paramètre <em>expire</em> dans les fichiers
 pour que les liaisons de sujet s’appliquent à la file d’attente spécifié.</p>

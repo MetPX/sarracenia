@@ -113,7 +113,7 @@
 <dd class="field-odd"><p>7</p>
 </dd>
 <dt class="field-even">Date<span class="colon">:</span></dt>
-<dd class="field-even"><p>Dec 23, 2024</p>
+<dd class="field-even"><p>Dec 28, 2024</p>
 </dd>
 <dt class="field-odd">Version<span class="colon">:</span></dt>
 <dd class="field-odd"><p>3.00.57rc1</p>
@@ -325,7 +325,7 @@ directory.</p>
 <dt>count, size</dt><dd><p>integer count type.  same as size described below.</p>
 </dd>
 <dt>duration</dt><dd><p>a floating point number indicating a quantity of seconds (0.001 is 1 milisecond)
-modified by a unit suffix ( m-minute, h-hour, w-week )</p>
+modified by a unit suffix ( m-minute, h-hour, M-month, y-year )</p>
 </dd>
 <dt>flag</dt><dd><p>an option that has only True or False values (aka: a boolean value)</p>
 </dd>
@@ -788,16 +788,16 @@ for the topic bindings to apply to the given queue.</p>
 <h4>expire &lt;duration&gt; (default: 5m  == five minutes. RECOMMEND OVERRIDING)<a class="headerlink" href="#expire-duration-default-5m-five-minutes-recommend-overriding" title="Link to this heading"></a></h4>
 <p>The  <strong>expire</strong>  option is expressed as a duration… it sets how long should live
 a queue without connections.</p>
-<p>A raw integer is expressed in seconds, if the suffix m,h,d,w
-are used, then the interval is in minutes, hours, days, or weeks. After the queue expires,
+<p>A raw integer is expressed in seconds, if the suffix m,h,d,M
+are used, then the interval is in minutes, hours, days, or months. After the queue expires,
 the contents are dropped, and so gaps in the download data flow can arise.  A value of
-1d (day) or 1w (week) can be appropriate to avoid data loss. It depends on how long
+1d (day) or 1m (month) can be appropriate to avoid data loss. It depends on how long
 the subscriber is expected to shutdown, and not suffer data loss.</p>
 <p>if no units are given, then a decimal number of seconds can be provided, such as
 to indicate 0.02 to specify a duration of 20 milliseconds.</p>
 <p>The <strong>expire</strong> setting must be overridden for operational use.
 The default is set low because it defines how long resources on the broker will be assigned,
-and in early use (when default was 1 week) brokers would often get overloaded with very
+and in early use (when default was 1 month) brokers would often get overloaded with very
 long queues for left-over experiments.</p>
 <p>This <em>subtopic</em> option should appear after the <em>expire</em> setting in files
 for the topic bindings to apply to the given queue.</p>
@@ -1236,10 +1236,10 @@ the same name (including parts header) and checksum. Every <em>hearbeat</em> int
 process looks for files in the cache that have not been referenced in <strong>cache</strong> seconds,
 and deletes them, in order to keep the cache size limited. Different settings are
 appropriate for different use cases.</p>
-<p>A raw integer interval is in seconds, if the suffix m,h,d, or w are used, then the interval
-is in minutes, hours, days, or weeks. After the interval expires the contents are
+<p>A raw integer interval is in seconds, if the suffix m,h,d, or M are used, then the interval
+is in minutes, hours, days, or months. After the interval expires the contents are
 dropped, so duplicates separated by a large enough interval will get through.
-A value of 1d (day) or 1w (week) can be appropriate.  Setting the option without specifying
+A value of 1d (day) or 1M (Month) can be appropriate.  Setting the option without specifying
 a time will result in 300 seconds (or 5 minutes) being the expiry interval.</p>
 <p>Default value in a Poll is 8 hours, should be longer than nodupe_fileAgeMax to prevent
 re-ingesting files that have aged out of the duplicate suppression cache.</p>
