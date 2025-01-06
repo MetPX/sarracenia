@@ -1427,7 +1427,25 @@ class Flow:
 
         return True
 
-    def compute_local_checksum(self, msg) -> None:
+    def compute_local_checksum(self, msg, lstat=None) -> None:
+        """
+            For a file whose path is given by the msg, calculate 'local_identity' field.
+
+            when checksums for files are stored in extended attributes, it's ideal to retrieve them,
+            rather than having to read the entire file again and re-calculate.
+
+            The extended attributes have a field:
+              * 'identity' ... the field from the message when the file was written.
+              * 'mtime' ... the mtime of the file when it was written.
+
+            The 'identity' extended attribute should be correct/good/useful if:
+               * the mtime of the file on disk is not newer than the current file mtime.
+
+            If the file has been over-written afterwards, the mtime will be different,
+            and the local checksum must be re-calculated from scratch.
+
+            If the checksum method is arbitrary, no local recalculation is possible.
+        """
 
         if sarracenia.filemetadata.supports_extended_attributes:
             try:
@@ -1436,7 +1454,7 @@ class Flow:
 
                 if s:
                     metadata_cached_mtime = x.get('mtime')
-                    if ((metadata_cached_mtime >= msg['mtime'])):
+                    if (lstat and (metadata_cached_mtime >= lstat.st_mtime)):
                         # file has not been modified since checksum value was stored.
 
                         if (( 'identity' in msg ) and ( 'method' in msg['identity']  ) and \
@@ -1453,11 +1471,12 @@ class Flow:
             except:
                 pass
 
+        # no local recalculation possible.
+        if msg['identity']['method'] in [ 'arbitrary' ]:
+            return
+
         local_identity = sarracenia.identity.Identity.factory(
             msg['identity']['method'])
-
-        if msg['identity']['method'] == 'arbitrary':
-            local_identity.value = msg['identity']['value']
 
         local_identity.update_file(msg['new_path'])
         msg['local_identity'] = {
@@ -1468,7 +1487,7 @@ class Flow:
 
     def file_should_be_downloaded(self, msg) -> bool:
         """
-          determine whether a comparison of local_file and message metadata indicates that it is new enough
+          Determine whether a comparison of local_file and message metadata indicates that it is new enough
           that writing the file locally is warranted.
 
           return True to say downloading is warranted.
@@ -1555,16 +1574,19 @@ class Flow:
             return True
 
         try:
-            self.compute_local_checksum(msg)
+            self.compute_local_checksum(msg,lstat)
         except:
             logger.debug(
                 "something went wrong when computing local checksum... considered different"
             )
             return True
 
-        logger.debug( f"checksum in message: {msg['identity']} vs. local: {msg['local_identity']}" )
+        if 'local_identity' in msg:
+           logger.debug( f"checksum in message: {msg['identity']} vs. local: {msg['local_identity']}" )
+        else:
+           logger.debug( f"checksum in message: {msg['identity']} vs. local: None" )
 
-        if msg['local_identity'] == msg['identity']:
+        if 'local_identity' in msg and msg['local_identity'] == msg['identity']:
             self.reject(msg, 304, f"same checksum {msg['new_path']}" )
             return False
         else:
