@@ -1454,7 +1454,8 @@ class Flow:
 
                 if s:
                     metadata_cached_mtime = x.get('mtime')
-                    if (lstat and (metadata_cached_mtime >= lstat.st_mtime)):
+                    lstat_mtime = sarracenia.timeflt2str(lstat.st_mtime)
+                    if (lstat and (metadata_cached_mtime >= lstat_mtime)):
                         # file has not been modified since checksum value was stored.
 
                         if (( 'identity' in msg ) and ( 'method' in msg['identity']  ) and \
