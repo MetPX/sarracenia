@@ -6,7 +6,7 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>sarracenia.flowcb.housekeeping.resources &mdash; Sarracenia 3.00.57rc1 documentation</title>
-      <link rel="stylesheet" type="text/css" href="../../../../_static/pygments.css?v=80d5e7a1" />
+      <link rel="stylesheet" type="text/css" href="../../../../_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="../../../../_static/css/theme.css?v=e59714d7" />
 
   
@@ -116,26 +116,26 @@
 <span class="sd">    Nothing, restarts components if memory usage is outside of configured thresholds.</span>
 <span class="sd">&quot;&quot;&quot;</span>
 
-<span class="kn">import</span> <span class="nn">logging</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">logging</span>
 
-<span class="kn">import</span> <span class="nn">os</span>
-<span class="kn">from</span> <span class="nn">sarracenia.flowcb</span> <span class="kn">import</span> <span class="n">FlowCB</span>
-<span class="kn">from</span> <span class="nn">sarracenia</span> <span class="kn">import</span> <span class="n">naturalSize</span><span class="p">,</span> <span class="n">naturalTime</span>
-<span class="kn">from</span> <span class="nn">sarracenia.featuredetection</span> <span class="kn">import</span> <span class="n">features</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">os</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">sarracenia.flowcb</span><span class="w"> </span><span class="kn">import</span> <span class="n">FlowCB</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">sarracenia</span><span class="w"> </span><span class="kn">import</span> <span class="n">naturalSize</span><span class="p">,</span> <span class="n">naturalTime</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">sarracenia.featuredetection</span><span class="w"> </span><span class="kn">import</span> <span class="n">features</span>
 
 <span class="k">if</span> <span class="n">features</span><span class="p">[</span><span class="s1">&#39;process&#39;</span><span class="p">][</span><span class="s1">&#39;present&#39;</span><span class="p">]:</span>
-    <span class="kn">import</span> <span class="nn">psutil</span>
+    <span class="kn">import</span><span class="w"> </span><span class="nn">psutil</span>
 
-<span class="kn">import</span> <span class="nn">sys</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">sys</span>
 
 <span class="n">logger</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="vm">__name__</span><span class="p">)</span>
 
 <div class="viewcode-block" id="Resources">
 <a class="viewcode-back" href="../../../../Reference/flowcb.html#sarracenia.flowcb.housekeeping.resources.Resources">[docs]</a>
-<span class="k">class</span> <span class="nc">Resources</span><span class="p">(</span><span class="n">FlowCB</span><span class="p">):</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">Resources</span><span class="p">(</span><span class="n">FlowCB</span><span class="p">):</span>
 <div class="viewcode-block" id="Resources.__init__">
 <a class="viewcode-back" href="../../../../Reference/flowcb.html#sarracenia.flowcb.housekeeping.resources.Resources.__init__">[docs]</a>
-    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">options</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">options</span><span class="p">):</span>
         <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">options</span><span class="p">,</span><span class="n">logger</span><span class="p">)</span>
         <span class="c1"># Set option to neg value to determine if user set in config</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">o</span><span class="o">.</span><span class="n">add_option</span><span class="p">(</span><span class="s1">&#39;MemoryMax&#39;</span><span class="p">,</span> <span class="s1">&#39;size&#39;</span><span class="p">,</span> <span class="s1">&#39;0&#39;</span><span class="p">)</span>
@@ -148,7 +148,7 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">msgCount</span> <span class="o">=</span> <span class="mi">0</span></div>
 
 
-    <span class="k">def</span> <span class="nf">on_housekeeping</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">on_housekeeping</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="k">if</span> <span class="n">features</span><span class="p">[</span><span class="s1">&#39;process&#39;</span><span class="p">][</span><span class="s1">&#39;present&#39;</span><span class="p">]:</span>
             <span class="n">mem</span> <span class="o">=</span> <span class="n">psutil</span><span class="o">.</span><span class="n">Process</span><span class="p">()</span><span class="o">.</span><span class="n">memory_info</span><span class="p">()</span><span class="o">.</span><span class="n">vms</span>
         <span class="k">else</span><span class="p">:</span>
@@ -192,7 +192,7 @@
 
 <div class="viewcode-block" id="Resources.restart">
 <a class="viewcode-back" href="../../../../Reference/flowcb.html#sarracenia.flowcb.housekeeping.resources.Resources.restart">[docs]</a>
-    <span class="k">def</span> <span class="nf">restart</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">restart</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Do an in-place restart of the current process (keeps pid).</span>
 <span class="sd">        Gets a new memory stack/heap, keeps all file descriptors but replaces the buffers.</span>
@@ -224,12 +224,12 @@
         <span class="n">exit</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span></div>
 
 
-    <span class="k">def</span> <span class="nf">after_work</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">worklist</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">after_work</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">worklist</span><span class="p">):</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">transferCount</span> <span class="o">+=</span> <span class="nb">len</span><span class="p">(</span><span class="n">worklist</span><span class="o">.</span><span class="n">ok</span><span class="p">)</span>
         <span class="c1"># if self.threshold is not None:</span>
         <span class="c1">#    TODO: Remove this callback when issue #444 is implemented</span>
 
-    <span class="k">def</span> <span class="nf">after_accept</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">worklist</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">after_accept</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">worklist</span><span class="p">):</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">msgCount</span> <span class="o">+=</span> <span class="nb">len</span><span class="p">(</span><span class="n">worklist</span><span class="o">.</span><span class="n">incoming</span><span class="p">)</span></div>
 
         <span class="c1"># if self.threshold is not None:</span>

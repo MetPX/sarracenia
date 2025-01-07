@@ -6,7 +6,7 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>sarracenia.transfer.https &mdash; Sarracenia 3.00.57rc1 documentation</title>
-      <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=80d5e7a1" />
+      <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="../../../_static/css/theme.css?v=e59714d7" />
 
   
@@ -105,26 +105,26 @@
 <span class="c1">#</span>
 <span class="c1">#</span>
 
-<span class="kn">import</span> <span class="nn">datetime</span>
-<span class="kn">import</span> <span class="nn">logging</span>
-<span class="kn">import</span> <span class="nn">os</span>
-<span class="kn">import</span> <span class="nn">sarracenia</span>
-<span class="kn">import</span> <span class="nn">ssl</span>
-<span class="kn">import</span> <span class="nn">subprocess</span>
-<span class="kn">import</span> <span class="nn">sys</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">datetime</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">logging</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">os</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">sarracenia</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">ssl</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">subprocess</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">sys</span>
 
-<span class="kn">from</span> <span class="nn">sarracenia.transfer</span> <span class="kn">import</span> <span class="n">Transfer</span>
-<span class="kn">from</span> <span class="nn">sarracenia.transfer</span> <span class="kn">import</span> <span class="n">alarm_cancel</span><span class="p">,</span> <span class="n">alarm_set</span><span class="p">,</span> <span class="n">alarm_raise</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">sarracenia.transfer</span><span class="w"> </span><span class="kn">import</span> <span class="n">Transfer</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">sarracenia.transfer</span><span class="w"> </span><span class="kn">import</span> <span class="n">alarm_cancel</span><span class="p">,</span> <span class="n">alarm_set</span><span class="p">,</span> <span class="n">alarm_raise</span>
 
-<span class="kn">import</span> <span class="nn">urllib.error</span><span class="o">,</span> <span class="nn">urllib.parse</span><span class="o">,</span> <span class="nn">urllib.request</span>
-<span class="kn">from</span> <span class="nn">urllib.parse</span> <span class="kn">import</span> <span class="n">unquote</span>
-<span class="kn">from</span> <span class="nn">urllib.request</span> <span class="kn">import</span> <span class="n">HTTPRedirectHandler</span> 
+<span class="kn">import</span><span class="w"> </span><span class="nn">urllib.error</span><span class="o">,</span><span class="w"> </span><span class="nn">urllib.parse</span><span class="o">,</span><span class="w"> </span><span class="nn">urllib.request</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">urllib.parse</span><span class="w"> </span><span class="kn">import</span> <span class="n">unquote</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">urllib.request</span><span class="w"> </span><span class="kn">import</span> <span class="n">HTTPRedirectHandler</span> 
 
 <span class="n">logger</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="vm">__name__</span><span class="p">)</span>
 
 <div class="viewcode-block" id="HTTPRedirectHandlerSameMethod">
 <a class="viewcode-back" href="../../../Reference/code.html#sarracenia.transfer.https.HTTPRedirectHandlerSameMethod">[docs]</a>
-<span class="k">class</span> <span class="nc">HTTPRedirectHandlerSameMethod</span><span class="p">(</span><span class="n">HTTPRedirectHandler</span><span class="p">):</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">HTTPRedirectHandlerSameMethod</span><span class="p">(</span><span class="n">HTTPRedirectHandler</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot; Instead of returning a new Request without a method (defaults to GET), use the </span>
 <span class="sd">        same method in the new Request.</span>
 <span class="sd">        https://docs.python.org/3/library/urllib.request.html#urllib.request.HTTPRedirectHandler.redirect_request</span>
@@ -132,7 +132,7 @@
 <span class="sd">    &quot;&quot;&quot;</span>
 <div class="viewcode-block" id="HTTPRedirectHandlerSameMethod.redirect_request">
 <a class="viewcode-back" href="../../../Reference/code.html#sarracenia.transfer.https.HTTPRedirectHandlerSameMethod.redirect_request">[docs]</a>
-    <span class="k">def</span> <span class="nf">redirect_request</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">req</span><span class="p">,</span> <span class="n">fp</span><span class="p">,</span> <span class="n">code</span><span class="p">,</span> <span class="n">msg</span><span class="p">,</span> <span class="n">headers</span><span class="p">,</span> <span class="n">newurl</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">redirect_request</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">req</span><span class="p">,</span> <span class="n">fp</span><span class="p">,</span> <span class="n">code</span><span class="p">,</span> <span class="n">msg</span><span class="p">,</span> <span class="n">headers</span><span class="p">,</span> <span class="n">newurl</span><span class="p">):</span>
         <span class="n">orig_method</span> <span class="o">=</span> <span class="n">req</span><span class="o">.</span><span class="n">get_method</span><span class="p">()</span>
         <span class="n">new_req</span> <span class="o">=</span> <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">redirect_request</span><span class="p">(</span><span class="n">req</span><span class="p">,</span> <span class="n">fp</span><span class="p">,</span> <span class="n">code</span><span class="p">,</span> <span class="n">msg</span><span class="p">,</span> <span class="n">headers</span><span class="p">,</span> <span class="n">newurl</span><span class="p">)</span>
         <span class="n">new_req</span><span class="o">.</span><span class="n">method</span> <span class="o">=</span> <span class="n">orig_method</span>
@@ -144,7 +144,7 @@
 
 <div class="viewcode-block" id="Https">
 <a class="viewcode-back" href="../../../Reference/code.html#sarracenia.transfer.https.Https">[docs]</a>
-<span class="k">class</span> <span class="nc">Https</span><span class="p">(</span><span class="n">Transfer</span><span class="p">):</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">Https</span><span class="p">(</span><span class="n">Transfer</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    HyperText Transfer Protocol (HTTP)  ( https://en.wikipedia.org/wiki/Hypertext_Transfer_Protocol ) </span>
 <span class="sd">    sarracenia transfer protocol subclass supports/uses additional custom options:</span>
@@ -156,7 +156,7 @@
 <span class="sd">    &quot;&quot;&quot;</span>
 <div class="viewcode-block" id="Https.__init__">
 <a class="viewcode-back" href="../../../Reference/code.html#sarracenia.transfer.https.Https.__init__">[docs]</a>
-    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">proto</span><span class="p">,</span> <span class="n">options</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">proto</span><span class="p">,</span> <span class="n">options</span><span class="p">):</span>
 
         <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">proto</span><span class="p">,</span> <span class="n">options</span><span class="p">)</span>
 
@@ -191,17 +191,17 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">init</span><span class="p">()</span></div>
 
 
-    <span class="k">def</span> <span class="nf">registered_as</span><span class="p">():</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">registered_as</span><span class="p">():</span>
         <span class="k">return</span> <span class="p">[</span><span class="s1">&#39;http&#39;</span><span class="p">,</span> <span class="s1">&#39;https&#39;</span><span class="p">]</span>
 
     <span class="c1"># cd</span>
-    <span class="k">def</span> <span class="nf">cd</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">path</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">cd</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">path</span><span class="p">):</span>
         <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;sr_http cd </span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="n">path</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">cwd</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">dirname</span><span class="p">(</span><span class="n">path</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">path</span> <span class="o">=</span> <span class="n">path</span>
 
     <span class="c1"># for compatibility... always new connection with http</span>
-    <span class="k">def</span> <span class="nf">check_is_connected</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>        
+    <span class="k">def</span><span class="w"> </span><span class="nf">check_is_connected</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>        
         <span class="k">if</span> <span class="p">(</span><span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">connected</span> 
             <span class="ow">or</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">opener</span> 
             <span class="ow">or</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">head_opener</span> 
@@ -214,12 +214,12 @@
         <span class="k">return</span> <span class="kc">True</span>
 
     <span class="c1"># close</span>
-    <span class="k">def</span> <span class="nf">close</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">close</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;sr_http close&quot;</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">init</span><span class="p">()</span>
 
     <span class="c1"># connect...</span>
-    <span class="k">def</span> <span class="nf">connect</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">connect</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;sr_http connect </span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="bp">self</span><span class="o">.</span><span class="n">o</span><span class="o">.</span><span class="n">sendTo</span><span class="p">)</span>
 
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">connected</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
@@ -259,7 +259,7 @@
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">connected</span>
 
     <span class="c1"># credentials...</span>
-    <span class="k">def</span> <span class="nf">credentials</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">credentials</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;sr_http credentials </span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="bp">self</span><span class="o">.</span><span class="n">sendTo</span><span class="p">)</span>
 
         <span class="k">try</span><span class="p">:</span>
@@ -285,7 +285,7 @@
         <span class="k">return</span> <span class="kc">False</span>
 
     <span class="c1"># get</span>
-    <span class="k">def</span> <span class="nf">get</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">get</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span>
             <span class="n">msg</span><span class="p">,</span>
             <span class="n">remote_file</span><span class="p">,</span>
             <span class="n">local_file</span><span class="p">,</span>
@@ -315,7 +315,7 @@
 
         <span class="k">return</span> <span class="n">rw_length</span>
 
-    <span class="k">def</span> <span class="nf">getAccelerated</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">msg</span><span class="p">,</span> <span class="n">remote_file</span><span class="p">,</span> <span class="n">local_file</span><span class="p">,</span> <span class="n">length</span><span class="p">,</span> <span class="n">remote_offset</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">exactLength</span><span class="o">=</span><span class="kc">False</span> <span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">getAccelerated</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">msg</span><span class="p">,</span> <span class="n">remote_file</span><span class="p">,</span> <span class="n">local_file</span><span class="p">,</span> <span class="n">length</span><span class="p">,</span> <span class="n">remote_offset</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">exactLength</span><span class="o">=</span><span class="kc">False</span> <span class="p">):</span>
 
         <span class="n">arg1</span> <span class="o">=</span> <span class="n">msg</span><span class="p">[</span><span class="s1">&#39;baseUrl&#39;</span><span class="p">]</span> <span class="o">+</span> <span class="s1">&#39;/&#39;</span> <span class="o">+</span> <span class="n">msg</span><span class="p">[</span><span class="s1">&#39;relPath&#39;</span><span class="p">]</span>
         <span class="n">arg1</span> <span class="o">=</span> <span class="n">arg1</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s1">&#39; &#39;</span><span class="p">,</span> <span class="s1">&#39;</span><span class="se">\\</span><span class="s1"> &#39;</span><span class="p">)</span>
@@ -340,7 +340,7 @@
         <span class="k">return</span> <span class="n">length</span>
 
     <span class="c1"># init</span>
-    <span class="k">def</span> <span class="nf">init</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">init</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="n">Transfer</span><span class="o">.</span><span class="n">init</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
 
         <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;sr_http init&quot;</span><span class="p">)</span>
@@ -361,7 +361,7 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">entries</span> <span class="o">=</span> <span class="p">{}</span>
 
     <span class="c1"># ls</span>
-    <span class="k">def</span> <span class="nf">ls</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">ls</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;sr_http ls&quot;</span><span class="p">)</span>
 
         <span class="c1"># open self.http</span>
@@ -403,7 +403,7 @@
 
         <span class="k">return</span> <span class="n">dbuf</span>
 
-    <span class="k">def</span> <span class="nf">__url_redir_str</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">__url_redir_str</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot; Returl self.urlstr, unless the request was redirected to a different URL.</span>
 <span class="sd">            If so, it will return &#39;self.urlstr redirected to new_url&#39;</span>
 <span class="sd">        &quot;&quot;&quot;</span>
@@ -419,7 +419,7 @@
     <span class="c1"># open</span>
 <div class="viewcode-block" id="Https.__open__">
 <a class="viewcode-back" href="../../../Reference/code.html#sarracenia.transfer.https.Https.__open__">[docs]</a>
-    <span class="k">def</span> <span class="nf">__open__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">path</span><span class="p">,</span> <span class="n">remote_offset</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">length</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">method</span><span class="p">:</span><span class="nb">str</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">add_headers</span><span class="p">:</span><span class="nb">dict</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">__open__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">path</span><span class="p">,</span> <span class="n">remote_offset</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">length</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">method</span><span class="p">:</span><span class="nb">str</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">add_headers</span><span class="p">:</span><span class="nb">dict</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot; Open a URL. When the open is successful, self.http is set to a urllib.response instance that can be</span>
 <span class="sd">            read from like a file.</span>
 
@@ -516,7 +516,7 @@
         <span class="k">return</span> <span class="kc">False</span></div>
 
     
-    <span class="k">def</span> <span class="nf">stat</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">path</span><span class="p">,</span><span class="n">msg</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">sarracenia</span><span class="o">.</span><span class="n">filemetadata</span><span class="o">.</span><span class="n">FmdStat</span><span class="p">:</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">stat</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">path</span><span class="p">,</span><span class="n">msg</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">sarracenia</span><span class="o">.</span><span class="n">filemetadata</span><span class="o">.</span><span class="n">FmdStat</span><span class="p">:</span>
         <span class="n">st</span> <span class="o">=</span> <span class="n">sarracenia</span><span class="o">.</span><span class="n">filemetadata</span><span class="o">.</span><span class="n">FmdStat</span><span class="p">()</span>
         <span class="c1"># logger.debug( f&quot; baseUrl:{msg[&#39;baseUrl&#39;]}, path:{self.path}, cwd:{self.cwd}, path:{path} &quot; )</span>
 

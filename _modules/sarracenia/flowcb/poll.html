@@ -6,7 +6,7 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>sarracenia.flowcb.poll &mdash; Sarracenia 3.00.57rc1 documentation</title>
-      <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=80d5e7a1" />
+      <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="../../../_static/css/theme.css?v=e59714d7" />
 
   
@@ -88,33 +88,33 @@
 <span class="c1"># Copyright (C) Her Majesty The Queen in Right of Canada, 2008-2022</span>
 <span class="c1">#</span>
 
-<span class="kn">import</span> <span class="nn">sarracenia.moth</span>
-<span class="kn">import</span> <span class="nn">copy</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">sarracenia.moth</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">copy</span>
 
 
-<span class="kn">import</span> <span class="nn">datetime</span>
-<span class="kn">import</span> <span class="nn">html.parser</span>
-<span class="kn">import</span> <span class="nn">logging</span>
-<span class="kn">import</span> <span class="nn">os</span>
-<span class="kn">import</span> <span class="nn">paramiko</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">datetime</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">html.parser</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">logging</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">os</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">paramiko</span>
 
-<span class="kn">import</span> <span class="nn">sarracenia</span>
-<span class="kn">from</span> <span class="nn">sarracenia.featuredetection</span> <span class="kn">import</span> <span class="n">features</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">sarracenia</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">sarracenia.featuredetection</span><span class="w"> </span><span class="kn">import</span> <span class="n">features</span>
 
 <span class="k">if</span> <span class="n">features</span><span class="p">[</span><span class="s1">&#39;ftppoll&#39;</span><span class="p">][</span><span class="s1">&#39;present&#39;</span><span class="p">]:</span>
-    <span class="kn">import</span> <span class="nn">dateparser</span>
-    <span class="kn">import</span> <span class="nn">pytz</span>
+    <span class="kn">import</span><span class="w"> </span><span class="nn">dateparser</span>
+    <span class="kn">import</span><span class="w"> </span><span class="nn">pytz</span>
 
-<span class="kn">import</span> <span class="nn">sarracenia.config</span>
-<span class="kn">from</span> <span class="nn">sarracenia.flowcb</span> <span class="kn">import</span> <span class="n">FlowCB</span>
-<span class="kn">import</span> <span class="nn">sarracenia.transfer</span>
-<span class="kn">import</span> <span class="nn">stat</span>
-<span class="kn">import</span> <span class="nn">sys</span><span class="o">,</span> <span class="nn">time</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">sarracenia.config</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">sarracenia.flowcb</span><span class="w"> </span><span class="kn">import</span> <span class="n">FlowCB</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">sarracenia.transfer</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">stat</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">sys</span><span class="o">,</span><span class="w"> </span><span class="nn">time</span>
 
 <span class="n">logger</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="vm">__name__</span><span class="p">)</span>
 
 
-<span class="k">def</span> <span class="nf">file_size_fix</span><span class="p">(</span><span class="n">str_value</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">file_size_fix</span><span class="p">(</span><span class="n">str_value</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
     <span class="k">try</span><span class="p">:</span>
 
         <span class="n">factor</span> <span class="o">=</span> <span class="mi">1</span>
@@ -146,7 +146,7 @@
 <span class="p">}</span>
 
 
-<span class="k">def</span> <span class="nf">modstr2num</span><span class="p">(</span><span class="n">m</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">modstr2num</span><span class="p">(</span><span class="n">m</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
     <span class="n">mode</span> <span class="o">=</span> <span class="mi">0</span>
     <span class="k">if</span> <span class="p">(</span><span class="n">m</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="s1">&#39;r&#39;</span><span class="p">):</span> <span class="n">mode</span> <span class="o">+=</span> <span class="mi">4</span>
     <span class="k">if</span> <span class="p">(</span><span class="n">m</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">==</span> <span class="s1">&#39;w&#39;</span><span class="p">):</span> <span class="n">mode</span> <span class="o">+=</span> <span class="mi">2</span>
@@ -154,7 +154,7 @@
     <span class="k">return</span> <span class="n">mode</span>
 
 
-<span class="k">def</span> <span class="nf">filemode</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">modstr</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">filemode</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">modstr</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
     <span class="n">mode</span> <span class="o">=</span> <span class="mi">0</span>
     <span class="n">mode</span> <span class="o">+=</span> <span class="n">file_type_dict</span><span class="p">[</span><span class="n">modstr</span><span class="p">[</span><span class="mi">0</span><span class="p">]]</span>
     <span class="n">mode</span> <span class="o">+=</span> <span class="n">modstr2num</span><span class="p">(</span><span class="n">modstr</span><span class="p">[</span><span class="mi">1</span><span class="p">:</span><span class="mi">4</span><span class="p">])</span> <span class="o">&lt;&lt;</span> <span class="mi">6</span>
@@ -163,7 +163,7 @@
     <span class="k">return</span> <span class="n">mode</span>
 
 
-<span class="k">def</span> <span class="nf">fileid</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="nb">id</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">fileid</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="nb">id</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
     <span class="k">if</span> <span class="nb">id</span><span class="o">.</span><span class="n">isnumeric</span><span class="p">():</span>
         <span class="k">return</span> <span class="nb">int</span><span class="p">(</span><span class="nb">id</span><span class="p">)</span>
     <span class="k">else</span><span class="p">:</span>
@@ -172,7 +172,7 @@
 
 <div class="viewcode-block" id="Poll">
 <a class="viewcode-back" href="../../../Reference/flowcb.html#sarracenia.flowcb.poll.Poll">[docs]</a>
-<span class="k">class</span> <span class="nc">Poll</span><span class="p">(</span><span class="n">FlowCB</span><span class="p">):</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">Poll</span><span class="p">(</span><span class="n">FlowCB</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">      The Poll flow callback class implements the main logic for polling remote resources.</span>
 <span class="sd">      the *poll* routine returns a list of messages for new files to be filtered. </span>
@@ -229,7 +229,7 @@
 
 
 <span class="sd">    &quot;&quot;&quot;</span>
-    <span class="k">def</span> <span class="nf">handle_starttag</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">tag</span><span class="p">,</span> <span class="n">attrs</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">handle_starttag</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">tag</span><span class="p">,</span> <span class="n">attrs</span><span class="p">):</span>
         <span class="k">if</span> <span class="n">tag</span> <span class="o">==</span> <span class="s2">&quot;table&quot;</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">tabular_format</span><span class="o">=</span><span class="kc">True</span>
         <span class="k">elif</span> <span class="n">tag</span> <span class="o">==</span> <span class="s2">&quot;tr&quot;</span><span class="p">:</span>
@@ -244,7 +244,7 @@
 
 <div class="viewcode-block" id="Poll.handle_data">
 <a class="viewcode-back" href="../../../Reference/flowcb.html#sarracenia.flowcb.poll.Poll.handle_data">[docs]</a>
-    <span class="k">def</span> <span class="nf">handle_data</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">data</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">handle_data</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">data</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">           routine called from html.parser to deal with a single line.</span>
 <span class="sd">           if the line is about a file, then create a new entry for it</span>
@@ -319,7 +319,7 @@
 
 <div class="viewcode-block" id="Poll.on_html_page">
 <a class="viewcode-back" href="../../../Reference/flowcb.html#sarracenia.flowcb.poll.Poll.on_html_page">[docs]</a>
-    <span class="k">def</span> <span class="nf">on_html_page</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">data</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">:</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">on_html_page</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">data</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">           called once per directory or page of HTML, invokes html.parser, returns</span>
 <span class="sd">           a dictionary of file entries.</span>
@@ -335,7 +335,7 @@
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">entries</span></div>
 
 
-    <span class="k">def</span> <span class="nf">on_html_parser_init</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">on_html_parser_init</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="c1"># HTML Parsing stuff.</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">parser</span> <span class="o">=</span> <span class="n">html</span><span class="o">.</span><span class="n">parser</span><span class="o">.</span><span class="n">HTMLParser</span><span class="p">()</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">parser</span><span class="o">.</span><span class="n">handle_starttag</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">handle_starttag</span>
@@ -348,7 +348,7 @@
 
 <div class="viewcode-block" id="Poll.__init__">
 <a class="viewcode-back" href="../../../Reference/flowcb.html#sarracenia.flowcb.poll.Poll.__init__">[docs]</a>
-    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">options</span><span class="p">,</span><span class="n">class_logger</span><span class="o">=</span><span class="n">logger</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">options</span><span class="p">,</span><span class="n">class_logger</span><span class="o">=</span><span class="n">logger</span><span class="p">):</span>
 
         <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">options</span><span class="p">,</span><span class="n">class_logger</span><span class="p">)</span>
 
@@ -395,13 +395,13 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">on_html_parser_init</span><span class="p">()</span></div>
 
 
-    <span class="k">def</span> <span class="nf">metricsReset</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">metricsReset</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">metrics</span> <span class="o">=</span> <span class="p">{</span> <span class="s1">&#39;transferRxBytes&#39;</span><span class="p">:</span> <span class="mi">0</span> <span class="p">}</span>
 
-    <span class="k">def</span> <span class="nf">metricsReport</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">:</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">metricsReport</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">:</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">metrics</span>
 
-    <span class="k">def</span> <span class="nf">cd</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">path</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">cd</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">path</span><span class="p">):</span>
         <span class="k">try</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">dest</span><span class="o">.</span><span class="n">cd</span><span class="p">(</span><span class="n">path</span><span class="p">)</span>
             <span class="k">return</span> <span class="kc">True</span>
@@ -409,7 +409,7 @@
             <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="s2">&quot;sr_poll/cd: could not cd to directory </span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="n">path</span><span class="p">)</span>
         <span class="k">return</span> <span class="kc">False</span>
 
-    <span class="k">def</span> <span class="nf">filedate</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">line</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">filedate</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">line</span><span class="p">):</span>
 
         <span class="k">if</span> <span class="ow">not</span> <span class="n">features</span><span class="p">[</span><span class="s1">&#39;ftppoll&#39;</span><span class="p">][</span><span class="s1">&#39;present&#39;</span><span class="p">]:</span>
            <span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="s1">&#39;need dateparser library to deal with polling of ftp servers, no date parsed&#39;</span><span class="p">)</span>
@@ -437,7 +437,7 @@
 
 <div class="viewcode-block" id="Poll.on_line">
 <a class="viewcode-back" href="../../../Reference/flowcb.html#sarracenia.flowcb.poll.Poll.on_line">[docs]</a>
-    <span class="k">def</span> <span class="nf">on_line</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">line</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">paramiko</span><span class="o">.</span><span class="n">SFTPAttributes</span><span class="p">:</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">on_line</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">line</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">paramiko</span><span class="o">.</span><span class="n">SFTPAttributes</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">           default line processing, converts a file listing into an SFTPAttributes.</span>
 <span class="sd">           does nothing if input is already an SFTPAttributes item, returning it unchanged.</span>
@@ -484,7 +484,7 @@
             <span class="k">return</span> <span class="kc">None</span></div>
 
 
-    <span class="k">def</span> <span class="nf">lsdir</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">lsdir</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
 
         <span class="k">try</span><span class="p">:</span>
             <span class="n">ls</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">dest</span><span class="o">.</span><span class="n">ls</span><span class="p">()</span>
@@ -519,7 +519,7 @@
 
         <span class="k">return</span> <span class="kc">False</span><span class="p">,</span> <span class="p">{},</span> <span class="p">{}</span>
 
-    <span class="k">def</span> <span class="nf">poll_directory</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">pdir</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">poll_directory</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">pdir</span><span class="p">):</span>
 
         <span class="c1">#logger.debug(&quot;poll_directory %s %s&quot; % (pdir))</span>
         <span class="n">msgs</span> <span class="o">=</span> <span class="p">[]</span>
@@ -560,7 +560,7 @@
 
         <span class="k">return</span> <span class="n">msgs</span>
 
-    <span class="k">def</span> <span class="nf">poll_file_post</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">desc</span><span class="p">,</span> <span class="n">destDir</span><span class="p">,</span> <span class="n">remote_file</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">poll_file_post</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">desc</span><span class="p">,</span> <span class="n">destDir</span><span class="p">,</span> <span class="n">remote_file</span><span class="p">):</span>
 
         <span class="n">path</span> <span class="o">=</span> <span class="n">destDir</span> <span class="o">+</span> <span class="s1">&#39;/&#39;</span> <span class="o">+</span> <span class="n">remote_file</span>
 
@@ -639,7 +639,7 @@
 
         <span class="k">return</span> <span class="p">[</span><span class="n">msg</span><span class="p">]</span>
 
-    <span class="k">def</span> <span class="nf">poll_list_post</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">destDir</span><span class="p">,</span> <span class="n">desclst</span><span class="p">,</span> <span class="n">filelst</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">poll_list_post</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">destDir</span><span class="p">,</span> <span class="n">desclst</span><span class="p">,</span> <span class="n">filelst</span><span class="p">):</span>
 
         <span class="n">n</span> <span class="o">=</span> <span class="mi">0</span>
         <span class="n">msgs</span> <span class="o">=</span> <span class="p">[]</span>
@@ -658,7 +658,7 @@
     <span class="c1"># False means, go to sleep and retry after sleep seconds</span>
     <span class="c1"># =============</span>
 
-    <span class="k">def</span> <span class="nf">poll</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">:</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">poll</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">:</span>
 
         <span class="n">msgs</span> <span class="o">=</span> <span class="p">[]</span>
 

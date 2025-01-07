@@ -7,7 +7,7 @@
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Code Reference &mdash; Sarracenia 3.00.57rc1 documentation</title>
-      <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=80d5e7a1" />
+      <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=e59714d7" />
 
   
@@ -1280,6 +1280,28 @@ Return the time when housekeeping should be run next</p>
 </dd></dl>
 
 <dl class="py method">
+<dt class="sig sig-object py" id="sarracenia.flow.Flow.compute_local_checksum">
+<span class="sig-name descname"><span class="pre">compute_local_checksum</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">msg</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">lstat</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="reference internal" href="../_modules/sarracenia/flow.html#Flow.compute_local_checksum"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#sarracenia.flow.Flow.compute_local_checksum" title="Link to this definition"></a></dt>
+<dd><p>For a file whose path is given by the msg, calculate ‘local_identity’ field.</p>
+<p>when checksums for files are stored in extended attributes, it’s ideal to retrieve them,
+rather than having to read the entire file again and re-calculate.</p>
+<dl class="simple">
+<dt>The extended attributes have a field:</dt><dd><ul class="simple">
+<li><p>‘identity’ … the field from the message when the file was written.</p></li>
+<li><p>‘mtime’ … the mtime of the file when it was written.</p></li>
+</ul>
+</dd>
+<dt>The ‘identity’ extended attribute should be correct/good/useful if:</dt><dd><ul class="simple">
+<li><p>the mtime of the file on disk is not newer than the current file mtime.</p></li>
+</ul>
+</dd>
+</dl>
+<p>If the file has been over-written afterwards, the mtime will be different,
+and the local checksum must be re-calculated from scratch.</p>
+<p>If the checksum method is arbitrary, no local recalculation is possible.</p>
+</dd></dl>
+
+<dl class="py method">
 <dt class="sig sig-object py" id="sarracenia.flow.Flow.do_download">
 <span class="sig-name descname"><span class="pre">do_download</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="reference internal" href="../_modules/sarracenia/flow.html#Flow.do_download"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#sarracenia.flow.Flow.do_download" title="Link to this definition"></a></dt>
 <dd><dl class="simple">
@@ -1307,7 +1329,7 @@ return -1 – download failed permanently, retry not useful.</p>
 <dl class="py method">
 <dt class="sig sig-object py" id="sarracenia.flow.Flow.file_should_be_downloaded">
 <span class="sig-name descname"><span class="pre">file_should_be_downloaded</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">msg</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">bool</span></span></span><a class="reference internal" href="../_modules/sarracenia/flow.html#Flow.file_should_be_downloaded"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#sarracenia.flow.Flow.file_should_be_downloaded" title="Link to this definition"></a></dt>
-<dd><p>determine whether a comparison of local_file and message metadata indicates that it is new enough
+<dd><p>Determine whether a comparison of local_file and message metadata indicates that it is new enough
 that writing the file locally is warranted.</p>
 <p>return True to say downloading is warranted.</p>
 <blockquote>
@@ -1803,8 +1825,8 @@ API to allow pass-through of protocol specific properties, but apply templates f
 <p>this library knows nothing about Sarracenia, the only code used from sarracenia is to interpret
 duration properties, from the root sarracenia/__init__.py, the broker argument from sarracenia.config.credentials</p>
 <p>usage:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">sarracenia.moth</span>
-<span class="kn">import</span> <span class="nn">sarracenia.config.credentials</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">sarracenia.moth</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">sarracenia.config.credentials</span>
 
 
 <span class="n">props</span> <span class="o">=</span> <span class="n">sarracenia</span><span class="o">.</span><span class="n">moth</span><span class="o">.</span><span class="n">default_options</span>
@@ -1842,7 +1864,7 @@ by the broker argument.</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Protocol</span>     <span class="n">library</span> <span class="n">implementing</span>    <span class="n">URL</span> <span class="n">to</span> <span class="n">select</span>
 <span class="o">--------</span>     <span class="o">--------------------</span>    <span class="o">-------------</span>
 
-<span class="n">AMQPv0</span><span class="mf">.9</span> <span class="o">--&gt;</span> <span class="n">amqplib</span> <span class="kn">from</span> <span class="nn">Celery</span> <span class="o">--&gt;</span> <span class="n">amqp</span><span class="p">,</span> <span class="n">amqps</span>
+<span class="n">AMQPv0</span><span class="mf">.9</span> <span class="o">--&gt;</span> <span class="n">amqplib</span> <span class="kn">from</span><span class="w"> </span><span class="nn">Celery</span> <span class="o">--&gt;</span> <span class="n">amqp</span><span class="p">,</span> <span class="n">amqps</span>
 
 <span class="n">AMQPv0</span><span class="mf">.9</span> <span class="o">--&gt;</span> <span class="n">pika</span>                <span class="o">--&gt;</span> <span class="n">pika</span><span class="p">,</span> <span class="n">pikas</span>
 

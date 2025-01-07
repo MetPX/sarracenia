@@ -6,7 +6,7 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>sarracenia &mdash; Sarracenia 3.00.57rc1 documentation</title>
-      <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=80d5e7a1" />
+      <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=e59714d7" />
 
   
@@ -104,32 +104,32 @@
 <span class="c1">#  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307  USA</span>
 <span class="c1">#</span>
 <span class="c1">#</span>
-<span class="kn">from</span> <span class="nn">._version</span> <span class="kn">import</span> <span class="n">__version__</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">._version</span><span class="w"> </span><span class="kn">import</span> <span class="n">__version__</span>
 
 
-<span class="kn">from</span> <span class="nn">base64</span> <span class="kn">import</span> <span class="n">b64decode</span><span class="p">,</span> <span class="n">b64encode</span>
-<span class="kn">import</span> <span class="nn">calendar</span>
-<span class="kn">import</span> <span class="nn">datetime</span>
-<span class="kn">import</span> <span class="nn">humanize</span>
-<span class="kn">import</span> <span class="nn">importlib.util</span>
-<span class="kn">import</span> <span class="nn">io</span>
-<span class="kn">import</span> <span class="nn">logging</span>
-<span class="kn">import</span> <span class="nn">os</span>
-<span class="kn">import</span> <span class="nn">os.path</span>
-<span class="kn">import</span> <span class="nn">random</span>
-<span class="kn">import</span> <span class="nn">re</span>
-<span class="kn">from</span> <span class="nn">sarracenia.featuredetection</span> <span class="kn">import</span> <span class="n">features</span>
-<span class="kn">import</span> <span class="nn">stat</span> <span class="k">as</span> <span class="nn">os_stat</span>
-<span class="kn">import</span> <span class="nn">sys</span>
-<span class="kn">import</span> <span class="nn">time</span>
-<span class="kn">import</span> <span class="nn">types</span>
-<span class="kn">import</span> <span class="nn">urllib</span>
-<span class="kn">import</span> <span class="nn">urllib.parse</span>
-<span class="kn">import</span> <span class="nn">urllib.request</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">base64</span><span class="w"> </span><span class="kn">import</span> <span class="n">b64decode</span><span class="p">,</span> <span class="n">b64encode</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">calendar</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">datetime</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">humanize</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">importlib.util</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">io</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">logging</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">os</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">os.path</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">random</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">re</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">sarracenia.featuredetection</span><span class="w"> </span><span class="kn">import</span> <span class="n">features</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">stat</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">os_stat</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">sys</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">time</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">types</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">urllib</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">urllib.parse</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">urllib.request</span>
 
 <span class="n">logger</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="vm">__name__</span><span class="p">)</span>
 
-<span class="k">def</span> <span class="nf">baseUrlParse</span><span class="p">(</span> <span class="n">url</span> <span class="p">):</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">baseUrlParse</span><span class="p">(</span> <span class="n">url</span> <span class="p">):</span>
     <span class="n">upr</span> <span class="o">=</span> <span class="n">urllib</span><span class="o">.</span><span class="n">parse</span><span class="o">.</span><span class="n">urlparse</span><span class="p">(</span><span class="n">url</span><span class="p">)</span>
     <span class="n">u</span> <span class="o">=</span> <span class="n">types</span><span class="o">.</span><span class="n">SimpleNamespace</span><span class="p">()</span>
     <span class="n">u</span><span class="o">.</span><span class="n">scheme</span> <span class="o">=</span> <span class="n">upr</span><span class="o">.</span><span class="n">scheme</span>
@@ -145,59 +145,59 @@
 
 
 <span class="k">if</span> <span class="n">features</span><span class="p">[</span><span class="s1">&#39;filetypes&#39;</span><span class="p">][</span><span class="s1">&#39;present&#39;</span><span class="p">]:</span>
-   <span class="kn">import</span> <span class="nn">magic</span>
+   <span class="kn">import</span><span class="w"> </span><span class="nn">magic</span>
 
 <span class="k">if</span> <span class="n">features</span><span class="p">[</span><span class="s1">&#39;mqtt&#39;</span><span class="p">][</span><span class="s1">&#39;present&#39;</span><span class="p">]:</span>
-   <span class="kn">import</span> <span class="nn">paho.mqtt.client</span>
+   <span class="kn">import</span><span class="w"> </span><span class="nn">paho.mqtt.client</span>
    <span class="k">if</span> <span class="ow">not</span> <span class="nb">hasattr</span><span class="p">(</span> <span class="n">paho</span><span class="o">.</span><span class="n">mqtt</span><span class="o">.</span><span class="n">client</span><span class="p">,</span> <span class="s1">&#39;MQTTv5&#39;</span> <span class="p">):</span>
        <span class="c1"># without v5 support, mqtt is not useful.</span>
        <span class="n">features</span><span class="p">[</span><span class="s1">&#39;mqtt&#39;</span><span class="p">][</span><span class="s1">&#39;present&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="kc">False</span>
 
 <span class="c1"># if humanize is not present, compensate...</span>
 <span class="k">if</span> <span class="n">features</span><span class="p">[</span><span class="s1">&#39;humanize&#39;</span><span class="p">][</span><span class="s1">&#39;present&#39;</span><span class="p">]:</span>
-    <span class="kn">import</span> <span class="nn">humanize</span>
+    <span class="kn">import</span><span class="w"> </span><span class="nn">humanize</span>
 
-    <span class="k">def</span> <span class="nf">naturalSize</span><span class="p">(</span> <span class="n">num</span> <span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">naturalSize</span><span class="p">(</span> <span class="n">num</span> <span class="p">):</span>
         <span class="c1"># checking for &gt; 0 allows message rate to print just 0m/s when num is 0 instead of 0.00m/s in sr3 status</span>
         <span class="c1"># also ensures that data rate displays properly</span>
         <span class="k">if</span> <span class="n">num</span> <span class="o">&gt;</span> <span class="mi">0</span> <span class="ow">and</span> <span class="n">num</span> <span class="o">&lt;</span> <span class="mi">1</span><span class="p">:</span>
             <span class="k">return</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">num</span><span class="si">:</span><span class="s2">.2f</span><span class="si">}</span><span class="s2">m&quot;</span>
         <span class="k">return</span> <span class="n">humanize</span><span class="o">.</span><span class="n">naturalsize</span><span class="p">(</span><span class="n">num</span><span class="p">,</span><span class="n">binary</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s2">&quot; &quot;</span><span class="p">,</span><span class="s2">&quot;&quot;</span><span class="p">)</span>
 
-    <span class="k">def</span> <span class="nf">naturalTime</span><span class="p">(</span> <span class="n">dur</span> <span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">naturalTime</span><span class="p">(</span> <span class="n">dur</span> <span class="p">):</span>
         <span class="k">return</span> <span class="n">humanize</span><span class="o">.</span><span class="n">naturaltime</span><span class="p">(</span><span class="n">dur</span><span class="p">)</span>
 
 <span class="k">else</span><span class="p">:</span>
   
-    <span class="k">def</span> <span class="nf">naturalSize</span><span class="p">(</span> <span class="n">num</span> <span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">naturalSize</span><span class="p">(</span> <span class="n">num</span> <span class="p">):</span>
        <span class="k">return</span> <span class="s2">&quot;</span><span class="si">%g</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="n">num</span>
 
-    <span class="k">def</span> <span class="nf">naturalTime</span><span class="p">(</span> <span class="n">dur</span> <span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">naturalTime</span><span class="p">(</span> <span class="n">dur</span> <span class="p">):</span>
        <span class="k">return</span> <span class="s2">&quot;</span><span class="si">%g</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="n">dur</span>
 
 
 <span class="k">if</span> <span class="n">features</span><span class="p">[</span><span class="s1">&#39;appdirs&#39;</span><span class="p">][</span><span class="s1">&#39;present&#39;</span><span class="p">]:</span>
-    <span class="kn">import</span> <span class="nn">appdirs</span>
+    <span class="kn">import</span><span class="w"> </span><span class="nn">appdirs</span>
 
-    <span class="k">def</span> <span class="nf">site_config_dir</span><span class="p">(</span> <span class="n">app</span><span class="p">,</span> <span class="n">author</span> <span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">site_config_dir</span><span class="p">(</span> <span class="n">app</span><span class="p">,</span> <span class="n">author</span> <span class="p">):</span>
         <span class="k">return</span> <span class="n">appdirs</span><span class="o">.</span><span class="n">site_config_dir</span><span class="p">(</span> <span class="n">app</span><span class="p">,</span> <span class="n">author</span> <span class="p">)</span>
 
-    <span class="k">def</span> <span class="nf">user_config_dir</span><span class="p">(</span> <span class="n">app</span><span class="p">,</span> <span class="n">author</span> <span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">user_config_dir</span><span class="p">(</span> <span class="n">app</span><span class="p">,</span> <span class="n">author</span> <span class="p">):</span>
         <span class="k">return</span> <span class="n">appdirs</span><span class="o">.</span><span class="n">user_config_dir</span><span class="p">(</span> <span class="n">app</span><span class="p">,</span> <span class="n">author</span> <span class="p">)</span>
 
-    <span class="k">def</span> <span class="nf">user_cache_dir</span><span class="p">(</span> <span class="n">app</span><span class="p">,</span> <span class="n">author</span> <span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">user_cache_dir</span><span class="p">(</span> <span class="n">app</span><span class="p">,</span> <span class="n">author</span> <span class="p">):</span>
         <span class="k">return</span> <span class="n">appdirs</span><span class="o">.</span><span class="n">user_cache_dir</span><span class="p">(</span> <span class="n">app</span><span class="p">,</span> <span class="n">author</span> <span class="p">)</span>
 <span class="k">else</span><span class="p">:</span>
     <span class="c1"># if appdirs is missing, pretend we&#39;re on Linux.</span>
-    <span class="kn">import</span> <span class="nn">pathlib</span>
+    <span class="kn">import</span><span class="w"> </span><span class="nn">pathlib</span>
 
-    <span class="k">def</span> <span class="nf">site_config_dir</span><span class="p">(</span> <span class="n">app</span><span class="p">,</span> <span class="n">author</span> <span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">site_config_dir</span><span class="p">(</span> <span class="n">app</span><span class="p">,</span> <span class="n">author</span> <span class="p">):</span>
         <span class="k">return</span> <span class="s1">&#39;/etc/xdg/xdg-ubuntu-xorg/</span><span class="si">%s</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="n">app</span>
 
-    <span class="k">def</span> <span class="nf">user_config_dir</span><span class="p">(</span> <span class="n">app</span><span class="p">,</span> <span class="n">author</span> <span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">user_config_dir</span><span class="p">(</span> <span class="n">app</span><span class="p">,</span> <span class="n">author</span> <span class="p">):</span>
         <span class="k">return</span> <span class="nb">str</span><span class="p">(</span><span class="n">pathlib</span><span class="o">.</span><span class="n">Path</span><span class="o">.</span><span class="n">home</span><span class="p">())</span> <span class="o">+</span> <span class="s1">&#39;/.config/</span><span class="si">%s</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="n">app</span>
  
-    <span class="k">def</span> <span class="nf">user_cache_dir</span><span class="p">(</span> <span class="n">app</span><span class="p">,</span> <span class="n">author</span> <span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">user_cache_dir</span><span class="p">(</span> <span class="n">app</span><span class="p">,</span> <span class="n">author</span> <span class="p">):</span>
         <span class="k">return</span> <span class="nb">str</span><span class="p">(</span><span class="n">pathlib</span><span class="o">.</span><span class="n">Path</span><span class="o">.</span><span class="n">home</span><span class="p">())</span> <span class="o">+</span> <span class="s1">&#39;/.cache/</span><span class="si">%s</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="n">app</span>
 
 <span class="sd">&quot;&quot;&quot;</span>
@@ -205,11 +205,11 @@
 
 <span class="sd">&quot;&quot;&quot;</span>
 
-<span class="kn">import</span> <span class="nn">sarracenia.filemetadata</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">sarracenia.filemetadata</span>
 
 <div class="viewcode-block" id="Sarracenia">
 <a class="viewcode-back" href="../api-documentation.html#sarracenia.Sarracenia">[docs]</a>
-<span class="k">class</span> <span class="nc">Sarracenia</span><span class="p">:</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">Sarracenia</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Core utilities of Sarracenia. The main class here is sarracenia.Message.</span>
 <span class="sd">        a Sarracenia.Message is subclassed from a dict, so for most uses, it works like the </span>
@@ -287,7 +287,7 @@
 
 <div class="viewcode-block" id="TimeConversions">
 <a class="viewcode-back" href="../api-documentation.html#sarracenia.TimeConversions">[docs]</a>
-<span class="k">class</span> <span class="nc">TimeConversions</span><span class="p">:</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">TimeConversions</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    </span>
 <span class="sd">     Time conversion routines.  </span>
@@ -326,7 +326,7 @@
 
 <div class="viewcode-block" id="stat">
 <a class="viewcode-back" href="../api-documentation.html#sarracenia.stat">[docs]</a>
-<span class="k">def</span> <span class="nf">stat</span><span class="p">(</span> <span class="n">path</span> <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">sarracenia</span><span class="o">.</span><span class="n">filemetadata</span><span class="o">.</span><span class="n">FmdStat</span><span class="p">:</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">stat</span><span class="p">(</span> <span class="n">path</span> <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">sarracenia</span><span class="o">.</span><span class="n">filemetadata</span><span class="o">.</span><span class="n">FmdStat</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">       os.stat call replacement which improves on it by returning</span>
 <span class="sd">       and SFTPAttributes structure, in place of the OS stat one,</span>
@@ -355,17 +355,17 @@
     <span class="k">return</span> <span class="n">sa</span></div>
 
 
-<span class="k">def</span> <span class="nf">nowflt</span><span class="p">():</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">nowflt</span><span class="p">():</span>
     <span class="k">return</span> <span class="n">timestr2flt</span><span class="p">(</span><span class="n">nowstr</span><span class="p">())</span>
 
 
-<span class="k">def</span> <span class="nf">nowstr</span><span class="p">():</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">nowstr</span><span class="p">():</span>
     <span class="k">return</span> <span class="n">timeflt2str</span><span class="p">(</span><span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">())</span>
 
 
 <div class="viewcode-block" id="timeflt2str">
 <a class="viewcode-back" href="../api-documentation.html#sarracenia.timeflt2str">[docs]</a>
-<span class="k">def</span> <span class="nf">timeflt2str</span><span class="p">(</span><span class="n">f</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">timeflt2str</span><span class="p">(</span><span class="n">f</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        timeflt2str - accepts a float and returns a string.</span>
 
@@ -385,7 +385,7 @@
 
 
 
-<span class="k">def</span> <span class="nf">timeValidate</span><span class="p">(</span><span class="n">s</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">timeValidate</span><span class="p">(</span><span class="n">s</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
 
     <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">s</span><span class="p">)</span> <span class="o">&lt;</span> <span class="mi">14</span><span class="p">:</span> <span class="k">return</span> <span class="kc">False</span>
     <span class="k">if</span> <span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">s</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">14</span><span class="p">)</span> <span class="ow">and</span> <span class="p">(</span><span class="n">s</span><span class="p">[</span><span class="mi">8</span><span class="p">]</span> <span class="o">!=</span> <span class="s1">&#39;T&#39;</span><span class="p">)</span> <span class="ow">and</span> <span class="p">(</span><span class="n">s</span><span class="p">[</span><span class="mi">14</span><span class="p">]</span> <span class="o">!=</span> <span class="s1">&#39;.&#39;</span><span class="p">):</span> <span class="k">return</span> <span class="kc">False</span>
@@ -394,7 +394,7 @@
     <span class="k">return</span> <span class="kc">True</span>
 
 
-<span class="k">def</span> <span class="nf">timestr2flt</span><span class="p">(</span><span class="n">s</span><span class="p">):</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">timestr2flt</span><span class="p">(</span><span class="n">s</span><span class="p">):</span>
 
     <span class="k">if</span> <span class="n">s</span><span class="p">[</span><span class="mi">8</span><span class="p">]</span> <span class="o">==</span> <span class="s2">&quot;T&quot;</span><span class="p">:</span>
         <span class="n">s</span> <span class="o">=</span> <span class="n">s</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s1">&#39;T&#39;</span><span class="p">,</span> <span class="s1">&#39;&#39;</span><span class="p">)</span>
@@ -404,7 +404,7 @@
     <span class="k">return</span> <span class="n">calendar</span><span class="o">.</span><span class="n">timegm</span><span class="p">(</span><span class="n">t</span><span class="o">.</span><span class="n">timetuple</span><span class="p">())</span> <span class="o">+</span> <span class="nb">float</span><span class="p">(</span><span class="s1">&#39;0&#39;</span> <span class="o">+</span> <span class="n">s</span><span class="p">[</span><span class="mi">14</span><span class="p">:])</span>
 
 
-<span class="k">def</span> <span class="nf">timev2tov3str</span><span class="p">(</span><span class="n">s</span><span class="p">):</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">timev2tov3str</span><span class="p">(</span><span class="n">s</span><span class="p">):</span>
     <span class="k">if</span> <span class="n">s</span><span class="p">[</span><span class="mi">8</span><span class="p">]</span> <span class="o">==</span> <span class="s1">&#39;T&#39;</span><span class="p">:</span>
         <span class="k">return</span> <span class="n">s</span>
     <span class="k">else</span><span class="p">:</span>
@@ -419,7 +419,7 @@
 
 <div class="viewcode-block" id="durationToString">
 <a class="viewcode-back" href="../api-documentation.html#sarracenia.durationToString">[docs]</a>
-<span class="k">def</span> <span class="nf">durationToString</span><span class="p">(</span><span class="n">d</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">durationToString</span><span class="p">(</span><span class="n">d</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">      given a numbner of seconds, return a short, human readable string.</span>
 
@@ -462,7 +462,7 @@
 
 <div class="viewcode-block" id="durationToSeconds">
 <a class="viewcode-back" href="../api-documentation.html#sarracenia.durationToSeconds">[docs]</a>
-<span class="k">def</span> <span class="nf">durationToSeconds</span><span class="p">(</span><span class="n">str_value</span><span class="p">,</span> <span class="n">default</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">durationToSeconds</span><span class="p">(</span><span class="n">str_value</span><span class="p">,</span> <span class="n">default</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">   this function converts duration to seconds.</span>
 <span class="sd">   str_value should be a number followed by a unit [s,m,h,d,w] ex. 1w, 4d, 12h</span>
@@ -580,7 +580,7 @@
 
 <div class="viewcode-block" id="Message">
 <a class="viewcode-back" href="../api-documentation.html#sarracenia.Message">[docs]</a>
-<span class="k">class</span> <span class="nc">Message</span><span class="p">(</span><span class="nb">dict</span><span class="p">):</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">Message</span><span class="p">(</span><span class="nb">dict</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        A notification message in Sarracenia is stored as a python dictionary, with a few extra management functions.</span>
 
@@ -591,7 +591,7 @@
 <span class="sd">    &quot;&quot;&quot;</span>
 <div class="viewcode-block" id="Message.__init__">
 <a class="viewcode-back" href="../api-documentation.html#sarracenia.Message.__init__">[docs]</a>
-    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="bp">self</span><span class="p">[</span><span class="s1">&#39;_format&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;v03&#39;</span>
         <span class="bp">self</span><span class="p">[</span><span class="s1">&#39;_deleteOnPost&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="nb">set</span><span class="p">([</span><span class="s1">&#39;_format&#39;</span><span class="p">])</span></div>
 
@@ -599,7 +599,7 @@
 
 <div class="viewcode-block" id="Message.computeIdentity">
 <a class="viewcode-back" href="../api-documentation.html#sarracenia.Message.computeIdentity">[docs]</a>
-    <span class="k">def</span> <span class="nf">computeIdentity</span><span class="p">(</span><span class="n">msg</span><span class="p">,</span> <span class="n">path</span><span class="p">,</span> <span class="n">o</span><span class="p">,</span> <span class="n">offset</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">data</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">computeIdentity</span><span class="p">(</span><span class="n">msg</span><span class="p">,</span> <span class="n">path</span><span class="p">,</span> <span class="n">o</span><span class="p">,</span> <span class="n">offset</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">data</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">           check extended attributes for a cached identity sum calculation.</span>
 <span class="sd">           if extended attributes are present, and </span>
@@ -695,7 +695,7 @@
 
 <div class="viewcode-block" id="Message.copyDict">
 <a class="viewcode-back" href="../api-documentation.html#sarracenia.Message.copyDict">[docs]</a>
-    <span class="k">def</span> <span class="nf">copyDict</span><span class="p">(</span><span class="n">msg</span><span class="p">,</span> <span class="n">d</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">copyDict</span><span class="p">(</span><span class="n">msg</span><span class="p">,</span> <span class="n">d</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">          copy dictionary into message.</span>
 <span class="sd">       &quot;&quot;&quot;</span>
@@ -707,7 +707,7 @@
 
 <div class="viewcode-block" id="Message.deriveSource">
 <a class="viewcode-back" href="../api-documentation.html#sarracenia.Message.deriveSource">[docs]</a>
-    <span class="k">def</span> <span class="nf">deriveSource</span><span class="p">(</span><span class="n">msg</span><span class="p">,</span><span class="n">o</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">deriveSource</span><span class="p">(</span><span class="n">msg</span><span class="p">,</span><span class="n">o</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">           set msg[&#39;source&#39;] field as appropriate for given message and options (o)</span>
 <span class="sd">        &quot;&quot;&quot;</span>
@@ -732,7 +732,7 @@
 
 <div class="viewcode-block" id="Message.deriveTopics">
 <a class="viewcode-back" href="../api-documentation.html#sarracenia.Message.deriveTopics">[docs]</a>
-    <span class="k">def</span> <span class="nf">deriveTopics</span><span class="p">(</span><span class="n">msg</span><span class="p">,</span><span class="n">o</span><span class="p">,</span><span class="n">topic</span><span class="p">,</span><span class="n">separator</span><span class="o">=</span><span class="s1">&#39;.&#39;</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">deriveTopics</span><span class="p">(</span><span class="n">msg</span><span class="p">,</span><span class="n">o</span><span class="p">,</span><span class="n">topic</span><span class="p">,</span><span class="n">separator</span><span class="o">=</span><span class="s1">&#39;.&#39;</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">            derive subtopic, topicPrefix, and topic fields based on message and options.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
@@ -762,7 +762,7 @@
 
 <div class="viewcode-block" id="Message.dumps">
 <a class="viewcode-back" href="../api-documentation.html#sarracenia.Message.dumps">[docs]</a>
-    <span class="k">def</span> <span class="nf">dumps</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">dumps</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">           FIXME: used to be msg_dumps.</span>
 <span class="sd">           print a message in a compact but relatively compact way.</span>
@@ -823,7 +823,7 @@
 <div class="viewcode-block" id="Message.fromFileData">
 <a class="viewcode-back" href="../api-documentation.html#sarracenia.Message.fromFileData">[docs]</a>
     <span class="nd">@staticmethod</span>
-    <span class="k">def</span> <span class="nf">fromFileData</span><span class="p">(</span><span class="n">path</span><span class="p">,</span> <span class="n">o</span><span class="p">,</span> <span class="n">lstat</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">fromFileData</span><span class="p">(</span><span class="n">path</span><span class="p">,</span> <span class="n">o</span><span class="p">,</span> <span class="n">lstat</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">            create a message based on a given file, calculating the checksum.</span>
 <span class="sd">            returns a well-formed message, or None.</span>
@@ -856,7 +856,7 @@
 <div class="viewcode-block" id="Message.fromFileInfo">
 <a class="viewcode-back" href="../api-documentation.html#sarracenia.Message.fromFileInfo">[docs]</a>
     <span class="nd">@staticmethod</span>
-    <span class="k">def</span> <span class="nf">fromFileInfo</span><span class="p">(</span><span class="n">path</span><span class="p">,</span> <span class="n">o</span><span class="p">,</span> <span class="n">lstat</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">fromFileInfo</span><span class="p">(</span><span class="n">path</span><span class="p">,</span> <span class="n">o</span><span class="p">,</span> <span class="n">lstat</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">            based on the fiven information about the file (it&#39;s name and a stat record if available)</span>
 <span class="sd">            and a configuration options object (sarracenia.config.Config) </span>
@@ -993,7 +993,7 @@
 <div class="viewcode-block" id="Message.fromStream">
 <a class="viewcode-back" href="../api-documentation.html#sarracenia.Message.fromStream">[docs]</a>
     <span class="nd">@staticmethod</span>
-    <span class="k">def</span> <span class="nf">fromStream</span><span class="p">(</span><span class="n">path</span><span class="p">,</span> <span class="n">o</span><span class="p">,</span> <span class="n">data</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">fromStream</span><span class="p">(</span><span class="n">path</span><span class="p">,</span> <span class="n">o</span><span class="p">,</span> <span class="n">data</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">           Create a file and message for the given path.  </span>
 <span class="sd">           The file will be created or overwritten with the provided data.</span>
@@ -1011,7 +1011,7 @@
 
 <div class="viewcode-block" id="Message.getIDStr">
 <a class="viewcode-back" href="../api-documentation.html#sarracenia.Message.getIDStr">[docs]</a>
-    <span class="k">def</span> <span class="nf">getIDStr</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">getIDStr</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">           return some descriptive tag string to identify the message being processed.</span>
 
@@ -1037,7 +1037,7 @@
 
 <div class="viewcode-block" id="Message.setReport">
 <a class="viewcode-back" href="../api-documentation.html#sarracenia.Message.setReport">[docs]</a>
-    <span class="k">def</span> <span class="nf">setReport</span><span class="p">(</span><span class="n">msg</span><span class="p">,</span> <span class="n">code</span><span class="p">,</span> <span class="n">text</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">setReport</span><span class="p">(</span><span class="n">msg</span><span class="p">,</span> <span class="n">code</span><span class="p">,</span> <span class="n">text</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">          FIXME: used to be msg_set_report</span>
 <span class="sd">          set message fields to indicate result of action so reports can be generated.</span>
@@ -1068,7 +1068,7 @@
 
 <div class="viewcode-block" id="Message.updatePaths">
 <a class="viewcode-back" href="../api-documentation.html#sarracenia.Message.updatePaths">[docs]</a>
-    <span class="k">def</span> <span class="nf">updatePaths</span><span class="p">(</span><span class="n">msg</span><span class="p">,</span> <span class="n">options</span><span class="p">,</span> <span class="n">new_dir</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">new_file</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">updatePaths</span><span class="p">(</span><span class="n">msg</span><span class="p">,</span> <span class="n">options</span><span class="p">,</span> <span class="n">new_dir</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">new_file</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        set the new_* fields in the message based on changed file placement.</span>
 <span class="sd">        if new_* options are ommitted updaste the rest of the fields in </span>
@@ -1172,7 +1172,7 @@
 
 <div class="viewcode-block" id="Message.validate">
 <a class="viewcode-back" href="../api-documentation.html#sarracenia.Message.validate">[docs]</a>
-    <span class="k">def</span> <span class="nf">validate</span><span class="p">(</span><span class="n">msg</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">validate</span><span class="p">(</span><span class="n">msg</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        FIXME: used to be msg_validate</span>
 <span class="sd">        return True if message format seems ok, return True, else return False, log some reasons.</span>
@@ -1197,7 +1197,7 @@
 
 <div class="viewcode-block" id="Message.getContent">
 <a class="viewcode-back" href="../api-documentation.html#sarracenia.Message.getContent">[docs]</a>
-    <span class="k">def</span> <span class="nf">getContent</span><span class="p">(</span><span class="n">msg</span><span class="p">,</span><span class="n">options</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">getContent</span><span class="p">(</span><span class="n">msg</span><span class="p">,</span><span class="n">options</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">           Retrieve the data referred to by a message.  The data may be embedded</span>
 <span class="sd">           in the messate, or this routine may resolve a link to an external server </span>
@@ -1249,7 +1249,7 @@
 
 <div class="viewcode-block" id="Message.new_pathWrite">
 <a class="viewcode-back" href="../api-documentation.html#sarracenia.Message.new_pathWrite">[docs]</a>
-    <span class="k">def</span> <span class="nf">new_pathWrite</span><span class="p">(</span><span class="n">msg</span><span class="p">,</span><span class="n">options</span><span class="p">,</span><span class="n">data</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">new_pathWrite</span><span class="p">(</span><span class="n">msg</span><span class="p">,</span><span class="n">options</span><span class="p">,</span><span class="n">data</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">           expects: msg[&#39;new_dir&#39;] and msg[&#39;new_file&#39;] to be set.</span>
 <span class="sd">           given the byte stream of data.</span>

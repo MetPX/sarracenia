@@ -6,7 +6,7 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>sarracenia.rabbitmq_admin &mdash; Sarracenia 3.00.57rc1 documentation</title>
-      <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=80d5e7a1" />
+      <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=e59714d7" />
 
   
@@ -86,14 +86,14 @@
 <span class="sd">   rabbitmq administration bindings, to allow sr to invoke broker management functions.</span>
 
 <span class="sd">&quot;&quot;&quot;</span>
-<span class="kn">import</span> <span class="nn">sys</span>
-<span class="kn">import</span> <span class="nn">urllib</span><span class="o">,</span> <span class="nn">urllib.parse</span>
-<span class="kn">import</span> <span class="nn">base64</span>
-<span class="kn">import</span> <span class="nn">logging</span>
-<span class="kn">import</span> <span class="nn">os</span>
-<span class="kn">import</span> <span class="nn">re</span>
-<span class="kn">import</span> <span class="nn">socket</span>
-<span class="kn">import</span> <span class="nn">subprocess</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">sys</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">urllib</span><span class="o">,</span><span class="w"> </span><span class="nn">urllib.parse</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">base64</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">logging</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">os</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">re</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">socket</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">subprocess</span>
 
 <span class="c1">#rabbitmqadmin = &#39;.&#39; + os.sep + &#39;rabbitmqadmin&#39;</span>
 <span class="n">rabbitmqadmin</span> <span class="o">=</span> <span class="s1">&#39;rabbitmqadmin&#39;</span>
@@ -109,7 +109,7 @@
 
 <div class="viewcode-block" id="exec_rabbitmqadmin">
 <a class="viewcode-back" href="../../Reference/code.html#sarracenia.rabbitmq_admin.exec_rabbitmqadmin">[docs]</a>
-<span class="k">def</span> <span class="nf">exec_rabbitmqadmin</span><span class="p">(</span><span class="n">url</span><span class="p">,</span> <span class="n">options</span><span class="p">,</span> <span class="n">simulate</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">exec_rabbitmqadmin</span><span class="p">(</span><span class="n">url</span><span class="p">,</span> <span class="n">options</span><span class="p">,</span> <span class="n">simulate</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">       invoke rabbitmqadmin using a sub-process, with the given options.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
@@ -166,7 +166,7 @@
 
 <div class="viewcode-block" id="add_user">
 <a class="viewcode-back" href="../../Reference/code.html#sarracenia.rabbitmq_admin.add_user">[docs]</a>
-<span class="k">def</span> <span class="nf">add_user</span><span class="p">(</span><span class="n">url</span><span class="p">,</span> <span class="n">role</span><span class="p">,</span> <span class="n">user</span><span class="p">,</span> <span class="n">passwd</span><span class="p">,</span> <span class="n">simulate</span><span class="p">):</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">add_user</span><span class="p">(</span><span class="n">url</span><span class="p">,</span> <span class="n">role</span><span class="p">,</span> <span class="n">user</span><span class="p">,</span> <span class="n">passwd</span><span class="p">,</span> <span class="n">simulate</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">       add the given user with the given credentials.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
@@ -218,7 +218,7 @@
 
 <div class="viewcode-block" id="del_user">
 <a class="viewcode-back" href="../../Reference/code.html#sarracenia.rabbitmq_admin.del_user">[docs]</a>
-<span class="k">def</span> <span class="nf">del_user</span><span class="p">(</span><span class="n">url</span><span class="p">,</span> <span class="n">user</span><span class="p">,</span> <span class="n">simulate</span><span class="p">):</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">del_user</span><span class="p">(</span><span class="n">url</span><span class="p">,</span> <span class="n">user</span><span class="p">,</span> <span class="n">simulate</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        delete user from the given broker.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
@@ -230,7 +230,7 @@
 
 <div class="viewcode-block" id="get_exchanges">
 <a class="viewcode-back" href="../../Reference/code.html#sarracenia.rabbitmq_admin.get_exchanges">[docs]</a>
-<span class="k">def</span> <span class="nf">get_exchanges</span><span class="p">(</span><span class="n">url</span><span class="p">):</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">get_exchanges</span><span class="p">(</span><span class="n">url</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        get the list of existing exchanges.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
@@ -242,7 +242,7 @@
 
 <div class="viewcode-block" id="get_queues">
 <a class="viewcode-back" href="../../Reference/code.html#sarracenia.rabbitmq_admin.get_queues">[docs]</a>
-<span class="k">def</span> <span class="nf">get_queues</span><span class="p">(</span><span class="n">url</span><span class="p">):</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">get_queues</span><span class="p">(</span><span class="n">url</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        get the list of existing queues.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
@@ -254,7 +254,7 @@
 
 <div class="viewcode-block" id="get_users">
 <a class="viewcode-back" href="../../Reference/code.html#sarracenia.rabbitmq_admin.get_users">[docs]</a>
-<span class="k">def</span> <span class="nf">get_users</span><span class="p">(</span><span class="n">url</span><span class="p">):</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">get_users</span><span class="p">(</span><span class="n">url</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        get the list of existing users.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
@@ -272,11 +272,11 @@
 
 <div class="viewcode-block" id="broker_get_exchanges">
 <a class="viewcode-back" href="../../Reference/code.html#sarracenia.rabbitmq_admin.broker_get_exchanges">[docs]</a>
-<span class="k">def</span> <span class="nf">broker_get_exchanges</span><span class="p">(</span><span class="n">url</span><span class="p">,</span> <span class="n">ssl_key_file</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">ssl_cert_file</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">broker_get_exchanges</span><span class="p">(</span><span class="n">url</span><span class="p">,</span> <span class="n">ssl_key_file</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">ssl_cert_file</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        get the list of existing exchanges using a url query.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
-    <span class="kn">import</span> <span class="nn">http.client</span>
+    <span class="kn">import</span><span class="w"> </span><span class="nn">http.client</span>
     <span class="n">method</span> <span class="o">=</span> <span class="s2">&quot;GET&quot;</span>
     <span class="n">path</span> <span class="o">=</span> <span class="s2">&quot;/api/exchanges?columns=name&quot;</span>
 
@@ -316,7 +316,7 @@
 
 <div class="viewcode-block" id="user_access">
 <a class="viewcode-back" href="../../Reference/code.html#sarracenia.rabbitmq_admin.user_access">[docs]</a>
-<span class="k">def</span> <span class="nf">user_access</span><span class="p">(</span><span class="n">url</span><span class="p">,</span> <span class="n">user</span><span class="p">):</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">user_access</span><span class="p">(</span><span class="n">url</span><span class="p">,</span> <span class="n">user</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot; </span>
 <span class="sd">      Given an administrative URL, return a list of exchanges and queues the user can access.</span>
 
@@ -330,8 +330,8 @@
 <span class="sd">           &#39;bindings&#39; : { &lt;queue&gt; : { &#39;exchange&#39;: &lt;exchange&gt; , &#39;key&#39; : &lt;routing_key&gt; } }</span>
 <span class="sd">         }</span>
 <span class="sd">    &quot;&quot;&quot;</span>
-    <span class="kn">import</span> <span class="nn">json</span>
-    <span class="kn">import</span> <span class="nn">re</span>
+    <span class="kn">import</span><span class="w"> </span><span class="nn">json</span>
+    <span class="kn">import</span><span class="w"> </span><span class="nn">re</span>
 
     <span class="n">found</span> <span class="o">=</span> <span class="kc">False</span>
     <span class="k">for</span> <span class="n">p</span> <span class="ow">in</span> <span class="n">json</span><span class="o">.</span><span class="n">loads</span><span class="p">(</span><span class="n">exec_rabbitmqadmin</span><span class="p">(</span><span class="n">url</span><span class="p">,</span> <span class="s2">&quot;list permissions&quot;</span><span class="p">)[</span><span class="mi">1</span><span class="p">]):</span>
@@ -405,7 +405,7 @@
     <span class="n">url</span> <span class="o">=</span> <span class="n">urllib</span><span class="o">.</span><span class="n">parse</span><span class="o">.</span><span class="n">urlparse</span><span class="p">(</span><span class="n">sys</span><span class="o">.</span><span class="n">argv</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span>
     <span class="nb">print</span><span class="p">(</span><span class="n">exec_rabbitmqadmin</span><span class="p">(</span><span class="n">url</span><span class="p">,</span> <span class="s2">&quot;list queue names&quot;</span><span class="p">)[</span><span class="mi">1</span><span class="p">])</span>
 
-    <span class="kn">import</span> <span class="nn">json</span>
+    <span class="kn">import</span><span class="w"> </span><span class="nn">json</span>
 
     <span class="n">lex</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span>
         <span class="nb">map</span><span class="p">(</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">x</span><span class="p">[</span><span class="s1">&#39;name&#39;</span><span class="p">],</span>
@@ -421,7 +421,7 @@
 
 <div class="viewcode-block" id="run_rabbitmqadmin">
 <a class="viewcode-back" href="../../Reference/code.html#sarracenia.rabbitmq_admin.run_rabbitmqadmin">[docs]</a>
-<span class="k">def</span> <span class="nf">run_rabbitmqadmin</span><span class="p">(</span><span class="n">url</span><span class="p">,</span> <span class="n">options</span><span class="p">,</span> <span class="n">simulate</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">run_rabbitmqadmin</span><span class="p">(</span><span class="n">url</span><span class="p">,</span> <span class="n">options</span><span class="p">,</span> <span class="n">simulate</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">      spawn a subprocess to run rabbitmqadmin with the given options.</span>
 <span class="sd">      capture result.</span>

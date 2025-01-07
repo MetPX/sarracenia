@@ -7,7 +7,7 @@
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Sarracenia Algorithmic Design &mdash; Sarracenia 3.00.57rc1 documentation</title>
-      <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=80d5e7a1" />
+      <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=e59714d7" />
       <link rel="stylesheet" type="text/css" href="../../_static/nbsphinx-code-cells.css?v=2aa19091" />
 
@@ -151,18 +151,18 @@
 <span class="c1"># might show multiple subscribers for reading from different pumps.</span>
 <span class="o">%</span><span class="k">matplotlib</span> inline
 
-<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
-<span class="kn">import</span> <span class="nn">matplotlib.pyplot</span> <span class="k">as</span> <span class="nn">plt</span>
-<span class="kn">from</span> <span class="nn">matplotlib.patches</span> <span class="kn">import</span> <span class="n">Circle</span><span class="p">,</span> <span class="n">Rectangle</span><span class="p">,</span> <span class="n">Polygon</span><span class="p">,</span> <span class="n">Arrow</span><span class="p">,</span> <span class="n">FancyArrow</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">matplotlib.pyplot</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">plt</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">matplotlib.patches</span><span class="w"> </span><span class="kn">import</span> <span class="n">Circle</span><span class="p">,</span> <span class="n">Rectangle</span><span class="p">,</span> <span class="n">Polygon</span><span class="p">,</span> <span class="n">Arrow</span><span class="p">,</span> <span class="n">FancyArrow</span>
 
-<span class="k">def</span> <span class="nf">triple_circle</span><span class="p">(</span><span class="n">x</span><span class="p">,</span><span class="n">y</span><span class="p">,</span><span class="n">box_bg</span><span class="p">):</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">triple_circle</span><span class="p">(</span><span class="n">x</span><span class="p">,</span><span class="n">y</span><span class="p">,</span><span class="n">box_bg</span><span class="p">):</span>
     <span class="k">return</span> <span class="p">[</span>
        <span class="n">Circle</span><span class="p">((</span><span class="n">x</span><span class="o">+</span><span class="mf">0.4</span><span class="p">,</span> <span class="n">y</span><span class="o">+</span><span class="mf">0.9</span><span class="p">),</span> <span class="mf">0.5</span><span class="p">,</span> <span class="n">fc</span><span class="o">=</span><span class="n">box_bg</span><span class="p">),</span>
        <span class="n">Circle</span><span class="p">((</span><span class="n">x</span><span class="o">+</span><span class="mf">0.2</span><span class="p">,</span> <span class="n">y</span><span class="o">+</span><span class="mf">0.7</span><span class="p">),</span> <span class="mf">0.5</span><span class="p">,</span> <span class="n">fc</span><span class="o">=</span><span class="n">box_bg</span><span class="p">),</span>
        <span class="n">Circle</span><span class="p">((</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="o">+</span><span class="mf">0.5</span><span class="p">),</span> <span class="mf">0.5</span><span class="p">,</span> <span class="n">fc</span><span class="o">=</span><span class="n">box_bg</span><span class="p">)</span>
     <span class="p">]</span>
 
-<span class="k">def</span> <span class="nf">directory_polygon</span><span class="p">(</span><span class="n">x</span><span class="p">,</span><span class="n">y</span><span class="p">,</span><span class="n">box_bg</span><span class="p">,</span><span class="n">arrow1</span><span class="p">):</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">directory_polygon</span><span class="p">(</span><span class="n">x</span><span class="p">,</span><span class="n">y</span><span class="p">,</span><span class="n">box_bg</span><span class="p">,</span><span class="n">arrow1</span><span class="p">):</span>
    <span class="k">return</span> <span class="p">[</span>
        <span class="n">Rectangle</span><span class="p">((</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">),</span> <span class="mf">0.8</span><span class="p">,</span> <span class="mf">1.1</span><span class="p">,</span> <span class="n">zorder</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">fc</span><span class="o">=</span><span class="n">box_bg</span><span class="p">),</span>
        <span class="n">Rectangle</span><span class="p">((</span><span class="n">x</span><span class="o">+</span><span class="mf">0.2</span><span class="p">,</span> <span class="n">y</span><span class="o">+</span><span class="mf">0.2</span><span class="p">),</span> <span class="mf">0.8</span><span class="p">,</span> <span class="mf">1.1</span><span class="p">,</span> <span class="n">zorder</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">fc</span><span class="o">=</span><span class="n">box_bg</span><span class="p">),</span>
@@ -171,7 +171,7 @@
        <span class="p">]</span>
 
 
-<span class="k">def</span> <span class="nf">create_base</span><span class="p">(</span><span class="n">box_bg</span> <span class="o">=</span> <span class="s1">&#39;#CCCCCC&#39;</span><span class="p">,</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">create_base</span><span class="p">(</span><span class="n">box_bg</span> <span class="o">=</span> <span class="s1">&#39;#CCCCCC&#39;</span><span class="p">,</span>
                 <span class="n">arrow1</span> <span class="o">=</span> <span class="s1">&#39;#88CCFF&#39;</span><span class="p">,</span>
                 <span class="n">arrow2</span> <span class="o">=</span> <span class="s1">&#39;#88FF88&#39;</span><span class="p">,</span>
                 <span class="n">supervised</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
@@ -244,7 +244,7 @@
 
 
 <span class="sd">&quot;&quot;&quot;</span>
-<span class="kn">from</span> <span class="nn">math</span> <span class="kn">import</span> <span class="n">log</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">math</span><span class="w"> </span><span class="kn">import</span> <span class="n">log</span>
 
 <span class="n">K</span><span class="o">=</span><span class="mi">10000</span>   <span class="c1"># number of topics/folders in the hierarchy</span>
 <span class="n">B</span><span class="o">=</span><span class="mi">8</span>       <span class="c1"># branching level at each level in the hierarchy</span>
@@ -454,18 +454,18 @@ t total cost=125366
 <span class="c1"># might show multiple subscribers for reading from different pumps.</span>
 <span class="o">%</span><span class="k">matplotlib</span> inline
 
-<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
-<span class="kn">import</span> <span class="nn">matplotlib.pyplot</span> <span class="k">as</span> <span class="nn">plt</span>
-<span class="kn">from</span> <span class="nn">matplotlib.patches</span> <span class="kn">import</span> <span class="n">Circle</span><span class="p">,</span> <span class="n">Rectangle</span><span class="p">,</span> <span class="n">Polygon</span><span class="p">,</span> <span class="n">Arrow</span><span class="p">,</span> <span class="n">FancyArrow</span><span class="p">,</span> <span class="n">FancyArrowPatch</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">matplotlib.pyplot</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">plt</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">matplotlib.patches</span><span class="w"> </span><span class="kn">import</span> <span class="n">Circle</span><span class="p">,</span> <span class="n">Rectangle</span><span class="p">,</span> <span class="n">Polygon</span><span class="p">,</span> <span class="n">Arrow</span><span class="p">,</span> <span class="n">FancyArrow</span><span class="p">,</span> <span class="n">FancyArrowPatch</span>
 
-<span class="k">def</span> <span class="nf">triple_circle</span><span class="p">(</span><span class="n">x</span><span class="p">,</span><span class="n">y</span><span class="p">,</span><span class="n">box_bg</span><span class="p">):</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">triple_circle</span><span class="p">(</span><span class="n">x</span><span class="p">,</span><span class="n">y</span><span class="p">,</span><span class="n">box_bg</span><span class="p">):</span>
     <span class="k">return</span> <span class="p">[</span>
        <span class="n">Circle</span><span class="p">((</span><span class="n">x</span><span class="o">+</span><span class="mf">0.4</span><span class="p">,</span> <span class="n">y</span><span class="o">+</span><span class="mf">0.9</span><span class="p">),</span> <span class="mf">0.5</span><span class="p">,</span> <span class="n">fc</span><span class="o">=</span><span class="n">box_bg</span><span class="p">),</span>
        <span class="n">Circle</span><span class="p">((</span><span class="n">x</span><span class="o">+</span><span class="mf">0.2</span><span class="p">,</span> <span class="n">y</span><span class="o">+</span><span class="mf">0.7</span><span class="p">),</span> <span class="mf">0.5</span><span class="p">,</span> <span class="n">fc</span><span class="o">=</span><span class="n">box_bg</span><span class="p">),</span>
        <span class="n">Circle</span><span class="p">((</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="o">+</span><span class="mf">0.5</span><span class="p">),</span> <span class="mf">0.5</span><span class="p">,</span> <span class="n">fc</span><span class="o">=</span><span class="n">box_bg</span><span class="p">)</span>
     <span class="p">]</span>
 
-<span class="k">def</span> <span class="nf">directory_polygon</span><span class="p">(</span><span class="n">x</span><span class="p">,</span><span class="n">y</span><span class="p">,</span><span class="n">box_bg</span><span class="p">,</span><span class="n">arrow1</span><span class="p">):</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">directory_polygon</span><span class="p">(</span><span class="n">x</span><span class="p">,</span><span class="n">y</span><span class="p">,</span><span class="n">box_bg</span><span class="p">,</span><span class="n">arrow1</span><span class="p">):</span>
    <span class="k">return</span> <span class="p">[</span>
        <span class="n">Rectangle</span><span class="p">((</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">),</span> <span class="mf">0.8</span><span class="p">,</span> <span class="mf">1.1</span><span class="p">,</span> <span class="n">zorder</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">fc</span><span class="o">=</span><span class="n">box_bg</span><span class="p">),</span>
        <span class="n">Rectangle</span><span class="p">((</span><span class="n">x</span><span class="o">+</span><span class="mf">0.2</span><span class="p">,</span> <span class="n">y</span><span class="o">+</span><span class="mf">0.2</span><span class="p">),</span> <span class="mf">0.8</span><span class="p">,</span> <span class="mf">1.1</span><span class="p">,</span> <span class="n">zorder</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">fc</span><span class="o">=</span><span class="n">box_bg</span><span class="p">),</span>
@@ -474,7 +474,7 @@ t total cost=125366
        <span class="p">]</span>
 
 
-<span class="k">def</span> <span class="nf">create_base</span><span class="p">(</span><span class="n">box_bg</span> <span class="o">=</span> <span class="s1">&#39;#CCCCCC&#39;</span><span class="p">,</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">create_base</span><span class="p">(</span><span class="n">box_bg</span> <span class="o">=</span> <span class="s1">&#39;#CCCCCC&#39;</span><span class="p">,</span>
                 <span class="n">arrow1</span> <span class="o">=</span> <span class="s1">&#39;#88CCFF&#39;</span><span class="p">,</span>
                 <span class="n">arrow2</span> <span class="o">=</span> <span class="s1">&#39;#88FF88&#39;</span><span class="p">,</span>
                 <span class="n">supervised</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
@@ -593,11 +593,11 @@ t total cost=125366
 <span class="c1"># might show multiple subscribers for reading from different pumps.</span>
 <span class="o">%</span><span class="k">matplotlib</span> inline
 
-<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
-<span class="kn">import</span> <span class="nn">matplotlib.pyplot</span> <span class="k">as</span> <span class="nn">plt</span>
-<span class="kn">from</span> <span class="nn">matplotlib.patches</span> <span class="kn">import</span> <span class="n">Circle</span><span class="p">,</span> <span class="n">Rectangle</span><span class="p">,</span> <span class="n">Polygon</span><span class="p">,</span> <span class="n">Arrow</span><span class="p">,</span> <span class="n">FancyArrow</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">matplotlib.pyplot</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">plt</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">matplotlib.patches</span><span class="w"> </span><span class="kn">import</span> <span class="n">Circle</span><span class="p">,</span> <span class="n">Rectangle</span><span class="p">,</span> <span class="n">Polygon</span><span class="p">,</span> <span class="n">Arrow</span><span class="p">,</span> <span class="n">FancyArrow</span>
 
-<span class="k">def</span> <span class="nf">triple_circle</span><span class="p">(</span><span class="n">x</span><span class="p">,</span><span class="n">y</span><span class="p">,</span><span class="n">box_bg</span><span class="p">):</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">triple_circle</span><span class="p">(</span><span class="n">x</span><span class="p">,</span><span class="n">y</span><span class="p">,</span><span class="n">box_bg</span><span class="p">):</span>
     <span class="k">return</span> <span class="p">[</span>
        <span class="n">Circle</span><span class="p">((</span><span class="n">x</span><span class="o">+</span><span class="mf">0.4</span><span class="p">,</span> <span class="n">y</span><span class="o">+</span><span class="mf">0.9</span><span class="p">),</span> <span class="mf">0.5</span><span class="p">,</span> <span class="n">fc</span><span class="o">=</span><span class="n">box_bg</span><span class="p">),</span>
        <span class="n">Circle</span><span class="p">((</span><span class="n">x</span><span class="o">+</span><span class="mf">0.2</span><span class="p">,</span> <span class="n">y</span><span class="o">+</span><span class="mf">0.7</span><span class="p">),</span> <span class="mf">0.5</span><span class="p">,</span> <span class="n">fc</span><span class="o">=</span><span class="n">box_bg</span><span class="p">),</span>
@@ -608,7 +608,7 @@ t total cost=125366
        <span class="n">Circle</span><span class="p">((</span><span class="n">x</span><span class="o">+</span><span class="mf">0.56</span><span class="p">,</span> <span class="n">y</span><span class="o">+</span><span class="mf">0.92</span><span class="p">),</span> <span class="mf">0.2</span><span class="p">,</span> <span class="n">fc</span><span class="o">=</span><span class="s2">&quot;white&quot;</span><span class="p">)</span>
     <span class="p">]</span>
 
-<span class="k">def</span> <span class="nf">directory_polygon</span><span class="p">(</span><span class="n">x</span><span class="p">,</span><span class="n">y</span><span class="p">,</span><span class="n">box_bg</span><span class="p">,</span><span class="n">arrow1</span><span class="p">):</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">directory_polygon</span><span class="p">(</span><span class="n">x</span><span class="p">,</span><span class="n">y</span><span class="p">,</span><span class="n">box_bg</span><span class="p">,</span><span class="n">arrow1</span><span class="p">):</span>
    <span class="k">return</span> <span class="p">[</span>
        <span class="n">Rectangle</span><span class="p">((</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">),</span> <span class="mf">0.8</span><span class="p">,</span> <span class="mf">1.1</span><span class="p">,</span> <span class="n">zorder</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">fc</span><span class="o">=</span><span class="n">box_bg</span><span class="p">),</span>
        <span class="n">Rectangle</span><span class="p">((</span><span class="n">x</span><span class="o">+</span><span class="mf">0.2</span><span class="p">,</span> <span class="n">y</span><span class="o">+</span><span class="mf">0.2</span><span class="p">),</span> <span class="mf">0.8</span><span class="p">,</span> <span class="mf">1.1</span><span class="p">,</span> <span class="n">zorder</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">fc</span><span class="o">=</span><span class="n">box_bg</span><span class="p">),</span>
@@ -617,7 +617,7 @@ t total cost=125366
        <span class="p">]</span>
 
 
-<span class="k">def</span> <span class="nf">create_base</span><span class="p">(</span><span class="n">box_bg</span> <span class="o">=</span> <span class="s1">&#39;#CCCCCC&#39;</span><span class="p">,</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">create_base</span><span class="p">(</span><span class="n">box_bg</span> <span class="o">=</span> <span class="s1">&#39;#CCCCCC&#39;</span><span class="p">,</span>
                 <span class="n">arrow1</span> <span class="o">=</span> <span class="s1">&#39;#88CCFF&#39;</span><span class="p">,</span>
                 <span class="n">arrow2</span> <span class="o">=</span> <span class="s1">&#39;#88FF88&#39;</span><span class="p">,</span>
                 <span class="n">supervised</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>

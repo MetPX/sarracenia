@@ -6,7 +6,7 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>sarracenia.transfer.ftp &mdash; Sarracenia 3.00.57rc1 documentation</title>
-      <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=80d5e7a1" />
+      <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="../../../_static/css/theme.css?v=e59714d7" />
 
   
@@ -104,35 +104,35 @@
 <span class="c1">#  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307  USA</span>
 <span class="c1">#</span>
 
-<span class="kn">import</span> <span class="nn">ftplib</span><span class="o">,</span> <span class="nn">os</span><span class="o">,</span> <span class="nn">subprocess</span><span class="o">,</span> <span class="nn">sys</span><span class="o">,</span> <span class="nn">time</span><span class="o">,</span> <span class="nn">ssl</span>
-<span class="kn">import</span> <span class="nn">logging</span>
-<span class="kn">from</span> <span class="nn">sarracenia.transfer</span> <span class="kn">import</span> <span class="n">Transfer</span>
-<span class="kn">from</span> <span class="nn">sarracenia.transfer</span> <span class="kn">import</span> <span class="n">alarm_cancel</span><span class="p">,</span> <span class="n">alarm_set</span><span class="p">,</span> <span class="n">alarm_raise</span>
-<span class="kn">from</span> <span class="nn">urllib.parse</span> <span class="kn">import</span> <span class="n">unquote</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">ftplib</span><span class="o">,</span><span class="w"> </span><span class="nn">os</span><span class="o">,</span><span class="w"> </span><span class="nn">subprocess</span><span class="o">,</span><span class="w"> </span><span class="nn">sys</span><span class="o">,</span><span class="w"> </span><span class="nn">time</span><span class="o">,</span><span class="w"> </span><span class="nn">ssl</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">logging</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">sarracenia.transfer</span><span class="w"> </span><span class="kn">import</span> <span class="n">Transfer</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">sarracenia.transfer</span><span class="w"> </span><span class="kn">import</span> <span class="n">alarm_cancel</span><span class="p">,</span> <span class="n">alarm_set</span><span class="p">,</span> <span class="n">alarm_raise</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">urllib.parse</span><span class="w"> </span><span class="kn">import</span> <span class="n">unquote</span>
 
 <span class="n">logger</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="vm">__name__</span><span class="p">)</span>
 
 <div class="viewcode-block" id="IMPLICIT_FTP_TLS">
 <a class="viewcode-back" href="../../../Reference/code.html#sarracenia.transfer.ftp.IMPLICIT_FTP_TLS">[docs]</a>
-<span class="k">class</span> <span class="nc">IMPLICIT_FTP_TLS</span><span class="p">(</span><span class="n">ftplib</span><span class="o">.</span><span class="n">FTP_TLS</span><span class="p">):</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">IMPLICIT_FTP_TLS</span><span class="p">(</span><span class="n">ftplib</span><span class="o">.</span><span class="n">FTP_TLS</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot; FTP_TLS subclass that automatically wraps sockets in SSL to support implicit FTPS.</span>
 <span class="sd">        Copied from https://stackoverflow.com/questions/12164470/python-ftp-implicit-tls-connection-issue</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
 <div class="viewcode-block" id="IMPLICIT_FTP_TLS.__init__">
 <a class="viewcode-back" href="../../../Reference/code.html#sarracenia.transfer.ftp.IMPLICIT_FTP_TLS.__init__">[docs]</a>
-    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
         <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_sock</span> <span class="o">=</span> <span class="kc">None</span></div>
 
 
     <span class="nd">@property</span>
-    <span class="k">def</span> <span class="nf">sock</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">sock</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Return the socket.&quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_sock</span>
 
     <span class="nd">@sock</span><span class="o">.</span><span class="n">setter</span>
-    <span class="k">def</span> <span class="nf">sock</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">sock</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;When modifying the socket, ensure that it is ssl wrapped.&quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="n">value</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="n">ssl</span><span class="o">.</span><span class="n">SSLSocket</span><span class="p">):</span>
             <span class="n">value</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">context</span><span class="o">.</span><span class="n">wrap_socket</span><span class="p">(</span><span class="n">value</span><span class="p">)</span>
@@ -141,7 +141,7 @@
 
 <div class="viewcode-block" id="Ftp">
 <a class="viewcode-back" href="../../../Reference/code.html#sarracenia.transfer.ftp.Ftp">[docs]</a>
-<span class="k">class</span> <span class="nc">Ftp</span><span class="p">(</span><span class="n">Transfer</span><span class="p">):</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">Ftp</span><span class="p">(</span><span class="n">Transfer</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    File Transfer Protocol (FTP)  ( https://datatracker.ietf.org/doc/html/rfc959 )</span>
 <span class="sd">    sarracenia transfer protocol subclass supports/uses additional custom options:</span>
@@ -153,7 +153,7 @@
 <span class="sd">    &quot;&quot;&quot;</span>
 <div class="viewcode-block" id="Ftp.__init__">
 <a class="viewcode-back" href="../../../Reference/code.html#sarracenia.transfer.ftp.Ftp.__init__">[docs]</a>
-    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">proto</span><span class="p">,</span> <span class="n">options</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">proto</span><span class="p">,</span> <span class="n">options</span><span class="p">):</span>
 
         <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">proto</span><span class="p">,</span> <span class="n">options</span><span class="p">)</span>
 
@@ -171,11 +171,11 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">batch</span> <span class="o">=</span> <span class="mi">0</span></div>
 
 
-    <span class="k">def</span> <span class="nf">registered_as</span><span class="p">():</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">registered_as</span><span class="p">():</span>
         <span class="k">return</span> <span class="p">[</span><span class="s1">&#39;ftp&#39;</span><span class="p">]</span>
 
     <span class="c1"># cd</span>
-    <span class="k">def</span> <span class="nf">cd</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">path</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">cd</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">path</span><span class="p">):</span>
         <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;sr_ftp cd </span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="n">path</span><span class="p">)</span>
 
         <span class="n">alarm_set</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">o</span><span class="o">.</span><span class="n">timeout</span><span class="p">)</span>
@@ -186,7 +186,7 @@
         <span class="k">finally</span><span class="p">:</span>
             <span class="n">alarm_cancel</span><span class="p">()</span>
 
-    <span class="k">def</span> <span class="nf">cd_forced</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">path</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">cd_forced</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">path</span><span class="p">):</span>
         <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;sr_ftp cd_forced </span><span class="si">%o</span><span class="s2"> </span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">o</span><span class="o">.</span><span class="n">permDirDefault</span><span class="p">,</span> <span class="n">path</span><span class="p">))</span>
 
         <span class="c1"># try to go directly to path</span>
@@ -241,7 +241,7 @@
 
     <span class="c1"># check_is_connected</span>
 
-    <span class="k">def</span> <span class="nf">check_is_connected</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">check_is_connected</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;sr_ftp check_is_connected&quot;</span><span class="p">)</span>
 
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">ftp</span> <span class="o">==</span> <span class="kc">None</span><span class="p">:</span> <span class="k">return</span> <span class="kc">False</span>
@@ -266,7 +266,7 @@
         <span class="k">return</span> <span class="kc">True</span>
 
     <span class="c1"># chmod</span>
-    <span class="k">def</span> <span class="nf">chmod</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">perm</span><span class="p">,</span> <span class="n">path</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">chmod</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">perm</span><span class="p">,</span> <span class="n">path</span><span class="p">):</span>
         <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;sr_ftp chmod </span><span class="si">%s</span><span class="s2"> </span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">perm</span><span class="p">),</span> <span class="n">path</span><span class="p">))</span>
         <span class="n">alarm_set</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">o</span><span class="o">.</span><span class="n">timeout</span><span class="p">)</span>
         <span class="k">try</span><span class="p">:</span>
@@ -275,7 +275,7 @@
             <span class="n">alarm_cancel</span><span class="p">()</span>
 
     <span class="c1"># close</span>
-    <span class="k">def</span> <span class="nf">close</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">close</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;sr_ftp close&quot;</span><span class="p">)</span>
 
         <span class="n">old_ftp</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">ftp</span>
@@ -290,7 +290,7 @@
         <span class="n">alarm_cancel</span><span class="p">()</span>
 
     <span class="c1"># connect...</span>
-    <span class="k">def</span> <span class="nf">connect</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">connect</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;sr_ftp connect </span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="bp">self</span><span class="o">.</span><span class="n">o</span><span class="o">.</span><span class="n">sendTo</span><span class="p">)</span>
 
         <span class="bp">self</span><span class="o">.</span><span class="n">connected</span> <span class="o">=</span> <span class="kc">False</span>
@@ -359,7 +359,7 @@
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">connected</span>
 
     <span class="c1"># credentials...</span>
-    <span class="k">def</span> <span class="nf">credentials</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">credentials</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;sr_ftp credentials </span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="bp">self</span><span class="o">.</span><span class="n">sendTo</span><span class="p">)</span>
 
         <span class="k">try</span><span class="p">:</span>
@@ -388,7 +388,7 @@
         <span class="k">return</span> <span class="kc">False</span>
 
     <span class="c1"># delete</span>
-    <span class="k">def</span> <span class="nf">delete</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">path</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">delete</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">path</span><span class="p">):</span>
         <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;sr_ftp rm </span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="n">path</span><span class="p">)</span>
         <span class="n">alarm_set</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">o</span><span class="o">.</span><span class="n">timeout</span><span class="p">)</span>
         <span class="c1"># if delete does not work (file not found) run pwd to see if connection is ok</span>
@@ -399,7 +399,7 @@
         <span class="n">alarm_cancel</span><span class="p">()</span>
 
     <span class="c1"># get</span>
-    <span class="k">def</span> <span class="nf">get</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">get</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span>
             <span class="n">msg</span><span class="p">,</span>
             <span class="n">remote_file</span><span class="p">,</span>
             <span class="n">local_file</span><span class="p">,</span>
@@ -434,7 +434,7 @@
 
         <span class="k">return</span> <span class="n">rw_length</span>
 
-    <span class="k">def</span> <span class="nf">getAccelerated</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">msg</span><span class="p">,</span> <span class="n">remote_file</span><span class="p">,</span> <span class="n">local_file</span><span class="p">,</span> <span class="n">length</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">remote_offset</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">exactLength</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">getAccelerated</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">msg</span><span class="p">,</span> <span class="n">remote_file</span><span class="p">,</span> <span class="n">local_file</span><span class="p">,</span> <span class="n">length</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">remote_offset</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">exactLength</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
 
         <span class="n">base_url</span> <span class="o">=</span> <span class="n">msg</span><span class="p">[</span><span class="s1">&#39;baseUrl&#39;</span><span class="p">]</span>
         <span class="k">if</span> <span class="n">base_url</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">==</span> <span class="s1">&#39;/&#39;</span><span class="p">:</span>
@@ -455,7 +455,7 @@
         <span class="k">return</span> <span class="n">sz</span>
 
     <span class="c1"># getcwd</span>
-    <span class="k">def</span> <span class="nf">getcwd</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">getcwd</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="n">alarm_set</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">o</span><span class="o">.</span><span class="n">timeout</span><span class="p">)</span>
         <span class="k">try</span><span class="p">:</span>
             <span class="n">pwd</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">ftp</span><span class="o">.</span><span class="n">pwd</span><span class="p">()</span>
@@ -465,7 +465,7 @@
         <span class="k">return</span> <span class="n">pwd</span>
 
     <span class="c1"># ls</span>
-    <span class="k">def</span> <span class="nf">ls</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">ls</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;sr_ftp ls&quot;</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">entries</span> <span class="o">=</span> <span class="p">{}</span>
         <span class="n">alarm_set</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">o</span><span class="o">.</span><span class="n">timeout</span><span class="p">)</span>
@@ -478,7 +478,7 @@
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">entries</span>
 
     <span class="c1"># line_callback: entries[filename] = &#39;stripped_file_description&#39;</span>
-    <span class="k">def</span> <span class="nf">line_callback</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">iline</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">line_callback</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">iline</span><span class="p">):</span>
         <span class="c1">#logger.debug(&quot;sr_ftp line_callback %s&quot; % iline)</span>
 
         <span class="n">oline</span> <span class="o">=</span> <span class="n">iline</span>
@@ -510,7 +510,7 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">entries</span><span class="p">[</span><span class="n">fil</span><span class="p">]</span> <span class="o">=</span> <span class="n">line</span>
 
     <span class="c1"># mkdir</span>
-    <span class="k">def</span> <span class="nf">mkdir</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">remote_dir</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">mkdir</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">remote_dir</span><span class="p">):</span>
         <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;sr_ftp mkdir </span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="n">remote_dir</span><span class="p">)</span>
         <span class="n">alarm_set</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">o</span><span class="o">.</span><span class="n">timeout</span><span class="p">)</span>
         <span class="k">try</span><span class="p">:</span>
@@ -527,7 +527,7 @@
             <span class="n">alarm_cancel</span><span class="p">()</span>
 
     <span class="c1"># put</span>
-    <span class="k">def</span> <span class="nf">put</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">put</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span>
             <span class="n">msg</span><span class="p">,</span>
             <span class="n">local_file</span><span class="p">,</span>
             <span class="n">remote_file</span><span class="p">,</span>
@@ -557,7 +557,7 @@
 
         <span class="k">return</span> <span class="n">rw_length</span>
 
-    <span class="k">def</span> <span class="nf">putAccelerated</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">msg</span><span class="p">,</span> <span class="n">local_file</span><span class="p">,</span> <span class="n">remote_file</span><span class="p">,</span> <span class="n">length</span><span class="o">=</span><span class="mi">0</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">putAccelerated</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">msg</span><span class="p">,</span> <span class="n">local_file</span><span class="p">,</span> <span class="n">remote_file</span><span class="p">,</span> <span class="n">length</span><span class="o">=</span><span class="mi">0</span><span class="p">):</span>
 
         <span class="n">dest_baseUrl</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">o</span><span class="o">.</span><span class="n">sendTo</span>
         <span class="k">if</span> <span class="n">dest_baseUrl</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">==</span> <span class="s1">&#39;/&#39;</span><span class="p">:</span>
@@ -579,7 +579,7 @@
         <span class="k">return</span> <span class="n">sz</span>
 
     <span class="c1"># rename</span>
-    <span class="k">def</span> <span class="nf">rename</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">remote_old</span><span class="p">,</span> <span class="n">remote_new</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">rename</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">remote_old</span><span class="p">,</span> <span class="n">remote_new</span><span class="p">):</span>
         <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;sr_ftp rename </span><span class="si">%s</span><span class="s2"> </span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">remote_old</span><span class="p">,</span> <span class="n">remote_new</span><span class="p">))</span>
         <span class="n">alarm_set</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">o</span><span class="o">.</span><span class="n">timeout</span><span class="p">)</span>
         <span class="k">try</span><span class="p">:</span>
@@ -588,7 +588,7 @@
             <span class="n">alarm_cancel</span><span class="p">()</span>
 
     <span class="c1"># rmdir</span>
-    <span class="k">def</span> <span class="nf">rmdir</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">path</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">rmdir</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">path</span><span class="p">):</span>
         <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;sr_ftp rmdir </span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="n">path</span><span class="p">)</span>
         <span class="n">alarm_set</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">o</span><span class="o">.</span><span class="n">timeout</span><span class="p">)</span>
         <span class="k">try</span><span class="p">:</span>
@@ -597,7 +597,7 @@
             <span class="n">alarm_cancel</span><span class="p">()</span>
 
     <span class="c1"># umask</span>
-    <span class="k">def</span> <span class="nf">umask</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">umask</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;sr_ftp umask&quot;</span><span class="p">)</span>
         <span class="n">alarm_set</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">o</span><span class="o">.</span><span class="n">timeout</span><span class="p">)</span>
         <span class="k">try</span><span class="p">:</span>
