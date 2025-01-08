@@ -1686,8 +1686,14 @@ class Flow:
 
           imported from v2/subscribe/doit_download "link event, try to link the local product given by message"
         """
-        logger.debug("message is to link %s to %s" %
-                     (msg['new_file'], msg['fileOp']['link']))
+        if 'link' in msg['fileOp']:
+            link=msg['fileOp']['link']
+        elif 'hlink' in msg['fileOp']:
+            link=msg['fileOp']['hlink']
+        else:
+            link='MALFORMED_LINK_MESSAGE'
+
+        logger.debug( f"message is to link {msg['new_file']} to {link}" )
 
         # redundant, check is done in caller.
         #if not 'link' in self.o.fileEvents:
