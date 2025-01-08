@@ -1618,7 +1618,7 @@ class Flow:
             for messages with an rename file operation, it is to rename a file.
         """
         ok = True
-        if not os.path.exists(old):
+        if not os.path.islink(old) and not os.path.exists(old):
             logger.info(
                 "old file %s not found, if destination (%s) missing, then fall back to copy"
                 % (old, path))
