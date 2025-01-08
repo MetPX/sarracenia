@@ -1654,10 +1654,13 @@ class Flow:
 
         if not os.path.isdir(msg['new_dir']):
             try:
+                if os.path.exists(msg['new_dir']):
+                    os.unlink(msg['new_dir'])
                 os.makedirs(msg['new_dir'], self.o.permDirDefault, True)
             except Exception as ex:
                 logger.warning("making %s: %s" % (msg['new_dir'], ex))
                 logger.debug('Exception details:', exc_info=True)
+                return False
 
         if os.path.isdir(path):
             logger.debug( f"no need to mkdir {path} as it exists" )
@@ -1703,11 +1706,15 @@ class Flow:
 
         if not os.path.isdir(msg['new_dir']):
             try:
+                if os.path.exists(msg['new_dir']):
+                    os.unlink(msg['new_dir'])
+
                 self.worklist.directories_ok.append(msg['new_dir'])
                 os.makedirs(msg['new_dir'], self.o.permDirDefault, True)
             except Exception as ex:
                 logger.warning("making %s: %s" % (msg['new_dir'], ex))
                 logger.debug('Exception details:', exc_info=True)
+                return False
 
         ok = True
         try:
@@ -1768,12 +1775,17 @@ class Flow:
 
             if not os.path.isdir(msg['new_dir']):
                 try:
+                    if os.path.exists(msg['new_dir']):
+                        os.unlink(msg['new_dir'])
+
                     logger.debug( f"missing destination directories, makedirs: {msg['new_dir']} " )
                     self.worklist.directories_ok.append(msg['new_dir'])
                     os.makedirs(msg['new_dir'], 0o775, True)
                 except Exception as ex:
                     logger.warning("making %s: %s" % (msg['new_dir'], ex))
                     logger.debug('Exception details:', exc_info=True)
+                    self.reject(msg, 422, f"cannot create directory {msg['new_dir']} to put file in it." )
+                    continue
         
             os.chdir(msg['new_dir'])
             logger.debug( f"chdir {msg['new_dir']}")
