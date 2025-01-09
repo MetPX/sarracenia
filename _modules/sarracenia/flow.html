@@ -1744,7 +1744,8 @@
 <span class="sd">            for messages with an rename file operation, it is to rename a file.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">ok</span> <span class="o">=</span> <span class="kc">True</span>
-        <span class="k">if</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">old</span><span class="p">):</span>
+        <span class="c1"># it turns out that links that exist but point to non-existent files return exists: False.</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">islink</span><span class="p">(</span><span class="n">old</span><span class="p">)</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">old</span><span class="p">):</span>
             <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span>
                 <span class="s2">&quot;old file </span><span class="si">%s</span><span class="s2"> not found, if destination (</span><span class="si">%s</span><span class="s2">) missing, then fall back to copy&quot;</span>
                 <span class="o">%</span> <span class="p">(</span><span class="n">old</span><span class="p">,</span> <span class="n">path</span><span class="p">))</span>
