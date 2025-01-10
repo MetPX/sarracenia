@@ -1863,10 +1863,14 @@ class Flow:
                         self.worklist.ok.append(msg)
                         self.metrics['flow']['transferRxFiles'] += 1
                         self.metrics['flow']['transferRxLast'] = msg['report']['timeCompleted']
+                        continue
                     else:
                         # as above...
-                        self.reject(msg, 500, "link %s failed" % msg['fileOp'])
-                    continue
+                        if 'hlink' not in msg['fileOp']:
+                            self.reject(msg, 500, "link %s failed" % msg['fileOp'])
+                            continue
+
+                        logger.info( f"since hard link failed, fall back to copying from source" )
 
             # all non-files taken care of above... rest of routine is normal file download.
 
