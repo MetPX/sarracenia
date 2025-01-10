@@ -141,11 +141,21 @@
             <span class="n">new_ok_delay</span> <span class="o">=</span> <span class="p">[]</span>
             <span class="k">for</span> <span class="n">m2</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">ok_delay</span><span class="p">:</span>
                 <span class="k">if</span> <span class="n">m1</span><span class="p">[</span><span class="s1">&#39;relPath&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="n">m2</span><span class="p">[</span><span class="s1">&#39;relPath&#39;</span><span class="p">]:</span>
-                    <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span>
-                        <span class="sa">f</span><span class="s2">&quot;intermediate version suppressed: </span><span class="si">{</span><span class="n">m1</span><span class="p">[</span><span class="s1">&#39;relPath&#39;</span><span class="p">]</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
-                    <span class="bp">self</span><span class="o">.</span><span class="n">suppressions</span> <span class="o">+=</span> <span class="mi">1</span>
-                    <span class="n">new_ok_delay</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">m1</span><span class="p">)</span>
-                    <span class="n">worklist</span><span class="o">.</span><span class="n">rejected</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">m2</span><span class="p">)</span>
+                    <span class="c1"># an mkdir, rmdir, an rm, a rename, an ln: order important, publish immediately.</span>
+                    <span class="k">if</span> <span class="p">(</span><span class="s1">&#39;fileOp&#39;</span> <span class="ow">in</span> <span class="n">m2</span><span class="p">)</span> <span class="ow">or</span> <span class="p">(</span><span class="s1">&#39;fileOp&#39;</span> <span class="ow">in</span> <span class="n">m1</span><span class="p">):</span>  
+                        <span class="k">if</span> <span class="s1">&#39;fileOp&#39;</span> <span class="ow">in</span> <span class="n">m2</span><span class="p">:</span>
+                            <span class="n">op</span><span class="o">=</span><span class="n">m2</span><span class="p">[</span><span class="s1">&#39;fileOp&#39;</span><span class="p">]</span>
+                        <span class="k">else</span><span class="p">:</span>
+                            <span class="n">op</span><span class="o">=</span><span class="sa">f</span><span class="s2">&quot;being later: </span><span class="si">{</span><span class="n">m1</span><span class="p">[</span><span class="s1">&#39;fileOp&#39;</span><span class="p">]</span><span class="si">}</span><span class="s2">&quot;</span>
+
+                        <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span> <span class="sa">f</span><span class="s2">&quot;critically ordered operation: </span><span class="si">{</span><span class="n">m2</span><span class="p">[</span><span class="s1">&#39;relPath&#39;</span><span class="p">]</span><span class="si">}</span><span class="s2"> </span><span class="si">{</span><span class="n">op</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+                        <span class="n">new_incoming</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">m2</span><span class="p">)</span>
+                        <span class="n">new_ok_delay</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">m1</span><span class="p">)</span>
+                    <span class="k">else</span><span class="p">:</span>
+                        <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span> <span class="sa">f</span><span class="s2">&quot;intermediate version suppressed: </span><span class="si">{</span><span class="n">m1</span><span class="p">[</span><span class="s1">&#39;relPath&#39;</span><span class="p">]</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+                        <span class="bp">self</span><span class="o">.</span><span class="n">suppressions</span> <span class="o">+=</span> <span class="mi">1</span>
+                        <span class="n">new_ok_delay</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">m1</span><span class="p">)</span>
+                        <span class="n">worklist</span><span class="o">.</span><span class="n">rejected</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">m2</span><span class="p">)</span>
                     <span class="n">wait</span> <span class="o">=</span> <span class="kc">True</span>
                 <span class="k">else</span><span class="p">:</span>
                     <span class="n">new_ok_delay</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">m2</span><span class="p">)</span>

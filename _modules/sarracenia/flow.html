@@ -2002,10 +2002,14 @@
                         <span class="bp">self</span><span class="o">.</span><span class="n">worklist</span><span class="o">.</span><span class="n">ok</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span>
                         <span class="bp">self</span><span class="o">.</span><span class="n">metrics</span><span class="p">[</span><span class="s1">&#39;flow&#39;</span><span class="p">][</span><span class="s1">&#39;transferRxFiles&#39;</span><span class="p">]</span> <span class="o">+=</span> <span class="mi">1</span>
                         <span class="bp">self</span><span class="o">.</span><span class="n">metrics</span><span class="p">[</span><span class="s1">&#39;flow&#39;</span><span class="p">][</span><span class="s1">&#39;transferRxLast&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">msg</span><span class="p">[</span><span class="s1">&#39;report&#39;</span><span class="p">][</span><span class="s1">&#39;timeCompleted&#39;</span><span class="p">]</span>
+                        <span class="k">continue</span>
                     <span class="k">else</span><span class="p">:</span>
                         <span class="c1"># as above...</span>
-                        <span class="bp">self</span><span class="o">.</span><span class="n">reject</span><span class="p">(</span><span class="n">msg</span><span class="p">,</span> <span class="mi">500</span><span class="p">,</span> <span class="s2">&quot;link </span><span class="si">%s</span><span class="s2"> failed&quot;</span> <span class="o">%</span> <span class="n">msg</span><span class="p">[</span><span class="s1">&#39;fileOp&#39;</span><span class="p">])</span>
-                    <span class="k">continue</span>
+                        <span class="k">if</span> <span class="s1">&#39;hlink&#39;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">msg</span><span class="p">[</span><span class="s1">&#39;fileOp&#39;</span><span class="p">]:</span>
+                            <span class="bp">self</span><span class="o">.</span><span class="n">reject</span><span class="p">(</span><span class="n">msg</span><span class="p">,</span> <span class="mi">500</span><span class="p">,</span> <span class="s2">&quot;link </span><span class="si">%s</span><span class="s2"> failed&quot;</span> <span class="o">%</span> <span class="n">msg</span><span class="p">[</span><span class="s1">&#39;fileOp&#39;</span><span class="p">])</span>
+                            <span class="k">continue</span>
+
+                        <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span> <span class="sa">f</span><span class="s2">&quot;since hard link failed, fall back to copying from source&quot;</span> <span class="p">)</span>
 
             <span class="c1"># all non-files taken care of above... rest of routine is normal file download.</span>
 
