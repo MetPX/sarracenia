@@ -234,7 +234,7 @@ count, size
 
 duration   
     a floating point number indicating a quantity of seconds (0.001 is 1 milisecond)
-    modified by a unit suffix ( m-minute, h-hour, w-week ) 
+    modified by a unit suffix ( m-minute, h-hour, M-month, y-year ) 
 
 flag       
     an option that has only True or False values (aka: a boolean value)
@@ -798,10 +798,10 @@ expire <duration> (default: 5m  == five minutes. RECOMMEND OVERRIDING)
 The  **expire**  option is expressed as a duration... it sets how long should live
 a queue without connections.
 
-A raw integer is expressed in seconds, if the suffix m,h,d,w
-are used, then the interval is in minutes, hours, days, or weeks. After the queue expires,
+A raw integer is expressed in seconds, if the suffix m,h,d,M
+are used, then the interval is in minutes, hours, days, or months. After the queue expires,
 the contents are dropped, and so gaps in the download data flow can arise.  A value of
-1d (day) or 1w (week) can be appropriate to avoid data loss. It depends on how long
+1d (day) or 1m (month) can be appropriate to avoid data loss. It depends on how long
 the subscriber is expected to shutdown, and not suffer data loss.
 
 if no units are given, then a decimal number of seconds can be provided, such as
@@ -809,7 +809,7 @@ to indicate 0.02 to specify a duration of 20 milliseconds.
 
 The **expire** setting must be overridden for operational use.
 The default is set low because it defines how long resources on the broker will be assigned,
-and in early use (when default was 1 week) brokers would often get overloaded with very
+and in early use (when default was 1 month) brokers would often get overloaded with very
 long queues for left-over experiments.
 
 This *subtopic* option should appear after the *expire* setting in files
@@ -1304,10 +1304,10 @@ process looks for files in the cache that have not been referenced in **cache** 
 and deletes them, in order to keep the cache size limited. Different settings are 
 appropriate for different use cases.
 
-A raw integer interval is in seconds, if the suffix m,h,d, or w are used, then the interval
-is in minutes, hours, days, or weeks. After the interval expires the contents are
+A raw integer interval is in seconds, if the suffix m,h,d, or M are used, then the interval
+is in minutes, hours, days, or months. After the interval expires the contents are
 dropped, so duplicates separated by a large enough interval will get through.
-A value of 1d (day) or 1w (week) can be appropriate.  Setting the option without specifying
+A value of 1d (day) or 1M (Month) can be appropriate.  Setting the option without specifying
 a time will result in 300 seconds (or 5 minutes) being the expiry interval.
 
 Default value in a Poll is 8 hours, should be longer than nodupe_fileAgeMax to prevent
