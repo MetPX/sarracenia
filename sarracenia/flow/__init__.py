@@ -1427,7 +1427,25 @@ class Flow:
 
         return True
 
-    def compute_local_checksum(self, msg) -> None:
+    def compute_local_checksum(self, msg, lstat=None) -> None:
+        """
+            For a file whose path is given by the msg, calculate 'local_identity' field.
+
+            when checksums for files are stored in extended attributes, it's ideal to retrieve them,
+            rather than having to read the entire file again and re-calculate.
+
+            The extended attributes have a field:
+              * 'identity' ... the field from the message when the file was written.
+              * 'mtime' ... the mtime of the file when it was written.
+
+            The 'identity' extended attribute should be correct/good/useful if:
+               * the mtime of the file on disk is not newer than the current file mtime.
+
+            If the file has been over-written afterwards, the mtime will be different,
+            and the local checksum must be re-calculated from scratch.
+
+            If the checksum method is arbitrary, no local recalculation is possible.
+        """
 
         if sarracenia.filemetadata.supports_extended_attributes:
             try:
@@ -1436,7 +1454,8 @@ class Flow:
 
                 if s:
                     metadata_cached_mtime = x.get('mtime')
-                    if ((metadata_cached_mtime >= msg['mtime'])):
+                    lstat_mtime = sarracenia.timeflt2str(lstat.st_mtime)
+                    if (lstat and (metadata_cached_mtime >= lstat_mtime)):
                         # file has not been modified since checksum value was stored.
 
                         if (( 'identity' in msg ) and ( 'method' in msg['identity']  ) and \
@@ -1453,11 +1472,12 @@ class Flow:
             except:
                 pass
 
+        # no local recalculation possible.
+        if msg['identity']['method'] in [ 'arbitrary' ]:
+            return
+
         local_identity = sarracenia.identity.Identity.factory(
             msg['identity']['method'])
-
-        if msg['identity']['method'] == 'arbitrary':
-            local_identity.value = msg['identity']['value']
 
         local_identity.update_file(msg['new_path'])
         msg['local_identity'] = {
@@ -1468,7 +1488,7 @@ class Flow:
 
     def file_should_be_downloaded(self, msg) -> bool:
         """
-          determine whether a comparison of local_file and message metadata indicates that it is new enough
+          Determine whether a comparison of local_file and message metadata indicates that it is new enough
           that writing the file locally is warranted.
 
           return True to say downloading is warranted.
@@ -1555,16 +1575,19 @@ class Flow:
             return True
 
         try:
-            self.compute_local_checksum(msg)
+            self.compute_local_checksum(msg,lstat)
         except:
             logger.debug(
                 "something went wrong when computing local checksum... considered different"
             )
             return True
 
-        logger.debug( f"checksum in message: {msg['identity']} vs. local: {msg['local_identity']}" )
+        if 'local_identity' in msg:
+           logger.debug( f"checksum in message: {msg['identity']} vs. local: {msg['local_identity']}" )
+        else:
+           logger.debug( f"checksum in message: {msg['identity']} vs. local: None" )
 
-        if msg['local_identity'] == msg['identity']:
+        if 'local_identity' in msg and msg['local_identity'] == msg['identity']:
             self.reject(msg, 304, f"same checksum {msg['new_path']}" )
             return False
         else:
@@ -1595,7 +1618,8 @@ class Flow:
             for messages with an rename file operation, it is to rename a file.
         """
         ok = True
-        if not os.path.exists(old):
+        # it turns out that links that exist but point to non-existent files return exists: False.
+        if not os.path.islink(old) and not os.path.exists(old):
             logger.info(
                 "old file %s not found, if destination (%s) missing, then fall back to copy"
                 % (old, path))
@@ -1635,6 +1659,7 @@ class Flow:
             except Exception as ex:
                 logger.warning("making %s: %s" % (msg['new_dir'], ex))
                 logger.debug('Exception details:', exc_info=True)
+                return False
 
         if os.path.isdir(path):
             logger.debug( f"no need to mkdir {path} as it exists" )
@@ -1663,8 +1688,14 @@ class Flow:
 
           imported from v2/subscribe/doit_download "link event, try to link the local product given by message"
         """
-        logger.debug("message is to link %s to %s" %
-                     (msg['new_file'], msg['fileOp']['link']))
+        if 'link' in msg['fileOp']:
+            link=msg['fileOp']['link']
+        elif 'hlink' in msg['fileOp']:
+            link=msg['fileOp']['hlink']
+        else:
+            link='MALFORMED_LINK_MESSAGE'
+
+        logger.debug( f"message is to link {msg['new_file']} to {link}" )
 
         # redundant, check is done in caller.
         #if not 'link' in self.o.fileEvents:
@@ -1679,6 +1710,7 @@ class Flow:
             except Exception as ex:
                 logger.warning("making %s: %s" % (msg['new_dir'], ex))
                 logger.debug('Exception details:', exc_info=True)
+                return False
 
         ok = True
         try:
@@ -1745,6 +1777,8 @@ class Flow:
                 except Exception as ex:
                     logger.warning("making %s: %s" % (msg['new_dir'], ex))
                     logger.debug('Exception details:', exc_info=True)
+                    self.reject(msg, 422, f"cannot create directory {msg['new_dir']} to put file in it." )
+                    continue
         
             os.chdir(msg['new_dir'])
             logger.debug( f"chdir {msg['new_dir']}")
@@ -1833,10 +1867,14 @@ class Flow:
                         self.worklist.ok.append(msg)
                         self.metrics['flow']['transferRxFiles'] += 1
                         self.metrics['flow']['transferRxLast'] = msg['report']['timeCompleted']
+                        continue
                     else:
                         # as above...
-                        self.reject(msg, 500, "link %s failed" % msg['fileOp'])
-                    continue
+                        if 'hlink' not in msg['fileOp']:
+                            self.reject(msg, 500, "link %s failed" % msg['fileOp'])
+                            continue
+
+                        logger.info( f"since hard link failed, fall back to copying from source" )
 
             # all non-files taken care of above... rest of routine is normal file download.
 

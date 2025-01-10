@@ -226,6 +226,23 @@ class Odata(sarracenia.flowcb.FlowCB):
         """
         msg = None
 
+        # {'@odata.mediaContentType': 'application/octet-stream', 
+        #  'Id': 'd86d00a2-58bc-4603-9e6a-28bc571d79a6', 
+        # 'Name': 'S1A_IW_GRDH_1SDV_20230425T123926_20230425T123951_048253_05CD62_EA4E_COG.SAFE', 
+        #  'ContentType': 'application/octet-stream', 
+        #  'ContentLength': 1229909379, 
+        #  'OriginDate': '2023-05-06T12:36:57.469Z', 
+        #  'PublicationDate': '2023-05-06T12:42:38.119Z', 
+        #  'ModificationDate': '2023-05-06T12:42:38.119Z', 
+        #  'Online': True, 
+        #  'EvictionDate': '', 
+        #  'S3Path': '/eodata/Sentinel-1/SAR/IW_GRDH_1S-COG/2023/04/25/S1A_IW_GRDH_1SDV_20230425T123926_20230425T123951_048253_05CD62_EA4E_COG.SAFE', 
+        #  'Checksum': [{}], 
+        #  'ContentDate': {'Start': '2023-04-25T12:39:26.902Z', 'End': '2023-04-25T12:39:51.900Z'}, 
+        #  'Footprint': "geography'SRID=4326;POLYGON ((79.757111 29.038794, 82.362259 29.452579, 82.123009 30.965038, 79.47876 30.555256, 79.757111 29.038794))'", 
+        #  'GeoFootprint': {'type': 'Polygon', 'coordinates': [[[79.757111, 29.038794], [82.362259, 29.452579], [82.123009, 30.965038], [79.47876, 30.555256], [79.757111, 29.038794]]]}
+        # }
+
         data_path = self.o.post_urlTemplate.replace('--PRODUCT_ID--', jdata['Id'])
         msg = sarracenia.Message.fromFileInfo(data_path, self.o)
 

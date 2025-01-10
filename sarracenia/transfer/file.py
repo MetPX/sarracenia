@@ -215,9 +215,6 @@ def file_link(msg):
     except:
         return False
 
-    msg.compute_local_checksum()
-    msg.onfly_checksum = "{},{}".format(msg.sumflg, msg.local_checksum)
-
     return True
 
 
