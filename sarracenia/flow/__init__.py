@@ -1659,6 +1659,7 @@ class Flow:
             except Exception as ex:
                 logger.warning("making %s: %s" % (msg['new_dir'], ex))
                 logger.debug('Exception details:', exc_info=True)
+                return False
 
         if os.path.isdir(path):
             logger.debug( f"no need to mkdir {path} as it exists" )
@@ -1709,6 +1710,7 @@ class Flow:
             except Exception as ex:
                 logger.warning("making %s: %s" % (msg['new_dir'], ex))
                 logger.debug('Exception details:', exc_info=True)
+                return False
 
         ok = True
         try:
@@ -1775,6 +1777,8 @@ class Flow:
                 except Exception as ex:
                     logger.warning("making %s: %s" % (msg['new_dir'], ex))
                     logger.debug('Exception details:', exc_info=True)
+                    self.reject(msg, 422, f"cannot create directory {msg['new_dir']} to put file in it." )
+                    continue
         
             os.chdir(msg['new_dir'])
             logger.debug( f"chdir {msg['new_dir']}")
