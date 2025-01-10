@@ -1,6 +1,11 @@
 metpx-sr3 (3.00.57rc2) UNRELEASED; urgency=medium
 
-  * increment away from previous release.
+  * fix #1366 ln -sf a b ... leave tmp file when a does not exist.
+  * fix #1365 better error handling when makedirs fail.
+  * fix #1363 hardlink support broken.
+  * fix #1358 status displays of intervals over 1 month causes crashes.
+  * fix #1351 download with arbitrary checksum. 
+  * progress #1297 hard ordering of operations (still some use cases left.)
 
  -- peter <peter@bsqt.homeip.net>  Mon, 23 Dec 2024 00:56:15 -0500
 
