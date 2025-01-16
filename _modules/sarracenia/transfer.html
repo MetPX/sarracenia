@@ -6,7 +6,7 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>sarracenia.transfer &mdash; Sarracenia 3.00.57rc2 documentation</title>
-      <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=80d5e7a1" />
       <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=e59714d7" />
 
   
@@ -104,23 +104,23 @@
 <span class="c1">#</span>
 <span class="c1">#</span>
 
-<span class="kn">import</span><span class="w"> </span><span class="nn">calendar</span><span class="o">,</span><span class="w"> </span><span class="nn">datetime</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">hashlib</span><span class="w"> </span><span class="kn">import</span> <span class="n">md5</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">hashlib</span><span class="w"> </span><span class="kn">import</span> <span class="n">sha512</span>
-<span class="kn">import</span><span class="w"> </span><span class="nn">humanize</span>
-<span class="kn">import</span><span class="w"> </span><span class="nn">logging</span>
-<span class="kn">import</span><span class="w"> </span><span class="nn">os</span>
-<span class="kn">import</span><span class="w"> </span><span class="nn">random</span>
-<span class="kn">import</span><span class="w"> </span><span class="nn">signal</span>
-<span class="kn">import</span><span class="w"> </span><span class="nn">stat</span>
-<span class="kn">import</span><span class="w"> </span><span class="nn">sys</span>
-<span class="kn">import</span><span class="w"> </span><span class="nn">time</span>
-<span class="kn">import</span><span class="w"> </span><span class="nn">urllib</span>
-<span class="kn">import</span><span class="w"> </span><span class="nn">urllib.parse</span>
+<span class="kn">import</span> <span class="nn">calendar</span><span class="o">,</span> <span class="nn">datetime</span>
+<span class="kn">from</span> <span class="nn">hashlib</span> <span class="kn">import</span> <span class="n">md5</span>
+<span class="kn">from</span> <span class="nn">hashlib</span> <span class="kn">import</span> <span class="n">sha512</span>
+<span class="kn">import</span> <span class="nn">humanize</span>
+<span class="kn">import</span> <span class="nn">logging</span>
+<span class="kn">import</span> <span class="nn">os</span>
+<span class="kn">import</span> <span class="nn">random</span>
+<span class="kn">import</span> <span class="nn">signal</span>
+<span class="kn">import</span> <span class="nn">stat</span>
+<span class="kn">import</span> <span class="nn">sys</span>
+<span class="kn">import</span> <span class="nn">time</span>
+<span class="kn">import</span> <span class="nn">urllib</span>
+<span class="kn">import</span> <span class="nn">urllib.parse</span>
 
 <span class="c1">#from sarracenia.sr_xattr import *</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">sarracenia</span><span class="w"> </span><span class="kn">import</span> <span class="n">nowflt</span><span class="p">,</span> <span class="n">timestr2flt</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">sarracenia.featuredetection</span><span class="w"> </span><span class="kn">import</span> <span class="n">features</span>
+<span class="kn">from</span> <span class="nn">sarracenia</span> <span class="kn">import</span> <span class="n">nowflt</span><span class="p">,</span> <span class="n">timestr2flt</span>
+<span class="kn">from</span> <span class="nn">sarracenia.featuredetection</span> <span class="kn">import</span> <span class="n">features</span>
 
 <span class="n">logger</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="vm">__name__</span><span class="p">)</span>
 
@@ -131,27 +131,27 @@
 
 <div class="viewcode-block" id="TimeoutException">
 <a class="viewcode-back" href="../../api-documentation.html#sarracenia.transfer.TimeoutException">[docs]</a>
-<span class="k">class</span><span class="w"> </span><span class="nc">TimeoutException</span><span class="p">(</span><span class="ne">Exception</span><span class="p">):</span>
+<span class="k">class</span> <span class="nc">TimeoutException</span><span class="p">(</span><span class="ne">Exception</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;timeout exception&quot;&quot;&quot;</span>
     <span class="k">pass</span></div>
 
 
 
 <span class="c1"># alarm_cancel</span>
-<span class="k">def</span><span class="w"> </span><span class="nf">alarm_cancel</span><span class="p">():</span>
+<span class="k">def</span> <span class="nf">alarm_cancel</span><span class="p">():</span>
     <span class="k">if</span> <span class="n">sys</span><span class="o">.</span><span class="n">platform</span> <span class="o">!=</span> <span class="s1">&#39;win32&#39;</span><span class="p">:</span>
         <span class="n">signal</span><span class="o">.</span><span class="n">alarm</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
 
 
 <span class="c1"># alarm_raise</span>
-<span class="k">def</span><span class="w"> </span><span class="nf">alarm_raise</span><span class="p">(</span><span class="n">n</span><span class="p">,</span> <span class="n">f</span><span class="p">):</span>
+<span class="k">def</span> <span class="nf">alarm_raise</span><span class="p">(</span><span class="n">n</span><span class="p">,</span> <span class="n">f</span><span class="p">):</span>
     <span class="k">raise</span> <span class="n">TimeoutException</span><span class="p">(</span><span class="s2">&quot;signal alarm timed out&quot;</span><span class="p">)</span>
 
 
 <span class="c1"># alarm_set</span>
 <div class="viewcode-block" id="alarm_set">
 <a class="viewcode-back" href="../../api-documentation.html#sarracenia.transfer.alarm_set">[docs]</a>
-<span class="k">def</span><span class="w"> </span><span class="nf">alarm_set</span><span class="p">(</span><span class="n">time</span><span class="p">):</span>
+<span class="k">def</span> <span class="nf">alarm_set</span><span class="p">(</span><span class="n">time</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">       FIXME: replace with set itimer for &gt; 1 second resolution... currently rouding to nearest second. </span>
 <span class="sd">    &quot;&quot;&quot;</span>
@@ -169,7 +169,7 @@
 
 <div class="viewcode-block" id="Transfer">
 <a class="viewcode-back" href="../../api-documentation.html#sarracenia.transfer.Transfer">[docs]</a>
-<span class="k">class</span><span class="w"> </span><span class="nc">Transfer</span><span class="p">():</span>
+<span class="k">class</span> <span class="nc">Transfer</span><span class="p">():</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">     This is a sort of abstract base class for implementing transfer protocols.</span>
 <span class="sd">     Implemented subclasses include support for: local files, https, sftp, and ftp. </span>
@@ -234,7 +234,7 @@
 
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="nd">@staticmethod</span>
-    <span class="k">def</span><span class="w"> </span><span class="nf">factory</span><span class="p">(</span><span class="n">proto</span><span class="p">,</span> <span class="n">options</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="s1">&#39;Transfer&#39;</span><span class="p">:</span>
+    <span class="k">def</span> <span class="nf">factory</span><span class="p">(</span><span class="n">proto</span><span class="p">,</span> <span class="n">options</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="s1">&#39;Transfer&#39;</span><span class="p">:</span>
 
         <span class="k">for</span> <span class="n">sc</span> <span class="ow">in</span> <span class="n">Transfer</span><span class="o">.</span><span class="n">__subclasses__</span><span class="p">():</span>
             <span class="k">if</span> <span class="p">(</span><span class="nb">hasattr</span><span class="p">(</span><span class="n">sc</span><span class="p">,</span> <span class="s1">&#39;registered_as&#39;</span><span class="p">)</span>
@@ -244,7 +244,7 @@
 
 <div class="viewcode-block" id="Transfer.__init__">
 <a class="viewcode-back" href="../../api-documentation.html#sarracenia.transfer.Transfer.__init__">[docs]</a>
-    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">proto</span><span class="p">,</span> <span class="n">options</span><span class="p">):</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">proto</span><span class="p">,</span> <span class="n">options</span><span class="p">):</span>
 
         <span class="bp">self</span><span class="o">.</span><span class="n">o</span> <span class="o">=</span> <span class="n">options</span>
         <span class="k">if</span> <span class="s1">&#39;sarracenia.transfer.Transfer&#39;</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">o</span><span class="o">.</span><span class="n">settings</span> <span class="ow">and</span> <span class="s1">&#39;logLevel&#39;</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">o</span><span class="o">.</span><span class="n">settings</span><span class="p">:</span>
@@ -259,7 +259,7 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">init</span><span class="p">()</span></div>
 
 
-    <span class="k">def</span><span class="w"> </span><span class="nf">init</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">init</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">sumalgo</span> <span class="o">=</span> <span class="kc">None</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">checksum</span> <span class="o">=</span> <span class="kc">None</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">data_sumalgo</span> <span class="o">=</span> <span class="kc">None</span>
@@ -277,7 +277,7 @@
 
 <div class="viewcode-block" id="Transfer.logProgress">
 <a class="viewcode-back" href="../../api-documentation.html#sarracenia.transfer.Transfer.logProgress">[docs]</a>
-    <span class="k">def</span><span class="w"> </span><span class="nf">logProgress</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">sz</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">logProgress</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">sz</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 
 <span class="sd">           if there hasn&#39;t been a log message in at least logMinumumInterval, </span>
@@ -291,7 +291,7 @@
             <span class="bp">self</span><span class="o">.</span><span class="n">lastLog</span><span class="o">=</span><span class="n">now</span></div>
 
 
-    <span class="k">def</span><span class="w"> </span><span class="nf">local_read_close</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">src</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">local_read_close</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">src</span><span class="p">):</span>
         <span class="c1">#logger.debug(&quot;sr_proto local_read_close&quot;)</span>
 
         <span class="n">src</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
@@ -302,7 +302,7 @@
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">data_sumalgo</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">data_checksum</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">data_sumalgo</span><span class="o">.</span><span class="n">value</span>
 
-    <span class="k">def</span><span class="w"> </span><span class="nf">local_read_open</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">local_file</span><span class="p">,</span> <span class="n">local_offset</span><span class="o">=</span><span class="mi">0</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">local_read_open</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">local_file</span><span class="p">,</span> <span class="n">local_offset</span><span class="o">=</span><span class="mi">0</span><span class="p">):</span>
         <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;sr_proto local_read_open getcwd=</span><span class="si">%s</span><span class="s2"> self.cwd=</span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span>
                      <span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">getcwd</span><span class="p">(),</span> <span class="bp">self</span><span class="o">.</span><span class="n">getcwd</span><span class="p">()))</span>
 
@@ -320,7 +320,7 @@
 
         <span class="k">return</span> <span class="n">src</span>
 
-    <span class="k">def</span><span class="w"> </span><span class="nf">local_write_close</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">dst</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">local_write_close</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">dst</span><span class="p">):</span>
 
         <span class="c1"># flush sync (make sure all io done)</span>
 
@@ -339,7 +339,7 @@
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">data_sumalgo</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">data_checksum</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">data_sumalgo</span><span class="o">.</span><span class="n">value</span>
 
-    <span class="k">def</span><span class="w"> </span><span class="nf">local_write_open</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">local_file</span><span class="p">,</span> <span class="n">local_offset</span><span class="o">=</span><span class="mi">0</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">local_write_open</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">local_file</span><span class="p">,</span> <span class="n">local_offset</span><span class="o">=</span><span class="mi">0</span><span class="p">):</span>
         <span class="c1">#logger.debug(&quot;sr_proto local_write_open&quot;)</span>
 
         <span class="c1"># reset ckecksum, fpos</span>
@@ -362,7 +362,7 @@
 
 <div class="viewcode-block" id="Transfer.on_data">
 <a class="viewcode-back" href="../../api-documentation.html#sarracenia.transfer.Transfer.on_data">[docs]</a>
-    <span class="k">def</span><span class="w"> </span><span class="nf">on_data</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">chunk</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bytes</span><span class="p">:</span>
+    <span class="k">def</span> <span class="nf">on_data</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">chunk</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bytes</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">            transform data as it is being read. </span>
 <span class="sd">            Given a buffer, return the transformed buffer. </span>
@@ -375,7 +375,7 @@
         <span class="c1">#FIXME ... need to re-enable on_data plugins... not sure how they should work.</span>
         <span class="c1"># sub-classing of transfer class?</span>
 
-    <span class="k">def</span><span class="w"> </span><span class="nf">read_write</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">src</span><span class="p">,</span> <span class="n">dst</span><span class="p">,</span> <span class="n">length</span><span class="o">=</span><span class="mi">0</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">read_write</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">src</span><span class="p">,</span> <span class="n">dst</span><span class="p">,</span> <span class="n">length</span><span class="o">=</span><span class="mi">0</span><span class="p">):</span>
         <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;sr_proto read_write&quot;</span><span class="p">)</span>
 
         <span class="c1"># reset speed</span>
@@ -440,7 +440,7 @@
 
         <span class="k">return</span> <span class="n">rw_length</span>
 
-    <span class="k">def</span><span class="w"> </span><span class="nf">read_writelocal</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span>
+    <span class="k">def</span> <span class="nf">read_writelocal</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span>
                         <span class="n">src_path</span><span class="p">,</span>
                         <span class="n">src</span><span class="p">,</span>
                         <span class="n">local_file</span><span class="p">,</span>
@@ -476,7 +476,7 @@
 
         <span class="k">return</span> <span class="n">rw_length</span>
 
-    <span class="k">def</span><span class="w"> </span><span class="nf">readlocal_write</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">local_file</span><span class="p">,</span> <span class="n">local_offset</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">length</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">dst</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">readlocal_write</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">local_file</span><span class="p">,</span> <span class="n">local_offset</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">length</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">dst</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
         <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;sr_proto readlocal_write&quot;</span><span class="p">)</span>
 
         <span class="c1"># open</span>
@@ -502,28 +502,28 @@
 
         <span class="k">return</span> <span class="n">rw_length</span>
 
-    <span class="k">def</span><span class="w"> </span><span class="nf">set_sumalgo</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">sumalgo</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">set_sumalgo</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">sumalgo</span><span class="p">):</span>
         <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;sr_proto set_sumalgo </span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="n">sumalgo</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">sumalgo</span> <span class="o">=</span> <span class="n">sarracenia</span><span class="o">.</span><span class="n">identity</span><span class="o">.</span><span class="n">Identity</span><span class="o">.</span><span class="n">factory</span><span class="p">(</span><span class="n">sumalgo</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">data_sumalgo</span> <span class="o">=</span> <span class="n">sarracenia</span><span class="o">.</span><span class="n">identity</span><span class="o">.</span><span class="n">Identity</span><span class="o">.</span><span class="n">factory</span><span class="p">(</span><span class="n">sumalgo</span><span class="p">)</span>
 
-    <span class="k">def</span><span class="w"> </span><span class="nf">set_sumArbitrary</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">set_sumArbitrary</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">):</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">sumalgo</span><span class="o">.</span><span class="n">value</span> <span class="o">=</span> <span class="n">value</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">data_sumalgo</span><span class="o">.</span><span class="n">value</span> <span class="o">=</span> <span class="n">value</span>
 
-    <span class="k">def</span><span class="w"> </span><span class="nf">update_file</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">path</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">update_file</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">path</span><span class="p">):</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">sumalgo</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">sumalgo</span><span class="o">.</span><span class="n">update_file</span><span class="p">(</span><span class="n">path</span><span class="p">)</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">data_sumalgo</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">data_sumalgo</span><span class="o">.</span><span class="n">update_file</span><span class="p">(</span><span class="n">path</span><span class="p">)</span>
 
-    <span class="k">def</span><span class="w"> </span><span class="nf">set_path</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">path</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">set_path</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">path</span><span class="p">):</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">sumalgo</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">sumalgo</span><span class="o">.</span><span class="n">set_path</span><span class="p">(</span><span class="n">path</span><span class="p">)</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">data_sumalgo</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">data_sumalgo</span><span class="o">.</span><span class="n">set_path</span><span class="p">(</span><span class="n">path</span><span class="p">)</span>
 
-    <span class="k">def</span><span class="w"> </span><span class="nf">get_sumstr</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">:</span>
+    <span class="k">def</span> <span class="nf">get_sumstr</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">:</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">sumalgo</span><span class="p">:</span>
             <span class="c1">#return { &#39;method&#39;:type(self.sumalgo).__name__, &#39;value&#39;:self.sumalgo.value }</span>
             <span class="k">return</span> <span class="p">{</span>
@@ -533,11 +533,11 @@
         <span class="k">else</span><span class="p">:</span>
             <span class="k">return</span> <span class="kc">None</span>
 
-    <span class="k">def</span><span class="w"> </span><span class="nf">metricsReport</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">metricsReport</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="k">return</span> <span class="p">{</span> <span class="s1">&#39;byteRateInstant&#39;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">byteRate</span> <span class="p">}</span>
 
     <span class="c1"># throttle</span>
-    <span class="k">def</span><span class="w"> </span><span class="nf">throttle</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">buf</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">throttle</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">buf</span><span class="p">):</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">tbytes</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">tbytes</span> <span class="o">+</span> <span class="nb">len</span><span class="p">(</span><span class="n">buf</span><span class="p">)</span>
         <span class="n">rspan</span> <span class="o">=</span> <span class="n">nowflt</span><span class="p">()</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">tbegin</span>
         <span class="k">if</span> <span class="n">rspan</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
@@ -552,7 +552,7 @@
                 <span class="n">time</span><span class="o">.</span><span class="n">sleep</span><span class="p">(</span><span class="n">stime</span><span class="p">)</span>
 
     <span class="c1"># write_chunk</span>
-    <span class="k">def</span><span class="w"> </span><span class="nf">write_chunk</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">chunk</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">write_chunk</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">chunk</span><span class="p">):</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">chunk_iow</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">chunk_iow</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">chunk</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">rw_length</span> <span class="o">+=</span> <span class="nb">len</span><span class="p">(</span><span class="n">chunk</span><span class="p">)</span>
         <span class="n">alarm_cancel</span><span class="p">()</span>
@@ -562,13 +562,13 @@
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">o</span><span class="o">.</span><span class="n">timeout</span><span class="p">:</span> <span class="n">alarm_set</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">o</span><span class="o">.</span><span class="n">timeout</span><span class="p">)</span>
 
     <span class="c1"># write_chunk_end</span>
-    <span class="k">def</span><span class="w"> </span><span class="nf">write_chunk_end</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">write_chunk_end</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="n">alarm_cancel</span><span class="p">()</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">chunk_iow</span> <span class="o">=</span> <span class="kc">None</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">rw_length</span>
 
     <span class="c1"># write_chunk_init</span>
-    <span class="k">def</span><span class="w"> </span><span class="nf">write_chunk_init</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">proto</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">write_chunk_init</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">proto</span><span class="p">):</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">chunk_iow</span> <span class="o">=</span> <span class="n">proto</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">tbytes</span> <span class="o">=</span> <span class="mf">0.0</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">tbegin</span> <span class="o">=</span> <span class="n">nowflt</span><span class="p">()</span>
@@ -576,20 +576,20 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">rw_length</span> <span class="o">=</span> <span class="mi">0</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">o</span><span class="o">.</span><span class="n">timeout</span><span class="p">:</span> <span class="n">alarm_set</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">o</span><span class="o">.</span><span class="n">timeout</span><span class="p">)</span>
 
-    <span class="k">def</span><span class="w"> </span><span class="nf">gethttpsUrl</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">path</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">gethttpsUrl</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">path</span><span class="p">):</span>
         <span class="k">return</span> <span class="kc">None</span></div>
 
 
 <span class="c1"># batteries included.</span>
-<span class="kn">import</span><span class="w"> </span><span class="nn">sarracenia.transfer.file</span>
-<span class="kn">import</span><span class="w"> </span><span class="nn">sarracenia.transfer.ftp</span>
-<span class="kn">import</span><span class="w"> </span><span class="nn">sarracenia.transfer.https</span>
+<span class="kn">import</span> <span class="nn">sarracenia.transfer.file</span>
+<span class="kn">import</span> <span class="nn">sarracenia.transfer.ftp</span>
+<span class="kn">import</span> <span class="nn">sarracenia.transfer.https</span>
 
 <span class="k">if</span> <span class="n">features</span><span class="p">[</span><span class="s1">&#39;sftp&#39;</span><span class="p">][</span><span class="s1">&#39;present&#39;</span><span class="p">]:</span>
-    <span class="kn">import</span><span class="w"> </span><span class="nn">sarracenia.transfer.sftp</span>
+    <span class="kn">import</span> <span class="nn">sarracenia.transfer.sftp</span>
 
 <span class="k">if</span> <span class="n">features</span><span class="p">[</span><span class="s1">&#39;s3&#39;</span><span class="p">][</span><span class="s1">&#39;present&#39;</span><span class="p">]:</span>
-    <span class="kn">import</span><span class="w"> </span><span class="nn">sarracenia.transfer.s3</span>
+    <span class="kn">import</span> <span class="nn">sarracenia.transfer.s3</span>
 
 </pre></div>
 

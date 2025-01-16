@@ -6,7 +6,7 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>sarracenia.filemetadata &mdash; Sarracenia 3.00.57rc2 documentation</title>
-      <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=80d5e7a1" />
       <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=e59714d7" />
 
   
@@ -111,16 +111,16 @@
 <span class="c1">#</span>
 <span class="c1">#</span>
 
-<span class="kn">from</span><span class="w"> </span><span class="nn">sarracenia.featuredetection</span><span class="w"> </span><span class="kn">import</span> <span class="n">features</span>
+<span class="kn">from</span> <span class="nn">sarracenia.featuredetection</span> <span class="kn">import</span> <span class="n">features</span>
 
 <span class="k">if</span> <span class="n">features</span><span class="p">[</span><span class="s1">&#39;sftp&#39;</span><span class="p">][</span><span class="s1">&#39;present&#39;</span><span class="p">]:</span>
-    <span class="kn">import</span><span class="w"> </span><span class="nn">paramiko</span>
+    <span class="kn">import</span> <span class="nn">paramiko</span>
 
     <span class="n">FmdStat</span> <span class="o">=</span> <span class="n">paramiko</span><span class="o">.</span><span class="n">SFTPAttributes</span>
 
 <span class="k">else</span><span class="p">:</span>
-    <span class="k">class</span><span class="w"> </span><span class="nc">FmdStat</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
-        <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="k">class</span> <span class="nc">FmdStat</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+        <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
 <span class="w">            </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">            (PAS: copied from paramiko)</span>
 <span class="sd">            Create a new (empty) SFTPAttributes object.  All fields will be empty.</span>
@@ -136,39 +136,39 @@
 
 
 <span class="k">if</span> <span class="n">features</span><span class="p">[</span><span class="s1">&#39;xattr&#39;</span><span class="p">][</span><span class="s1">&#39;present&#39;</span><span class="p">]:</span>
-    <span class="kn">import</span><span class="w"> </span><span class="nn">xattr</span>
+    <span class="kn">import</span> <span class="nn">xattr</span>
     <span class="n">supports_extended_attributes</span> <span class="o">=</span> <span class="kc">True</span>
 
 <span class="k">else</span><span class="p">:</span>
     <span class="n">supports_extended_attributes</span> <span class="o">=</span> <span class="kc">False</span>
 
-<span class="kn">import</span><span class="w"> </span><span class="nn">sys</span>
+<span class="kn">import</span> <span class="nn">sys</span>
 
 <span class="n">supports_alternate_data_streams</span> <span class="o">=</span> <span class="kc">False</span>
 
 <span class="k">if</span> <span class="n">sys</span><span class="o">.</span><span class="n">platform</span> <span class="o">==</span> <span class="s1">&#39;win32&#39;</span><span class="p">:</span>
     <span class="k">try</span><span class="p">:</span>
-        <span class="kn">from</span><span class="w"> </span><span class="nn">sarracenia.pyads</span><span class="w"> </span><span class="kn">import</span> <span class="n">ADS</span>
+        <span class="kn">from</span> <span class="nn">sarracenia.pyads</span> <span class="kn">import</span> <span class="n">ADS</span>
         <span class="n">supports_alternate_data_streams</span> <span class="o">=</span> <span class="kc">True</span>
 
     <span class="k">except</span><span class="p">:</span>
         <span class="k">pass</span>
 
-<span class="kn">import</span><span class="w"> </span><span class="nn">json</span>
+<span class="kn">import</span> <span class="nn">json</span>
 
 <span class="n">STREAM_NAME</span> <span class="o">=</span> <span class="s1">&#39;sr_.json&#39;</span>
 
 <span class="n">xattr_disabled</span> <span class="o">=</span> <span class="kc">False</span>
 
 
-<span class="k">def</span><span class="w"> </span><span class="nf">disable_xattr</span><span class="p">():</span>
+<span class="k">def</span> <span class="nf">disable_xattr</span><span class="p">():</span>
     <span class="k">global</span> <span class="n">xattr_disabled</span>
     <span class="n">xattr_disabled</span> <span class="o">=</span> <span class="kc">True</span>
 
 
 <div class="viewcode-block" id="FileMetadata">
 <a class="viewcode-back" href="../../Reference/code.html#sarracenia.filemetadata.FileMetadata">[docs]</a>
-<span class="k">class</span><span class="w"> </span><span class="nc">FileMetadata</span><span class="p">:</span>
+<span class="k">class</span> <span class="nc">FileMetadata</span><span class="p">:</span>
 <span class="w">    </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">      This class implements storing metadata *with* a file.</span>
 
@@ -200,7 +200,7 @@
 <span class="sd">   &quot;&quot;&quot;</span>
 <div class="viewcode-block" id="FileMetadata.__init__">
 <a class="viewcode-back" href="../../Reference/code.html#sarracenia.filemetadata.FileMetadata.__init__">[docs]</a>
-    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">path</span><span class="p">):</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">path</span><span class="p">):</span>
 
         <span class="k">global</span> <span class="n">supports_alternate_data_streams</span>
         <span class="k">global</span> <span class="n">supports_extended_attributes</span>
@@ -242,13 +242,13 @@
             <span class="k">del</span> <span class="bp">self</span><span class="o">.</span><span class="n">x</span><span class="p">[</span><span class="s1">&#39;integrity&#39;</span><span class="p">]</span></div>
 
 
-    <span class="k">def</span><span class="w"> </span><span class="fm">__enter__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="k">def</span> <span class="fm">__enter__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="k">return</span> <span class="bp">self</span>
 
-    <span class="k">def</span><span class="w"> </span><span class="fm">__exit__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">exc_type</span><span class="p">,</span> <span class="n">exc_val</span><span class="p">,</span> <span class="n">exc_tb</span><span class="p">):</span>
+    <span class="k">def</span> <span class="fm">__exit__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">exc_type</span><span class="p">,</span> <span class="n">exc_val</span><span class="p">,</span> <span class="n">exc_tb</span><span class="p">):</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">persist</span><span class="p">()</span>
 
-    <span class="k">def</span><span class="w"> </span><span class="fm">__del__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="k">def</span> <span class="fm">__del__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">persist</span><span class="p">()</span>
 
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
@@ -258,7 +258,7 @@
 
 <div class="viewcode-block" id="FileMetadata.list">
 <a class="viewcode-back" href="../../Reference/code.html#sarracenia.filemetadata.FileMetadata.list">[docs]</a>
-    <span class="k">def</span><span class="w"> </span><span class="nf">list</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">list</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">           return the list of defined extended attributes. (keys to the dict.)</span>
 <span class="sd">        &quot;&quot;&quot;</span>
@@ -267,7 +267,7 @@
 
 <div class="viewcode-block" id="FileMetadata.get">
 <a class="viewcode-back" href="../../Reference/code.html#sarracenia.filemetadata.FileMetadata.get">[docs]</a>
-    <span class="k">def</span><span class="w"> </span><span class="nf">get</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+    <span class="k">def</span> <span class="nf">get</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">           return the value of the named extended attribute.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
@@ -285,7 +285,7 @@
 
 <div class="viewcode-block" id="FileMetadata.set">
 <a class="viewcode-back" href="../../Reference/code.html#sarracenia.filemetadata.FileMetadata.set">[docs]</a>
-    <span class="k">def</span><span class="w"> </span><span class="nf">set</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="n">value</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">set</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="n">value</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">           set the name &amp; value pair to the extended attributes for the file.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
@@ -295,7 +295,7 @@
 
 <div class="viewcode-block" id="FileMetadata.persist">
 <a class="viewcode-back" href="../../Reference/code.html#sarracenia.filemetadata.FileMetadata.persist">[docs]</a>
-    <span class="k">def</span><span class="w"> </span><span class="nf">persist</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">persist</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">           write the in-memory extended attributes to disk.</span>
 <span class="sd">        &quot;&quot;&quot;</span>

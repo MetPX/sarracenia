@@ -6,7 +6,7 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>sarracenia.diskqueue &mdash; Sarracenia 3.00.57rc2 documentation</title>
-      <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=80d5e7a1" />
       <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=e59714d7" />
 
   
@@ -93,11 +93,11 @@
 <span class="c1">#  re-factored beyond recognition by PSilva 2021. Don&#39;t blame Michel</span>
 <span class="c1">#</span>
 
-<span class="kn">from</span><span class="w"> </span><span class="nn">_codecs</span><span class="w"> </span><span class="kn">import</span> <span class="n">decode</span><span class="p">,</span> <span class="n">encode</span>
+<span class="kn">from</span> <span class="nn">_codecs</span> <span class="kn">import</span> <span class="n">decode</span><span class="p">,</span> <span class="n">encode</span>
 
-<span class="kn">import</span><span class="w"> </span><span class="nn">jsonpickle</span><span class="o">,</span><span class="w"> </span><span class="nn">os</span><span class="o">,</span><span class="w"> </span><span class="nn">os.path</span><span class="o">,</span><span class="w"> </span><span class="nn">sarracenia</span><span class="o">,</span><span class="w"> </span><span class="nn">sys</span><span class="o">,</span><span class="w"> </span><span class="nn">time</span>
+<span class="kn">import</span> <span class="nn">jsonpickle</span><span class="o">,</span> <span class="nn">os</span><span class="o">,</span> <span class="nn">os.path</span><span class="o">,</span> <span class="nn">sarracenia</span><span class="o">,</span> <span class="nn">sys</span><span class="o">,</span> <span class="nn">time</span>
 
-<span class="kn">import</span><span class="w"> </span><span class="nn">logging</span>
+<span class="kn">import</span> <span class="nn">logging</span>
 
 <span class="c1"># class sarra/retry</span>
 
@@ -106,7 +106,7 @@
 
 <div class="viewcode-block" id="DiskQueue">
 <a class="viewcode-back" href="../../Reference/code.html#sarracenia.diskqueue.DiskQueue">[docs]</a>
-<span class="k">class</span><span class="w"> </span><span class="nc">DiskQueue</span><span class="p">():</span>
+<span class="k">class</span> <span class="nc">DiskQueue</span><span class="p">():</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Process Persistent Queue...</span>
 
@@ -155,7 +155,7 @@
 <span class="sd">    &quot;&quot;&quot;</span>
 <div class="viewcode-block" id="DiskQueue.__init__">
 <a class="viewcode-back" href="../../Reference/code.html#sarracenia.diskqueue.DiskQueue.__init__">[docs]</a>
-    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">options</span><span class="p">,</span> <span class="n">name</span><span class="p">):</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">options</span><span class="p">,</span> <span class="n">name</span><span class="p">):</span>
 
         <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot; </span><span class="si">%s</span><span class="s2"> __init__&quot;</span> <span class="o">%</span> <span class="n">name</span><span class="p">)</span>
 
@@ -221,7 +221,7 @@
 
 <div class="viewcode-block" id="DiskQueue.put">
 <a class="viewcode-back" href="../../Reference/code.html#sarracenia.diskqueue.DiskQueue.put">[docs]</a>
-    <span class="k">def</span><span class="w"> </span><span class="nf">put</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">message_list</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">put</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">message_list</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">          add messages to the end of the queue.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
@@ -239,7 +239,7 @@
 
 <div class="viewcode-block" id="DiskQueue.cleanup">
 <a class="viewcode-back" href="../../Reference/code.html#sarracenia.diskqueue.DiskQueue.cleanup">[docs]</a>
-    <span class="k">def</span><span class="w"> </span><span class="nf">cleanup</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">cleanup</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">          remove statefiles.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
@@ -250,7 +250,7 @@
 
 <div class="viewcode-block" id="DiskQueue.close">
 <a class="viewcode-back" href="../../Reference/code.html#sarracenia.diskqueue.DiskQueue.close">[docs]</a>
-    <span class="k">def</span><span class="w"> </span><span class="nf">close</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">close</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">           clean shutdown.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
@@ -276,7 +276,7 @@
 
 <div class="viewcode-block" id="DiskQueue._count_msgs">
 <a class="viewcode-back" href="../../Reference/code.html#sarracenia.diskqueue.DiskQueue._count_msgs">[docs]</a>
-    <span class="k">def</span><span class="w"> </span><span class="nf">_count_msgs</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">file_path</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
+    <span class="k">def</span> <span class="nf">_count_msgs</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">file_path</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Count the number of messages (lines) in the queue file. This should be used only when opening an existing</span>
 <span class="sd">        file, because :func:`~sarracenia.diskqueue.DiskQueue.get` does not remove messages from the file.</span>
 
@@ -301,7 +301,7 @@
 
 <div class="viewcode-block" id="DiskQueue.__len__">
 <a class="viewcode-back" href="../../Reference/code.html#sarracenia.diskqueue.DiskQueue.__len__">[docs]</a>
-    <span class="k">def</span><span class="w"> </span><span class="fm">__len__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
+    <span class="k">def</span> <span class="fm">__len__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Returns the total number of messages in the DiskQueue.</span>
 
 <span class="sd">        Number of messages in the DiskQueue does not necessarily equal the number of messages available to ``get``.</span>
@@ -314,7 +314,7 @@
         <span class="k">return</span> <span class="nb">max</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="bp">self</span><span class="o">.</span><span class="n">msg_count</span><span class="p">)</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">msg_count_new</span></div>
 
 
-    <span class="k">def</span><span class="w"> </span><span class="nf">msgFromJSON</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">line</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">msgFromJSON</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">line</span><span class="p">):</span>
         <span class="k">try</span><span class="p">:</span>
             <span class="n">msg</span> <span class="o">=</span> <span class="n">jsonpickle</span><span class="o">.</span><span class="n">decode</span><span class="p">(</span><span class="n">line</span><span class="p">)</span>
         <span class="k">except</span> <span class="ne">ValueError</span><span class="p">:</span>
@@ -324,12 +324,12 @@
 
         <span class="k">return</span> <span class="n">msg</span>
 
-    <span class="k">def</span><span class="w"> </span><span class="nf">msgToJSON</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">message</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">msgToJSON</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">message</span><span class="p">):</span>
         <span class="k">return</span> <span class="n">jsonpickle</span><span class="o">.</span><span class="n">encode</span><span class="p">(</span><span class="n">message</span><span class="p">)</span> <span class="o">+</span> <span class="s1">&#39;</span><span class="se">\n</span><span class="s1">&#39;</span>
 
 <div class="viewcode-block" id="DiskQueue.get">
 <a class="viewcode-back" href="../../Reference/code.html#sarracenia.diskqueue.DiskQueue.get">[docs]</a>
-    <span class="k">def</span><span class="w"> </span><span class="nf">get</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">maximum_messages_to_get</span><span class="o">=</span><span class="mi">1</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">get</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">maximum_messages_to_get</span><span class="o">=</span><span class="mi">1</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">           qty number of messages to retrieve from the queue.</span>
 
@@ -386,7 +386,7 @@
 
 <div class="viewcode-block" id="DiskQueue.in_cache">
 <a class="viewcode-back" href="../../Reference/code.html#sarracenia.diskqueue.DiskQueue.in_cache">[docs]</a>
-    <span class="k">def</span><span class="w"> </span><span class="nf">in_cache</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">message</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+    <span class="k">def</span> <span class="nf">in_cache</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">message</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">          return whether the entry is message is in the cache or not.</span>
 <span class="sd">          side effect: adds it.</span>
@@ -418,7 +418,7 @@
 
 <div class="viewcode-block" id="DiskQueue.is_expired">
 <a class="viewcode-back" href="../../Reference/code.html#sarracenia.diskqueue.DiskQueue.is_expired">[docs]</a>
-    <span class="k">def</span><span class="w"> </span><span class="nf">is_expired</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">message</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+    <span class="k">def</span> <span class="nf">is_expired</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">message</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">          return is the given message expired ?</span>
 <span class="sd">        &quot;&quot;&quot;</span>
@@ -436,7 +436,7 @@
 
 <div class="viewcode-block" id="DiskQueue.needs_requeuing">
 <a class="viewcode-back" href="../../Reference/code.html#sarracenia.diskqueue.DiskQueue.needs_requeuing">[docs]</a>
-    <span class="k">def</span><span class="w"> </span><span class="nf">needs_requeuing</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">message</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+    <span class="k">def</span> <span class="nf">needs_requeuing</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">message</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">           return </span>
 <span class="sd">           * True if message is not expired, and not already in queue. </span>
@@ -458,7 +458,7 @@
 
 <div class="viewcode-block" id="DiskQueue.msg_get_from_file">
 <a class="viewcode-back" href="../../Reference/code.html#sarracenia.diskqueue.DiskQueue.msg_get_from_file">[docs]</a>
-    <span class="k">def</span><span class="w"> </span><span class="nf">msg_get_from_file</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">fp</span><span class="p">,</span> <span class="n">path</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">msg_get_from_file</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">fp</span><span class="p">,</span> <span class="n">path</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">            read a message from the state file.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
@@ -484,7 +484,7 @@
 
 <div class="viewcode-block" id="DiskQueue.on_housekeeping">
 <a class="viewcode-back" href="../../Reference/code.html#sarracenia.diskqueue.DiskQueue.on_housekeeping">[docs]</a>
-    <span class="k">def</span><span class="w"> </span><span class="nf">on_housekeeping</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">on_housekeeping</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 
 <span class="sd">           read rest of queue_file (from current point of unretried ones.)</span>

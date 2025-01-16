@@ -6,7 +6,7 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>sarracenia.flowcb.nodupe &mdash; Sarracenia 3.00.57rc2 documentation</title>
-      <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=80d5e7a1" />
       <link rel="stylesheet" type="text/css" href="../../../_static/css/theme.css?v=e59714d7" />
 
   
@@ -84,16 +84,16 @@
   <h1>Source code for sarracenia.flowcb.nodupe</h1><div class="highlight"><pre>
 <span></span>
 
-<span class="kn">import</span><span class="w"> </span><span class="nn">logging</span>
+<span class="kn">import</span> <span class="nn">logging</span>
 
-<span class="kn">from</span><span class="w"> </span><span class="nn">sarracenia.flowcb</span><span class="w"> </span><span class="kn">import</span> <span class="n">FlowCB</span>
+<span class="kn">from</span> <span class="nn">sarracenia.flowcb</span> <span class="kn">import</span> <span class="n">FlowCB</span>
 
 <span class="n">logger</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="vm">__name__</span><span class="p">)</span>
 
 
 <div class="viewcode-block" id="NoDupe">
 <a class="viewcode-back" href="../../../Reference/flowcb.html#sarracenia.flowcb.nodupe.NoDupe">[docs]</a>
-<span class="k">class</span><span class="w"> </span><span class="nc">NoDupe</span><span class="p">(</span><span class="n">FlowCB</span><span class="p">):</span>
+<span class="k">class</span> <span class="nc">NoDupe</span><span class="p">(</span><span class="n">FlowCB</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        duplicate suppression family of modules.</span>
 
@@ -113,7 +113,7 @@
 <span class="sd">    &quot;&quot;&quot;</span>
 
 
-    <span class="k">def</span><span class="w"> </span><span class="nf">deriveKey</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">msg</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+    <span class="k">def</span> <span class="nf">deriveKey</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">msg</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
 
         <span class="n">key</span><span class="o">=</span><span class="kc">None</span>
         <span class="k">if</span> <span class="p">(</span><span class="s1">&#39;nodupe_override&#39;</span> <span class="ow">in</span> <span class="n">msg</span><span class="p">)</span> <span class="ow">and</span> <span class="p">(</span><span class="s1">&#39;key&#39;</span> <span class="ow">in</span> <span class="n">msg</span><span class="p">[</span><span class="s1">&#39;nodupe_override&#39;</span><span class="p">]):</span>

@@ -7,7 +7,7 @@
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Command Line Guide &mdash; Sarracenia 3.00.57rc2 documentation</title>
-      <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=80d5e7a1" />
       <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=e59714d7" />
 
   
@@ -1762,14 +1762,14 @@ processing called <em>flowCallback</em> Flow_callbacks define and use additional
 <p>Either way, the module refers to the sarracenia/flowcb/msg/log.py file in the
 installed package. In that file, the Log class is the one searched for entry
 points. The log.py file included in the package is like this:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">sarracenia.flowcb</span><span class="w"> </span><span class="kn">import</span> <span class="n">FlowCB</span>
-<span class="kn">import</span><span class="w"> </span><span class="nn">logging</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">sarracenia.flowcb</span> <span class="kn">import</span> <span class="n">FlowCB</span>
+<span class="kn">import</span> <span class="nn">logging</span>
 
 <span class="n">logger</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span> <span class="vm">__name__</span> <span class="p">)</span>
 
-<span class="k">class</span><span class="w"> </span><span class="nc">Log</span><span class="p">(</span><span class="n">Plugin</span><span class="p">):</span>
+<span class="k">class</span> <span class="nc">Log</span><span class="p">(</span><span class="n">Plugin</span><span class="p">):</span>
 
-  <span class="k">def</span><span class="w"> </span><span class="nf">after_accept</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">worklist</span><span class="p">):</span>
+  <span class="k">def</span> <span class="nf">after_accept</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">worklist</span><span class="p">):</span>
       <span class="k">for</span> <span class="n">msg</span> <span class="ow">in</span> <span class="n">worklist</span><span class="o">.</span><span class="n">incoming</span><span class="p">:</span>
           <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span> <span class="s2">&quot;msg/log received: </span><span class="si">%s</span><span class="s2"> &quot;</span> <span class="o">%</span> <span class="n">msg</span> <span class="p">)</span>
       <span class="k">return</span> <span class="n">worklist</span>
@@ -1802,19 +1802,19 @@ of the list (which determines relative execution order among flowCallback classe
 Making them available for use by the Sarracenia core, or flowCallback.
 Developers can add additional protocols for notification messages or
 file transfer.  For example:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">torr</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">torr</span>
 </pre></div>
 </div>
 <p>would be a reasonable name for a Transfer protocol to retrieve
 resources with bittorrent protocol. A skeleton of such a thing
 would look like this:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">logging</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">logging</span>
 
 <span class="n">logger</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="vm">__name__</span><span class="p">)</span>
 
-<span class="kn">import</span><span class="w"> </span><span class="nn">sarracenia.transfer</span>
+<span class="kn">import</span> <span class="nn">sarracenia.transfer</span>
 
-<span class="k">class</span><span class="w"> </span><span class="nc">torr</span><span class="p">(</span><span class="n">sarracenia</span><span class="o">.</span><span class="n">transfer</span><span class="o">.</span><span class="n">Transfer</span><span class="p">):</span>
+<span class="k">class</span> <span class="nc">torr</span><span class="p">(</span><span class="n">sarracenia</span><span class="o">.</span><span class="n">transfer</span><span class="o">.</span><span class="n">Transfer</span><span class="p">):</span>
     <span class="k">pass</span>
 
 <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="s2">&quot;loading&quot;</span><span class="p">)</span>
@@ -2281,15 +2281,15 @@ tree ( on Linux, the ~/.config/sarra/plugins).</p>
 That module logs messages <em>after_accept</em> (after notification messages have passed through the accept/reject masks.)
 and the <em>after_work</em> (after the file has been downloaded or sent). Here is the source code
 for that callback class:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">json</span>
-<span class="kn">import</span><span class="w"> </span><span class="nn">logging</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">sarracenia.flowcb</span><span class="w"> </span><span class="kn">import</span> <span class="n">FlowCB</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">json</span>
+<span class="kn">import</span> <span class="nn">logging</span>
+<span class="kn">from</span> <span class="nn">sarracenia.flowcb</span> <span class="kn">import</span> <span class="n">FlowCB</span>
 
 <span class="n">logger</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="vm">__name__</span><span class="p">)</span>
 
 
-<span class="k">class</span><span class="w"> </span><span class="nc">Log</span><span class="p">(</span><span class="n">FlowCB</span><span class="p">):</span>
-  <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">options</span><span class="p">):</span>
+<span class="k">class</span> <span class="nc">Log</span><span class="p">(</span><span class="n">FlowCB</span><span class="p">):</span>
+  <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">options</span><span class="p">):</span>
 
       <span class="c1"># FIXME: should a logging module have a logLevel setting?</span>
       <span class="c1">#        just put in a cookie cutter for now...</span>
@@ -2298,11 +2298,11 @@ for that callback class:</p>
       <span class="k">else</span><span class="p">:</span>
           <span class="n">logger</span><span class="o">.</span><span class="n">setLevel</span><span class="p">(</span><span class="n">logging</span><span class="o">.</span><span class="n">INFO</span><span class="p">)</span>
 
-  <span class="k">def</span><span class="w"> </span><span class="nf">after_accept</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">worklist</span><span class="p">):</span>
+  <span class="k">def</span> <span class="nf">after_accept</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">worklist</span><span class="p">):</span>
       <span class="k">for</span> <span class="n">msg</span> <span class="ow">in</span> <span class="n">worklist</span><span class="o">.</span><span class="n">incoming</span><span class="p">:</span>
           <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;accepted: </span><span class="si">%s</span><span class="s2"> &quot;</span> <span class="o">%</span> <span class="n">msg_dumps</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span> <span class="p">)</span>
 
-  <span class="k">def</span><span class="w"> </span><span class="nf">after_work</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">worklist</span><span class="p">):</span>
+  <span class="k">def</span> <span class="nf">after_work</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">worklist</span><span class="p">):</span>
       <span class="k">for</span> <span class="n">msg</span> <span class="ow">in</span> <span class="n">worklist</span><span class="o">.</span><span class="n">ok</span><span class="p">:</span>
           <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;worked successfully: </span><span class="si">%s</span><span class="s2"> &quot;</span> <span class="o">%</span> <span class="n">msg</span><span class="o">.</span><span class="n">dumps</span><span class="p">()</span> <span class="p">)</span>
 </pre></div>
@@ -2320,20 +2320,20 @@ with python scripts is to use the script callback:</p>
 <p>Using the <em>_prepend</em> variant of the <em>flowCallback</em> option, will have the Script callback
 class’s entry point, before the File callback… So A script will be executed, and then
 the directory will be checked for new files.  Here is part of the Script callback class:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">logging</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">sarracenia.flowcb</span><span class="w"> </span><span class="kn">import</span> <span class="n">FlowCB</span>
-<span class="kn">import</span><span class="w"> </span><span class="nn">subprocess</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">logging</span>
+<span class="kn">from</span> <span class="nn">sarracenia.flowcb</span> <span class="kn">import</span> <span class="n">FlowCB</span>
+<span class="kn">import</span> <span class="nn">subprocess</span>
 
 <span class="n">logger</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="vm">__name__</span><span class="p">)</span>
 
 
-<span class="k">class</span><span class="w"> </span><span class="nc">Script</span><span class="p">(</span><span class="n">FlowCB</span><span class="p">):</span>
+<span class="k">class</span> <span class="nc">Script</span><span class="p">(</span><span class="n">FlowCB</span><span class="p">):</span>
 
    <span class="o">.</span>
    <span class="o">.</span>
    <span class="o">.</span>
 
-    <span class="k">def</span><span class="w"> </span><span class="nf">run_script</span><span class="p">(</span> <span class="bp">self</span><span class="p">,</span> <span class="n">script</span> <span class="p">):</span>
+    <span class="k">def</span> <span class="nf">run_script</span><span class="p">(</span> <span class="bp">self</span><span class="p">,</span> <span class="n">script</span> <span class="p">):</span>
         <span class="k">try</span><span class="p">:</span>
             <span class="n">subprocess</span><span class="o">.</span><span class="n">run</span><span class="p">(</span> <span class="bp">self</span><span class="o">.</span><span class="n">o</span><span class="o">.</span><span class="n">script_gather</span><span class="p">,</span> <span class="n">check</span><span class="o">=</span><span class="kc">True</span> <span class="p">)</span>
         <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">err</span><span class="p">:</span>
@@ -2341,7 +2341,7 @@ the directory will be checked for new files.  Here is part of the Script callbac
             <span class="n">logging</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;Exception details:&quot;</span><span class="p">,</span> <span class="n">exc_info</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 
 
-    <span class="k">def</span><span class="w"> </span><span class="nf">gather</span><span class="p">(</span><span class="bp">self</span> <span class="p">):</span>
+    <span class="k">def</span> <span class="nf">gather</span><span class="p">(</span><span class="bp">self</span> <span class="p">):</span>
         <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span> <span class="bp">self</span><span class="o">.</span><span class="n">o</span><span class="p">,</span> <span class="s1">&#39;script_gather&#39;</span><span class="p">)</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">o</span><span class="o">.</span><span class="n">script_gather</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">run_script</span><span class="p">(</span> <span class="bp">self</span><span class="o">.</span><span class="n">o</span><span class="o">.</span><span class="n">script_gather</span> <span class="p">)</span>
         <span class="k">return</span> <span class="p">[]</span>

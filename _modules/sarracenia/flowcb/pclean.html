@@ -6,7 +6,7 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>sarracenia.flowcb.pclean &mdash; Sarracenia 3.00.57rc2 documentation</title>
-      <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=80d5e7a1" />
       <link rel="stylesheet" type="text/css" href="../../../_static/css/theme.css?v=e59714d7" />
 
   
@@ -86,17 +86,17 @@
 <span class="sd">    Used by https://github.com/MetPX/sr_insects test suite for CI/CD.</span>
 <span class="sd">&quot;&quot;&quot;</span>
 
-<span class="kn">import</span><span class="w"> </span><span class="nn">logging</span>
+<span class="kn">import</span> <span class="nn">logging</span>
 
-<span class="kn">from</span><span class="w"> </span><span class="nn">sarracenia</span><span class="w"> </span><span class="kn">import</span> <span class="n">timestr2flt</span><span class="p">,</span> <span class="n">nowflt</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">sarracenia.flowcb</span><span class="w"> </span><span class="kn">import</span> <span class="n">FlowCB</span>
+<span class="kn">from</span> <span class="nn">sarracenia</span> <span class="kn">import</span> <span class="n">timestr2flt</span><span class="p">,</span> <span class="n">nowflt</span>
+<span class="kn">from</span> <span class="nn">sarracenia.flowcb</span> <span class="kn">import</span> <span class="n">FlowCB</span>
 
 <span class="n">logger</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="vm">__name__</span><span class="p">)</span>
 
 
 <div class="viewcode-block" id="PClean">
 <a class="viewcode-back" href="../../../Reference/flowcb.html#sarracenia.flowcb.pclean.PClean">[docs]</a>
-<span class="k">class</span><span class="w"> </span><span class="nc">PClean</span><span class="p">(</span><span class="n">FlowCB</span><span class="p">):</span>
+<span class="k">class</span> <span class="nc">PClean</span><span class="p">(</span><span class="n">FlowCB</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot; Base plugin class that is used in shovel pclean_f9x:</span>
 
 <span class="sd">     - it checks if the propagation was ok.</span>
@@ -110,7 +110,7 @@
 <span class="sd">    &quot;&quot;&quot;</span>
 <div class="viewcode-block" id="PClean.__init__">
 <a class="viewcode-back" href="../../../Reference/flowcb.html#sarracenia.flowcb.pclean.PClean.__init__">[docs]</a>
-    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">options</span><span class="p">):</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">options</span><span class="p">):</span>
         <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">options</span><span class="p">,</span><span class="n">logger</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">test_extension_list</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;.slink&#39;</span><span class="p">,</span> <span class="s1">&#39;.hlink&#39;</span><span class="p">,</span> <span class="s1">&#39;.moved&#39;</span><span class="p">]</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">ext_key</span> <span class="o">=</span> <span class="s1">&#39;pclean_ext&#39;</span>
@@ -131,7 +131,7 @@
 
 <div class="viewcode-block" id="PClean.build_path_dict">
 <a class="viewcode-back" href="../../../Reference/flowcb.html#sarracenia.flowcb.pclean.PClean.build_path_dict">[docs]</a>
-    <span class="k">def</span><span class="w"> </span><span class="nf">build_path_dict</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">fxx_dirs</span><span class="p">,</span> <span class="n">relpath</span><span class="p">,</span> <span class="n">ext</span><span class="o">=</span><span class="s1">&#39;&#39;</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">build_path_dict</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">fxx_dirs</span><span class="p">,</span> <span class="n">relpath</span><span class="p">,</span> <span class="n">ext</span><span class="o">=</span><span class="s1">&#39;&#39;</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot; This build paths necessary to pclean tests</span>
 
 <span class="sd">        It is a subset of all flow test path based on fxx download directory provided.</span>
@@ -151,13 +151,13 @@
 
 <div class="viewcode-block" id="PClean.get_extension">
 <a class="viewcode-back" href="../../../Reference/flowcb.html#sarracenia.flowcb.pclean.PClean.get_extension">[docs]</a>
-    <span class="k">def</span><span class="w"> </span><span class="nf">get_extension</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">relpath</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">get_extension</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">relpath</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot; Check whether the extension is in the header</span>
 
 <span class="sd">        :param msg: the msg used for the test</span>
 <span class="sd">        :return: the value corresponding to the extension key in the msg header</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="kn">from</span><span class="w"> </span><span class="nn">pathlib</span><span class="w"> </span><span class="kn">import</span> <span class="n">Path</span>
+        <span class="kn">from</span> <span class="nn">pathlib</span> <span class="kn">import</span> <span class="n">Path</span>
 
         <span class="k">return</span> <span class="n">Path</span><span class="p">(</span><span class="n">relpath</span><span class="p">)</span><span class="o">.</span><span class="n">suffix</span></div>
 </div>

@@ -6,7 +6,7 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>sarracenia.flowcb.filter.wmo2msc &mdash; Sarracenia 3.00.57rc2 documentation</title>
-      <link rel="stylesheet" type="text/css" href="../../../../_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="../../../../_static/pygments.css?v=80d5e7a1" />
       <link rel="stylesheet" type="text/css" href="../../../../_static/css/theme.css?v=e59714d7" />
 
   
@@ -148,24 +148,24 @@
 
 <span class="sd">&quot;&quot;&quot;</span>
 
-<span class="kn">import</span><span class="w"> </span><span class="nn">sys</span>
-<span class="kn">import</span><span class="w"> </span><span class="nn">os</span>
-<span class="kn">import</span><span class="w"> </span><span class="nn">re</span>
-<span class="kn">import</span><span class="w"> </span><span class="nn">time</span>
-<span class="kn">import</span><span class="w"> </span><span class="nn">hashlib</span>
-<span class="kn">import</span><span class="w"> </span><span class="nn">logging</span>
-<span class="kn">import</span><span class="w"> </span><span class="nn">random</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">sarracenia.flowcb</span><span class="w"> </span><span class="kn">import</span> <span class="n">FlowCB</span>
+<span class="kn">import</span> <span class="nn">sys</span>
+<span class="kn">import</span> <span class="nn">os</span>
+<span class="kn">import</span> <span class="nn">re</span>
+<span class="kn">import</span> <span class="nn">time</span>
+<span class="kn">import</span> <span class="nn">hashlib</span>
+<span class="kn">import</span> <span class="nn">logging</span>
+<span class="kn">import</span> <span class="nn">random</span>
+<span class="kn">from</span> <span class="nn">sarracenia.flowcb</span> <span class="kn">import</span> <span class="n">FlowCB</span>
 
 <span class="n">logger</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="s1">&#39;__name__&#39;</span><span class="p">)</span>
 
 
 <div class="viewcode-block" id="Wmo2msc">
 <a class="viewcode-back" href="../../../../Reference/flowcb.html#sarracenia.flowcb.filter.wmo2msc.Wmo2msc">[docs]</a>
-<span class="k">class</span><span class="w"> </span><span class="nc">Wmo2msc</span><span class="p">(</span><span class="n">FlowCB</span><span class="p">):</span>
+<span class="k">class</span> <span class="nc">Wmo2msc</span><span class="p">(</span><span class="n">FlowCB</span><span class="p">):</span>
 <div class="viewcode-block" id="Wmo2msc.__init__">
 <a class="viewcode-back" href="../../../../Reference/flowcb.html#sarracenia.flowcb.filter.wmo2msc.Wmo2msc.__init__">[docs]</a>
-    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">options</span><span class="p">):</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">options</span><span class="p">):</span>
         <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">options</span><span class="p">,</span><span class="n">logger</span><span class="p">)</span>
 
         <span class="bp">self</span><span class="o">.</span><span class="n">o</span><span class="o">.</span><span class="n">add_option</span><span class="p">(</span> <span class="s1">&#39;filter_wmo2msc_uniquify&#39;</span><span class="p">,</span> <span class="s1">&#39;str&#39;</span><span class="p">,</span> <span class="s1">&#39;hash&#39;</span> <span class="p">)</span>
@@ -187,7 +187,7 @@
 
 <div class="viewcode-block" id="Wmo2msc.replaceChar">
 <a class="viewcode-back" href="../../../../Reference/flowcb.html#sarracenia.flowcb.filter.wmo2msc.Wmo2msc.replaceChar">[docs]</a>
-    <span class="k">def</span><span class="w"> </span><span class="nf">replaceChar</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">oldchar</span><span class="p">,</span> <span class="n">newchar</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">replaceChar</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">oldchar</span><span class="p">,</span> <span class="n">newchar</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">           replace all occurrences of oldchar by newchar in the the message byte stream.</span>
 <span class="sd">           started as a direct copy from sundew of routine with same name in bulletin.py</span>
@@ -201,7 +201,7 @@
 
 <div class="viewcode-block" id="Wmo2msc.doSpecificProcessing">
 <a class="viewcode-back" href="../../../../Reference/flowcb.html#sarracenia.flowcb.filter.wmo2msc.Wmo2msc.doSpecificProcessing">[docs]</a>
-    <span class="k">def</span><span class="w"> </span><span class="nf">doSpecificProcessing</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">doSpecificProcessing</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;doSpecificProcessing()</span>
 
 <span class="sd">           Modify bulletins received from Washington via the WMO socket protocol.</span>
@@ -283,7 +283,7 @@
             <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Trimmed </span><span class="si">%d</span><span class="s1"> trailing blanks!&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">lenb</span> <span class="o">-</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">bintxt</span><span class="p">)))</span></div>
 
 
-    <span class="k">def</span><span class="w"> </span><span class="nf">after_accept</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">worklist</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">after_accept</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">worklist</span><span class="p">):</span>
         <span class="n">new_incoming</span> <span class="o">=</span> <span class="p">[]</span>
         <span class="k">for</span> <span class="n">message</span> <span class="ow">in</span> <span class="n">worklist</span><span class="o">.</span><span class="n">incoming</span><span class="p">:</span>
             <span class="k">if</span> <span class="n">message</span><span class="p">[</span><span class="s1">&#39;baseUrl&#39;</span><span class="p">]</span> <span class="o">!=</span> <span class="s1">&#39;file:&#39;</span><span class="p">:</span>

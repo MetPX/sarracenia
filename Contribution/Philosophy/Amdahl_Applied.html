@@ -7,7 +7,7 @@
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Amdahl’s Law Applied &mdash; Sarracenia 3.00.57rc2 documentation</title>
-      <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=80d5e7a1" />
       <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=e59714d7" />
       <link rel="stylesheet" type="text/css" href="../../_static/nbsphinx-code-cells.css?v=2aa19091" />
 
@@ -138,8 +138,8 @@
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[3]:
 </pre></div>
 </div>
-<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">matplotlib</span><span class="w"> </span><span class="kn">import</span> <span class="n">pyplot</span> <span class="k">as</span> <span class="n">plt</span>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">from</span> <span class="nn">matplotlib</span> <span class="kn">import</span> <span class="n">pyplot</span> <span class="k">as</span> <span class="n">plt</span>
 </pre></div>
 </div>
 </div>
@@ -187,7 +187,7 @@
 
 <span class="c1"># p is the parallelizable part of the code, that can be sped up.</span>
 <span class="c1"># n is the number of processors applied to the problem.</span>
-<span class="k">def</span><span class="w"> </span><span class="nf">t</span><span class="p">(</span><span class="n">p</span><span class="p">,</span><span class="n">n</span><span class="p">):</span>
+<span class="k">def</span> <span class="nf">t</span><span class="p">(</span><span class="n">p</span><span class="p">,</span><span class="n">n</span><span class="p">):</span>
     <span class="k">return</span> <span class="p">(</span><span class="mi">1</span><span class="o">-</span><span class="n">p</span><span class="p">)</span><span class="o">+</span><span class="p">(</span><span class="n">p</span><span class="p">)</span><span class="o">/</span><span class="n">n</span>
 
 <span class="n">A</span> <span class="o">=</span> <span class="p">{}</span>
@@ -261,7 +261,7 @@
 <span class="n">counter</span><span class="o">=</span><span class="mi">0</span>
 <span class="n">tot</span><span class="o">=</span><span class="mi">1</span>
 
-<span class="k">def</span><span class="w"> </span><span class="nf">count</span><span class="p">():</span>
+<span class="k">def</span> <span class="nf">count</span><span class="p">():</span>
    <span class="k">global</span> <span class="n">tot</span><span class="p">,</span><span class="n">counter</span>
    <span class="n">counter</span><span class="o">=</span><span class="mi">0</span>
    <span class="k">while</span> <span class="n">counter</span> <span class="o">&lt;</span> <span class="nb">max</span><span class="p">:</span>
@@ -294,12 +294,12 @@ Wall time: 160 ms
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="o">%%time</span>
-<span class="kn">import</span><span class="w"> </span><span class="nn">threading</span>
+<span class="kn">import</span> <span class="nn">threading</span>
 
 <span class="nb">max</span><span class="o">=</span><span class="mi">1000000</span>
 <span class="n">tot</span><span class="o">=</span><span class="mi">1</span>
 
-<span class="k">def</span><span class="w"> </span><span class="nf">count</span><span class="p">():</span>
+<span class="k">def</span> <span class="nf">count</span><span class="p">():</span>
    <span class="k">global</span> <span class="n">tot</span>
    <span class="n">counter</span><span class="o">=</span><span class="mi">0</span>
    <span class="k">while</span> <span class="n">counter</span> <span class="o">&lt;</span> <span class="nb">max</span><span class="p">:</span>
@@ -351,7 +351,7 @@ Wall time: 405 ms
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="o">%%time</span>
-<span class="kn">import</span><span class="w"> </span><span class="nn">threading</span>
+<span class="kn">import</span> <span class="nn">threading</span>
 
 <span class="nb">max</span><span class="o">=</span><span class="mi">1000000</span>
 <span class="n">counter</span><span class="o">=</span><span class="mi">0</span>
@@ -359,7 +359,7 @@ Wall time: 405 ms
 <span class="n">counterLock</span> <span class="o">=</span> <span class="n">threading</span><span class="o">.</span><span class="n">Lock</span><span class="p">()</span>
 <span class="n">totLock</span> <span class="o">=</span> <span class="n">threading</span><span class="o">.</span><span class="n">Lock</span><span class="p">()</span>
 
-<span class="k">def</span><span class="w"> </span><span class="nf">count</span><span class="p">():</span>
+<span class="k">def</span> <span class="nf">count</span><span class="p">():</span>
    <span class="k">global</span> <span class="n">counter</span><span class="p">,</span><span class="n">tot</span>
    <span class="k">while</span> <span class="n">counter</span> <span class="o">&lt;</span> <span class="nb">max</span><span class="p">:</span>
       <span class="n">totLock</span><span class="o">.</span><span class="n">acquire</span><span class="p">()</span>
@@ -406,14 +406,14 @@ Wall time: 2.78 s
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="o">%%time</span>
 
-<span class="kn">import</span><span class="w"> </span><span class="nn">threading</span>
+<span class="kn">import</span> <span class="nn">threading</span>
 
 <span class="nb">max</span><span class="o">=</span><span class="mi">1000000</span>
 <span class="n">counter</span><span class="o">=</span><span class="mi">0</span>
 <span class="n">tot</span><span class="o">=</span><span class="mi">1</span>
 <span class="n">critLock</span> <span class="o">=</span> <span class="n">threading</span><span class="o">.</span><span class="n">Lock</span><span class="p">()</span>
 
-<span class="k">def</span><span class="w"> </span><span class="nf">count</span><span class="p">():</span>
+<span class="k">def</span> <span class="nf">count</span><span class="p">():</span>
    <span class="k">global</span> <span class="n">counter</span><span class="p">,</span><span class="n">tot</span>
    <span class="k">while</span> <span class="n">counter</span> <span class="o">&lt;</span> <span class="nb">max</span><span class="p">:</span>
       <span class="n">critLock</span><span class="o">.</span><span class="n">acquire</span><span class="p">()</span>

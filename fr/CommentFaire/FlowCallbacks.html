@@ -7,7 +7,7 @@
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Écriture de plugins FlowCallback &mdash; Sarracenia 3.00.57rc2 documentation</title>
-      <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=80d5e7a1" />
       <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=e59714d7" />
 
   
@@ -212,7 +212,7 @@ fois que l’accusé de réception a été pris en charge.</p>
 <h2>Journalisation<a class="headerlink" href="#journalisation" title="Link to this heading"></a></h2>
 <p>Python a une excellente journalisation intégrée, et il faut simplement utiliser le module
 d’une manière normale, pythonique, avec:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">logging</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">logging</span>
 </pre></div>
 </div>
 <p>Après toutes les importations dans votre fichier source python, définissez un enregistreur
@@ -245,14 +245,14 @@ inclure les lignes:</p>
 <section id="initialisation-et-parametres">
 <h2>Initialisation et paramètres<a class="headerlink" href="#initialisation-et-parametres" title="Link to this heading"></a></h2>
 <p>L’étape suivante consiste à déclarer une classe</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="k">class</span><span class="w"> </span><span class="nc">Myclass</span><span class="p">(</span><span class="n">FlowCB</span><span class="p">):</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="k">class</span> <span class="nc">Myclass</span><span class="p">(</span><span class="n">FlowCB</span><span class="p">):</span>
 </pre></div>
 </div>
 <p>en tant que sous-classe de FlowCB.  Les principales routines de la classe sont les points d’entrée
 qui seront appelés au moment où leur nom l’indique. S’il manque un point d’entrée donné à votre classe,
 elle ne sera tout simplement pas appelée. La classe __init__() est utilisée pour
 initialiser des éléments pour la classe de callback:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">options</span><span class="p">):</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">options</span><span class="p">):</span>
 
     <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">options</span><span class="p">,</span><span class="n">logger</span><span class="p">)</span>
 
@@ -284,14 +284,14 @@ Il existe différents <em>types</em> d’options, où le type déclaré modifie 
 <section id="points-dentree">
 <h2>Points d’entrée<a class="headerlink" href="#points-dentree" title="Link to this heading"></a></h2>
 <p>Autres entry_points, extraits de sarracenia/flowcb/__init__.py</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="k">def</span><span class="w"> </span><span class="nf">name</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">name</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
     <span class="n">Task</span><span class="p">:</span> <span class="k">return</span> <span class="n">the</span> <span class="n">name</span> <span class="n">of</span> <span class="n">a</span> <span class="n">plugin</span> <span class="k">for</span> <span class="n">reference</span> <span class="n">purposes</span><span class="o">.</span> <span class="p">(</span><span class="n">automatically</span> <span class="n">there</span><span class="p">)</span>
 
-<span class="k">def</span><span class="w"> </span><span class="nf">ack</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">messagelist</span><span class="p">):</span>
-    <span class="n">Task</span><span class="p">:</span> <span class="n">acknowledge</span> <span class="n">notification</span> <span class="n">messages</span> <span class="kn">from</span><span class="w"> </span><span class="nn">a</span> <span class="n">gather</span> <span class="n">source</span><span class="o">.</span>
+<span class="k">def</span> <span class="nf">ack</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">messagelist</span><span class="p">):</span>
+    <span class="n">Task</span><span class="p">:</span> <span class="n">acknowledge</span> <span class="n">notification</span> <span class="n">messages</span> <span class="kn">from</span> <span class="nn">a</span> <span class="n">gather</span> <span class="n">source</span><span class="o">.</span>
 
-<span class="k">def</span><span class="w"> </span><span class="nf">gather</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-    <span class="n">Task</span><span class="p">:</span> <span class="n">gather</span> <span class="n">notification</span> <span class="n">messages</span> <span class="kn">from</span><span class="w"> </span><span class="nn">a</span> <span class="n">source</span><span class="o">...</span> <span class="k">return</span> <span class="n">a</span> <span class="nb">list</span> <span class="n">of</span> <span class="n">notification</span> <span class="n">messages</span><span class="o">.</span>
+<span class="k">def</span> <span class="nf">gather</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="n">Task</span><span class="p">:</span> <span class="n">gather</span> <span class="n">notification</span> <span class="n">messages</span> <span class="kn">from</span> <span class="nn">a</span> <span class="n">source</span><span class="o">...</span> <span class="k">return</span> <span class="n">a</span> <span class="nb">list</span> <span class="n">of</span> <span class="n">notification</span> <span class="n">messages</span><span class="o">.</span>
           <span class="n">can</span> <span class="n">also</span> <span class="k">return</span> <span class="nb">tuple</span> <span class="p">(</span><span class="n">keep_going</span><span class="p">,</span> <span class="n">new_messages</span><span class="p">)</span> <span class="n">where</span> <span class="n">keep_going</span> <span class="ow">is</span> <span class="n">a</span> <span class="n">flag</span>
           <span class="n">that</span> <span class="n">when</span> <span class="kc">False</span> <span class="n">stops</span> <span class="n">processing</span> <span class="n">of</span> <span class="n">further</span> <span class="n">gather</span> <span class="n">routines</span><span class="o">.</span>
     <span class="k">return</span> <span class="p">[]</span>
@@ -302,44 +302,44 @@ Il existe différents <em>types</em> d’options, où le type déclaré modifie 
 
 <span class="sd">&quot;&quot;&quot;</span>
 
-<span class="k">def</span><span class="w"> </span><span class="nf">after_accept</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">worklist</span><span class="p">):</span>
+<span class="k">def</span> <span class="nf">after_accept</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">worklist</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">     Task: just after notification messages go through accept/reject masks,</span>
 <span class="sd">           operate on worklist.incoming to help decide which notification messages to process further.</span>
 <span class="sd">           and move notification messages to worklist.rejected to prevent further processing.</span>
 <span class="sd">           do not delete any notification messages, only move between worklists.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
-<span class="k">def</span><span class="w"> </span><span class="nf">do_poll</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="k">def</span> <span class="nf">do_poll</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
     <span class="n">Task</span><span class="p">:</span> <span class="n">build</span> <span class="n">worklist</span><span class="o">.</span><span class="n">incoming</span><span class="p">,</span> <span class="n">a</span> <span class="n">form</span> <span class="n">of</span> <span class="n">gather</span><span class="p">()</span>
 
-<span class="k">def</span><span class="w"> </span><span class="nf">on_data</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">data</span><span class="p">):</span>
+<span class="k">def</span> <span class="nf">on_data</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">data</span><span class="p">):</span>
     <span class="n">Task</span><span class="p">:</span>  <span class="k">return</span> <span class="n">data</span> <span class="n">transformed</span> <span class="ow">in</span> <span class="n">some</span> <span class="n">way</span><span class="o">.</span>
 
     <span class="k">return</span> <span class="n">new_data</span>
 
-<span class="k">def</span><span class="w"> </span><span class="nf">after_work</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">worklist</span><span class="p">):</span>
+<span class="k">def</span> <span class="nf">after_work</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">worklist</span><span class="p">):</span>
     <span class="n">Task</span><span class="p">:</span> <span class="n">operate</span> <span class="n">on</span> <span class="n">worklist</span><span class="o">.</span><span class="n">ok</span> <span class="p">(</span><span class="n">files</span> <span class="n">which</span> <span class="n">have</span> <span class="n">arrived</span><span class="o">.</span><span class="p">)</span>
 
-<span class="k">def</span><span class="w"> </span><span class="nf">post</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">worklist</span><span class="p">):</span>
+<span class="k">def</span> <span class="nf">post</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">worklist</span><span class="p">):</span>
      <span class="n">Task</span><span class="p">:</span> <span class="n">operate</span> <span class="n">on</span> <span class="n">worklist</span><span class="o">.</span><span class="n">ok</span><span class="p">,</span> <span class="ow">and</span> <span class="n">worklist</span><span class="o">.</span><span class="n">failed</span><span class="o">.</span> <span class="n">modifies</span> <span class="n">them</span> <span class="n">appropriately</span><span class="o">.</span>
            <span class="n">notification</span> <span class="n">message</span> <span class="n">acknowledgement</span> <span class="n">has</span> <span class="n">already</span> <span class="n">occurred</span> <span class="n">before</span> <span class="n">they</span> <span class="n">are</span> <span class="n">called</span><span class="o">.</span>
 
-<span class="k">def</span><span class="w"> </span><span class="nf">on_housekeeping</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="k">def</span> <span class="nf">on_housekeeping</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
      <span class="n">do</span> <span class="n">periodic</span> <span class="n">processing</span><span class="o">.</span>
 
-<span class="k">def</span><span class="w"> </span><span class="nf">on_html_page</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">page</span><span class="p">):</span>
+<span class="k">def</span> <span class="nf">on_html_page</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">page</span><span class="p">):</span>
      <span class="n">Task</span><span class="p">:</span> <span class="n">modify</span> <span class="n">an</span> <span class="n">html</span> <span class="n">page</span><span class="o">.</span>
 
-<span class="k">def</span><span class="w"> </span><span class="nf">on_line</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">line</span><span class="p">):</span>
+<span class="k">def</span> <span class="nf">on_line</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">line</span><span class="p">):</span>
      <span class="n">used</span> <span class="ow">in</span> <span class="n">FTP</span> <span class="n">polls</span><span class="p">,</span> <span class="n">because</span> <span class="n">servers</span> <span class="n">have</span> <span class="n">different</span> <span class="n">formats</span><span class="p">,</span> <span class="n">modify</span> <span class="n">to</span> <span class="n">canonical</span> <span class="n">use</span><span class="o">.</span>
 
      <span class="n">Task</span><span class="p">:</span> <span class="k">return</span> <span class="n">modified</span> <span class="n">line</span><span class="o">.</span>
 
-<span class="k">def</span><span class="w"> </span><span class="nf">on_start</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="k">def</span> <span class="nf">on_start</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
      <span class="n">After</span> <span class="n">the</span> <span class="n">connection</span> <span class="ow">is</span> <span class="n">established</span> <span class="k">with</span> <span class="n">the</span> <span class="n">broker</span> <span class="ow">and</span> <span class="n">things</span> <span class="n">are</span> <span class="n">instantiated</span><span class="p">,</span> <span class="n">but</span>
      <span class="n">before</span> <span class="nb">any</span> <span class="n">notification</span> <span class="n">message</span> <span class="n">transfer</span> <span class="n">occurs</span><span class="o">.</span>
 
-<span class="k">def</span><span class="w"> </span><span class="nf">on_stop</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="k">def</span> <span class="nf">on_stop</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
 </pre></div>
 </div>
 </section>
@@ -378,20 +378,20 @@ et laissé tomber.</p>
 quel que soit le contenu, il doit alors être considéré comme un doublon et supprimé. Ceci est utile lorsque plusieurs systèmes
 produisent les mêmes produits, mais ils ne sont pas identiques au niveau des bits. Le flowcb intégré qui implémente
 cette fonctionnalité est ci-dessous :</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">logging</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">sarracenia.flowcb</span><span class="w"> </span><span class="kn">import</span> <span class="n">FlowCB</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">logging</span>
+<span class="kn">from</span> <span class="nn">sarracenia.flowcb</span> <span class="kn">import</span> <span class="n">FlowCB</span>
 
 <span class="n">logger</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="vm">__name__</span><span class="p">)</span>
 
 
-<span class="k">class</span><span class="w"> </span><span class="nc">Name</span><span class="p">(</span><span class="n">FlowCB</span><span class="p">):</span>
+<span class="k">class</span> <span class="nc">Name</span><span class="p">(</span><span class="n">FlowCB</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">      Remplacez la comparaison afin que les fichiers portant le même nom, quel que soit</span>
 <span class="sd">      le répertoire dans lequel ils se trouvent, sont considérés comme identiques.</span>
 <span class="sd">      Ceci est utile lors de la réception de données provenant de deux sources différentes</span>
 <span class="sd">      (deux arbres différents) et vanner entre eux.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
-    <span class="k">def</span><span class="w"> </span><span class="nf">after_accept</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">worklist</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">after_accept</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">worklist</span><span class="p">):</span>
         <span class="k">for</span> <span class="n">m</span> <span class="ow">in</span> <span class="n">worklist</span><span class="o">.</span><span class="n">incoming</span><span class="p">:</span>
             <span class="k">if</span> <span class="ow">not</span> <span class="s1">&#39;nodupe_override&#39;</span> <span class="ow">in</span> <span class="n">m</span><span class="p">:</span>
                 <span class="n">m</span><span class="p">[</span><span class="s1">&#39;_deleteOnPost&#39;</span><span class="p">]</span> \<span class="o">|=</span> <span class="nb">set</span><span class="p">([</span><span class="s1">&#39;nodupe_override&#39;</span><span class="p">])</span>
@@ -412,19 +412,19 @@ les produits avec un « routage » similaire atterrissent sur le même nœud en 
 avec une somme de contrôle donnée, pour que le vannage fonctionne, il doit atterrir sur le même nœud en aval.</p>
 <p>Il se pourrait que, plutôt que d’utiliser une somme de contrôle, on préfère utiliser une autre somme de contrôle.
 méthode pour décider quel échange est utilisé:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">logging</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">sarracenia.flowcb</span><span class="w"> </span><span class="kn">import</span> <span class="n">FlowCB</span>
-<span class="kn">import</span><span class="w"> </span><span class="nn">hashlib</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">logging</span>
+<span class="kn">from</span> <span class="nn">sarracenia.flowcb</span> <span class="kn">import</span> <span class="n">FlowCB</span>
+<span class="kn">import</span> <span class="nn">hashlib</span>
 <span class="n">logger</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="vm">__name__</span><span class="p">)</span>
 
 
-<span class="k">class</span><span class="w"> </span><span class="nc">Distbydir</span><span class="p">(</span><span class="n">FlowCB</span><span class="p">):</span>
+<span class="k">class</span> <span class="nc">Distbydir</span><span class="p">(</span><span class="n">FlowCB</span><span class="p">):</span>
 <span class="w">  </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Remplacer l&#39;utilisation du champ d&#39;identité afin que les produits puissent</span>
 <span class="sd">    être regroupés par répertoire dans le relPath. Cela garantit que tous les produits</span>
 <span class="sd">    reçus du même répertoire sont publiés dans le même exchange lorsque post_exchangeSplit est actif.</span>
 <span class="sd">  &quot;&quot;&quot;</span>
-  <span class="k">def</span><span class="w"> </span><span class="nf">after_accept</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">worklist</span><span class="p">):</span>
+  <span class="k">def</span> <span class="nf">after_accept</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">worklist</span><span class="p">):</span>
       <span class="k">for</span> <span class="n">m</span> <span class="ow">in</span> <span class="n">worklist</span><span class="o">.</span><span class="n">incoming</span><span class="p">:</span>
           <span class="n">m</span><span class="p">[</span><span class="s1">&#39;_deleteOnPost&#39;</span><span class="p">]</span> <span class="o">|=</span> <span class="nb">set</span><span class="p">([</span><span class="s1">&#39;exchangeSplitOverride&#39;</span><span class="p">])</span>
           <span class="n">m</span><span class="p">[</span><span class="s1">&#39;exchangeSplitOverride&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">hashlib</span><span class="o">.</span><span class="n">md5</span><span class="p">(</span><span class="n">m</span><span class="p">[</span><span class="s1">&#39;relPath&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">sep</span><span class="p">)[</span><span class="o">-</span><span class="mi">2</span><span class="p">])</span><span class="o">.</span><span class="n">hexdigest</span><span class="p">()[</span><span class="mi">0</span><span class="p">])</span>
@@ -437,19 +437,19 @@ méthode pour décider quel échange est utilisé:</p>
 les noms commencent par ceux d’AHL et renomme l’arborescence des répertoires selon une norme différente,
 celui en évolution pour le WIS 2.0 de WMO (pour plus d’informations sur ce module :
 <a class="reference external" href="https://github.com/wmo-im/GTStoWIS2">https://github.com/wmo-im/GTStoWIS2</a>)</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">json</span>
-<span class="kn">import</span><span class="w"> </span><span class="nn">logging</span>
-<span class="kn">import</span><span class="w"> </span><span class="nn">os.path</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">json</span>
+<span class="kn">import</span> <span class="nn">logging</span>
+<span class="kn">import</span> <span class="nn">os.path</span>
 
-<span class="kn">from</span><span class="w"> </span><span class="nn">sarracenia.flowcb</span><span class="w"> </span><span class="kn">import</span> <span class="n">FlowCB</span>
-<span class="kn">import</span><span class="w"> </span><span class="nn">GTStoWIS2</span>
+<span class="kn">from</span> <span class="nn">sarracenia.flowcb</span> <span class="kn">import</span> <span class="n">FlowCB</span>
+<span class="kn">import</span> <span class="nn">GTStoWIS2</span>
 
 <span class="n">logger</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="vm">__name__</span><span class="p">)</span>
 
 
-<span class="k">class</span><span class="w"> </span><span class="nc">GTS2WIS2</span><span class="p">(</span><span class="n">FlowCB</span><span class="p">):</span>
+<span class="k">class</span> <span class="nc">GTS2WIS2</span><span class="p">(</span><span class="n">FlowCB</span><span class="p">):</span>
 
-  <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">options</span><span class="p">):</span>
+  <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">options</span><span class="p">):</span>
 
       <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">options</span><span class="p">,</span> <span class="s1">&#39;logLevel&#39;</span><span class="p">):</span>
           <span class="n">logger</span><span class="o">.</span><span class="n">setLevel</span><span class="p">(</span><span class="nb">getattr</span><span class="p">(</span><span class="n">logging</span><span class="p">,</span> <span class="n">options</span><span class="o">.</span><span class="n">logLevel</span><span class="o">.</span><span class="n">upper</span><span class="p">()))</span>
@@ -459,7 +459,7 @@ celui en évolution pour le WIS 2.0 de WMO (pour plus d’informations sur ce mo
       <span class="bp">self</span><span class="o">.</span><span class="n">o</span> <span class="o">=</span> <span class="n">options</span>
 
 
-  <span class="k">def</span><span class="w"> </span><span class="nf">after_accept</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">worklist</span><span class="p">):</span>
+  <span class="k">def</span> <span class="nf">after_accept</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">worklist</span><span class="p">):</span>
 
       <span class="n">new_incoming</span><span class="o">=</span><span class="p">[]</span>
 
@@ -547,7 +547,7 @@ pourra être réessayé. Cette classe implémente cette fonctionnalité.</p></li
 <h2>Modification de fichiers en transit<a class="headerlink" href="#modification-de-fichiers-en-transit" title="Link to this heading"></a></h2>
 <p>La classe <em>sarracenia.transfer</em> inclu un point d’entrée <em>on_data</em> qui permet de transformer
 des données durant un transfer:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span> <span class="k">def</span><span class="w"> </span><span class="nf">on_data</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">chunk</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bytes</span><span class="p">:</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span> <span class="k">def</span> <span class="nf">on_data</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">chunk</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bytes</span><span class="p">:</span>
 <span class="w">     </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">         transform data as it is being read.</span>
 <span class="sd">         Given a buffer, return the transformed buffer.</span>
@@ -557,12 +557,12 @@ des données durant un transfer:</p>
      <span class="c1"># modify the chunk in this body...</span>
      <span class="k">return</span> <span class="n">chunk</span>
 
-<span class="k">def</span><span class="w"> </span><span class="nf">registered_as</span><span class="p">():</span>
+<span class="k">def</span> <span class="nf">registered_as</span><span class="p">():</span>
      <span class="k">return</span> <span class="p">[</span><span class="s1">&#39;scr&#39;</span> <span class="p">]</span>
 
 <span class="c1"># copied from sarracenia.transfer.https</span>
 
-<span class="k">def</span><span class="w"> </span><span class="nf">connect</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="k">def</span> <span class="nf">connect</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
 
      <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">connected</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
 
@@ -578,7 +578,7 @@ des données durant un transfer:</p>
 <p>Pour effectuer la modification des données en vol, on peut sous-classer la classe de transfert pertinente.
 Une telle classe (scr - strip retour chariot) peut être ajoutée en mettant un import dans la configuration
 dossier:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">scr.py</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">scr.py</span>
 </pre></div>
 </div>
 <p>alors les messages où l’url de récupération est définie pour utiliser le schéma de récupération <em>scr</em> utiliseront ce

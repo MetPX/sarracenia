@@ -7,7 +7,7 @@
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Using Plugins to Grab Hydrometric Data (v2) &mdash; Sarracenia 3.00.57rc2 documentation</title>
-      <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=80d5e7a1" />
       <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=e59714d7" />
 
   
@@ -130,7 +130,7 @@ them to locate the file and download it.</p>
 <p>If the data source doesn’t abide to this convention (see <a class="reference internal" href="#noaa-co-ops-api">NOAA CO-OPS API</a> and <a class="reference internal" href="#usgs-instantaneous-values-web-service">USGS Instantaneous Values
 Web Service</a> for examples of two data sources that don’t), a module <strong>registered_as</strong> can be included at
 the bottom of a plugin file to define the list of protocols being extended or implemented:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="k">def</span><span class="w"> </span><span class="nf">registered_as</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">registered_as</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="k">return</span> <span class="p">[</span><span class="s1">&#39;http&#39;</span><span class="p">,</span><span class="s1">&#39;https&#39;</span><span class="p">]</span>
 </pre></div>
 </div>

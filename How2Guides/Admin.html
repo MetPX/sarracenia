@@ -7,7 +7,7 @@
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Administering AMQP Data Pumps &mdash; Sarracenia 3.00.57rc2 documentation</title>
-      <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=80d5e7a1" />
       <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=e59714d7" />
 
   
@@ -647,12 +647,12 @@ In short, here are the permissions and exchanges <em>sr_audit</em> manages:</p>
 <span class="n">admin</span><span class="o">/</span><span class="n">feeder</span> <span class="n">users</span><span class="p">:</span> <span class="n">have</span> <span class="nb">all</span> <span class="n">permission</span> <span class="n">over</span> <span class="n">queues</span> <span class="ow">and</span> <span class="n">exchanges</span>
 
 <span class="n">subscribe</span> <span class="n">user</span>    <span class="p">:</span> <span class="n">can</span> <span class="n">write</span> <span class="n">report</span> <span class="n">messages</span> <span class="n">to</span> <span class="n">exchanged</span> <span class="n">beginning</span> <span class="k">with</span>  <span class="n">xs_</span><span class="o">&lt;</span><span class="n">brokerUser</span><span class="o">&gt;</span>
-                    <span class="n">can</span> <span class="n">read</span> <span class="n">notification</span> <span class="n">messages</span> <span class="kn">from</span><span class="w"> </span><span class="nn">exchange</span> <span class="n">xpublic</span>
+                    <span class="n">can</span> <span class="n">read</span> <span class="n">notification</span> <span class="n">messages</span> <span class="kn">from</span> <span class="nn">exchange</span> <span class="n">xpublic</span>
                     <span class="n">have</span> <span class="nb">all</span> <span class="n">permissions</span> <span class="n">on</span> <span class="n">queue</span> <span class="n">named</span>  <span class="n">q_</span><span class="o">&lt;</span><span class="n">brokerUser</span><span class="o">&gt;*</span>
 
 <span class="n">source</span> <span class="n">user</span>       <span class="p">:</span> <span class="n">can</span> <span class="n">write</span> <span class="n">notification</span> <span class="n">messages</span> <span class="n">to</span> <span class="n">exchanges</span> <span class="n">beginning</span> <span class="k">with</span> <span class="n">xs_</span><span class="o">&lt;</span><span class="n">brokerUser</span><span class="o">&gt;</span>
-                    <span class="n">can</span> <span class="n">read</span> <span class="n">post</span> <span class="n">messages</span> <span class="kn">from</span><span class="w"> </span><span class="nn">exchange</span>  <span class="n">xpublic</span>
-                    <span class="n">can</span> <span class="n">read</span>  <span class="n">report</span> <span class="n">messages</span> <span class="kn">from</span><span class="w"> </span><span class="nn">exchange</span>  <span class="n">xl_</span><span class="o">&lt;</span><span class="n">brokerUser</span><span class="o">&gt;</span> <span class="n">created</span> <span class="k">for</span> <span class="n">him</span>
+                    <span class="n">can</span> <span class="n">read</span> <span class="n">post</span> <span class="n">messages</span> <span class="kn">from</span> <span class="nn">exchange</span>  <span class="n">xpublic</span>
+                    <span class="n">can</span> <span class="n">read</span>  <span class="n">report</span> <span class="n">messages</span> <span class="kn">from</span> <span class="nn">exchange</span>  <span class="n">xl_</span><span class="o">&lt;</span><span class="n">brokerUser</span><span class="o">&gt;</span> <span class="n">created</span> <span class="k">for</span> <span class="n">him</span>
                     <span class="n">have</span> <span class="nb">all</span> <span class="n">permissions</span> <span class="n">on</span> <span class="n">queue</span> <span class="n">named</span>   <span class="n">q_</span><span class="o">&lt;</span><span class="n">brokerUser</span><span class="o">&gt;*</span>
 </pre></div>
 </div>

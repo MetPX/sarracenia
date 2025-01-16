@@ -1,0 +1,267 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../../../../">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>sarracenia.flowcb.poll.nexrad &mdash; Sarracenia 3.00.57rc2 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../../../_static/pygments.css?v=80d5e7a1" />
+      <link rel="stylesheet" type="text/css" href="../../../../_static/css/theme.css?v=e59714d7" />
+
+  
+    <link rel="shortcut icon" href="../../../../_static/sarra_horror_culture_favicon.png"/>
+      <script src="../../../../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../../../../_static/documentation_options.js?v=9949960b"></script>
+      <script src="../../../../_static/doctools.js?v=9bcbadda"></script>
+      <script src="../../../../_static/sphinx_highlight.js?v=dc90522c"></script>
+      <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+      <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="../../../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../../../index.html" class="icon icon-home">
+            Sarracenia
+              <img src="../../../../_static/sarra_horror_culture_w200.png" class="logo" alt="Logo"/>
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../Explanation/Overview.html">Overview</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../Tutorials/index.html">Tutorials</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../How2Guides/index.html">HOWTOS</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../Explanation/index.html">Explanation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../Reference/index.html">Reference</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../Contribution/index.html">Contributing</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../api-documentation.html">API Documentation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../fr/index.html">En français</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../../index.html">Sarracenia</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../../../index.html">Module code</a></li>
+          <li class="breadcrumb-item"><a href="../../../sarracenia.html">sarracenia</a></li>
+          <li class="breadcrumb-item"><a href="../../flowcb.html">sarracenia.flowcb</a></li>
+          <li class="breadcrumb-item"><a href="../poll.html">sarracenia.flowcb.poll</a></li>
+      <li class="breadcrumb-item active">sarracenia.flowcb.poll.nexrad</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for sarracenia.flowcb.poll.nexrad</h1><div class="highlight"><pre>
+<span></span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">Retrieves file keys in the NEXRAD US Weather Radar public dataset.</span>
+<span class="sd">Can be adjusted slightly for other public datasets on the AWS S3 platform.</span>
+<span class="sd">Compatible with Python 3.5+.</span>
+
+<span class="sd">sarracenia/flowcb/poll/nexrad.py: a sample gather option for sr3 poll.</span>
+<span class="sd">	        connects to a public aws s3 bucket and posts all the keys</span>
+<span class="sd">	        corresponding to files uploaded since it last woke up </span>
+
+<span class="sd">usage:</span>
+<span class="sd">	in an sr_poll configuration file:</span>
+<span class="sd">	poll_nexrad_day [YYYY-MM-DD]</span>
+<span class="sd">	callback poll.nexrad</span>
+<span class="sd">	</span>
+<span class="sd">	If poll_nexrad_day is set, it&#39;ll post all the keys from that day. Specify a day between 1991-06-05 </span>
+<span class="sd">	to now (if the current date is specified, it&#39;ll post all the keys from today that have been posted</span>
+<span class="sd">	so far). If not set, it&#39;ll post any files uploaded in the last minute (sleep must be set to 51 in </span>
+<span class="sd">	the config) and continuously check every minute if a file has been uploaded in the last minute. It </span>
+<span class="sd">	takes about ~5 minutes from the timestamp on the file to when it actually gets updated in the bucket,</span>
+<span class="sd">	and ~9s for the API to make all the requests to check for keys, so the counter starts at now - 7 </span>
+<span class="sd">	minutes and sleep must be ~51s to work properly.</span>
+
+<span class="sd">status: working.</span>
+<span class="sd">&quot;&quot;&quot;</span>
+
+<span class="kn">import</span> <span class="nn">boto3</span>
+<span class="kn">from</span> <span class="nn">botocore</span> <span class="kn">import</span> <span class="n">UNSIGNED</span>
+<span class="kn">from</span> <span class="nn">botocore.client</span> <span class="kn">import</span> <span class="n">Config</span>
+<span class="kn">import</span> <span class="nn">datetime</span>
+<span class="kn">import</span> <span class="nn">logging</span>
+<span class="kn">import</span> <span class="nn">paramiko</span>
+<span class="kn">import</span> <span class="nn">sarracenia</span>
+<span class="kn">from</span> <span class="nn">sarracenia.flowcb</span> <span class="kn">import</span> <span class="n">FlowCB</span>
+<span class="kn">import</span> <span class="nn">urllib.request</span>
+
+<span class="n">logger</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="vm">__name__</span><span class="p">)</span>
+
+
+<div class="viewcode-block" id="Nexrad">
+<a class="viewcode-back" href="../../../../Reference/flowcb.html#sarracenia.flowcb.poll.nexrad.Nexrad">[docs]</a>
+<span class="k">class</span> <span class="nc">Nexrad</span><span class="p">(</span><span class="n">FlowCB</span><span class="p">):</span>
+<div class="viewcode-block" id="Nexrad.__init__">
+<a class="viewcode-back" href="../../../../Reference/flowcb.html#sarracenia.flowcb.poll.nexrad.Nexrad.__init__">[docs]</a>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">options</span><span class="p">):</span>
+
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">options</span><span class="p">,</span><span class="n">logger</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">o</span><span class="o">.</span><span class="n">add_option</span><span class="p">(</span><span class="s1">&#39;poll_nexrad_day&#39;</span><span class="p">,</span> <span class="s1">&#39;str&#39;</span><span class="p">,</span> <span class="s2">&quot;&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">minutetracker</span> <span class="o">=</span> <span class="n">datetime</span><span class="o">.</span><span class="n">datetime</span><span class="o">.</span><span class="n">utcnow</span><span class="p">()</span> <span class="o">+</span> <span class="n">datetime</span><span class="o">.</span><span class="n">timedelta</span><span class="p">(</span>
+            <span class="n">minutes</span><span class="o">=-</span><span class="mi">7</span><span class="p">)</span></div>
+
+
+    <span class="k">def</span> <span class="nf">poll</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+
+        <span class="c1"># If a valid day wasn&#39;t specified, it just won&#39;t return any keys or throw an error here ¯\_(ツ)_/¯</span>
+        <span class="n">day</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">o</span><span class="o">.</span><span class="n">poll_nexrad_day</span>
+        <span class="k">if</span> <span class="n">day</span><span class="p">:</span>
+            <span class="n">daypts</span> <span class="o">=</span> <span class="n">day</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;-&#39;</span><span class="p">)</span>
+            <span class="n">YYYY</span> <span class="o">=</span> <span class="n">daypts</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">zfill</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span>
+            <span class="n">MM</span> <span class="o">=</span> <span class="n">daypts</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">zfill</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span>
+            <span class="n">DD</span> <span class="o">=</span> <span class="n">daypts</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span><span class="o">.</span><span class="n">zfill</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span>
+
+        <span class="c1"># Gets the list of active weather station ICAOs from</span>
+        <span class="c1"># https://www.aviationweather.gov/docs/metar/stations.txt</span>
+        <span class="c1"># According to the website&#39;s disclaimer:</span>
+        <span class="c1">#		&quot; This server is available 24 hours a day, seven days a week.</span>
+        <span class="c1">#		  Timely delivery of data and products from this server through</span>
+        <span class="c1"># the Internet is not guaranteed.&quot;</span>
+        <span class="c1"># Considered the primary resource for up-to-date ICAO information.</span>
+        <span class="c1"># Currently only scrapes US weather station ICAOs, but can be adjusted to pull</span>
+        <span class="c1"># from Canada/worldwide sites.</span>
+        <span class="n">ICAOs</span> <span class="o">=</span> <span class="nb">set</span><span class="p">()</span>
+        <span class="k">with</span> <span class="n">urllib</span><span class="o">.</span><span class="n">request</span><span class="o">.</span><span class="n">urlopen</span><span class="p">(</span>
+                <span class="s1">&#39;https://www.aviationweather.gov/docs/metar/stations.txt&#39;</span>
+        <span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+            <span class="n">lines</span> <span class="o">=</span> <span class="n">f</span><span class="o">.</span><span class="n">readlines</span><span class="p">()</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">metrics</span><span class="p">[</span><span class="s1">&#39;transferRxBytes&#39;</span><span class="p">]</span> <span class="o">+=</span> <span class="nb">len</span><span class="p">(</span><span class="n">lines</span><span class="p">)</span>
+            <span class="k">for</span> <span class="n">line</span> <span class="ow">in</span> <span class="n">lines</span><span class="p">:</span>
+                <span class="n">line</span> <span class="o">=</span> <span class="n">line</span><span class="o">.</span><span class="n">decode</span><span class="p">(</span><span class="s2">&quot;utf-8&quot;</span><span class="p">,</span> <span class="s2">&quot;ignore&quot;</span><span class="p">)</span>
+                <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">line</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">80</span><span class="p">:</span>
+                    <span class="k">if</span> <span class="n">line</span><span class="o">.</span><span class="n">endswith</span><span class="p">(</span><span class="s2">&quot;US</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span> <span class="ow">and</span> <span class="n">line</span><span class="p">[</span><span class="mi">65</span><span class="p">]</span> <span class="o">==</span> <span class="s1">&#39;X&#39;</span><span class="p">:</span>
+                        <span class="k">if</span> <span class="n">line</span><span class="p">[</span><span class="mi">20</span><span class="p">:</span><span class="mi">24</span><span class="p">]</span> <span class="o">!=</span> <span class="s2">&quot;    &quot;</span><span class="p">:</span> <span class="n">ICAOs</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">line</span><span class="p">[</span><span class="mi">20</span><span class="p">:</span><span class="mi">24</span><span class="p">])</span>
+
+        <span class="c1"># Not all sites from the Nexrad data set are covered from the official source</span>
+        <span class="c1">#(some foreign US bases are included in the NEXRAD dataset), so add the missing ones from this list:</span>
+        <span class="c1"># https://www.roc.noaa.gov/WSR88D/Program/NetworkSites.aspx</span>
+        <span class="n">ICAOs</span><span class="o">.</span><span class="n">update</span><span class="p">([</span><span class="s1">&#39;RKJK&#39;</span><span class="p">,</span> <span class="s1">&#39;PAEC&#39;</span><span class="p">,</span> <span class="s1">&#39;RODN&#39;</span><span class="p">,</span> <span class="s1">&#39;RKSG&#39;</span><span class="p">,</span> <span class="s1">&#39;KGRK&#39;</span><span class="p">])</span>
+
+        <span class="c1"># And for some reason FOP1/NOP4 show up in the dataset, doesn&#39;t correlate to active ICAOs though</span>
+        <span class="n">ICAOs</span><span class="o">.</span><span class="n">update</span><span class="p">([</span><span class="s1">&#39;FOP1&#39;</span><span class="p">,</span> <span class="s1">&#39;NOP4&#39;</span><span class="p">])</span>
+        <span class="c1"># As of 2018/07 this set has 161 elements</span>
+
+        <span class="n">keys</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="n">keysizes</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="n">s3</span> <span class="o">=</span> <span class="n">boto3</span><span class="o">.</span><span class="n">client</span><span class="p">(</span><span class="s1">&#39;s3&#39;</span><span class="p">,</span>
+                          <span class="n">region_name</span><span class="o">=</span><span class="s1">&#39;us-east-1&#39;</span><span class="p">,</span>
+                          <span class="n">config</span><span class="o">=</span><span class="n">Config</span><span class="p">(</span><span class="n">signature_version</span><span class="o">=</span><span class="n">UNSIGNED</span><span class="p">,</span>
+                                        <span class="n">retries</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;max_attempts&#39;</span><span class="p">:</span> <span class="mi">3</span><span class="p">}))</span>
+        <span class="k">if</span> <span class="n">day</span><span class="p">:</span>
+            <span class="c1"># Takes all files uploaded on the specified day. Takes ~161 API calls = ~9s. A full day&#39;s worth</span>
+            <span class="c1"># of keys is around ~37000. Meant to be run once to grab a day&#39;s worth of keys. Works as long</span>
+            <span class="c1"># as a day&#39;s worth on a single ICAO doesn&#39;t exceed 1000 (the API limit, and as of 2018/07 each</span>
+            <span class="c1"># ICAO uploads about ~300).</span>
+            <span class="k">for</span> <span class="n">station</span> <span class="ow">in</span> <span class="n">ICAOs</span><span class="p">:</span>
+                <span class="k">try</span><span class="p">:</span>
+                    <span class="k">for</span> <span class="n">obj</span> <span class="ow">in</span> <span class="n">s3</span><span class="o">.</span><span class="n">list_objects</span><span class="p">(</span><span class="n">Bucket</span><span class="o">=</span><span class="s1">&#39;noaa-nexrad-level2&#39;</span><span class="p">,</span>
+                                               <span class="n">Prefix</span><span class="o">=</span><span class="n">YYYY</span> <span class="o">+</span> <span class="s1">&#39;/&#39;</span> <span class="o">+</span> <span class="n">MM</span> <span class="o">+</span> <span class="s1">&#39;/&#39;</span> <span class="o">+</span>
+                                               <span class="n">DD</span> <span class="o">+</span> <span class="s1">&#39;/&#39;</span> <span class="o">+</span> <span class="n">station</span> <span class="o">+</span>
+                                               <span class="s1">&#39;/&#39;</span><span class="p">)[</span><span class="s1">&#39;Contents&#39;</span><span class="p">]:</span>
+                        <span class="n">keys</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">obj</span><span class="p">[</span><span class="s1">&#39;Key&#39;</span><span class="p">])</span>
+                        <span class="n">keysizes</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">obj</span><span class="p">[</span><span class="s1">&#39;Size&#39;</span><span class="p">])</span>
+                <span class="k">except</span> <span class="ne">KeyError</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+                    <span class="k">continue</span>
+
+        <span class="k">else</span><span class="p">:</span>
+            <span class="c1"># Forces sleep value to be a minute. Takes ~161 API calls, runs in ~9s.</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">minutetracker</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">minutetracker</span> <span class="o">+</span> <span class="n">datetime</span><span class="o">.</span><span class="n">timedelta</span><span class="p">(</span>
+                <span class="n">minutes</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+            <span class="n">YYYY</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">minutetracker</span><span class="o">.</span><span class="n">year</span><span class="p">)</span>
+            <span class="n">MM</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">minutetracker</span><span class="o">.</span><span class="n">month</span><span class="p">)</span><span class="o">.</span><span class="n">zfill</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span>
+            <span class="n">DD</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">minutetracker</span><span class="o">.</span><span class="n">day</span><span class="p">)</span><span class="o">.</span><span class="n">zfill</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span>
+            <span class="n">HH</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">minutetracker</span><span class="o">.</span><span class="n">hour</span><span class="p">)</span><span class="o">.</span><span class="n">zfill</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span>
+            <span class="n">mm</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">minutetracker</span><span class="o">.</span><span class="n">minute</span><span class="p">)</span><span class="o">.</span><span class="n">zfill</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Date: </span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="bp">self</span><span class="o">.</span><span class="n">minutetracker</span><span class="p">)</span>
+
+            <span class="k">for</span> <span class="n">station</span> <span class="ow">in</span> <span class="n">ICAOs</span><span class="p">:</span>
+                <span class="k">try</span><span class="p">:</span>
+                    <span class="k">for</span> <span class="n">obj</span> <span class="ow">in</span> <span class="n">s3</span><span class="o">.</span><span class="n">list_objects</span><span class="p">(</span>
+                            <span class="n">Bucket</span><span class="o">=</span><span class="s1">&#39;noaa-nexrad-level2&#39;</span><span class="p">,</span>
+                            <span class="n">Prefix</span><span class="o">=</span><span class="n">YYYY</span> <span class="o">+</span> <span class="s1">&#39;/&#39;</span> <span class="o">+</span> <span class="n">MM</span> <span class="o">+</span> <span class="s1">&#39;/&#39;</span> <span class="o">+</span> <span class="n">DD</span> <span class="o">+</span> <span class="s1">&#39;/&#39;</span> <span class="o">+</span> <span class="n">station</span> <span class="o">+</span>
+                            <span class="s1">&#39;/&#39;</span> <span class="o">+</span> <span class="n">station</span> <span class="o">+</span> <span class="n">YYYY</span> <span class="o">+</span> <span class="n">MM</span> <span class="o">+</span> <span class="n">DD</span> <span class="o">+</span> <span class="s1">&#39;_&#39;</span> <span class="o">+</span> <span class="n">HH</span> <span class="o">+</span>
+                            <span class="n">mm</span><span class="p">)[</span><span class="s1">&#39;Contents&#39;</span><span class="p">]:</span>
+                        <span class="n">keys</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">obj</span><span class="p">[</span><span class="s1">&#39;Key&#39;</span><span class="p">])</span>
+                        <span class="n">keysizes</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">obj</span><span class="p">[</span><span class="s1">&#39;Size&#39;</span><span class="p">])</span>
+                <span class="k">except</span> <span class="ne">KeyError</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+                    <span class="k">continue</span>
+
+        <span class="c1"># To download a file, you&#39;d append the key to the end of the bucket link, e.g:</span>
+        <span class="c1"># https://s3.amazonaws.com/noaa-nexrad-level2/2018/06/09/KARX/KARX20180609_000228_V06</span>
+        <span class="n">i</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="n">gathered_messages</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">while</span> <span class="n">i</span> <span class="o">&lt;</span> <span class="nb">len</span><span class="p">(</span><span class="n">keys</span><span class="p">):</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;poll_nexrad: key received </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">keys</span><span class="p">[</span><span class="n">i</span><span class="p">]))</span>
+
+            <span class="n">fakeStat</span> <span class="o">=</span> <span class="n">paramiko</span><span class="o">.</span><span class="n">SFTPAttributes</span><span class="p">()</span>
+            <span class="n">fakeStat</span><span class="o">.</span><span class="n">st_size</span> <span class="o">=</span> <span class="n">keysizes</span><span class="p">[</span><span class="n">i</span><span class="p">]</span>
+
+            <span class="n">m</span> <span class="o">=</span> <span class="n">sarracenia</span><span class="o">.</span><span class="n">Message</span><span class="o">.</span><span class="n">fromFileInfo</span><span class="p">(</span><span class="n">keys</span><span class="p">[</span><span class="n">i</span><span class="p">],</span> <span class="bp">self</span><span class="o">.</span><span class="n">o</span><span class="p">,</span> <span class="n">fakeStat</span><span class="p">)</span>
+            <span class="n">gathered_messages</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">m</span><span class="p">)</span>
+            <span class="n">i</span> <span class="o">+=</span> <span class="mi">1</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span> <span class="sa">f</span><span class="s2">&quot;Done, </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">gathered_messages</span><span class="p">)</span><span class="si">}</span><span class="s2"> messages to post&quot;</span> <span class="p">)</span>
+        <span class="k">return</span> <span class="n">gathered_messages</span></div>
+
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2022, Shared Services Canada, Government of Canada, GPLv2.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

@@ -6,7 +6,7 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>sarracenia.flowcb.send.email &mdash; Sarracenia 3.00.57rc2 documentation</title>
-      <link rel="stylesheet" type="text/css" href="../../../../_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="../../../../_static/pygments.css?v=80d5e7a1" />
       <link rel="stylesheet" type="text/css" href="../../../../_static/css/theme.css?v=e59714d7" />
 
   
@@ -126,33 +126,47 @@
 
 <span class="sd">    email_subject_prepend  Sent by Sarracenia: </span>
 
+<span class="sd">There is also the option of sending a file as an attachment instead of embedding its contents in the email.</span>
+<span class="sd">To do this, there are two options that can be used.</span>
+<span class="sd">`` email_attachment `` is a boolean value to specify if you want to send files as attachments</span>
+<span class="sd">`` email_attachment_text `` is the optional text that can be added inside of the email content, with the attached file.</span>
+<span class="sd">    </span>
+<span class="sd">    email_attachment True</span>
+<span class="sd">    email_attachment_text Attached in this email is data coming from XXX</span>
+
+
 <span class="sd">Future Improvement Ideas:</span>
 <span class="sd">  - SMTP on different ports and with authentication</span>
-<span class="sd">  - Attach the file instead of putting the contents in the body (useful for binary files)</span>
 <span class="sd">    </span>
 <span class="sd">Original Author: Wahaj Taseer - June, 2019</span>
 <span class="sd">&quot;&quot;&quot;</span>
 
-<span class="kn">from</span><span class="w"> </span><span class="nn">email.message</span><span class="w"> </span><span class="kn">import</span> <span class="n">EmailMessage</span>
-<span class="kn">import</span><span class="w"> </span><span class="nn">logging</span>
-<span class="kn">import</span><span class="w"> </span><span class="nn">os.path</span>
-<span class="kn">import</span><span class="w"> </span><span class="nn">re</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">sarracenia.flowcb</span><span class="w"> </span><span class="kn">import</span> <span class="n">FlowCB</span>
-<span class="kn">import</span><span class="w"> </span><span class="nn">smtplib</span>
+<span class="kn">from</span> <span class="nn">email.message</span> <span class="kn">import</span> <span class="n">EmailMessage</span>
+<span class="kn">from</span> <span class="nn">email.mime.multipart</span> <span class="kn">import</span> <span class="n">MIMEMultipart</span>
+<span class="kn">from</span> <span class="nn">email.mime.application</span> <span class="kn">import</span> <span class="n">MIMEApplication</span>
+<span class="kn">from</span> <span class="nn">email.mime.text</span> <span class="kn">import</span> <span class="n">MIMEText</span>
+<span class="kn">import</span> <span class="nn">mimetypes</span>
+<span class="kn">import</span> <span class="nn">logging</span>
+<span class="kn">import</span> <span class="nn">os.path</span>
+<span class="kn">import</span> <span class="nn">re</span>
+<span class="kn">from</span> <span class="nn">sarracenia.flowcb</span> <span class="kn">import</span> <span class="n">FlowCB</span>
+<span class="kn">import</span> <span class="nn">smtplib</span>
 
 <span class="n">logger</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="vm">__name__</span><span class="p">)</span>
 
 
 <div class="viewcode-block" id="Email">
 <a class="viewcode-back" href="../../../../Reference/flowcb.html#sarracenia.flowcb.send.email.Email">[docs]</a>
-<span class="k">class</span><span class="w"> </span><span class="nc">Email</span><span class="p">(</span><span class="n">FlowCB</span><span class="p">):</span>
+<span class="k">class</span> <span class="nc">Email</span><span class="p">(</span><span class="n">FlowCB</span><span class="p">):</span>
 <div class="viewcode-block" id="Email.__init__">
 <a class="viewcode-back" href="../../../../Reference/flowcb.html#sarracenia.flowcb.send.email.Email.__init__">[docs]</a>
-    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">options</span><span class="p">):</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">options</span><span class="p">):</span>
 
         <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">options</span><span class="p">,</span><span class="n">logger</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">o</span><span class="o">.</span><span class="n">add_option</span><span class="p">(</span><span class="s1">&#39;email_from&#39;</span><span class="p">,</span>            <span class="s1">&#39;str&#39;</span><span class="p">,</span> <span class="n">default_value</span><span class="o">=</span><span class="s1">&#39;&#39;</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">o</span><span class="o">.</span><span class="n">add_option</span><span class="p">(</span><span class="s1">&#39;email_subject_prepend&#39;</span><span class="p">,</span> <span class="s1">&#39;str&#39;</span><span class="p">,</span> <span class="n">default_value</span><span class="o">=</span><span class="s1">&#39;&#39;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">o</span><span class="o">.</span><span class="n">add_option</span><span class="p">(</span><span class="s1">&#39;email_attachment&#39;</span><span class="p">,</span> <span class="s1">&#39;flag&#39;</span><span class="p">,</span> <span class="n">default_value</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">o</span><span class="o">.</span><span class="n">add_option</span><span class="p">(</span><span class="s1">&#39;email_attachment_text&#39;</span><span class="p">,</span> <span class="s1">&#39;str&#39;</span><span class="p">,</span> <span class="n">default_value</span><span class="o">=</span><span class="s1">&#39;&#39;</span><span class="p">)</span>
 
         <span class="c1"># Parse accept/reject mask arguments into email recipient lists</span>
         <span class="k">try</span><span class="p">:</span>
@@ -191,7 +205,7 @@
             
 <div class="viewcode-block" id="Email.after_work">
 <a class="viewcode-back" href="../../../../Reference/flowcb.html#sarracenia.flowcb.send.email.Email.after_work">[docs]</a>
-    <span class="k">def</span><span class="w"> </span><span class="nf">after_work</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">worklist</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">after_work</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">worklist</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot; This plugin can also be used in a sarra/subscriber, mostly for testing purposes.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">o</span><span class="o">.</span><span class="n">component</span> <span class="o">!=</span> <span class="s1">&#39;sender&#39;</span><span class="p">:</span>
@@ -209,7 +223,7 @@
 
 <div class="viewcode-block" id="Email.send">
 <a class="viewcode-back" href="../../../../Reference/flowcb.html#sarracenia.flowcb.send.email.Email.send">[docs]</a>
-    <span class="k">def</span><span class="w"> </span><span class="nf">send</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">msg</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">send</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">msg</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot; Send an email to each recipient defined in the config file for a particular accept statement.</span>
 <span class="sd">            The file contents are sent in the body of the email. The subject is the filename.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
@@ -227,13 +241,28 @@
         <span class="c1"># Get list of recipients for this message, from the mask that matched the filename/path</span>
         <span class="n">recipients</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">o</span><span class="o">.</span><span class="n">masks</span><span class="p">[</span><span class="n">msg</span><span class="p">[</span><span class="s1">&#39;_mask_index&#39;</span><span class="p">]][</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
 
+        <span class="n">file_type</span> <span class="o">=</span> <span class="n">mimetypes</span><span class="o">.</span><span class="n">guess_type</span><span class="p">(</span><span class="n">ipath</span><span class="p">)</span>
+
         <span class="c1"># Prepare the email message</span>
-        <span class="n">emsg</span> <span class="o">=</span> <span class="n">EmailMessage</span><span class="p">()</span>
         <span class="k">try</span><span class="p">:</span>
-            <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">ipath</span><span class="p">)</span> <span class="k">as</span> <span class="n">fp</span><span class="p">:</span>
-                <span class="n">emsg</span><span class="o">.</span><span class="n">set_content</span><span class="p">(</span><span class="n">fp</span><span class="o">.</span><span class="n">read</span><span class="p">())</span>
+            <span class="c1"># Build a non-text email message for the attachment if specified or if the file type can be deemed to be an image.</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">o</span><span class="o">.</span><span class="n">email_attachment</span> <span class="ow">or</span> <span class="s1">&#39;image&#39;</span> <span class="ow">in</span> <span class="n">file_type</span><span class="p">[</span><span class="mi">0</span><span class="p">]:</span>
+                <span class="n">emsg</span> <span class="o">=</span> <span class="n">MIMEMultipart</span><span class="p">()</span>
+                <span class="n">emsg_text</span> <span class="o">=</span> <span class="n">MIMEText</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">o</span><span class="o">.</span><span class="n">email_attachment_text</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+                <span class="c1"># Add the attachment text that will be paired with the attachment data</span>
+                <span class="n">emsg</span><span class="o">.</span><span class="n">attach</span><span class="p">(</span><span class="n">emsg_text</span><span class="p">)</span>
+                <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">ipath</span><span class="p">,</span> <span class="s1">&#39;rb&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">fp</span><span class="p">:</span>
+                    <span class="n">attachment_data</span> <span class="o">=</span> <span class="n">fp</span><span class="o">.</span><span class="n">read</span><span class="p">()</span>
+                <span class="n">attachment</span> <span class="o">=</span> <span class="n">MIMEApplication</span><span class="p">(</span><span class="n">attachment_data</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">basename</span><span class="p">(</span><span class="n">ipath</span><span class="p">))</span>
+                <span class="c1"># Add the attachment data to the email</span>
+                <span class="n">emsg</span><span class="o">.</span><span class="n">attach</span><span class="p">(</span><span class="n">attachment</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">emsg</span> <span class="o">=</span> <span class="n">EmailMessage</span><span class="p">()</span>
+                <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">ipath</span><span class="p">)</span> <span class="k">as</span> <span class="n">fp</span><span class="p">:</span>
+                    <span class="n">emsg</span><span class="o">.</span><span class="n">set_content</span><span class="p">(</span><span class="n">fp</span><span class="o">.</span><span class="n">read</span><span class="p">())</span>
         <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
             <span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Failed to read </span><span class="si">{</span><span class="n">ipath</span><span class="si">}</span><span class="s2">, can&#39;t send to </span><span class="si">{</span><span class="n">recipients</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s1">&#39;Exception details:&#39;</span><span class="p">,</span> <span class="n">exc_info</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
             <span class="c1"># No retry if the file doesn&#39;t exist</span>
             <span class="k">return</span> <span class="o">-</span><span class="mi">1</span>
         

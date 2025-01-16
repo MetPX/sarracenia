@@ -6,7 +6,7 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>sarracenia.flowcb &mdash; Sarracenia 3.00.57rc2 documentation</title>
-      <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=80d5e7a1" />
       <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=e59714d7" />
 
   
@@ -88,10 +88,10 @@
 <span class="c1"># Copyright (C) Her Majesty The Queen in Right of Canada, Shared Services Canada, 2020</span>
 <span class="c1">#</span>
 
-<span class="kn">import</span><span class="w"> </span><span class="nn">copy</span>
-<span class="kn">import</span><span class="w"> </span><span class="nn">importlib</span>
-<span class="kn">import</span><span class="w"> </span><span class="nn">logging</span>
-<span class="kn">import</span><span class="w"> </span><span class="nn">sys</span>
+<span class="kn">import</span> <span class="nn">copy</span>
+<span class="kn">import</span> <span class="nn">importlib</span>
+<span class="kn">import</span> <span class="nn">logging</span>
+<span class="kn">import</span> <span class="nn">sys</span>
 
 <span class="n">entry_points</span> <span class="o">=</span> <span class="p">[</span>
 
@@ -107,7 +107,7 @@
 
 <div class="viewcode-block" id="FlowCB">
 <a class="viewcode-back" href="../../api-documentation.html#sarracenia.flowcb.FlowCB">[docs]</a>
-<span class="k">class</span><span class="w"> </span><span class="nc">FlowCB</span><span class="p">:</span>
+<span class="k">class</span> <span class="nc">FlowCB</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Flow Callback is the main class for implementing plugin customization to flows.</span>
 
@@ -294,7 +294,7 @@
 <span class="sd">    &quot;&quot;&quot;</span>
 <div class="viewcode-block" id="FlowCB.__init__">
 <a class="viewcode-back" href="../../api-documentation.html#sarracenia.flowcb.FlowCB.__init__">[docs]</a>
-    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">options</span><span class="p">,</span> <span class="n">class_logger</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">options</span><span class="p">,</span> <span class="n">class_logger</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">o</span> <span class="o">=</span> <span class="n">options</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">stop_requested</span> <span class="o">=</span> <span class="kc">False</span>
 
@@ -309,7 +309,7 @@
 
 <div class="viewcode-block" id="FlowCB.please_stop">
 <a class="viewcode-back" href="../../api-documentation.html#sarracenia.flowcb.FlowCB.please_stop">[docs]</a>
-    <span class="k">def</span><span class="w"> </span><span class="nf">please_stop</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">please_stop</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">           flow callbacks should not time.sleep for long periods, but only nap and check</span>
 <span class="sd">           between naps if a stop has been requested.</span>
@@ -320,7 +320,7 @@
 
 <div class="viewcode-block" id="load_library">
 <a class="viewcode-back" href="../../api-documentation.html#sarracenia.flowcb.load_library">[docs]</a>
-<span class="k">def</span><span class="w"> </span><span class="nf">load_library</span><span class="p">(</span><span class="n">factory_path</span><span class="p">,</span> <span class="n">options</span><span class="p">):</span>
+<span class="k">def</span> <span class="nf">load_library</span><span class="p">(</span><span class="n">factory_path</span><span class="p">,</span> <span class="n">options</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">       Loading the entry points for a python module. It searches </span>
 <span class="sd">       the normal python module path using the importlib module. </span>

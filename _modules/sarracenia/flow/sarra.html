@@ -6,7 +6,7 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>sarracenia.flow.sarra &mdash; Sarracenia 3.00.57rc2 documentation</title>
-      <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=80d5e7a1" />
       <link rel="stylesheet" type="text/css" href="../../../_static/css/theme.css?v=e59714d7" />
 
   
@@ -82,8 +82,8 @@
            <div itemprop="articleBody">
              
   <h1>Source code for sarracenia.flow.sarra</h1><div class="highlight"><pre>
-<span></span><span class="kn">from</span><span class="w"> </span><span class="nn">sarracenia.flow</span><span class="w"> </span><span class="kn">import</span> <span class="n">Flow</span>
-<span class="kn">import</span><span class="w"> </span><span class="nn">logging</span>
+<span></span><span class="kn">from</span> <span class="nn">sarracenia.flow</span> <span class="kn">import</span> <span class="n">Flow</span>
+<span class="kn">import</span> <span class="nn">logging</span>
 
 <span class="n">logger</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="vm">__name__</span><span class="p">)</span>
 
@@ -92,7 +92,7 @@
 
 <div class="viewcode-block" id="Sarra">
 <a class="viewcode-back" href="../../../Reference/code.html#sarracenia.flow.sarra.Sarra">[docs]</a>
-<span class="k">class</span><span class="w"> </span><span class="nc">Sarra</span><span class="p">(</span><span class="n">Flow</span><span class="p">):</span>
+<span class="k">class</span> <span class="nc">Sarra</span><span class="p">(</span><span class="n">Flow</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">       * download files from a remote server to the local one</span>
 <span class="sd">       * modify the messages so they refer to the downloaded files.</span>
@@ -100,7 +100,7 @@
 <span class="sd">    &quot;&quot;&quot;</span>
 <div class="viewcode-block" id="Sarra.__init__">
 <a class="viewcode-back" href="../../../Reference/code.html#sarracenia.flow.sarra.Sarra.__init__">[docs]</a>
-    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">options</span><span class="p">):</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">options</span><span class="p">):</span>
 
         <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">options</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">plugins</span><span class="p">[</span><span class="s1">&#39;load&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">insert</span><span class="p">(</span>

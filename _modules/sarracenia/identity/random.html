@@ -6,7 +6,7 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>sarracenia.identity.random &mdash; Sarracenia 3.00.57rc2 documentation</title>
-      <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=80d5e7a1" />
       <link rel="stylesheet" type="text/css" href="../../../_static/css/theme.css?v=e59714d7" />
 
   
@@ -82,29 +82,29 @@
            <div itemprop="articleBody">
              
   <h1>Source code for sarracenia.identity.random</h1><div class="highlight"><pre>
-<span></span><span class="kn">import</span><span class="w"> </span><span class="nn">random</span>
+<span></span><span class="kn">import</span> <span class="nn">random</span>
 
-<span class="kn">from</span><span class="w"> </span><span class="nn">sarracenia.identity</span><span class="w"> </span><span class="kn">import</span> <span class="n">Identity</span>
+<span class="kn">from</span> <span class="nn">sarracenia.identity</span> <span class="kn">import</span> <span class="n">Identity</span>
 
 
 <div class="viewcode-block" id="Random">
 <a class="viewcode-back" href="../../../Reference/code.html#sarracenia.identity.random.Random">[docs]</a>
-<span class="k">class</span><span class="w"> </span><span class="nc">Random</span><span class="p">(</span><span class="n">Identity</span><span class="p">):</span>
+<span class="k">class</span> <span class="nc">Random</span><span class="p">(</span><span class="n">Identity</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">      Trivial minimalist checksumming algorithm, returns random number for any file.</span>
 <span class="sd">      &quot;&quot;&quot;</span>
     <span class="nd">@property</span>
-    <span class="k">def</span><span class="w"> </span><span class="nf">value</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">value</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="k">return</span> <span class="s1">&#39;</span><span class="si">%.4d</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="n">random</span><span class="o">.</span><span class="n">randint</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">9999</span><span class="p">)</span>
 
-    <span class="k">def</span><span class="w"> </span><span class="nf">set_path</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">path</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">set_path</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">path</span><span class="p">):</span>
         <span class="k">pass</span>
 
     <span class="nd">@staticmethod</span>
-    <span class="k">def</span><span class="w"> </span><span class="nf">registered_as</span><span class="p">():</span>
+    <span class="k">def</span> <span class="nf">registered_as</span><span class="p">():</span>
         <span class="k">return</span> <span class="s1">&#39;0&#39;</span>
 
-    <span class="k">def</span><span class="w"> </span><span class="nf">update</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">chunk</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">update</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">chunk</span><span class="p">):</span>
         <span class="k">pass</span></div>
 
 

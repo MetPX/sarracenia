@@ -7,7 +7,7 @@
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Portage des plugins V2 vers Sr3 &mdash; Sarracenia 3.00.57rc2 documentation</title>
-      <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=80d5e7a1" />
       <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=e59714d7" />
 
   
@@ -338,17 +338,17 @@ En général, les plugins v3:</p>
 <ul>
 <li><p><strong>sont généralement sous-classés à partir de sarracenia.flowcb.FlowCB.</strong></p>
 <p>Dans la v2, on déclarerait:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="k">class</span><span class="w"> </span><span class="nc">Msg_Log</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="k">class</span> <span class="nc">Msg_Log</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
 </pre></div>
 </div>
 <p>Les plugins v3 sont des fichiers sources python normaux (pas de magie à la fin.)
 ils sont sous-classés à partir de sarracenia.flowcb:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">sarracenia.flowcb</span><span class="w"> </span><span class="kn">import</span> <span class="n">FlowCB</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">sarracenia.flowcb</span> <span class="kn">import</span> <span class="n">FlowCB</span>
 
-<span class="k">class</span><span class="w"> </span><span class="nc">MyPlugin</span><span class="p">(</span><span class="n">FlowCB</span><span class="p">):</span>
+<span class="k">class</span> <span class="nc">MyPlugin</span><span class="p">(</span><span class="n">FlowCB</span><span class="p">):</span>
   <span class="o">...</span><span class="n">le</span> <span class="n">reste</span> <span class="n">de</span> <span class="n">la</span> <span class="n">classe</span> <span class="n">de</span> <span class="n">plugin</span><span class="o">..</span>
 
-   <span class="k">def</span><span class="w"> </span><span class="nf">after_accept</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">worklist</span><span class="p">):</span>
+   <span class="k">def</span> <span class="nf">after_accept</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">worklist</span><span class="p">):</span>
      <span class="o">...</span><span class="n">code</span> <span class="n">à</span> <span class="n">exécuter</span> <span class="n">dans</span> <span class="n">callback</span><span class="o">...</span>
 </pre></div>
 </div>
@@ -389,7 +389,7 @@ d’interagir avec les pompes sarracenia sans utiliser l’interface de ligne de
 voir les tutoriels jupyter.</p>
 </li>
 <li><p>Les plugins v3 utilisent maintenant <strong>la journalisation python standard</strong></p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">logging</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">logging</span>
 </pre></div>
 </div>
 <p>Assurez-vous que la déclaration d’enregistreur suivante se trouve après le <strong>last _import_</strong> en haut du plugin v3</p>
@@ -659,7 +659,7 @@ La somme de contrôle est déjà effectuée lorsque le nouveau message de notifi
 tous les champs de message tels que <strong>sumalgo</strong> et d’autres champs <strong>algo</strong> peuvent être ignorés.</p>
 <blockquote>
 <div><p>Pour créer un message de notification à partir d’un fichier local dans un plugin v3</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">sarracenia</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">sarracenia</span>
 
 <span class="n">m</span> <span class="o">=</span> <span class="n">sarracenia</span><span class="o">.</span><span class="n">Message</span><span class="o">.</span><span class="n">fromFileData</span><span class="p">(</span><span class="n">sample_fileName</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">o</span><span class="p">,</span> <span class="n">os</span><span class="o">.</span><span class="n">stat</span><span class="p">(</span><span class="n">sample_fileName</span><span class="p">)</span> <span class="p">)</span>
 </pre></div>
@@ -770,7 +770,7 @@ transfert des messages de notification rejetés vers worklist.rejected ou workli
 </dd>
 </dl>
 <p>Flux d’échantillon:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="k">def</span><span class="w"> </span><span class="nf">after_accept</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">worklist</span><span class="p">):</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">after_accept</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">worklist</span><span class="p">):</span>
 
    <span class="o">...</span>
 
@@ -868,9 +868,9 @@ En v2, il faullt combiner avec une autre configuration pour effectuer le téléc
 </ul>
 </div></blockquote>
 <p>Pour créer un message de notification, sans fichier local, utilisez fromFileInfo sarracenia.message factory:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">dateparser</span>
-<span class="kn">import</span><span class="w"> </span><span class="nn">paramiko</span>
-<span class="kn">import</span><span class="w"> </span><span class="nn">sarracenia</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">dateparser</span>
+<span class="kn">import</span> <span class="nn">paramiko</span>
+<span class="kn">import</span> <span class="nn">sarracenia</span>
 
 <span class="n">gathered_messages</span><span class="o">=</span><span class="p">[]</span>
 
@@ -946,12 +946,12 @@ par un <em>subscribe</em> ou <em>sarra</em> pour plus de performance.</p>
 <p>Voici un plugin v2 nsa_mls_nrt.py:</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="ch">#!/usr/bin/env python3</span>
 
-<span class="k">class</span><span class="w"> </span><span class="nc">Html_parser</span><span class="p">():</span>
+<span class="k">class</span> <span class="nc">Html_parser</span><span class="p">():</span>
 
-    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">parent</span><span class="p">):</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">parent</span><span class="p">):</span>
 
         <span class="n">parent</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;Html_parser __init__&quot;</span><span class="p">)</span>
-        <span class="kn">import</span><span class="w"> </span><span class="nn">html.parser</span>
+        <span class="kn">import</span> <span class="nn">html.parser</span>
 
         <span class="bp">self</span><span class="o">.</span><span class="n">parent</span> <span class="o">=</span> <span class="n">parent</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">logger</span> <span class="o">=</span> <span class="n">parent</span><span class="o">.</span><span class="n">logger</span>
@@ -961,14 +961,14 @@ par un <em>subscribe</em> ou <em>sarra</em> pour plus de performance.</p>
         <span class="bp">self</span><span class="o">.</span><span class="n">parser</span><span class="o">.</span><span class="n">handle_data</span>     <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">handle_data</span>
 
 
-    <span class="k">def</span><span class="w"> </span><span class="nf">handle_starttag</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">tag</span><span class="p">,</span> <span class="n">attrs</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">handle_starttag</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">tag</span><span class="p">,</span> <span class="n">attrs</span><span class="p">):</span>
         <span class="k">for</span> <span class="n">attr</span> <span class="ow">in</span> <span class="n">attrs</span><span class="p">:</span>
             <span class="n">c</span><span class="p">,</span><span class="n">n</span> <span class="o">=</span> <span class="n">attr</span>
             <span class="k">if</span> <span class="n">c</span> <span class="o">==</span> <span class="s2">&quot;href&quot;</span> <span class="ow">and</span> <span class="n">n</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">!=</span> <span class="s1">&#39;/&#39;</span><span class="p">:</span>
                <span class="bp">self</span><span class="o">.</span><span class="n">myfname</span> <span class="o">=</span> <span class="n">n</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span><span class="o">.</span><span class="n">strip</span><span class="p">(</span><span class="s1">&#39;</span><span class="se">\t</span><span class="s1">&#39;</span><span class="p">)</span>
 
-    <span class="k">def</span><span class="w"> </span><span class="nf">handle_data</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">data</span><span class="p">):</span>
-        <span class="kn">import</span><span class="w"> </span><span class="nn">time</span>
+    <span class="k">def</span> <span class="nf">handle_data</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">data</span><span class="p">):</span>
+        <span class="kn">import</span> <span class="nn">time</span>
 
         <span class="k">if</span> <span class="s1">&#39;MLS-Aura&#39;</span> <span class="ow">in</span> <span class="n">data</span><span class="p">:</span>
                <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;data </span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span><span class="n">data</span><span class="p">)</span>
@@ -1005,7 +1005,7 @@ par un <em>subscribe</em> ou <em>sarra</em> pour plus de performance.</p>
 <span class="sd">        self.logger.debug(&quot;(%s) = %s&quot; % (self.myfname,self.entries[self.myfname]))</span>
 <span class="sd">        &#39;&#39;&#39;</span>
 
-    <span class="k">def</span><span class="w"> </span><span class="nf">parse</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">parent</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">parse</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">parent</span><span class="p">):</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;Html_parser parse&quot;</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">entries</span> <span class="o">=</span> <span class="p">{}</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">myfname</span> <span class="o">=</span> <span class="kc">None</span>
@@ -1035,17 +1035,17 @@ version. Dans les poll sr3, la plupart des maniupulations de chaînes ont été 
 structure paramiko.SFTPAttribute dès que possible.</p>
 <p>Donc, la façon de remplacer on_html_page dans sr3 est de sous-classer Poll. Voici une
 version sr3 du même plugin (nasa_mls_nrt.py):</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">logging</span>
-<span class="kn">import</span><span class="w"> </span><span class="nn">paramiko</span>
-<span class="kn">import</span><span class="w"> </span><span class="nn">sarracenia</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">sarracenia</span><span class="w"> </span><span class="kn">import</span> <span class="n">nowflt</span><span class="p">,</span> <span class="n">timestr2flt</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">sarracenia.flowcb.poll</span><span class="w"> </span><span class="kn">import</span> <span class="n">Poll</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">logging</span>
+<span class="kn">import</span> <span class="nn">paramiko</span>
+<span class="kn">import</span> <span class="nn">sarracenia</span>
+<span class="kn">from</span> <span class="nn">sarracenia</span> <span class="kn">import</span> <span class="n">nowflt</span><span class="p">,</span> <span class="n">timestr2flt</span>
+<span class="kn">from</span> <span class="nn">sarracenia.flowcb.poll</span> <span class="kn">import</span> <span class="n">Poll</span>
 
 <span class="n">logger</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="vm">__name__</span><span class="p">)</span>
 
-<span class="k">class</span><span class="w"> </span><span class="nc">Nasa_mls_nrt</span><span class="p">(</span><span class="n">Poll</span><span class="p">):</span>
+<span class="k">class</span> <span class="nc">Nasa_mls_nrt</span><span class="p">(</span><span class="n">Poll</span><span class="p">):</span>
 
-    <span class="k">def</span><span class="w"> </span><span class="nf">handle_data</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">data</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">handle_data</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">data</span><span class="p">):</span>
 
         <span class="n">st</span> <span class="o">=</span> <span class="n">paramiko</span><span class="o">.</span><span class="n">SFTPAttributes</span><span class="p">()</span>
         <span class="n">st</span><span class="o">.</span><span class="n">st_mtime</span> <span class="o">=</span> <span class="mi">0</span>
@@ -1158,17 +1158,17 @@ similaire au flowcallback dans la configuration</p>
 </pre></div>
 </div>
 <p>Code du plugin v2:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">sys</span><span class="o">,</span><span class="w"> </span><span class="nn">os</span><span class="o">,</span><span class="w"> </span><span class="nn">os.path</span><span class="o">,</span><span class="w"> </span><span class="nn">time</span><span class="o">,</span><span class="w"> </span><span class="nn">stat</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">sys</span><span class="o">,</span> <span class="nn">os</span><span class="o">,</span> <span class="nn">os.path</span><span class="o">,</span> <span class="nn">time</span><span class="o">,</span> <span class="nn">stat</span>
 
 <span class="c1"># this renamer takes file name like : AACN01_CWAO_160316___00009:cmcin:CWAO:AA:1:Direct:20170316031754</span>
 <span class="c1"># and returns :                       AACN01_CWAO_160316___00009_20170316031254</span>
 
-<span class="k">class</span><span class="w"> </span><span class="nc">Renamer</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+<span class="k">class</span> <span class="nc">Renamer</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
 
-  <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="p">:</span>
+  <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="p">:</span>
       <span class="k">pass</span>
 
-  <span class="k">def</span><span class="w"> </span><span class="nf">perform</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">parent</span><span class="p">):</span>
+  <span class="k">def</span> <span class="nf">perform</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">parent</span><span class="p">):</span>
 
       <span class="n">path</span> <span class="o">=</span> <span class="n">parent</span><span class="o">.</span><span class="n">new_file</span>
       <span class="n">tok</span><span class="o">=</span><span class="n">path</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot;:&quot;</span><span class="p">)</span>
@@ -1196,15 +1196,15 @@ statement <em>from sender_renamer_add_date import Sender_Renamer_Add_Date</em></
 et ajouter le nom de la classe dans le fichier. Cette notation est équivalente à l’instruction python <em>from</em>,
 <em>from sender_renamer_add_date import Sender_Renamer_Add_Date</em></p>
 <p>code du flow callback:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">logging</span><span class="o">,</span><span class="nn">time</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">logging</span><span class="o">,</span><span class="nn">time</span>
 
-<span class="kn">from</span><span class="w"> </span><span class="nn">sarracenia.flowcb</span><span class="w"> </span><span class="kn">import</span> <span class="n">FlowCB</span>
+<span class="kn">from</span> <span class="nn">sarracenia.flowcb</span> <span class="kn">import</span> <span class="n">FlowCB</span>
 
 <span class="n">logger</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="vm">__name__</span><span class="p">)</span>
 
-<span class="k">class</span><span class="w"> </span><span class="nc">Sender_Renamer_Add_Date</span><span class="p">(</span><span class="n">FlowCB</span><span class="p">):</span>
+<span class="k">class</span> <span class="nc">Sender_Renamer_Add_Date</span><span class="p">(</span><span class="n">FlowCB</span><span class="p">):</span>
 
-   <span class="k">def</span><span class="w"> </span><span class="nf">destfn</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">msg</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+   <span class="k">def</span> <span class="nf">destfn</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">msg</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
 
        <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s1">&#39;before: m=</span><span class="si">%s</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="n">msg</span> <span class="p">)</span>
        <span class="n">relPath</span> <span class="o">=</span> <span class="n">msg</span><span class="p">[</span><span class="s2">&quot;relPath&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;/&#39;</span><span class="p">)</span>

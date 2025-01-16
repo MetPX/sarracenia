@@ -6,7 +6,7 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>sarracenia.identity &mdash; Sarracenia 3.00.57rc2 documentation</title>
-      <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=80d5e7a1" />
       <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=e59714d7" />
 
   
@@ -105,19 +105,19 @@
 <span class="c1">#</span>
 <span class="c1">#</span>
 
-<span class="kn">import</span><span class="w"> </span><span class="nn">os</span>
-<span class="kn">import</span><span class="w"> </span><span class="nn">logging</span>
+<span class="kn">import</span> <span class="nn">os</span>
+<span class="kn">import</span> <span class="nn">logging</span>
 
-<span class="kn">import</span><span class="w"> </span><span class="nn">functools</span>
+<span class="kn">import</span> <span class="nn">functools</span>
 
-<span class="kn">from</span><span class="w"> </span><span class="nn">base64</span><span class="w"> </span><span class="kn">import</span> <span class="n">b64encode</span>
+<span class="kn">from</span> <span class="nn">base64</span> <span class="kn">import</span> <span class="n">b64encode</span>
 
 <span class="n">logger</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="vm">__name__</span><span class="p">)</span>
 
 
 <div class="viewcode-block" id="Identity">
 <a class="viewcode-back" href="../../api-documentation.html#sarracenia.identity.Identity">[docs]</a>
-<span class="k">class</span><span class="w"> </span><span class="nc">Identity</span><span class="p">:</span>
+<span class="k">class</span> <span class="nc">Identity</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        A class for algorithms to get a fingerprint for a file being announced.</span>
 <span class="sd">        Appropriate fingerprinting algorithms vary according to file type.</span>
@@ -135,19 +135,19 @@
 <span class="sd">            update the checksum based on the given bytes from the file (sequential access assumed.)</span>
 <span class="sd">        &quot;&quot;&quot;</span>
     <span class="nd">@staticmethod</span>
-    <span class="k">def</span><span class="w"> </span><span class="nf">factory</span><span class="p">(</span><span class="n">method</span><span class="o">=</span><span class="s1">&#39;sha512&#39;</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">factory</span><span class="p">(</span><span class="n">method</span><span class="o">=</span><span class="s1">&#39;sha512&#39;</span><span class="p">):</span>
 
         <span class="k">for</span> <span class="n">sc</span> <span class="ow">in</span> <span class="n">Identity</span><span class="o">.</span><span class="n">__subclasses__</span><span class="p">():</span>
             <span class="k">if</span> <span class="n">method</span> <span class="o">==</span> <span class="n">sc</span><span class="o">.</span><span class="vm">__name__</span><span class="o">.</span><span class="n">lower</span><span class="p">():</span>
                 <span class="k">return</span> <span class="n">sc</span><span class="p">()</span>
         <span class="k">return</span> <span class="kc">None</span>
 
-    <span class="k">def</span><span class="w"> </span><span class="nf">get_method</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">get_method</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="k">return</span> <span class="nb">type</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="vm">__name__</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span>
 
 <div class="viewcode-block" id="Identity.update_file">
 <a class="viewcode-back" href="../../api-documentation.html#sarracenia.identity.Identity.update_file">[docs]</a>
-    <span class="k">def</span><span class="w"> </span><span class="nf">update_file</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">path</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">update_file</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">path</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">         read the entire file, check sum it. </span>
 <span class="sd">         this is kind of last resort as it cost an extra file read.</span>
@@ -160,7 +160,7 @@
 
 
     <span class="nd">@property</span>
-    <span class="k">def</span><span class="w"> </span><span class="nf">value</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">value</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        return the current value of the checksum calculation.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
@@ -168,10 +168,10 @@
 
 
 
-<span class="kn">import</span><span class="w"> </span><span class="nn">sarracenia.identity.arbitrary</span>
-<span class="kn">import</span><span class="w"> </span><span class="nn">sarracenia.identity.md5</span>
-<span class="kn">import</span><span class="w"> </span><span class="nn">sarracenia.identity.random</span>
-<span class="kn">import</span><span class="w"> </span><span class="nn">sarracenia.identity.sha512</span>
+<span class="kn">import</span> <span class="nn">sarracenia.identity.arbitrary</span>
+<span class="kn">import</span> <span class="nn">sarracenia.identity.md5</span>
+<span class="kn">import</span> <span class="nn">sarracenia.identity.random</span>
+<span class="kn">import</span> <span class="nn">sarracenia.identity.sha512</span>
 
 <span class="c1"># the &#39;unknown&#39; method is created to accomodate cases where a identity field </span>
 <span class="c1"># missing, or the corresponding class is not known to this instance.</span>

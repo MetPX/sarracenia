@@ -6,7 +6,7 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>sarracenia.moth &mdash; Sarracenia 3.00.57rc2 documentation</title>
-      <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=80d5e7a1" />
       <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=e59714d7" />
 
   
@@ -81,14 +81,14 @@
            <div itemprop="articleBody">
              
   <h1>Source code for sarracenia.moth</h1><div class="highlight"><pre>
-<span></span><span class="kn">import</span><span class="w"> </span><span class="nn">copy</span>
-<span class="kn">import</span><span class="w"> </span><span class="nn">json</span>
-<span class="kn">import</span><span class="w"> </span><span class="nn">logging</span>
-<span class="kn">import</span><span class="w"> </span><span class="nn">sys</span>
-<span class="kn">import</span><span class="w"> </span><span class="nn">time</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">sarracenia.featuredetection</span><span class="w"> </span><span class="kn">import</span> <span class="n">features</span>
+<span></span><span class="kn">import</span> <span class="nn">copy</span>
+<span class="kn">import</span> <span class="nn">json</span>
+<span class="kn">import</span> <span class="nn">logging</span>
+<span class="kn">import</span> <span class="nn">sys</span>
+<span class="kn">import</span> <span class="nn">time</span>
+<span class="kn">from</span> <span class="nn">sarracenia.featuredetection</span> <span class="kn">import</span> <span class="n">features</span>
 
-<span class="kn">import</span><span class="w"> </span><span class="nn">sarracenia</span>
+<span class="kn">import</span> <span class="nn">sarracenia</span>
 
 <span class="n">logger</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="vm">__name__</span><span class="p">)</span>
 
@@ -117,7 +117,7 @@
     <span class="s1">&#39;tlsRigour&#39;</span><span class="p">:</span> <span class="s1">&#39;normal&#39;</span>
 <span class="p">}</span>
 
-<span class="k">def</span><span class="w"> </span><span class="nf">ProtocolPresent</span><span class="p">(</span><span class="n">p</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+<span class="k">def</span> <span class="nf">ProtocolPresent</span><span class="p">(</span><span class="n">p</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
     <span class="k">if</span> <span class="p">(</span> <span class="n">p</span><span class="p">[</span><span class="mi">0</span><span class="p">:</span><span class="mi">4</span><span class="p">]</span> <span class="ow">in</span> <span class="p">[</span><span class="s1">&#39;amqp&#39;</span><span class="p">]</span> <span class="p">)</span> <span class="ow">and</span> <span class="n">sarracenia</span><span class="o">.</span><span class="n">features</span><span class="p">[</span><span class="s1">&#39;amqp&#39;</span><span class="p">][</span><span class="s1">&#39;present&#39;</span><span class="p">]:</span>
        <span class="k">return</span> <span class="kc">True</span>
     <span class="k">if</span> <span class="p">(</span> <span class="n">p</span><span class="p">[</span><span class="mi">0</span><span class="p">:</span><span class="mi">4</span><span class="p">]</span> <span class="ow">in</span> <span class="p">[</span><span class="s1">&#39;mqtt&#39;</span><span class="p">]</span> <span class="p">)</span> <span class="ow">and</span> <span class="n">sarracenia</span><span class="o">.</span><span class="n">features</span><span class="p">[</span><span class="s1">&#39;mqtt&#39;</span><span class="p">][</span><span class="s1">&#39;present&#39;</span><span class="p">]:</span>
@@ -132,7 +132,7 @@
 
 <div class="viewcode-block" id="Moth">
 <a class="viewcode-back" href="../../api-documentation.html#sarracenia.moth.Moth">[docs]</a>
-<span class="k">class</span><span class="w"> </span><span class="nc">Moth</span><span class="p">():</span>
+<span class="k">class</span> <span class="nc">Moth</span><span class="p">():</span>
 <span class="w">    </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Moth ... Messages Organized by Topic Headers</span>
 <span class="sd">        (en français: Messages organisés par thème hierarchique. )</span>
@@ -289,7 +289,7 @@
 
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="nd">@staticmethod</span>
-    <span class="k">def</span><span class="w"> </span><span class="nf">subFactory</span><span class="p">(</span><span class="n">props</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="s1">&#39;Moth&#39;</span><span class="p">:</span>
+    <span class="k">def</span> <span class="nf">subFactory</span><span class="p">(</span><span class="n">props</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="s1">&#39;Moth&#39;</span><span class="p">:</span>
 
         <span class="k">if</span> <span class="ow">not</span> <span class="n">props</span><span class="p">[</span><span class="s1">&#39;broker&#39;</span><span class="p">]</span> <span class="p">:</span>
             <span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="s1">&#39;no broker specified&#39;</span><span class="p">)</span>
@@ -321,7 +321,7 @@
         <span class="k">return</span> <span class="kc">None</span>
 
     <span class="nd">@staticmethod</span>
-    <span class="k">def</span><span class="w"> </span><span class="nf">pubFactory</span><span class="p">(</span><span class="n">props</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="s1">&#39;Moth&#39;</span><span class="p">:</span>
+    <span class="k">def</span> <span class="nf">pubFactory</span><span class="p">(</span><span class="n">props</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="s1">&#39;Moth&#39;</span><span class="p">:</span>
         <span class="k">if</span> <span class="ow">not</span> <span class="n">props</span><span class="p">[</span><span class="s1">&#39;broker&#39;</span><span class="p">]:</span>
             <span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="s1">&#39;no broker specified&#39;</span><span class="p">)</span>
             <span class="k">return</span> <span class="kc">None</span>
@@ -349,7 +349,7 @@
 <div class="viewcode-block" id="Moth.findAllSubclasses">
 <a class="viewcode-back" href="../../api-documentation.html#sarracenia.moth.Moth.findAllSubclasses">[docs]</a>
     <span class="nd">@staticmethod</span>
-    <span class="k">def</span><span class="w"> </span><span class="nf">findAllSubclasses</span><span class="p">(</span><span class="bp">cls</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">set</span><span class="p">:</span>
+    <span class="k">def</span> <span class="nf">findAllSubclasses</span><span class="p">(</span><span class="bp">cls</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">set</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Recursively finds all subclasses of a class. __subclasses__() only gives direct subclasses.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">cls_subclasses</span> <span class="o">=</span> <span class="nb">set</span><span class="p">(</span><span class="bp">cls</span><span class="o">.</span><span class="n">__subclasses__</span><span class="p">())</span>
@@ -360,7 +360,7 @@
 
 <div class="viewcode-block" id="Moth.__init__">
 <a class="viewcode-back" href="../../api-documentation.html#sarracenia.moth.Moth.__init__">[docs]</a>
-    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">props</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">is_subscriber</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">props</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">is_subscriber</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">           If is_subscriber=True, then this is a consuming instance.</span>
 <span class="sd">           expect calls to get* routines.</span>
@@ -405,7 +405,7 @@
 
 <div class="viewcode-block" id="Moth.ack">
 <a class="viewcode-back" href="../../api-documentation.html#sarracenia.moth.Moth.ack">[docs]</a>
-    <span class="k">def</span><span class="w"> </span><span class="nf">ack</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">message</span><span class="p">:</span> <span class="n">sarracenia</span><span class="o">.</span><span class="n">Message</span> <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+    <span class="k">def</span> <span class="nf">ack</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">message</span><span class="p">:</span> <span class="n">sarracenia</span><span class="o">.</span><span class="n">Message</span> <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">          tell broker that a given message has been received.</span>
 
@@ -416,7 +416,7 @@
 
 
     <span class="nd">@property</span>
-    <span class="k">def</span><span class="w"> </span><span class="nf">default_options</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">:</span>
+    <span class="k">def</span> <span class="nf">default_options</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        get default properties to override, used by client for validation. </span>
 
@@ -425,7 +425,7 @@
 
 <div class="viewcode-block" id="Moth.getNewMessage">
 <a class="viewcode-back" href="../../api-documentation.html#sarracenia.moth.Moth.getNewMessage">[docs]</a>
-    <span class="k">def</span><span class="w"> </span><span class="nf">getNewMessage</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">sarracenia</span><span class="o">.</span><span class="n">Message</span><span class="p">:</span>
+    <span class="k">def</span> <span class="nf">getNewMessage</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">sarracenia</span><span class="o">.</span><span class="n">Message</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        If there is one new message available, return it. Otherwise return None. Do not block.</span>
 
@@ -441,7 +441,7 @@
 
 <div class="viewcode-block" id="Moth.newMessages">
 <a class="viewcode-back" href="../../api-documentation.html#sarracenia.moth.Moth.newMessages">[docs]</a>
-    <span class="k">def</span><span class="w"> </span><span class="nf">newMessages</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">:</span>
+    <span class="k">def</span> <span class="nf">newMessages</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        If there are new messages available from the broker, return them, otherwise return None.</span>
 
@@ -456,7 +456,7 @@
     
 <div class="viewcode-block" id="Moth.please_stop">
 <a class="viewcode-back" href="../../api-documentation.html#sarracenia.moth.Moth.please_stop">[docs]</a>
-    <span class="k">def</span><span class="w"> </span><span class="nf">please_stop</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+    <span class="k">def</span> <span class="nf">please_stop</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot; register a request to cleanly stop. Any long running processes should check for _stop_requested and </span>
 <span class="sd">            stop if it becomes True.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
@@ -466,7 +466,7 @@
 
 <div class="viewcode-block" id="Moth.putNewMessage">
 <a class="viewcode-back" href="../../api-documentation.html#sarracenia.moth.Moth.putNewMessage">[docs]</a>
-    <span class="k">def</span><span class="w"> </span><span class="nf">putNewMessage</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">message</span><span class="p">:</span><span class="n">sarracenia</span><span class="o">.</span><span class="n">Message</span><span class="p">,</span> <span class="n">content_type</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span><span class="s1">&#39;application/json&#39;</span><span class="p">,</span> <span class="n">exchange</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+    <span class="k">def</span> <span class="nf">putNewMessage</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">message</span><span class="p">:</span><span class="n">sarracenia</span><span class="o">.</span><span class="n">Message</span><span class="p">,</span> <span class="n">content_type</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span><span class="s1">&#39;application/json&#39;</span><span class="p">,</span> <span class="n">exchange</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">           publish a message as set up to the given topic.</span>
 
@@ -481,7 +481,7 @@
         <span class="k">return</span> <span class="kc">False</span></div>
 
 
-    <span class="k">def</span><span class="w"> </span><span class="nf">metricsReset</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+    <span class="k">def</span> <span class="nf">metricsReset</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">metrics</span><span class="p">[</span><span class="s1">&#39;disconnectLast&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="mi">0</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">metrics</span><span class="p">[</span><span class="s1">&#39;disconnectTime&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="mi">0</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">metrics</span><span class="p">[</span><span class="s1">&#39;disconnectCount&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="mi">0</span>
@@ -492,14 +492,14 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">metrics</span><span class="p">[</span><span class="s1">&#39;txGoodCount&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="mi">0</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">metrics</span><span class="p">[</span><span class="s1">&#39;txBadCount&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="mi">0</span>
 
-    <span class="k">def</span><span class="w"> </span><span class="nf">metricsReport</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">:</span>
+    <span class="k">def</span> <span class="nf">metricsReport</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">:</span>
         <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">metrics</span><span class="p">[</span><span class="s1">&#39;connected&#39;</span><span class="p">]</span> <span class="ow">and</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">metrics</span><span class="p">[</span><span class="s1">&#39;disconnectLast&#39;</span><span class="p">]</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">):</span>
             <span class="n">down_time</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">metrics</span><span class="p">[</span><span class="s1">&#39;disconnectLast&#39;</span><span class="p">]</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">metrics</span><span class="p">[</span><span class="s1">&#39;disconnectTime&#39;</span><span class="p">]</span> <span class="o">+=</span> <span class="n">down_time</span>
 
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">metrics</span>
 
-    <span class="k">def</span><span class="w"> </span><span class="nf">metricsConnect</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+    <span class="k">def</span> <span class="nf">metricsConnect</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">metrics</span><span class="p">[</span><span class="s1">&#39;connected&#39;</span><span class="p">]</span><span class="o">=</span><span class="kc">True</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">metrics</span><span class="p">[</span><span class="s1">&#39;disconnectLast&#39;</span><span class="p">]</span> <span class="o">&gt;</span> <span class="mi">0</span> <span class="p">:</span>
             <span class="n">down_time</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">metrics</span><span class="p">[</span><span class="s1">&#39;disconnectLast&#39;</span><span class="p">]</span>
@@ -507,7 +507,7 @@
 
 <div class="viewcode-block" id="Moth.metricsDisconnect">
 <a class="viewcode-back" href="../../api-documentation.html#sarracenia.moth.Moth.metricsDisconnect">[docs]</a>
-    <span class="k">def</span><span class="w"> </span><span class="nf">metricsDisconnect</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+    <span class="k">def</span> <span class="nf">metricsDisconnect</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">           tear down an existing connection.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
@@ -516,12 +516,12 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">metrics</span><span class="p">[</span><span class="s1">&#39;disconnectLast&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span></div>
 
 
-    <span class="k">def</span><span class="w"> </span><span class="nf">close</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+    <span class="k">def</span> <span class="nf">close</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
         <span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="s2">&quot;implementation missing!&quot;</span><span class="p">)</span>
 
 <div class="viewcode-block" id="Moth.cleanup">
 <a class="viewcode-back" href="../../api-documentation.html#sarracenia.moth.Moth.cleanup">[docs]</a>
-    <span class="k">def</span><span class="w"> </span><span class="nf">cleanup</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+    <span class="k">def</span> <span class="nf">cleanup</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">          get rid of server-side resources associated with a client. (queues/id&#39;s, etc...)</span>
 <span class="sd">        &quot;&quot;&quot;</span>
@@ -533,7 +533,7 @@
 
 <div class="viewcode-block" id="Moth.setEbo">
 <a class="viewcode-back" href="../../api-documentation.html#sarracenia.moth.Moth.setEbo">[docs]</a>
-    <span class="k">def</span><span class="w"> </span><span class="nf">setEbo</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">start</span><span class="p">)</span><span class="o">-&gt;</span><span class="kc">None</span><span class="p">:</span>
+    <span class="k">def</span> <span class="nf">setEbo</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">start</span><span class="p">)</span><span class="o">-&gt;</span><span class="kc">None</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;  Calculate next retry time using exponential backoff</span>
 <span class="sd">             note that it doesn&#39;t look like classic EBO because the time</span>
 <span class="sd">             is multiplied by how long it took to fail. Long failures should not</span>
@@ -553,7 +553,7 @@
 
 <div class="viewcode-block" id="Moth.splitPick">
 <a class="viewcode-back" href="../../api-documentation.html#sarracenia.moth.Moth.splitPick">[docs]</a>
-    <span class="k">def</span><span class="w"> </span><span class="nf">splitPick</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">message</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
+    <span class="k">def</span> <span class="nf">splitPick</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">message</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">           given a message and exchangeSplit, return the number to split to.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
@@ -575,11 +575,11 @@
  
 
 <span class="k">if</span> <span class="n">features</span><span class="p">[</span><span class="s1">&#39;amqp&#39;</span><span class="p">][</span><span class="s1">&#39;present&#39;</span><span class="p">]:</span>
-    <span class="kn">import</span><span class="w"> </span><span class="nn">sarracenia.moth.amqp</span>
-    <span class="kn">import</span><span class="w"> </span><span class="nn">sarracenia.moth.amqpconsumer</span>
+    <span class="kn">import</span> <span class="nn">sarracenia.moth.amqp</span>
+    <span class="kn">import</span> <span class="nn">sarracenia.moth.amqpconsumer</span>
 
 <span class="k">if</span> <span class="n">features</span><span class="p">[</span><span class="s1">&#39;mqtt&#39;</span><span class="p">][</span><span class="s1">&#39;present&#39;</span><span class="p">]:</span>
-    <span class="kn">import</span><span class="w"> </span><span class="nn">sarracenia.moth.mqtt</span>
+    <span class="kn">import</span> <span class="nn">sarracenia.moth.mqtt</span>
 </pre></div>
 
            </div>

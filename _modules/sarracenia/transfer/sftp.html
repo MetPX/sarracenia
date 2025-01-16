@@ -6,7 +6,7 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>sarracenia.transfer.sftp &mdash; Sarracenia 3.00.57rc2 documentation</title>
-      <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=80d5e7a1" />
       <link rel="stylesheet" type="text/css" href="../../../_static/css/theme.css?v=e59714d7" />
 
   
@@ -105,23 +105,23 @@
 <span class="c1">#</span>
 <span class="c1">#</span>
 
-<span class="kn">import</span><span class="w"> </span><span class="nn">logging</span><span class="o">,</span><span class="w"> </span><span class="nn">paramiko</span><span class="o">,</span><span class="w"> </span><span class="nn">os</span><span class="o">,</span><span class="w"> </span><span class="nn">subprocess</span><span class="o">,</span><span class="w"> </span><span class="nn">sys</span><span class="o">,</span><span class="w"> </span><span class="nn">time</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">paramiko</span><span class="w"> </span><span class="kn">import</span> <span class="o">*</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">stat</span><span class="w"> </span><span class="kn">import</span> <span class="o">*</span>
+<span class="kn">import</span> <span class="nn">logging</span><span class="o">,</span> <span class="nn">paramiko</span><span class="o">,</span> <span class="nn">os</span><span class="o">,</span> <span class="nn">subprocess</span><span class="o">,</span> <span class="nn">sys</span><span class="o">,</span> <span class="nn">time</span>
+<span class="kn">from</span> <span class="nn">paramiko</span> <span class="kn">import</span> <span class="o">*</span>
+<span class="kn">from</span> <span class="nn">stat</span> <span class="kn">import</span> <span class="o">*</span>
 
-<span class="kn">import</span><span class="w"> </span><span class="nn">sarracenia</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">sarracenia.transfer</span><span class="w"> </span><span class="kn">import</span> <span class="n">Transfer</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">sarracenia.transfer</span><span class="w"> </span><span class="kn">import</span> <span class="n">alarm_cancel</span><span class="p">,</span> <span class="n">alarm_set</span><span class="p">,</span> <span class="n">alarm_raise</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">urllib.parse</span><span class="w"> </span><span class="kn">import</span> <span class="n">unquote</span>
+<span class="kn">import</span> <span class="nn">sarracenia</span>
+<span class="kn">from</span> <span class="nn">sarracenia.transfer</span> <span class="kn">import</span> <span class="n">Transfer</span>
+<span class="kn">from</span> <span class="nn">sarracenia.transfer</span> <span class="kn">import</span> <span class="n">alarm_cancel</span><span class="p">,</span> <span class="n">alarm_set</span><span class="p">,</span> <span class="n">alarm_raise</span>
+<span class="kn">from</span> <span class="nn">urllib.parse</span> <span class="kn">import</span> <span class="n">unquote</span>
 
-<span class="kn">import</span><span class="w"> </span><span class="nn">logging</span>
+<span class="kn">import</span> <span class="nn">logging</span>
 
 <span class="n">logger</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="vm">__name__</span><span class="p">)</span>
 
 
 <div class="viewcode-block" id="Sftp">
 <a class="viewcode-back" href="../../../Reference/code.html#sarracenia.transfer.sftp.Sftp">[docs]</a>
-<span class="k">class</span><span class="w"> </span><span class="nc">Sftp</span><span class="p">(</span><span class="n">Transfer</span><span class="p">):</span>
+<span class="k">class</span> <span class="nc">Sftp</span><span class="p">(</span><span class="n">Transfer</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    SecSH File Transfer Protocol (SFTP)  ( https://filezilla-project.org/specs/draft-ietf-secsh-filexfer-02.txt )</span>
 <span class="sd">    Sarracenia transfer protocol subclass supports/uses additional custom options:</span>
@@ -132,7 +132,7 @@
 <span class="sd">    &quot;&quot;&quot;</span>
 <div class="viewcode-block" id="Sftp.__init__">
 <a class="viewcode-back" href="../../../Reference/code.html#sarracenia.transfer.sftp.Sftp.__init__">[docs]</a>
-    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">proto</span><span class="p">,</span> <span class="n">options</span><span class="p">):</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">proto</span><span class="p">,</span> <span class="n">options</span><span class="p">):</span>
 
         <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">proto</span><span class="p">,</span> <span class="n">options</span><span class="p">)</span>
 
@@ -164,11 +164,11 @@
             <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s1">&#39;Exception details: &#39;</span><span class="p">,</span> <span class="n">exc_info</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span></div>
 
 
-    <span class="k">def</span><span class="w"> </span><span class="nf">registered_as</span><span class="p">():</span>
+    <span class="k">def</span> <span class="nf">registered_as</span><span class="p">():</span>
         <span class="k">return</span> <span class="p">[</span><span class="s1">&#39;sftp&#39;</span><span class="p">,</span> <span class="s1">&#39;scp&#39;</span><span class="p">,</span> <span class="s1">&#39;ssh&#39;</span><span class="p">,</span> <span class="s1">&#39;fish&#39;</span><span class="p">]</span>
 
     <span class="c1"># cd</span>
-    <span class="k">def</span><span class="w"> </span><span class="nf">cd</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">path</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">cd</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">path</span><span class="p">):</span>
 
         <span class="n">alarm_set</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">o</span><span class="o">.</span><span class="n">timeout</span><span class="p">)</span>
         <span class="k">try</span><span class="p">:</span>
@@ -183,7 +183,7 @@
     <span class="c1"># cd forced</span>
 <div class="viewcode-block" id="Sftp.cd_forced">
 <a class="viewcode-back" href="../../../Reference/code.html#sarracenia.transfer.sftp.Sftp.cd_forced">[docs]</a>
-    <span class="k">def</span><span class="w"> </span><span class="nf">cd_forced</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">path</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">cd_forced</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">path</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot; try to cd to a directory. If the cd fails, create the directory</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;sr_sftp cd_forced </span><span class="si">%o</span><span class="s2"> </span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">o</span><span class="o">.</span><span class="n">permDirDefault</span><span class="p">,</span> <span class="n">path</span><span class="p">))</span>
@@ -230,7 +230,7 @@
                 <span class="n">alarm_cancel</span><span class="p">()</span></div>
 
 
-    <span class="k">def</span><span class="w"> </span><span class="nf">check_is_connected</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">check_is_connected</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;sr_sftp check_is_connected&quot;</span><span class="p">)</span>
 
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">sftp</span> <span class="o">==</span> <span class="kc">None</span><span class="p">:</span> <span class="k">return</span> <span class="kc">False</span>
@@ -258,7 +258,7 @@
         <span class="k">return</span> <span class="kc">True</span>
 
     <span class="c1"># chmod</span>
-    <span class="k">def</span><span class="w"> </span><span class="nf">chmod</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">perm</span><span class="p">,</span> <span class="n">path</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">chmod</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">perm</span><span class="p">,</span> <span class="n">path</span><span class="p">):</span>
         <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;sr_sftp chmod </span><span class="si">%s</span><span class="s2"> </span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="s2">&quot;</span><span class="si">{0:o}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">perm</span><span class="p">),</span> <span class="n">path</span><span class="p">))</span>
         <span class="n">alarm_set</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">o</span><span class="o">.</span><span class="n">timeout</span><span class="p">)</span>
         <span class="k">try</span><span class="p">:</span>
@@ -267,7 +267,7 @@
             <span class="n">alarm_cancel</span><span class="p">()</span>
 
     <span class="c1"># close</span>
-    <span class="k">def</span><span class="w"> </span><span class="nf">close</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">close</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;sr_sftp close&quot;</span><span class="p">)</span>
 
         <span class="n">old_sftp</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">sftp</span>
@@ -287,7 +287,7 @@
         <span class="n">alarm_cancel</span><span class="p">()</span>
 
     <span class="c1"># connect...</span>
-    <span class="k">def</span><span class="w"> </span><span class="nf">connect</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">connect</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
 
         <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;sr_sftp connect </span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="bp">self</span><span class="o">.</span><span class="n">o</span><span class="o">.</span><span class="n">sendTo</span><span class="p">)</span>
 
@@ -341,7 +341,7 @@
         <span class="k">return</span> <span class="kc">False</span>
 
     <span class="c1"># credentials...</span>
-    <span class="k">def</span><span class="w"> </span><span class="nf">credentials</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">credentials</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="c1">#logger.debug(&quot;sr_sftp credentials %s&quot; % self.sendTo)</span>
 
         <span class="k">try</span><span class="p">:</span>
@@ -395,7 +395,7 @@
 
     <span class="c1"># delete</span>
     <span class="c1"># MG sneak rmdir here in case &#39;R&#39; message implies a directory (remote mirroring)</span>
-    <span class="k">def</span><span class="w"> </span><span class="nf">delete</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">path</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">delete</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">path</span><span class="p">):</span>
         <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;sr_sftp rm </span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="n">path</span><span class="p">)</span>
 
         <span class="n">alarm_set</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">o</span><span class="o">.</span><span class="n">timeout</span><span class="p">)</span>
@@ -419,7 +419,7 @@
         <span class="k">finally</span><span class="p">:</span>
             <span class="n">alarm_cancel</span><span class="p">()</span>
 
-    <span class="k">def</span><span class="w"> </span><span class="nf">readlink</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">link</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">readlink</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">link</span><span class="p">):</span>
         <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;</span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">link</span><span class="p">))</span>
         <span class="n">alarm_set</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">o</span><span class="o">.</span><span class="n">timeout</span><span class="p">)</span>
         <span class="k">try</span><span class="p">:</span>
@@ -429,7 +429,7 @@
         <span class="k">return</span> <span class="n">value</span>
 
     <span class="c1"># symlink</span>
-    <span class="k">def</span><span class="w"> </span><span class="nf">symlink</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">link</span><span class="p">,</span> <span class="n">path</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">symlink</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">link</span><span class="p">,</span> <span class="n">path</span><span class="p">):</span>
         <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;(in </span><span class="si">%s</span><span class="s2">), create this file </span><span class="si">%s</span><span class="s2"> as a link to: </span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">getcwd</span><span class="p">(),</span> <span class="n">path</span><span class="p">,</span> <span class="n">link</span><span class="p">)</span> <span class="p">)</span>
         <span class="n">alarm_set</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">o</span><span class="o">.</span><span class="n">timeout</span><span class="p">)</span>
         <span class="k">try</span><span class="p">:</span>
@@ -439,7 +439,7 @@
 
     <span class="c1"># get</span>
 
-    <span class="k">def</span><span class="w"> </span><span class="nf">get</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span>
+    <span class="k">def</span> <span class="nf">get</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span>
             <span class="n">msg</span><span class="p">,</span>
             <span class="n">remote_file</span><span class="p">,</span>
             <span class="n">local_file</span><span class="p">,</span>
@@ -474,7 +474,7 @@
 
         <span class="k">return</span> <span class="n">rw_length</span>
 
-    <span class="k">def</span><span class="w"> </span><span class="nf">getAccelerated</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">msg</span><span class="p">,</span> <span class="n">remote_file</span><span class="p">,</span> <span class="n">local_file</span><span class="p">,</span> <span class="n">length</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">remote_offset</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">exactLength</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">getAccelerated</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">msg</span><span class="p">,</span> <span class="n">remote_file</span><span class="p">,</span> <span class="n">local_file</span><span class="p">,</span> <span class="n">length</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">remote_offset</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">exactLength</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
 
         <span class="n">base_url</span> <span class="o">=</span> <span class="n">msg</span><span class="p">[</span><span class="s1">&#39;baseUrl&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s1">&#39;sftp://&#39;</span><span class="p">,</span> <span class="s1">&#39;&#39;</span><span class="p">)</span>
         <span class="k">if</span> <span class="n">base_url</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">==</span> <span class="s1">&#39;/&#39;</span><span class="p">:</span>
@@ -494,7 +494,7 @@
         <span class="k">return</span> <span class="n">sz</span>
 
     <span class="c1"># getcwd</span>
-    <span class="k">def</span><span class="w"> </span><span class="nf">getcwd</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">getcwd</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="n">alarm_set</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">o</span><span class="o">.</span><span class="n">timeout</span><span class="p">)</span>
         <span class="k">try</span><span class="p">:</span>
             <span class="n">cwd</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">sftp</span><span class="o">.</span><span class="n">getcwd</span><span class="p">()</span> <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">sftp</span> <span class="k">else</span> <span class="kc">None</span>
@@ -503,7 +503,7 @@
         <span class="k">return</span> <span class="n">cwd</span>
 
     <span class="c1"># ls</span>
-    <span class="k">def</span><span class="w"> </span><span class="nf">ls</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">ls</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;sr_sftp ls&quot;</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">entries</span> <span class="o">=</span> <span class="p">{}</span>
         <span class="c1"># timeout is at least 30 secs, say we wait for max 5 mins</span>
@@ -521,7 +521,7 @@
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">entries</span>
 
     <span class="c1"># line_callback: ls[filename] = &#39;stripped_file_description&#39;</span>
-    <span class="k">def</span><span class="w"> </span><span class="nf">line_callback</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">iline</span><span class="p">,</span> <span class="n">attr</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">line_callback</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">iline</span><span class="p">,</span> <span class="n">attr</span><span class="p">):</span>
         <span class="c1">#logger.debug(&quot;sr_sftp line_callback %s&quot; % iline)</span>
 
         <span class="n">oline</span> <span class="o">=</span> <span class="n">iline</span>
@@ -541,7 +541,7 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">entries</span><span class="p">[</span><span class="n">fil</span><span class="p">]</span> <span class="o">=</span> <span class="n">attr</span>
 
     <span class="c1"># mkdir</span>
-    <span class="k">def</span><span class="w"> </span><span class="nf">mkdir</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">remote_dir</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">mkdir</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">remote_dir</span><span class="p">):</span>
         <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;mkdir </span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="n">remote_dir</span><span class="p">)</span>
         <span class="n">alarm_set</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">o</span><span class="o">.</span><span class="n">timeout</span><span class="p">)</span>
         <span class="k">try</span><span class="p">:</span>
@@ -562,7 +562,7 @@
             <span class="n">alarm_cancel</span><span class="p">()</span>
 
     <span class="c1"># put</span>
-    <span class="k">def</span><span class="w"> </span><span class="nf">put</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span>
+    <span class="k">def</span> <span class="nf">put</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span>
             <span class="n">msg</span><span class="p">,</span>
             <span class="n">local_file</span><span class="p">,</span>
             <span class="n">remote_file</span><span class="p">,</span>
@@ -611,7 +611,7 @@
 
         <span class="k">return</span> <span class="n">rw_length</span>
 
-    <span class="k">def</span><span class="w"> </span><span class="nf">putAccelerated</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">msg</span><span class="p">,</span> <span class="n">local_file</span><span class="p">,</span> <span class="n">remote_file</span><span class="p">,</span> <span class="n">length</span><span class="o">=</span><span class="mi">0</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">putAccelerated</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">msg</span><span class="p">,</span> <span class="n">local_file</span><span class="p">,</span> <span class="n">remote_file</span><span class="p">,</span> <span class="n">length</span><span class="o">=</span><span class="mi">0</span><span class="p">):</span>
 
         <span class="n">dest_baseUrl</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">o</span><span class="o">.</span><span class="n">sendTo</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s1">&#39;sftp://&#39;</span><span class="p">,</span> <span class="s1">&#39;&#39;</span><span class="p">)</span>
         <span class="k">if</span> <span class="n">dest_baseUrl</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">==</span> <span class="s1">&#39;/&#39;</span><span class="p">:</span>
@@ -633,7 +633,7 @@
         <span class="k">return</span> <span class="n">sz</span>
 
     <span class="c1"># rename</span>
-    <span class="k">def</span><span class="w"> </span><span class="nf">rename</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">remote_old</span><span class="p">,</span> <span class="n">remote_new</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">rename</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">remote_old</span><span class="p">,</span> <span class="n">remote_new</span><span class="p">):</span>
         <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;sr_sftp rename </span><span class="si">%s</span><span class="s2"> </span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">remote_old</span><span class="p">,</span> <span class="n">remote_new</span><span class="p">))</span>
         <span class="k">try</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">delete</span><span class="p">(</span><span class="n">remote_new</span><span class="p">)</span>
@@ -646,7 +646,7 @@
             <span class="n">alarm_cancel</span><span class="p">()</span>
 
     <span class="c1"># rmdir</span>
-    <span class="k">def</span><span class="w"> </span><span class="nf">rmdir</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">path</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">rmdir</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">path</span><span class="p">):</span>
         <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;sr_sftp rmdir </span><span class="si">%s</span><span class="s2"> &quot;</span> <span class="o">%</span> <span class="n">path</span><span class="p">)</span>
         <span class="n">alarm_set</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">o</span><span class="o">.</span><span class="n">timeout</span><span class="p">)</span>
         <span class="k">try</span><span class="p">:</span>
@@ -655,14 +655,14 @@
             <span class="n">alarm_cancel</span><span class="p">()</span>
 
     <span class="c1">#when sftp is active, paramiko is present... STFPAttributes is then the same as FmdStat.</span>
-    <span class="k">def</span><span class="w"> </span><span class="nf">stat</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">path</span><span class="p">,</span> <span class="n">msg</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">sarracenia</span><span class="o">.</span><span class="n">filemetadata</span><span class="o">.</span><span class="n">FmdStat</span><span class="p">:</span>
+    <span class="k">def</span> <span class="nf">stat</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">path</span><span class="p">,</span> <span class="n">msg</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">sarracenia</span><span class="o">.</span><span class="n">filemetadata</span><span class="o">.</span><span class="n">FmdStat</span><span class="p">:</span>
         <span class="k">try</span><span class="p">:</span>
             <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">sftp</span><span class="o">.</span><span class="n">stat</span><span class="p">(</span><span class="n">path</span><span class="p">)</span>
         <span class="k">except</span><span class="p">:</span>
             <span class="k">return</span> <span class="kc">None</span>
 
     <span class="c1"># utime</span>
-    <span class="k">def</span><span class="w"> </span><span class="nf">utime</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">path</span><span class="p">,</span> <span class="n">tup</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">utime</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">path</span><span class="p">,</span> <span class="n">tup</span><span class="p">):</span>
         <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;sr_sftp utime </span><span class="si">%s</span><span class="s2"> </span><span class="si">%s</span><span class="s2"> &quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">path</span><span class="p">,</span> <span class="n">tup</span><span class="p">))</span>
         <span class="n">alarm_set</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">o</span><span class="o">.</span><span class="n">timeout</span><span class="p">)</span>
         <span class="k">try</span><span class="p">:</span>
