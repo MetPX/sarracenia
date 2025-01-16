@@ -42,9 +42,17 @@ the filename in the email subject. For example: ::
 
     email_subject_prepend  Sent by Sarracenia: 
 
+There is also the option of sending a file as an attachment instead of embedding its contents in the email.
+To do this, there are two options that can be used.
+`` email_attachment `` is a boolean value to specify if you want to send files as attachments
+`` email_attachment_text `` is the optional text that can be added inside of the email content, with the attached file.
+    
+    email_attachment True
+    email_attachment_text Attached in this email is data coming from XXX
+
+
 Future Improvement Ideas:
   - SMTP on different ports and with authentication
-  - Attach the file instead of putting the contents in the body (useful for binary files)
     
 Original Author: Wahaj Taseer - June, 2019
 """
