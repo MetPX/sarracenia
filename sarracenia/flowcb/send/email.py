@@ -50,6 +50,9 @@ Original Author: Wahaj Taseer - June, 2019
 """
 
 from email.message import EmailMessage
+from email.mime.multipart import MIMEMultipart
+from email.mime.application import MIMEApplication
+from email.mime.text import MIMEText
 import logging
 import os.path
 import re
@@ -65,6 +68,8 @@ class Email(FlowCB):
         super().__init__(options,logger)
         self.o.add_option('email_from',            'str', default_value='')
         self.o.add_option('email_subject_prepend', 'str', default_value='')
+        self.o.add_option('email_attachment', 'flag', default_value=False)
+        self.o.add_option('email_attachment_text', 'str', default_value='')
 
         # Parse accept/reject mask arguments into email recipient lists
         try:
@@ -134,12 +139,25 @@ class Email(FlowCB):
         recipients = self.o.masks[msg['_mask_index']][-1]
 
         # Prepare the email message
-        emsg = EmailMessage()
         try:
-            with open(ipath) as fp:
-                emsg.set_content(fp.read())
+            if self.o.email_attachment:
+                # Build a non-text email message for the attachment.
+                emsg = MIMEMultipart()
+                emsg_text = MIMEText(f"{self.o.email_attachment_text}")
+                # Add the attachment text that will be paired with the attachment data
+                emsg.attach(emsg_text)
+                with open(ipath, 'rb') as fp:
+                    attachment_data = fp.read()
+                attachment = MIMEApplication(attachment_data, name=os.path.basename(ipath))
+                # Add the attachment data to the email
+                emsg.attach(attachment)
+            else:
+                emsg = EmailMessage()
+                with open(ipath) as fp:
+                    emsg.set_content(fp.read())
         except Exception as e:
             logger.error(f"Failed to read {ipath}, can't send to {recipients}")
+            logger.debug('Exception details:', exc_info=True)
             # No retry if the file doesn't exist
             return -1
         
