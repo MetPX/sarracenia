@@ -28,8 +28,7 @@ cfg.finalize()
 # accept/reject patterns:
 pattern = ".*"
 #              to_match, write_to_dir, DESTFN, regex_to_match, accept=True,mirror,strip, pstrip,flatten
-cfg.masks = [(pattern, "/tmp/flow_demo", None, re.compile(pattern), True,
-              False, False, False, '/')]
+cfg.masks = [(pattern, "/tmp/flow_demo", None, re.compile(pattern), True, False, False, False, '/', None)]
 
 subscriber = sarracenia.flow.subscribe.Subscribe(cfg)
 

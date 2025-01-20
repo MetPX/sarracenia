@@ -82,7 +82,7 @@ class Raw2bulletin(FlowCB):
         self.o.add_option('binaryInitialCharacters', 'list', [b'BUFR' , b'GRIB', b'\211PNG'])
 
     # If file was converted, get rid of extensions it had
-    def after_accept(self,worklist):
+    def after_gather(self,worklist):
 
         new_worklist = []
 
@@ -152,15 +152,8 @@ class Raw2bulletin(FlowCB):
 
                     # Add current time as new timestamp to filename
                     new_file = header + "_" + timehandler.strftime('%d%H%M') + "_" + BBB + "_" + stn_id + "_" + seq + "_PROBLEM"
-
-                    # Write the file manually as the messages don't get posted downstream.
-                    # The message won't also get downloaded further downstream
-                    msg['new_file'] = new_file
-                    new_path = msg['new_dir'] + '/' + msg['new_file']
-
-                    # with open(new_path, 'w') as f: f.write(data)
-
                     logger.error(f"New filename (for problem file): {new_file}")
+
                 elif stn_id == None:
                     new_file = header + "_" + BBB + "_" + '' + "_" + seq + "_PROBLEM"
                     logger.error(f"New filename (for problem file): {new_file}")
@@ -169,15 +162,16 @@ class Raw2bulletin(FlowCB):
                 else:
                     new_file = header + "_" + ddhhmm + "_" + BBB + "_" + stn_id + "_" + seq
 
-                msg['new_file'] = new_file
-
                 # No longer needed
                 if 'isProblem' in msg:
                     del(msg['isProblem'])
 
-                # msg.updatePaths(self.o, msg['new_dir'], msg['new_file'])
+                # Need to update the relPath with new filename, because it's not an after_accept. new_dir and new_file don't exist.
+                parts = msg['relPath'].split('/')
+                parts[-1] = new_file
+                msg['relPath'] = '/'.join(parts)
 
-                logger.info(f"New filename: {msg['new_file']}")
+                logger.info(f"New filename: {new_file}")
                 new_worklist.append(msg)
                 
             except Exception as e:

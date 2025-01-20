@@ -544,6 +544,10 @@ La deuxième rangée donne des détails sur les en têtes de chacune des catégo
 Les configurations sont répertoriées sur la gauche. Pour chaque configuration, l’état.
 sera :
 
+* cpuS : le processus est coûteux en termes d'utilisation du processeur (runStateThreshold_cpuSlow)
+* disa : disabled (désactivé), configuré pour ne pas s'exécuter.
+* disc : déconnecté, impossible d'atteindre le courtier de messages. (runStateThreshold_disconnected.)
+* down : impossible de se connecter ou d'échanger des données avec une source ou un récepteur de données distant.
 * hung : les processus semblent bloqués et n'écrivent rien dans les journaux.
 * idle : tous les processus en cours d'exécution, mais ne transfert pas depuis trop longtemps (runStateThreshold_idle.)
 * lag : tous les processus en cours d'exécution, mais les messages en cours de traitement sont trop anciens ( runStateThreshold_lag )
@@ -1725,6 +1729,7 @@ right hand side to be evaluated, surrounded by ${..} The built-in variables are:
  - ${CONFIG}      - le nom du fichier de configuration en cours d'exécution.
  - ${HOSTNAME}    - le hostname qui exécute le client.
  - ${RANDID}      - Un ID aléatoire qui va être consistant pendant la duration d'une seule invocation.
+ - ${INSTANCE}    - le numéro d'instance du processus.
 
 flowCallbacks
 =============
@@ -2229,8 +2234,8 @@ une telle configuration.
 post_exchangeSplit   <number>   (défaut: 0)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-L'option **post_exchangeSplit** ajoute un suffixe à deux chiffres résultant d'une
-division entière du dernier digit de la somme de contrôle, afin de répartir les
+L'option **post_exchangeSplit** ajoute un suffixe à deux chiffres résultant de
+hacher le chemin (relPath), afin de répartir les
 avis entre un certain nombre d'échanges, selon la valeur de leur somme de contrôle.
 C'est utilisé dans les pompes à trafic élevé pour permettre des instances
 multiples de winnow, ce qui ne peut pas être instancié de la manière normale. exemple::

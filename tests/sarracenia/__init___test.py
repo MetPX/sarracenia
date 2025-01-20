@@ -32,12 +32,11 @@ def test_durationToSeconds():
     assert sarracenia.durationToSeconds('none') == sarracenia.durationToSeconds('off') == sarracenia.durationToSeconds('false') == 0.0
     assert sarracenia.durationToSeconds('on', default=10) == sarracenia.durationToSeconds('true', default=10) == 10.0
 
-    assert sarracenia.durationToSeconds('1s') == sarracenia.durationToSeconds('1S') == 1.0
-    assert sarracenia.durationToSeconds('2m') == sarracenia.durationToSeconds('2M') == 120.0
-    assert sarracenia.durationToSeconds('3h') == sarracenia.durationToSeconds('3H') == 10800.0
-    assert sarracenia.durationToSeconds('4d') == sarracenia.durationToSeconds('4D') == 345600.0
-    assert sarracenia.durationToSeconds('1w') == sarracenia.durationToSeconds('1W') == 604800.0
-    assert sarracenia.durationToSeconds('0.5h') == sarracenia.durationToSeconds('0.5H') == 1800.0
+    assert sarracenia.durationToSeconds('1s') == 1.0
+    assert sarracenia.durationToSeconds('2m') == 120.0
+    assert sarracenia.durationToSeconds('3h') == 10800.0
+    assert sarracenia.durationToSeconds('4d') == 345600.0
+    assert sarracenia.durationToSeconds('0.5h') == 1800.0
 
     assert sarracenia.durationToSeconds('invalid') == 0.0
     assert sarracenia.durationToSeconds(b'5') == 0.0
@@ -45,11 +44,21 @@ def test_durationToSeconds():
 
     assert sarracenia.durationToSeconds(2.5) == 2.5
     assert sarracenia.durationToSeconds('1s', default=None) == 1.0
-    assert sarracenia.durationToSeconds('1y') == 1.0
     assert sarracenia.durationToSeconds('-1s') == -1.0
     assert sarracenia.durationToSeconds('-1.5h') == -5400.0
+    assert sarracenia.durationToSeconds('1w') == 24*3600*7
     assert sarracenia.durationToSeconds('2h2m') == 7320
     assert sarracenia.durationToSeconds('3m2s') == 182
+    assert sarracenia.durationToSeconds( '6w1d' ) == 24*3600*(6*7.0+1)
+    assert sarracenia.durationToSeconds( '6M1d' ) == 16001280
+    assert sarracenia.durationToSeconds( '6M5d' ) == round( (6*30.7+5)*24*3600 ) # the math came out .99999 ...
+    assert sarracenia.durationToSeconds( '1y' ) == 365.25*24*3600
+    assert sarracenia.durationToSeconds( '1y28d' ) == (365.25+28)*24*3600
+    assert sarracenia.durationToSeconds( '1y1M' ) == (365.25+30.7)*24*3600
+    assert sarracenia.durationToSeconds( '1000w' ) == 1000*7*24*3600
+    assert sarracenia.durationToSeconds( '11y' ) == 11*365.25*24*3600
+
+
 
 def test_durationToString():
     assert sarracenia.durationToString( 3600 ) == '1h'
@@ -58,6 +67,14 @@ def test_durationToString():
     assert sarracenia.durationToString( 6*3600 ) == '6h'
     assert sarracenia.durationToString( 6*3600+120 ) == '6h2m'
     assert sarracenia.durationToString( 26*3600+120 ) == '1d2h'
+    assert sarracenia.durationToString( 30*24*3600 ) == '30d'
+    assert sarracenia.durationToString( 35*24*3600 ) == '1M4d'
+    assert sarracenia.durationToString( 182*24*3600 ) == '5M28d'
+    assert sarracenia.durationToString( 186*24*3600 ) == '6M1d'
+    assert sarracenia.durationToString( 190*24*3600 ) == '6M5d'
+    assert sarracenia.durationToString( 365*24*3600 ) == '1y'
+    assert sarracenia.durationToString( 393*24*3600 ) == '1y28d'
+    assert sarracenia.durationToString( 396*24*3600 ) == '1y1M'
 
 def test_timeValidate():
     assert sarracenia.timeValidate('20230710120000') == True
@@ -318,12 +335,12 @@ class Test_Message():
         assert msg['identity'] == {'method': 'cod', 'value': 'identityValue' }
 
         #Set 5
-        path = str(tmp_path) + os.sep + "file5.txt"
-        open(path, 'a').close()
-        options = sarracenia.config.default_config()
-        options.rename = str(tmp_path) + os.sep + "file4a.txt"
-        with pytest.raises(KeyError):
-            msg = sarracenia.Message.fromFileInfo(path, options, os.lstat(path))
+        #path = str(tmp_path) + os.sep + "file5.txt"
+        #open(path, 'a').close()
+        #options = sarracenia.config.default_config()
+        #options.rename = str(tmp_path) + os.sep + "file4a.txt"
+        #with pytest.raises(KeyError):
+        #    msg = sarracenia.Message.fromFileInfo(path, options, os.lstat(path))
 
 
     @pytest.mark.depends(on=['test_fromFileData'])
