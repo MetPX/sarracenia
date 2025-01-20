@@ -52,11 +52,21 @@ class MDelayLatest(FlowCB):
             new_ok_delay = []
             for m2 in self.ok_delay:
                 if m1['relPath'] == m2['relPath']:
-                    logger.info(
-                        f"intermediate version suppressed: {m1['relPath']}")
-                    self.suppressions += 1
-                    new_ok_delay.append(m1)
-                    worklist.rejected.append(m2)
+                    # an mkdir, rmdir, an rm, a rename, an ln: order important, publish immediately.
+                    if ('fileOp' in m2) or ('fileOp' in m1):  
+                        if 'fileOp' in m2:
+                            op=m2['fileOp']
+                        else:
+                            op=f"being later: {m1['fileOp']}"
+
+                        logger.info( f"critically ordered operation: {m2['relPath']} {op}")
+                        new_incoming.append(m2)
+                        new_ok_delay.append(m1)
+                    else:
+                        logger.info( f"intermediate version suppressed: {m1['relPath']}")
+                        self.suppressions += 1
+                        new_ok_delay.append(m1)
+                        worklist.rejected.append(m2)
                     wait = True
                 else:
                     new_ok_delay.append(m2)

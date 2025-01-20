@@ -13,7 +13,7 @@ class Subscription(dict):
         self['bindings'] = [ { 'exchange': options.exchange, 'prefix': options.topicPrefix, 'sub': subtopic } ]
 
         self['queue']={ 'name': queueName, 'cleanup_needed': None }
-        for a in [ 'auto_delete', 'durable', 'expire', 'message_ttl', 'prefetch', 'qos', 'queueBind', 'queueDeclare' ]:
+        for a in [ 'auto_delete', 'durable', 'expire', 'prefetch', 'qos', 'queueBind', 'queueDeclare' ]:
             aa = a.replace('queue','').lower()
             if hasattr(options, a) and getattr(options,a):
                 self['queue'][aa] = getattr(options,a)
@@ -64,9 +64,11 @@ class Subscriptions(list):
                    if newb == b:
                       found=True
                if not found:
-                      s['bindings'].append( newb )
+                  s['bindings'].append( newb )
+                  found=True
 
         if not found:
+            #logger.critical( f"appending {new_subscription=} " )
             self.append(new_subscription)
 
             

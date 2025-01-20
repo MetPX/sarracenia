@@ -61,7 +61,7 @@ Author:
     André LeBlanc, ANL, Autumn 2022
 """
 
-import logging, socket, struct, time, sys, os, signal, ipaddress, urllib.parse
+import logging, socket, struct, time, sys, os, signal, ipaddress, urllib.parse, getpass, psutil
 from base64 import b64encode
 from random import randint
 from typing import NoReturn
@@ -100,6 +100,9 @@ class Am(FlowCB):
         self.remoteHost = None
         self.timeout = 0.1
 
+        self.minimum_instance = 2
+        self.user = getpass.getuser()
+
         # Initialise socket
         ## Create a TCP socket
         self.s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -128,6 +131,7 @@ class Am(FlowCB):
                 time.sleep(5)
         
         child_inst = 1
+        count = 1
         n = 1
 
         while True:
@@ -146,7 +150,10 @@ class Am(FlowCB):
 
                         # Write out file descriptor of the connected socket so that the child can pick it up.
                         n = 1
-                        child_inst += 1
+                        count += 1
+
+                        child_inst = self.get_lowest_instance(count)
+
                         conn_filename = sarracenia.config.get_pid_filename(
                              None, self.o.component, self.o.config, child_inst)
                         conn_filename = conn_filename.replace('pid','conn')
@@ -422,6 +429,54 @@ class Am(FlowCB):
 
         return new_bulletin, new_lines
 
+
+
+    def get_lowest_instance(self, original_inst):
+        """
+        Goes through list of currently running instances and determines if an instance number should be recycled or not.
+        """
+        running_instances = []
+
+        for proc in psutil.process_iter():
+    
+            # Get info on the current running PIDs
+            p = proc.as_dict(['cmdline', 'name', 'username'])
+    
+            # Needs to be same user as the one running the AM server
+            if self.user != p['username'] :
+                continue
+    
+            if 'python3' not in p['name']:
+                continue
+    
+            # Sometimes None is returned from the command line. Must exclude these values
+            if p['cmdline'] == None:
+                continue
+
+            if len(p['cmdline']) >= 2:
+                # Check if it's a running sarracenia process
+                if 'sarracenia/instance.py' not in p['cmdline'][1]:
+                    continue
+                # Also needs to be the current running process
+                if p['cmdline'][-1]  != f'{self.o.component}/{self.o.config}':
+                    continue
+            else:
+                continue
+    
+            running_instances.append( int(p['cmdline'][3]) )
+    
+    
+        logger.debug(f"List of PIDs to filter: {running_instances}")
+        running_instances.sort()
+    
+        # Get the first instance available that isn't found in the current running AM servers
+        for i in range(self.minimum_instance, running_instances[-1]+2):
+            if i not in running_instances:
+                logger.info( f"Lowest available PID found: {i}")
+                return i
+        
+        # If can't find a recyclable instance, then use the originally generated one
+        return original_inst
 
 
 

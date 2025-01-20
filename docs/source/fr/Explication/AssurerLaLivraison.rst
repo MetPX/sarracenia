@@ -24,18 +24,18 @@ Tableau de Inflight
 |             |Fichier envoyé avec le bon nom         |Envoyer à Sarracenia, et              |
 | NONE        |message`sr3_post(7) <sr3_post.7.rst>`_ |publié quand le fichier est complet   |
 |             |AMQP après que le transfert.           |                                      |
-|             |                                       | (Meilleur quand disponible)          |
-|             | - moins d´aller-retours               | défaut pour sr_sarra.                |
-|             | - plus efficace / vite                | défaut sur sr_subscribe et sender    |
-|             |                                       | quand post_broker est spécifié.      |
+|             |                                       | Valeur de défaut                     |
+|             | - moins d´aller-retours               |                                      |
+|             | - plus efficace / vite                |                                      |
+|             |                                       |                                      |
 +-------------+---------------------------------------+--------------------------------------+
 |             |avec un suffixe *.tmp*.                |Envoi à la plupart des autres systèmes|
 | .tmp        |Lorsqu'il est complet, renommé au fin  |(.tmp intégré)                        |
 | (Suffixe)   |Le suffixe réel est réglable.          |Utiliser pour envoyer à Sundew.       |
 |             |                                       |                                      |
-|             | -voyages aller-retour supplémentaires |(généralement un bon choix)           |
-|             |  pour renommer (un peu plus lent)     | - défaut quand il n´y a pas de       |
-|             |                                       |   post_broker                        |
+|             | -voyages aller-retour supplémentaires |                                      |
+|             |  pour renommer (un peu plus lent)     |                                      |
+|             |                                       |                                      |
 +-------------+---------------------------------------+--------------------------------------+
 |             |Fichier placés dans un sous-répertoire |Envoi à des systèmes qui n´acceptent  |
 | tmp/        |ou répertoire. Déplacé au fin de       |les suffixes                          |

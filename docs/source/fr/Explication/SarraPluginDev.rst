@@ -531,6 +531,19 @@ pour des informations détaillées sur les signatures d’appel et les valeurs d
 |                     | binaires pour les fichiers volumineux.)            |
 |                     |                                                    |
 +---------------------+----------------------------------------------------+
+|                     |                                                    |
+| after_gather        | Appelé après gather et avant filter (filtre)       |
+| (self,worklist)     |                                                    |
+|                     | C'est une option peu utilisée.                     |
+|                     | after_accept devrait être utilisé pour la          |
+|                     | plupart des cas                                    |
+|                     |                                                    |
+|                     | after_gather devrait seulement être utilisé        |
+|                     | lorsque:                                           |
+|                     | - Un changement doit être fait à la worklist       |
+|                     |   de messages avant d'atteindre le filtre.         |
+|                     |                                                    |
++---------------------+----------------------------------------------------+
 |                     | appelé après qu’un transfert a été tenté.          |
 | after_work          |                                                    |
 | (self,worklist)     | A ce point, tous les messages sont reconnus.       |
@@ -772,6 +785,22 @@ atteint le nombre donné par l’option **batch** (100 par défaut).
 
 Toutes les opérations de téléchargement (upload) utilisent un buffer. La taille, en octets,
 du buffer utilisé est donné par l’option **bufsize** (8192 par défaut).
+
+Accéder aux « masques » d'accept/reject
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Lorsqu'un message est accepté ou rejeté, la liste *index* de mask qui a été utilisé pour l'accept/reject sera stocké dans la valeur de la clé ``_mask_index`` du message. Le mask est un tuple qui contient l'expression régulière de l'instruction d'accept/reject, le chemin du ``directory`` correspondant, la valeur des options ``mirror`` et ``filename`` . Le dernier élément de le tuple est une liste contenant tout texte supplémentaire, divisé par espaces, inclus à la fin de la ligne d'accept/reject dans le fichier de configuration. Ce texte supplémentaire peut être utilisé pour transmettre des informations supplémentaires aux plugins.
+
+Par exemple, avec une instruction accept dans un fichier de configuration comme ceci :
+
+    accept .*abc.* votre_texte=ici from_accept_abc
+
+Le mask est accessible avec ``self.o.masks[msg['_mask_index']]``. Le dernier élément du mask contient les arguments de l'instruction accept :
+
+.. code-block:: python
+    
+    mask = self.o.masks[msg['_mask_index']]
+    print(mask[-1]) # --> [ 'votre_text=ici', 'from_accept_abc' ]
 
 Pourquoi l’API v3 doit être utilisée dans la mesure du possible
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
