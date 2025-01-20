@@ -1,3 +1,9 @@
+metpx-sr3 (3.00.58rc1) UNRELEASED; urgency=medium
+
+  * #1369 try to guess if file is an image
+
+ -- Reid Sunderland <reid.sunderland@ssc-spc.gc.ca>  Mon, 20 Jan 2025 16:32:59 +0000
+
 metpx-sr3 (3.00.57) unstable; urgency=medium
 
   * fix #1366 ln -sf a b ... leave tmp file when a does not exist.
