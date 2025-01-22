@@ -234,7 +234,11 @@ class AMQP(Moth):
                                               broker.url.password),
                                           login_method=broker.login_method,
                                           virtual_host=vhost,
-                                          ssl=(broker.url.scheme[-1] == 's'))
+                                          ssl=(broker.url.scheme[-1] == 's'),
+                                          client_properties={'product':'MetPX Sarracenia (sr3)',
+                                                             'product_version':sarracenia.__version__,
+                                                            }
+                                          )
         self.connection_id = str(uuid.uuid4()) + ("_sub" if self.is_subscriber else "_pub")
         self.broker = host + '/' + vhost
         if hasattr(self.connection, 'connect'):
