@@ -101,6 +101,7 @@ class Credential:
         self.login_method = None
         self.s3_endpoint = None
         self.s3_session_token = None
+        self.s3_anonymous = False
         self.azure_credentials = None
         self.implicit_ftps = False
 
@@ -391,6 +392,8 @@ class CredentialDB:
                     details.s3_session_token = urllib.parse.unquote(parts[1].strip())
                 elif keyword == 's3_endpoint':
                     details.s3_endpoint = parts[1].strip()
+                elif keyword == 's3_anonymous':
+                    details.s3_anonymous = True
                 elif keyword == 'azure_storage_credentials':
                     details.azure_credentials = urllib.parse.unquote(parts[1].strip())
                 elif keyword == 'implicit_ftps':
