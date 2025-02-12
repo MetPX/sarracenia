@@ -49,6 +49,11 @@ ainsi que les paramètres nécessaires aux composants.  Le format est d'une entr
 - **ftp://user8:%2fdot8@host:990  implicit_ftps**
 - **https://ladsweb.modaps.eosdis.nasa.gov/ bearer_token=89APCBF0-FEBE-11EA-A705-B0QR41911BF4**
 
+- **s3://nom-du-compartiment s3_anonymous**
+- **s3://ID_de_clé_d'accès:clé_d'accès_secrète@nom-du-compartiment**
+- **s3://ID_de_clé_d'accès:clé_d'accès_secrète@nom-du-compartiment s3_session_token=une_grande_chaîne**
+- **s3://ID_de_clé_d'accès:clé_d'accès_secrète@nom-du-compartiment s3_endpoint=https://my-endpoint.com/**
+
 Dans d’autres fichiers de configuration ou sur la ligne de commande, l’url n’a tout simplement pas le
 spécification du mot de passe ou de la clé. L’url donné dans les autres fichiers est recherchée
 dans credentials.conf.
@@ -73,6 +78,10 @@ Détails pris en charge :
 - ``bearer_token=<token>`` (ou ``bt=<token>``) - (HTTP) Jeton Bearer pour l’authentification
 - ``login_method=<PLAIN|AMQPLAIN|EXTERNAL|GSSAPI>`` - (AMQP) Par défaut, la méthode de connexion sera automatiquement
 - ``implicit_ftps`` - (FTPS) Utilisez FTPS implicite (sinon, FTPS explicite est utilisé). Définir ceci définira également ``tls`` sur True.
+- Détails du protocole S3:
+    - ``s3_endpoint=<url>`` - utiliser un point de terminaison spécifique, comme un service non Amazon S3.
+    - ``s3_session_token=<string>`` - lors de la spécification des informations d'identification pour S3, le champ du nom d'utilisateur est utilisé comme « ID de clé d'accès », le mot de passe comme « clé d'accès secrète ». Parfois, un jeton de session est également requis et peut être fourni avec cette option.
+    - ``s3_anonymous`` - ne pas signer les demandes (accès anonyme). Équivalent à « --no-sign-request » lors de l'utilisation de la CLI S3.
 
 déterminée. Cela peut être remplacé en spécifiant une méthode Particulière de connexion, ce qui peut être
 nécessaire si un broker prend en charge plusieurs méthodes et qu’une méthode incorrecte est automatiquement
