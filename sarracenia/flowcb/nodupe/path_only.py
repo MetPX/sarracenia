@@ -14,5 +14,7 @@ class Path_only(FlowCB):
             if not 'nodupe_override' in m:
                 m['_deleteOnPost'] |= set(['nodupe_override'])
                 m['nodupe_override'] = {}
-
+            
+            # don't need m['nodupe_override']['path'] = m['relPath']
+            # it already gets set to relPath by default
             m['nodupe_override']['key'] = m['relPath']
