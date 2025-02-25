@@ -23,20 +23,17 @@ class Options:
 def make_message():
     m = SR3Message()
     m["pubTime"] = "20180118151049.356378078"
-    m["topic"] = "v02.post.sent_by_tsource2send"
+    m["topic"] = [ "v02", "post", "sent_by_tsource2send" ]
     m["mtime"] = "20180118151048"
-    m["headers"] = {
-            "atime": "20180118151049.356378078", 
-            "from_cluster": "localhost",
-            "mode": "644",
-            "parts": "1,69,1,0,0",
-            "source": "tsource",
-            "sum": "d,c35f14e247931c3185d5dc69c5cd543e",
-            "to_clusters": "localhost"
-        }
+    m["atime"] = "20180118151049.356378078" 
+    m["mode"] = "644"
+    m["identity"] = { 
+          "method" : "sha512", 
+          "value" : "C/HbD77eLraAoj/IWnoRFTzKZpVaT0YSebbUeKl2m103TbnkN5vukAlISgctTZkaCT/Mk2llOjcq5p\nW/5M1hIQ=="
+    }
+    m["size"] = "69" 
     m["baseUrl"] =  "https://NotARealURL"
     m["relPath"] = "ThisIsAPath/To/A/File.txt"
-    m["notice"] = "20180118151050.45 ftp://anonymous@localhost:2121 /sent_by_tsource2send/SXAK50_KWAL_181510___58785"
     m["_deleteOnPost"] = set()
     return m
 
