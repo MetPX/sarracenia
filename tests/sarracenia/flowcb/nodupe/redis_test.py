@@ -8,6 +8,12 @@ import fakeredis, urllib.parse
 from sarracenia.flowcb.nodupe.redis import Redis
 from sarracenia import Message as SR3Message
 
+import logging
+
+logger = logging.getLogger(__name__)
+
+
+
 class Options:
     def __init__(self):
         self.retry_ttl = 0
@@ -33,11 +39,11 @@ def make_message():
     m["mtime"] = "20180118151048"
     m["identity"] = {  
                 "method" : "sha512", 
-                "value" : "k5z2h7QHH2ZCC9x0YX2aZa+fC4CgTlFp3I0lntR94ZqbLOhqDHeJWnIi0+mym9pg9e8rS4N9v3IWQm\nXMIdF7CQ=="  
+                "value" : "k5z2h7QHH2ZCC9x0YX2aZa+fC4CgTlFp3I0lntR94ZqbLOhqDHeJWnIi0+mym9pg9e8rS4N9v3IWQm\\nXMIdF7CQ=="
         }
     m["atime"] = "20180118151049.356378078"
     m["mode"] = "644"
-    m["size"] = 69
+    m["size"] = "69"
     m["baseUrl"] =  "https://NotARealURL"
     m["relPath"] = "ThisIsAPath/To/A/File.txt"
     m["_deleteOnPost"] = set()
@@ -82,13 +88,14 @@ def test__deriveKey(tmp_path):
 
         thismsg = make_message()
         thismsg['identity'] = {'method': "cod"}
-        assert nodupe.deriveKey(thismsg) == thismsg["relPath"] + "," + thismsg["mtime"]
+        assert nodupe.deriveKey(thismsg) == thismsg["relPath"] + "," + thismsg["mtime"] + "," + thismsg["size"] 
         thismsg['identity'] = {'method': "method", 'value': "value\n"}
         assert nodupe.deriveKey(thismsg) == "method,value"
 
         thismsg = make_message()
-        assert nodupe.deriveKey(thismsg) == thismsg["relPath"] + "," + thismsg["mtime"]
+        assert nodupe.deriveKey(thismsg) == thismsg["identity"]["method"]+","+thismsg["identity"]["value"]
         thismsg['size'] = 28234
+        del thismsg['identity']
         assert nodupe.deriveKey(thismsg) == thismsg["relPath"] + "," + thismsg["mtime"] + ",28234" 
         del thismsg['mtime']
         assert nodupe.deriveKey(thismsg) == thismsg["relPath"] + "," + thismsg['pubTime'] + ",28234" 
@@ -179,7 +186,9 @@ def test__is_new(tmp_path, capsys):
 
         message = make_message()
 
-        k = nodupe._rkey_base + ":" + nodupe._hash(message['relPath']+","+message['mtime']) + "." + nodupe._hash(message['relPath'])
+        k = nodupe.deriveKey(message)
+        k = nodupe._rkey_base + ":" + nodupe._hash(k) + "." + nodupe._hash(message["relPath"]) 
+
         assert nodupe._is_new(message) == True
         assert nodupe._redis.get(k) == bytes(str(nodupe.now) + "|" + message['relPath'], 'utf-8')
         assert len(nodupe._redis.keys(nodupe._rkey_base + ":*")) == 5
@@ -225,7 +234,10 @@ def test_after_accept(tmp_path, capsys):
 
         assert len(test_after_accept_worklist.incoming) == 1
         assert len(test_after_accept_worklist.rejected) == 2
-        k = nodupe._rkey_base + ":" + nodupe._hash(message['relPath'] + "," + message['mtime']) + "." + nodupe._hash(message['relPath'])
+
+        k = nodupe.deriveKey(message)
+        k = nodupe._rkey_base + ":" + nodupe._hash(k) + "." + nodupe._hash(message["relPath"]) 
+
         assert nodupe._redis.get(k) == bytes(str(nodupe.now) + "|" + message['relPath'], 'utf-8')
         assert len(nodupe._redis.keys(nodupe._rkey_base + ":*")) == 1
 
