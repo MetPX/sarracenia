@@ -1981,7 +1981,7 @@ class Config:
 
         for d in size_options:
             if hasattr(self, d) and (type(getattr(self, d)) is str):
-                setattr(self, d, chunksize_from_str(getattr(self, d)))
+                setattr(self, d, humanfriendly.parse_size(getattr(self, d)))
 
         for f in flag_options:
             if hasattr(self, f) and (type(getattr(self, f)) is str):
