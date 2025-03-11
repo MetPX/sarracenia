@@ -1337,7 +1337,7 @@ class Flow:
         if not os.path.isdir(msg['new_dir']):
             try:
                 self.worklist.directories_ok.append(msg['new_dir'])
-                os.makedirs(msg['new_dir'], 0o775, True)
+                os.makedirs(msg['new_dir'], self.o.permDirDefault, True)
             except Exception as ex:
                 logger.error("failed to make directory %s: %s" %
                              (msg['new_dir'], ex))
@@ -1770,10 +1770,18 @@ class Flow:
             new_file = msg['new_file']
 
             if not os.path.isdir(msg['new_dir']):
+
+                # if it's a remove and the directory is already deleted, don't re-create it (issue #1395)
+                if 'fileOp' in msg and 'remove' in msg['fileOp']:
+                    logger.info(f"can't remove {msg['new_dir']} {msg['new_file']}, the directory is already deleted")
+                    self.reject(msg, 422,
+                                f"can't remove {msg['new_dir']} {msg['new_file']}, the directory is already deleted")
+                    continue
+
                 try:
                     logger.debug( f"missing destination directories, makedirs: {msg['new_dir']} " )
                     self.worklist.directories_ok.append(msg['new_dir'])
-                    os.makedirs(msg['new_dir'], 0o775, True)
+                    os.makedirs(msg['new_dir'], self.o.permDirDefault, True)
                 except Exception as ex:
                     logger.warning("making %s: %s" % (msg['new_dir'], ex))
                     logger.debug('Exception details:', exc_info=True)
@@ -2108,7 +2116,7 @@ class Flow:
             try:
                 if not os.path.isdir(new_dir):
                     self.worklist.directories_ok.append(new_dir)
-                    os.makedirs(new_dir, 0o775, True)
+                    os.makedirs(new_dir, self.o.permDirDefault, True)
                 os.chdir(new_dir)
                 logger.debug( f"local cd to {new_dir}") 
             except Exception as ex:
