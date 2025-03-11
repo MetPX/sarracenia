@@ -948,6 +948,13 @@ L’option **housekeeping** définit la fréquence d’exécution du traitement 
 la liste des plugins on_housekeeping. Par défaut, il imprime un message de journal à chaque intervalle de housekeeping.
 
 
+httpsSafeQuote <str> (default '/+')
+-----------------------------------
+
+Exclut certains caractères spéciaux du quote (format %xx) dans une URL https.
+Utilise le paramètre *safe* dans https://docs.python.org/3/library/urllib.parse.html#urllib.parse.quote
+Ne s'applique qu'aux transferts effectués avec le driver HTTPs.
+
 
 include config
 --------------
