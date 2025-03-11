@@ -58,6 +58,7 @@ class Https(Transfer):
     sarracenia transfer protocol subclass supports/uses additional custom options:
 
     * accelWgetCommand (default: '/usr/bin/wget %s -o - -O %d' )
+    * httpsSafeQuote (default: '/+' )
 
     built with: 
          urllib.request ( https://docs.python.org/3/library/urllib.request.html )
@@ -67,6 +68,7 @@ class Https(Transfer):
         super().__init__(proto, options)
 
         self.o.add_option('accelWgetCommand', 'str', '/usr/bin/wget %s -o - -O %d')
+        self.o.add_option('httpsSafeQuote' , 'str' , '/+')
 
         logger.debug("sr_http __init__")
 
@@ -207,7 +209,7 @@ class Https(Transfer):
         else:
             u = urllib.parse.urlparse( self.sendTo )
             url = u.scheme + '://' + u.netloc + '/' + urllib.parse.quote(self.path + '/' +
-                                                              remote_file, safe='/+')
+                                                              remote_file, safe=self.o.httpsSafeQuote)
 
         ok = self.__open__(url, remote_offset, length)
 
@@ -273,7 +275,7 @@ class Https(Transfer):
 
         self.entries = {}
 
-        url = self.sendTo + '/' + urllib.parse.quote(self.path, safe='/+')
+        url = self.sendTo + '/' + urllib.parse.quote(self.path, safe=self.o.httpsSafeQuote)
 
         ok = self.__open__(url)
 
