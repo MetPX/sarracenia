@@ -150,6 +150,7 @@
 <span class="sd">    sarracenia transfer protocol subclass supports/uses additional custom options:</span>
 
 <span class="sd">    * accelWgetCommand (default: &#39;/usr/bin/wget %s -o - -O %d&#39; )</span>
+<span class="sd">    * httpsSafeQuote (default: &#39;/+&#39; )</span>
 
 <span class="sd">    built with: </span>
 <span class="sd">         urllib.request ( https://docs.python.org/3/library/urllib.request.html )</span>
@@ -161,6 +162,7 @@
         <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">proto</span><span class="p">,</span> <span class="n">options</span><span class="p">)</span>
 
         <span class="bp">self</span><span class="o">.</span><span class="n">o</span><span class="o">.</span><span class="n">add_option</span><span class="p">(</span><span class="s1">&#39;accelWgetCommand&#39;</span><span class="p">,</span> <span class="s1">&#39;str&#39;</span><span class="p">,</span> <span class="s1">&#39;/usr/bin/wget </span><span class="si">%s</span><span class="s1"> -o - -O </span><span class="si">%d</span><span class="s1">&#39;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">o</span><span class="o">.</span><span class="n">add_option</span><span class="p">(</span><span class="s1">&#39;httpsSafeQuote&#39;</span> <span class="p">,</span> <span class="s1">&#39;str&#39;</span> <span class="p">,</span> <span class="s1">&#39;/+&#39;</span><span class="p">)</span>
 
         <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;sr_http __init__&quot;</span><span class="p">)</span>
 
@@ -302,7 +304,7 @@
         <span class="k">else</span><span class="p">:</span>
             <span class="n">u</span> <span class="o">=</span> <span class="n">urllib</span><span class="o">.</span><span class="n">parse</span><span class="o">.</span><span class="n">urlparse</span><span class="p">(</span> <span class="bp">self</span><span class="o">.</span><span class="n">sendTo</span> <span class="p">)</span>
             <span class="n">url</span> <span class="o">=</span> <span class="n">u</span><span class="o">.</span><span class="n">scheme</span> <span class="o">+</span> <span class="s1">&#39;://&#39;</span> <span class="o">+</span> <span class="n">u</span><span class="o">.</span><span class="n">netloc</span> <span class="o">+</span> <span class="s1">&#39;/&#39;</span> <span class="o">+</span> <span class="n">urllib</span><span class="o">.</span><span class="n">parse</span><span class="o">.</span><span class="n">quote</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">path</span> <span class="o">+</span> <span class="s1">&#39;/&#39;</span> <span class="o">+</span>
-                                                              <span class="n">remote_file</span><span class="p">,</span> <span class="n">safe</span><span class="o">=</span><span class="s1">&#39;/+&#39;</span><span class="p">)</span>
+                                                              <span class="n">remote_file</span><span class="p">,</span> <span class="n">safe</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">o</span><span class="o">.</span><span class="n">httpsSafeQuote</span><span class="p">)</span>
 
         <span class="n">ok</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">__open__</span><span class="p">(</span><span class="n">url</span><span class="p">,</span> <span class="n">remote_offset</span><span class="p">,</span> <span class="n">length</span><span class="p">)</span>
 
@@ -368,7 +370,7 @@
 
         <span class="bp">self</span><span class="o">.</span><span class="n">entries</span> <span class="o">=</span> <span class="p">{}</span>
 
-        <span class="n">url</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">sendTo</span> <span class="o">+</span> <span class="s1">&#39;/&#39;</span> <span class="o">+</span> <span class="n">urllib</span><span class="o">.</span><span class="n">parse</span><span class="o">.</span><span class="n">quote</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">path</span><span class="p">,</span> <span class="n">safe</span><span class="o">=</span><span class="s1">&#39;/+&#39;</span><span class="p">)</span>
+        <span class="n">url</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">sendTo</span> <span class="o">+</span> <span class="s1">&#39;/&#39;</span> <span class="o">+</span> <span class="n">urllib</span><span class="o">.</span><span class="n">parse</span><span class="o">.</span><span class="n">quote</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">path</span><span class="p">,</span> <span class="n">safe</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">o</span><span class="o">.</span><span class="n">httpsSafeQuote</span><span class="p">)</span>
 
         <span class="n">ok</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">__open__</span><span class="p">(</span><span class="n">url</span><span class="p">)</span>
 

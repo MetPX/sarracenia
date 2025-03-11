@@ -958,6 +958,13 @@ housekeeping <interval> (default: 300 seconds)
 The **housekeeping** option sets how often to execute periodic processing as determined by
 the list of on_housekeeping plugins. By default, it prints a log message every houskeeping interval.
 
+httpsSafeQuote <str> (default '/+')
+-----------------------------------
+
+Exclude certain special characters from being quoted (%xx format) in a https URL.
+Makes use of the *safe* parameter in https://docs.python.org/3/library/urllib.parse.html#urllib.parse.quote
+Only applicable for the HTTPs transfer driver.
+
 
 include config
 --------------

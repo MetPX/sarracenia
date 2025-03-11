@@ -939,6 +939,12 @@ impacts.</p>
 <p>The <strong>housekeeping</strong> option sets how often to execute periodic processing as determined by
 the list of on_housekeeping plugins. By default, it prints a log message every houskeeping interval.</p>
 </section>
+<section id="httpssafequote-str-default">
+<h4>httpsSafeQuote &lt;str&gt; (default ‘/+’)<a class="headerlink" href="#httpssafequote-str-default" title="Link to this heading"></a></h4>
+<p>Exclude certain special characters from being quoted (%xx format) in a https URL.
+Makes use of the <em>safe</em> parameter in <a class="reference external" href="https://docs.python.org/3/library/urllib.parse.html#urllib.parse.quote">https://docs.python.org/3/library/urllib.parse.html#urllib.parse.quote</a>
+Only applicable for the HTTPs transfer driver.</p>
+</section>
 <section id="include-config">
 <h4>include config<a class="headerlink" href="#include-config" title="Link to this heading"></a></h4>
 <p>include another configuration within this configuration.</p>

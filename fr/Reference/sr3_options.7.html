@@ -950,6 +950,12 @@ taille des messages d’annonce a des impacts importants sur la performance.</p>
 <p>L’option <strong>housekeeping</strong> définit la fréquence d’exécution du traitement périodique tel que déterminé par
 la liste des plugins on_housekeeping. Par défaut, il imprime un message de journal à chaque intervalle de housekeeping.</p>
 </section>
+<section id="httpssafequote-str-default">
+<h4>httpsSafeQuote &lt;str&gt; (default ‘/+’)<a class="headerlink" href="#httpssafequote-str-default" title="Link to this heading"></a></h4>
+<p>Exclut certains caractères spéciaux du quote (format %xx) dans une URL https.
+Utilise le paramètre <em>safe</em> dans <a class="reference external" href="https://docs.python.org/3/library/urllib.parse.html#urllib.parse.quote">https://docs.python.org/3/library/urllib.parse.html#urllib.parse.quote</a>
+Ne s’applique qu’aux transferts effectués avec le driver HTTPs.</p>
+</section>
 <section id="include-config">
 <h4>include config<a class="headerlink" href="#include-config" title="Link to this heading"></a></h4>
 <p>inclure une autre configuration dans cette configuration.</p>
