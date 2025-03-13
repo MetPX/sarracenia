@@ -2003,12 +2003,17 @@ class Config:
                 self.logLevel = 'critical'
 
         if hasattr(self, 'nodupe_basis'):
-            if self.nodupe_basis == 'data': 
-                self.plugins_early.append( 'nodupe.data' )
-                delattr( self, 'nodupe_basis' )
+            if self.nodupe_basis in [ 'data', 'data_only' ]: 
+                self.plugins_early.append( 'nodupe.data_only' )
+            elif self.nodupe_basis == 'path': 
+                pass # default behaviour.
+            elif self.nodupe_basis == 'path_only': 
+                self.plugins_early.append( 'nodupe.path_only' )
+            elif self.nodupe_basis == 'name_only': 
+                self.plugins_early.append( 'nodupe.name_only' )
             elif self.nodupe_basis == 'name': 
                 self.plugins_early.append( 'nodupe.name' )
-                delattr( self, 'nodupe_basis' )
+            delattr( self, 'nodupe_basis' )
 
         if config[-5:] == '.conf':
             cfg = config[:-5]
