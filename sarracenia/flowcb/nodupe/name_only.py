@@ -4,15 +4,14 @@ from sarracenia.flowcb import FlowCB
 logger = logging.getLogger(__name__)
 
 
-class Name(FlowCB):
+class Name_only(FlowCB):
     """
       Override the the comparison so that files with the same name,
       regardless of what directory they are in, are considered the same.
       This is useful when receiving data from two different sources (two different trees)
       and winnowing between them.
-
-      Note: files that have different checksums, sizes, modification times, etc. are NOT
-            considered duplicates, even if they have the same name.
+      
+      name_only also ignores the checksum, size, modification time, etc.
     """
     def after_accept(self, worklist):
         for m in worklist.incoming:
@@ -21,3 +20,4 @@ class Name(FlowCB):
                 m['nodupe_override'] = {}
 
             m['nodupe_override']['path'] = m['relPath'].split('/')[-1]
+            m['nodupe_override']['key'] = m['relPath'].split('/')[-1]
