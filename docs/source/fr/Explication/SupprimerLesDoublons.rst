@@ -2,6 +2,22 @@
 Suppression de Doublons
 =======================
 
+Normalement, la suppression des doublons utilise l’intégralité du
+chemin d’accès pour identifier les fichiers qui n’ont pas été modifiés. Cela permet aux fichiers avec un contenu
+identique d'être publié dans différents répertoires et de ne pas être supprimé. Dans certains cas
+cas, la suppression de fichiers identiques devrait être effectuée quel que soit l’endroit où se trouve
+le fichier.  Définissez 'nom' pour les fichiers de nom identique, mais qui sont dans des répertoires
+différents pour qu'ils puissent être considéré comme des doublons. Utilisez *data_only* pour n’importe quel fichier,
+quel que soit le nom, pour qu'il puisse être considéré comme un doublon si la somme de contrôle correspond.
+
+Ceci est implémenté en tant qu’alias pour :
+
+ callback_prepend nodupe.name
+
+ou:
+
+ callback_prepend nodupe.data_only
+
 
 Lors qu'on achemine les données à travers de réseaux, il faut se préoccuper des "orages" de données 
 causé par des boucles de transfert (un serveur A envoit à B, qui renvoit à C, qui renvoit à A.  Si A
@@ -10,26 +26,90 @@ est dérangeant.)
 
 Un attribut commun des flots de données critiques est d´avoir plusieurs serveurs qui produisent ces
 données. Si la stratégie de disponibilité requiert que les deux serveurs soient actifs en même temps,
-on a besoin de supprimer la production de la deuxième source. le potentiel pour des boucles, ou
-des transmissions redondantes de données est haut.
+on a besoin de supprimer la production de la deuxième source. Le potentiel pour des boucles, ou
+des transmissions redondantes de données, est haut.
 
 Il s´avère supprimer les duplicat d´envoi a plein de cas d´usage et qu´un seule méthode ne suffit
-pas, alors sr3 permet la modification de la méthode implanté dans le module *sarracenia.flowcb.nodupe*
-pour augmenter la fléxibilité.
+pas, alors sr3 permet la modification de la méthode implanté dans le module *sarracenia.flowcb.nodupe.*
 
 La supression de doublons::
 
   * crée un clé à partir d´un message d´annonce. 
   * crée un chemin (path) à partir d´un message d´annonce.
+  * si un message de notification a été reçu avec la même clé et le même chemin, il s'agit alors d'un doublon.
 
 Quand un message est à propos d´un message jugé un doublons, on cesse de le traiter.
 
-la clé d´un message d´annonce est préférablement simplement la somme de contrôle 
+
+Identity (Identité)
+-------------------
+
+Une clé (key) de message de notification est de préférence dérivée du champ *Identité* du message de notification. 
+Ce champ est censé avoir la même valeur pour deux fichiers contenant les mêmes informations. Pour de nombreux 
+types de données, une somme de contrôle binaire (par défaut, SHA512) peut être utilisée, mais pour 
+d'autres produits, le traitement par différents services peut produire des produits équivalents, 
+sans correspondance jusqu'au dernier bit. Exemples :
+
+* Deux serveurs de traitement dont la sortie est en format XML incluant la balise « traité par le serveur X »
+* Les horodatages des différentes transformations effectuées sur les données elles-mêmes sont susceptibles de différer.
+* En GOES/DCS, les données brutes reçues des liaisons descendantes LRGS incluent une information sur la force 
+  du signal et les erreurs de parité corrigées, qui varient selon l'antenne.
+
+Pour prendre en charge plusieurs types de données, le champ d'identité est structuré de manière à 
+permettre aux producteurs de données de spécifier d'autres méthodes de comparaison entre deux fichiers. 
+Ces méthodes doivent être publiées afin que les utilisateurs de données en aval puissent confirmer 
+les calculs en cas de perte des sommes de contrôle ou pour vérifier que les données ont été correctement 
+reçues.  le champ d'identité dans un message :
+
+```
+
+   "identity": { "method" : __méthode_de_calcule__ , "value": __valuer_selong_la_methode_pour_les_données__ }
+
+```
+
+Méthodes actuellement implémentées::
+
+   sha512 - exécute SHA512 sur le contenu du fichier (par défaut)
+   md5 - exécute md5sum sur le contenu du fichier (obsolète, utilisez sha512).
+   arbitraire - seul le producteur connaît le contenu (non recommandé).
+   md5name - exécute la somme de contrôle md5sum sur le nom du fichier (ancienne méthode, omettre).
+   cod,x - Calcule à l'aide de la méthode X après le téléchargement.
+   aléatoire - génère un identifiant aléatoire (ancienne méthode, omettre).
+
+Les méthodes sha512 et md5 implémentent des résumés de messages traditionnels basés sur le contenu.
+Ces méthodes fiables et reproductibles sont nettement privilégiées. Auparavant,
+le champ d'identité était considéré comme obligatoire, et certaines méthodes étaient donc fournies
+pour pallier les cas où les méthodes binaires n'étaient pas adaptées. Dans ces cas,
+il est aujourd'hui recommandé d'omettre complètement le champ d'identité. Les comparaisons
+seront ensuite effectuées avec d'autres champs, comme mtime et size.
+
+La méthode *Calculer lors du téléchargement* (COD) est utilisée, par exemple, lors de 
+l'interrogation d'une ressource distante ne fournissant pas de sommes de contrôle, 
+pour indiquer au téléchargeur de générer une somme de contrôle après le téléchargement, 
+à l'intention des consommateurs en aval.
+
+La méthode *aléatoire* est un artefact de développement utilisé pour les tests.
+
+La méthode *arbitraire* est utilisée lorsque le producteur de données crée un champ pour 
+déterminer si deux éléments sont identiques, mais qu'il ne peut pas être recalculé à 
+partir des champs de message. Bien que cette méthode soit utile pour la suppression 
+des doublons, aucune vérification n'est possible par les consommateurs ; elle 
+ne fournit donc aucune assurance de l'intégrité des données et est considérée 
+comme sous-optimale.
+
+Les producteurs sont vivement encouragés à fournir/contribuer des méthodes 
+de vérification d'identité appropriées pour les données publiées.
+
 du champs *Identity*. Si la source de données ne fournit pas de champs *Identity*,
 on se fie sur d´autres champes dans le message: *mtime*, *size*, *pubTime.*
 Le champs *pubTime* étant mandatoire assure qu´un clé peut toujour être généré pour 
 chaque message, mais des fois peut être inefficace.
 
+
+Durée de vie
+------------
+
+la clé d´un message d´annonce est préférablement simplement la somme de contrôle 
 On peut allumer la suppresion de doublons, ou bien le supprimer avec la
 ligne suivante dans le fichier de configuraation::
 
@@ -40,28 +120,28 @@ quand on y fournit un chiffre c´est l´intervalle, en secondes, dont on se souv
 d´un messages.
 
 
-Standard (basé sur le chemin et contenu)
-----------------------------------------
+nodupe_basis path (basé sur le chemin et contenu, défaut)
+----------------------------------------------------------
 
 
 **méthode**: Quand les produits on le même clé et chemin, ils sont des doublons.
 
-Deux serveur peuvent envoyer le même produit, aven le même *relPath* à un serveur plus 
-loin.
+Deux serveur peuvent envoyer le même produit, avec le même *relPath* à un serveur plus 
+loin. 
 
 
-Data (basé uniquement sur le contenu)
--------------------------------------
+nodupe_basis data_only (basé uniquement sur le contenu)
+-------------------------------------------------------
 
 **method**: Quand les produits on le même clé, ils sont des doublons.
 
 dans le ficher de configuration on devrait voir::
 
-    nodupe_basis data
+    nodupe_basis data_only
 
 ou bien::
 
-    flowcb_prepend sarracenia.flowcb.nodupe.data.Data
+    flowcb_prepend sarracenia.flowcb.nodupe.data_only.Data_only
 
 
 remplace la génération de clé de suppression des doublons standard pour inclure uniquement 
@@ -73,18 +153,18 @@ Le produits identiques ont le même somme de contrôle.  à utiliser lorsque deu
 génèrent le même produit. 
 
 
-Name (basé uniquement sur le nom)
----------------------------------
+nodupe_basis name_only (basé uniquement sur le nom)
+---------------------------------------------------
 
 **method**: Quand les fichiers ont le même nom, ils sont identiques.
 
 dans le fichier de configuration, soit::
 
-    nodupe_basis data
+    nodupe_basis name_only
 
 ou bien::
 
-    flowcb_prepend sarracenia.flowcb.nodupe.name.Name
+    flowcb_prepend sarracenia.flowcb.nodupe.name_only
 
 remplace la générations de clé de suppression de doublons en utilisant uniquement
 le nom de fichier.

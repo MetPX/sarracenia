@@ -11,11 +11,11 @@ regardless of name, to be considered a duplicate if the checksum matches.
 
 This is implemented as an alias for:
 
-    callback_prepend nodupe.name
+    callback_prepend nodupe.name_only
 
 or:
 
-    callback_prepend nodupe.data
+    callback_prepend nodupe.data_only
 
 In general, when forwarding products in networks, one needs to avoid *storms* or loops of data transmission,
 where the same data circulates infinitely in the network, (for example: A sends a file to B, B sends it to C,
