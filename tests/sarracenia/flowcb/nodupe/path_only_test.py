@@ -2,7 +2,7 @@ import pytest
 from tests.conftest import *
 import os, types, copy
 
-from sarracenia.flowcb.nodupe.name import Name
+from sarracenia.flowcb.nodupe.path_only import Path_only
 from sarracenia import Message as SR3Message
 
 class Options:
@@ -30,7 +30,7 @@ def make_message():
     m["atime"] = "20180118151049.356378078"
     m["identity"] = {
             "method" : "sha512", 
-            "value" : "C/HbD77eLraAoj/IWnoRFTzKZpVaT0YSebbUeKl2m103TbnkN5vukAlISgctTZkaCT/Mk2llOjcq5p\nW/5M1hIQ=="  
+            "value" : "C/HbD77eLraAoj/IWnoRFTzKZpVaT0YSebbUeKl2m103TbnkN5vukAlISgctTZkaCT/Mk2llOjcq5p\\nW/5M1hIQ=="  
     }
     m["baseUrl"] =  "https://NotARealURL"
     m["relPath"] = "ThisIsAPath/To/A/File.txt"
@@ -50,7 +50,7 @@ def test_after_accept(tmp_path, capsys):
     BaseOptions.cfg_run_dir = str(tmp_path)
     BaseOptions.no = 5
     BaseOptions.inflight = 0
-    nodupe = Name(BaseOptions)
+    nodupe = Path_only(BaseOptions)
 
     message_with_nodupe = make_message()
     message_with_nodupe['nodupe_override'] = {}
@@ -63,5 +63,5 @@ def test_after_accept(tmp_path, capsys):
     nodupe.after_accept(wl_test_after_accept)
 
     assert len(wl_test_after_accept.incoming) == 2
-    assert wl_test_after_accept.incoming[0]['nodupe_override'] == {'key': 'File.txt', 'path': 'File.txt'}
+    assert wl_test_after_accept.incoming[0]['nodupe_override'] == {'key': "ThisIsAPath/To/A/File.txt"}
     assert 'nodupe_override' in wl_test_after_accept.incoming[1]['_deleteOnPost']
