@@ -63,12 +63,15 @@ class NoDupe(FlowCB):
             else:
                 t = msg['pubTime']
 
+            if 'nodupe_override' in msg and 'path' in msg['nodupe_override']:
+                path = msg['nodupe_override']['path']
+            else:
+                path = msg['relPath']
+
             # if file size is known, use it
             if 'size' in msg:
-                key = f"{msg['relPath']},{t},{msg['size']}"
+                key = f"{path},{t},{msg['size']}"
             else:
-                key = f"{msg['relPath']},{t}"
+                key = f"{path},{t}"
 
         return key
-
-
