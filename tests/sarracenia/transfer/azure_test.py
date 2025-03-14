@@ -9,6 +9,7 @@ import sarracenia.transfer.azure
 from azure.storage.blob import ContainerClient, BlobServiceClient
 import azure.core.exceptions
 
+# need to have docker installed for this to work
 from testcontainers.azurite import AzuriteContainer
 
 import base64
@@ -75,30 +76,35 @@ def test___credentials():
     transfer = sarracenia.transfer.azure.Azure('azure', sarracenia.config.default_config())
 
     #simple path
-    transfer.o.credentials._parse('azure://testing_simple_account/container')
-    transfer.sendTo = 'azure://testing_simple_account/container'
+    transfer.o.credentials._parse('azure://testing_simple_account.blob.core.windows.net/container')
+    transfer.sendTo = 'azure://testing_simple_account.blob.core.windows.net/container'
     transfer._Azure__credentials()
-    assert transfer.account == 'testing_simple_account'
-    assert transfer.container == 'container'
+    assert transfer.container_url == "https://testing_simple_account.blob.core.windows.net/container"
     assert transfer.credentials == None
 
     #Complex, with all options/details
     transfer = sarracenia.transfer.azure.Azure('azure', sarracenia.config.default_config())
-    transfer.o.credentials._parse('azure://testing_complex_account/container azure_storage_credentials=testing_credentials')
-    transfer.sendTo = 'azure://testing_complex_account/container'
+    transfer.o.credentials._parse('azure://testing_complex_account.blob.core.windows.net/container azure_storage_credentials=testing_credentials')
+    transfer.sendTo = 'azure://testing_complex_account.blob.core.windows.net/container'
     transfer._Azure__credentials()
-    assert transfer.account == 'testing_complex_account'
-    assert transfer.container == 'container'
+    assert transfer.container_url == "https://testing_complex_account.blob.core.windows.net/container"
     assert transfer.credentials == 'testing_credentials'
 
     #Complex, with all options/details, using 'azblob' scheme
     transfer = sarracenia.transfer.azure.Azure('azure', sarracenia.config.default_config())
-    transfer.o.credentials._parse('azblob://testing_complex_account/container azure_storage_credentials=testing_credentials')
-    transfer.sendTo = 'azblob://testing_complex_account/container'
+    transfer.o.credentials._parse('azblob://testing_complex_account.blob.core.windows.net/container azure_storage_credentials=testing_credentials')
+    transfer.sendTo = 'azblob://testing_complex_account.blob.core.windows.net/container'
     transfer._Azure__credentials()
-    assert transfer.account == 'testing_complex_account'
-    assert transfer.container == 'container'
+    assert transfer.container_url == "https://testing_complex_account.blob.core.windows.net/container"
     assert transfer.credentials == 'testing_credentials'
+
+    # With account_name and account_key
+    transfer = sarracenia.transfer.azure.Azure('azure', sarracenia.config.default_config())
+    transfer.o.credentials._parse('azure://test_acct_name:testing%20password@testing_complex_account2.blob.core.windows.net/container')
+    transfer.sendTo = 'azure://testing_complex_account2.blob.core.windows.net/container'
+    transfer._Azure__credentials()
+    assert transfer.container_url == "https://testing_complex_account2.blob.core.windows.net/container"
+    assert transfer.credentials == {'account_name': 'test_acct_name', 'account_key': 'testing password'}
 
 def test_cd():
     options = sarracenia.config.default_config()
@@ -130,7 +136,7 @@ def test_cd_forced():
 def test_check_is_connected():
     options = sarracenia.config.default_config()
     options.logLevel = "DEBUG"
-    options.sendTo = 'azure://testing_simple_account/container'
+    options.sendTo = 'azure://testing_simple_account.blob.core.windows.net/container'
     transfer = sarracenia.transfer.azure.Azure('azure', options)
 
     assert transfer.check_is_connected() == False
