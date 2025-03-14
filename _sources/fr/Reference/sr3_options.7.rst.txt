@@ -1240,13 +1240,15 @@ de quelle instance il s’agit. Par exemple, l’instance 3 sera générée avec
 nodupe_basis <donnes|nom|chemin> (défaut: chemin)
 -------------------------------------------------
 
-Une option sous forme de mot-clé (alternative: *cache_basis* ) pour identifier quels fichiers sont comparés
-à des fins de suppression des doublons. Normalement, la suppression des doublons utilise l’intégralité du
+Une option sous forme de mot-clé (alternative: *nodupe_basis* ) pour identifier quels fichiers sont comparés
+à des fins de suppression des doublons. 
+
+Normalement, la suppression des doublons utilise l’intégralité du
 chemin d’accès pour identifier les fichiers qui n’ont pas été modifiés. Cela permet aux fichiers avec un contenu
 identique d'être publié dans différents répertoires et de ne pas être supprimé. Dans certains cas
 cas, la suppression de fichiers identiques devrait être effectuée quel que soit l’endroit où se trouve
 le fichier.  Définissez 'nom' pour les fichiers de nom identique, mais qui sont dans des répertoires
-différents pour qu'ils puissent être considéré comme des doublons. Définissez 'données' pour n’importe quel fichier,
+différents pour qu'ils puissent être considéré comme des doublons. Utilisez *data_only* pour n’importe quel fichier,
 quel que soit le nom, pour qu'il puisse être considéré comme un doublon si la somme de contrôle correspond.
 
 Ceci est implémenté en tant qu’alias pour :
@@ -1255,10 +1257,39 @@ Ceci est implémenté en tant qu’alias pour :
 
 ou:
 
- callback_prepend nodupe.data
+ callback_prepend nodupe.data_only
 
+ Le tableau ci-dessous répertorie les options intégrées pour définir nodupe_basis :
+
++--------------------+-----------------+------------------------------------------------------------------+
+| nodupe_basis       | key             | path (fichiers dont les clés seront comparées.)                |
++--------------------+-----------------+------------------------------------------------------------------+
+| path               | identité*       | chemin relatif (à partir du message) (PAR DÉFAUT)                |
++--------------------+-----------------+------------------------------------------------------------------+
+| name               | identité*       | nom de fichier (dernier élément du chemin relatif.)              |
++--------------------+-----------------+------------------------------------------------------------------+
+| data_only          | identité*       | non utilisé (tous les fichiers correspondent). (Méthode Sundew.) |
++--------------------+-----------------+------------------------------------------------------------------+
+| path_only          | chemin relatif  | chemin relatif                                                   |
++--------------------+-----------------+------------------------------------------------------------------+
+| name_only          | nom de fichier  | nom de fichier                                                   | 
++--------------------+-----------------+------------------------------------------------------------------+
+
+* Si l'identité n'est pas fournie dans le message, les valeurs mtime et size seront utilisées
+  comme valeurs de secours. Il est préférable que la source de données définisse un champ *identité*.
+
+* Un _doublon_ est un message dont la clé et le chemin correspondent, à mêmes champs dans un message déjà
+  présent dans la table mémoire de fichiers reçus.
+
+Lors de l'utilisation de *path_only*, par exemple, le chemin du fichier est le seul critère
+utilisé. Ainsi, la première réception d'un fichier avec ce chemin est considérée comme l'*original*
+et toute réception ultérieure est considérée comme un doublon.
+
+Il est également possible de créer des plugins pour implémenter différents critères
+de détection des doublons, en définissant un champ *nodupe_override* dans les messages.
 
 Pour plus d´information: `Supprimer les doublons <../Explication/SupprimerLesDoublons.html>`_
+
 
 fileAgeMax
 ----------

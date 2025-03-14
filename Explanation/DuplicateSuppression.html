@@ -59,9 +59,11 @@
 <li class="toctree-l2"><a class="reference internal" href="DeploymentConsiderations.html">Deployment Considerations</a></li>
 <li class="toctree-l2"><a class="reference internal" href="DetectFileReady.html">File Detection Strategies</a></li>
 <li class="toctree-l2 current"><a class="current reference internal" href="#">Duplicate Suppression</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="#standard-path-and-data-oriented">Standard (path and data oriented)</a></li>
-<li class="toctree-l3"><a class="reference internal" href="#data-oriented">Data Oriented</a></li>
-<li class="toctree-l3"><a class="reference internal" href="#name-oriented">Name Oriented</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#identity">Identity</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#time-to-live">Time To Live</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#nodupe-basis-path-default">nodupe_basis path (default)</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#nodupe-basis-data-only">nodupe_basis data_only</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#nodupe-basis-name-only">nodupe_basis name_only</a><ul>
 <li class="toctree-l4"><a class="reference internal" href="#urp">URP</a></li>
 </ul>
 </li>
@@ -114,7 +116,21 @@
              
   <section id="duplicate-suppression">
 <h1>Duplicate Suppression<a class="headerlink" href="#duplicate-suppression" title="Link to this heading"></a></h1>
-<p>When forwarding products in networks, one needs to avoid <em>storms</em> or loops of data transmission,
+<p>Normally, the duplicate suppression uses the entire path to identify files which have not changed.
+This allows for files with identical content to be posted in different directories and not
+be suppressed. In some cases, suppression of identical files should be done regardless of where in
+the tree the file resides. Set ‘name’ for files of identical name, but in
+different directories to be considered duplicates. Set to ‘data’ for any file,
+regardless of name, to be considered a duplicate if the checksum matches.</p>
+<p>This is implemented as an alias for:</p>
+<blockquote>
+<div><p>callback_prepend nodupe.name_only</p>
+</div></blockquote>
+<p>or:</p>
+<blockquote>
+<div><p>callback_prepend nodupe.data_only</p>
+</div></blockquote>
+<p>In general, when forwarding products in networks, one needs to avoid <em>storms</em> or loops of data transmission,
 where the same data circulates infinitely in the network, (for example: A sends a file to B, B sends it to C,
 C sends it back to A. If A sends it to B again, we have an infinite loop or <em>storm</em> if the volume is large enough. )</p>
 <p>Another main feature of mission critical processing is having multiple systems produce the same data, or
@@ -129,40 +145,99 @@ for more flexible filtering.</p>
 <dl class="simple">
 <dt>Duplicate suppression must:</dt><dd><ul class="simple">
 <li><p>derive a notification message key.</p></li>
-<li><p>if a notification message has been received with the same key and and path, then it is a duplicate.</p></li>
+<li><p>derive a notification message path.</p></li>
+<li><p>If a notification message has been received with the same key and and path, then it is a duplicate.</p></li>
 </ul>
 </dd>
 </dl>
 <p>Duplicates are dropped to avoid further processing.</p>
+<section id="identity">
+<h2>Identity<a class="headerlink" href="#identity" title="Link to this heading"></a></h2>
 <p>A notification message key is preferably derived from the <em>Identity</em> field of the notification
-message. If the producer does not provide an identity checksum, algorithms may fall
+message. The <em>Identity</em> field is supposed to be the same value for any two files that
+contain the same information. For many types of data, a binary checksum (default used is
+sha512) can be used for that, but there are other products where processing by different
+services can result in products that are equivalent without matching to the last bit.</p>
+<p>Examples:</p>
+<ul class="simple">
+<li><p>two processing servers that produce XML products and include a tag “processed by serverX”</p></li>
+<li><p>timestamps of various transformations done on the data in the data itself, those will likely</p></li>
+</ul>
+<p>differ.
+* in GOES/DCS, raw data received from LRGS downlinks includes a trailer about the</p>
+<blockquote>
+<div><p>signal strength and parity errors corrected, which will be different for every antenna.</p>
+</div></blockquote>
+<p>To support multiple kinds of data, the identity field is structured to provide
+for data producers to specify alternate methods of comparing two files.  These methods
+need to be published so that downstream consumers of data can confirm the calculations
+in cases where the checksums are lost, or to verify that data has been correctly received.
+the identity field in a message:</p>
+<p><a href="#id1"><span class="problematic" id="id2">``</span></a><a href="#id3"><span class="problematic" id="id4">`</span></a></p>
+<blockquote>
+<div><p>“identity”: { “method” : __method_value__ , “value”: __value_determined_using_method__ }</p>
+</div></blockquote>
+<p><a href="#id5"><span class="problematic" id="id6">``</span></a>`
+Currently implemented methods:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">sha512</span>     <span class="o">-</span> <span class="n">do</span> <span class="n">SHA512</span> <span class="n">on</span> <span class="n">file</span> <span class="n">content</span>  <span class="p">(</span><span class="n">default</span><span class="p">)</span>
+<span class="n">md5</span>        <span class="o">-</span> <span class="n">do</span> <span class="n">md5sum</span> <span class="n">on</span> <span class="n">file</span> <span class="n">content</span> <span class="p">(</span><span class="n">obsolete</span><span class="p">,</span> <span class="n">use</span> <span class="n">sha512</span><span class="o">.</span><span class="p">)</span>
+<span class="n">arbitrary</span>  <span class="o">-</span> <span class="n">producer</span> <span class="n">only</span> <span class="n">knows</span> <span class="p">(</span><span class="ow">not</span> <span class="n">recommended</span><span class="o">.</span><span class="p">)</span>
+<span class="n">md5name</span>    <span class="o">-</span> <span class="n">do</span> <span class="n">md5sum</span> <span class="n">checksum</span> <span class="n">on</span> <span class="n">filename</span> <span class="p">(</span><span class="n">legacy</span><span class="p">,</span> <span class="n">just</span> <span class="n">omit</span> <span class="n">instead</span><span class="p">)</span>
+<span class="n">cod</span><span class="p">,</span><span class="n">x</span>      <span class="o">-</span> <span class="n">Calculate</span> <span class="n">using</span> <span class="n">method</span> <span class="n">X</span> <span class="n">after</span> <span class="n">download</span><span class="o">.</span>
+<span class="n">random</span>     <span class="o">-</span> <span class="n">generate</span> <span class="n">a</span> <span class="n">random</span> <span class="n">identifier</span><span class="o">.</span> <span class="p">(</span><span class="n">legacy</span><span class="p">,</span> <span class="n">just</span> <span class="n">omit</span> <span class="n">instead</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>The sha512 and md5 methods implement traditional message digests based on content,
+and such reliable, reproducible methods are definitely preferred. In the past,
+the identity field was considered mandatory, and so some methods were provided
+to allow for the case when binary methods were not suitable. In those cases
+today, the recommendation is to omit the identity field entirely.  Comparisons
+will then be done using other fields, like mtime, and size.</p>
+<p>The <em>Calculate on Download</em> (COD) method is used, for example when polling a
+remote resource that does not provide checksums, to tell the downloader to
+generate a checksum after the download, for the benefit of downstream consumers.</p>
+<p>the <em>random</em> method is a development artifact, for use in testing.</p>
+<p>The <em>arbitrary</em> method is used when the data producer creates a field to
+determine if two items are the same, but it cannot be re-calculated from the
+message fields. While this method is useful for duplicate suppression, no
+verification is possible by consumers, so this method does not provide any
+data integrity assurance and is considered sub-optimal.</p>
+<p>Producers are very much encouraged to provide/contribute data appropriate
+identity verification methods for published data.</p>
+<p>If the producer does not provide an identity checksum, algorithms may fall
 back on other metadata: <em>mtime</em>, <em>size</em>, <em>pubTime.</em> Since pubTime is a mandatory
 field, a key can always be derived, but it’s effectiveness in a particular use case
 is not assured. (the sarracenia.flowcb.nodupe.NoDupe.deriveKey(self,msg) helper routine
 provides a standard key, given a message.)</p>
-<p>in all methods, one can turn on duplicate suppression with the following option
+</section>
+<section id="time-to-live">
+<h2>Time To Live<a class="headerlink" href="#time-to-live" title="Link to this heading"></a></h2>
+<p>In all methods, one can turn on duplicate suppression with the following option
 in the config file:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">nodupe_ttl</span> <span class="mi">300</span><span class="o">|</span><span class="n">off</span><span class="o">|</span><span class="n">on</span>
 </pre></div>
 </div>
-<p>When supplied a number, that indicates the lifetime, in seconds of entries in the
-duplicate suppresion memory (e.g. 300 seconds == 5 minutes.)</p>
-<section id="standard-path-and-data-oriented">
-<h2>Standard (path and data oriented)<a class="headerlink" href="#standard-path-and-data-oriented" title="Link to this heading"></a></h2>
-<p><strong>method</strong>: when products have the same key and path, they are duplicates.</p>
+<p>When supplied a number, that indicates the how long, the entries in the
+duplicate suppresion memory are kept (e.g. 300 seconds == 5 minutes.)  entries
+older than that are <em>forgotten</em> and so duplicates received less often than the
+<em>nodupe_ttl</em> setting will flow through.</p>
+</section>
+<section id="nodupe-basis-path-default">
+<h2>nodupe_basis path (default)<a class="headerlink" href="#nodupe-basis-path-default" title="Link to this heading"></a></h2>
+<p><strong>method</strong>: when products have the same identity, and the same path, they are duplicates.</p>
 <p>Two routes can receive the same product, with the same relative path. In normal processing,
 the products should be identical, and <em>Identity</em> checksums for it should be the same,</p>
 <p>FIXME: the normal case when multiple intervening pumps.</p>
 </section>
-<section id="data-oriented">
-<h2>Data Oriented<a class="headerlink" href="#data-oriented" title="Link to this heading"></a></h2>
-<p><strong>method</strong>: when products the same key, they are duplicates.</p>
+<section id="nodupe-basis-data-only">
+<h2>nodupe_basis data_only<a class="headerlink" href="#nodupe-basis-data-only" title="Link to this heading"></a></h2>
+<p><strong>method</strong>: when products have the same identity, regardless of path, they are duplicates.</p>
 <p>in the config file either:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">nodupe_basis</span> <span class="n">data</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">nodupe_basis</span> <span class="n">data_only</span>
 </pre></div>
 </div>
 <p>or:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">flowcb_prepend</span> <span class="n">sarracenia</span><span class="o">.</span><span class="n">flowcb</span><span class="o">.</span><span class="n">nodupe</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">Data</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">flowcb_prepend</span> <span class="n">sarracenia</span><span class="o">.</span><span class="n">flowcb</span><span class="o">.</span><span class="n">nodupe</span><span class="o">.</span><span class="n">data_only</span>
 </pre></div>
 </div>
 <p>overrides the standard duplicate suppression key generation to include only the data
@@ -173,15 +248,15 @@ multiple sources produce the same product. (Note: all zero-length files are iden
 it could be that products with unrelated purpose have identical content. scoping is
 usually important when this option is applied.)</p>
 </section>
-<section id="name-oriented">
-<h2>Name Oriented<a class="headerlink" href="#name-oriented" title="Link to this heading"></a></h2>
+<section id="nodupe-basis-name-only">
+<h2>nodupe_basis name_only<a class="headerlink" href="#nodupe-basis-name-only" title="Link to this heading"></a></h2>
 <p><strong>method</strong>: when products have the same file name, they are duplicates.</p>
 <p>In the config file, either:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">nodupe_basis</span> <span class="n">data</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">nodupe_basis</span> <span class="n">name_only</span>
 </pre></div>
 </div>
 <p>or:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">flowcb_prepend</span> <span class="n">sarracenia</span><span class="o">.</span><span class="n">flowcb</span><span class="o">.</span><span class="n">nodupe</span><span class="o">.</span><span class="n">name</span><span class="o">.</span><span class="n">Name</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">flowcb_prepend</span> <span class="n">sarracenia</span><span class="o">.</span><span class="n">flowcb</span><span class="o">.</span><span class="n">nodupe</span><span class="o">.</span><span class="n">name_only</span>
 </pre></div>
 </div>
 <p>Override the standard duplicate suppression key generation to use only the file name.</p>

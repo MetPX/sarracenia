@@ -112,7 +112,7 @@
 <dd class="field-odd"><p>7</p>
 </dd>
 <dt class="field-even">Date<span class="colon">:</span></dt>
-<dd class="field-even"><p>Mar 11, 2025</p>
+<dd class="field-even"><p>Mar 13, 2025</p>
 </dd>
 <dt class="field-odd">Version<span class="colon">:</span></dt>
 <dd class="field-odd"><p>3.00.58rc1</p>
@@ -1205,13 +1205,14 @@ de quelle instance il s’agit. Par exemple, l’instance 3 sera générée avec
 </section>
 <section id="nodupe-basis-donnes-nom-chemin-defaut-chemin">
 <h4>nodupe_basis &lt;donnes|nom|chemin&gt; (défaut: chemin)<a class="headerlink" href="#nodupe-basis-donnes-nom-chemin-defaut-chemin" title="Link to this heading"></a></h4>
-<p>Une option sous forme de mot-clé (alternative: <em>cache_basis</em> ) pour identifier quels fichiers sont comparés
-à des fins de suppression des doublons. Normalement, la suppression des doublons utilise l’intégralité du
+<p>Une option sous forme de mot-clé (alternative: <em>nodupe_basis</em> ) pour identifier quels fichiers sont comparés
+à des fins de suppression des doublons.</p>
+<p>Normalement, la suppression des doublons utilise l’intégralité du
 chemin d’accès pour identifier les fichiers qui n’ont pas été modifiés. Cela permet aux fichiers avec un contenu
 identique d’être publié dans différents répertoires et de ne pas être supprimé. Dans certains cas
 cas, la suppression de fichiers identiques devrait être effectuée quel que soit l’endroit où se trouve
 le fichier.  Définissez ‘nom’ pour les fichiers de nom identique, mais qui sont dans des répertoires
-différents pour qu’ils puissent être considéré comme des doublons. Définissez ‘données’ pour n’importe quel fichier,
+différents pour qu’ils puissent être considéré comme des doublons. Utilisez <em>data_only</em> pour n’importe quel fichier,
 quel que soit le nom, pour qu’il puisse être considéré comme un doublon si la somme de contrôle correspond.</p>
 <p>Ceci est implémenté en tant qu’alias pour :</p>
 <blockquote>
@@ -1219,8 +1220,20 @@ quel que soit le nom, pour qu’il puisse être considéré comme un doublon si 
 </div></blockquote>
 <p>ou:</p>
 <blockquote>
-<div><p>callback_prepend nodupe.data</p>
+<div><p>callback_prepend nodupe.data_only</p>
+<p>Le tableau ci-dessous répertorie les options intégrées pour définir nodupe_basis :</p>
 </div></blockquote>
+<ul class="simple">
+<li><p>Si l’identité n’est pas fournie dans le message, les valeurs mtime et size seront utilisées
+comme valeurs de secours. Il est préférable que la source de données définisse un champ <em>identité</em>.</p></li>
+<li><p>Un _doublon_ est un message dont la clé et le chemin correspondent, à mêmes champs dans un message déjà
+présent dans la table mémoire de fichiers reçus.</p></li>
+</ul>
+<p>Lors de l’utilisation de <em>path_only</em>, par exemple, le chemin du fichier est le seul critère
+utilisé. Ainsi, la première réception d’un fichier avec ce chemin est considérée comme l’<em>original</em>
+et toute réception ultérieure est considérée comme un doublon.</p>
+<p>Il est également possible de créer des plugins pour implémenter différents critères
+de détection des doublons, en définissant un champ <em>nodupe_override</em> dans les messages.</p>
 <p>Pour plus d´information: <a class="reference external" href="../Explication/SupprimerLesDoublons.html">Supprimer les doublons</a></p>
 </section>
 <section id="fileagemax">

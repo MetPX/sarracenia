@@ -63,9 +63,11 @@
 <li class="toctree-l3"><a class="reference internal" href="GuideLigneDeCommande.html">Guide De Ligne De Commande</a></li>
 <li class="toctree-l3"><a class="reference internal" href="StrategieDetectionFichiers.html">File Detection Strategies</a></li>
 <li class="toctree-l3 current"><a class="current reference internal" href="#">Suppression de Doublons</a><ul>
-<li class="toctree-l4"><a class="reference internal" href="#standard-base-sur-le-chemin-et-contenu">Standard (basé sur le chemin et contenu)</a></li>
-<li class="toctree-l4"><a class="reference internal" href="#data-base-uniquement-sur-le-contenu">Data (basé uniquement sur le contenu)</a></li>
-<li class="toctree-l4"><a class="reference internal" href="#name-base-uniquement-sur-le-nom">Name (basé uniquement sur le nom)</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#identity-identite">Identity (Identité)</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#duree-de-vie">Durée de vie</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#nodupe-basis-path-base-sur-le-chemin-et-contenu-defaut">nodupe_basis path (basé sur le chemin et contenu, défaut)</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#nodupe-basis-data-only-base-uniquement-sur-le-contenu">nodupe_basis data_only (basé uniquement sur le contenu)</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#nodupe-basis-name-only-base-uniquement-sur-le-nom">nodupe_basis name_only (basé uniquement sur le nom)</a></li>
 <li class="toctree-l4"><a class="reference internal" href="#le-fichiers-trop-changeant-mdelaylatest">Le fichiers trop changeant (mdelaylatest)</a></li>
 <li class="toctree-l4"><a class="reference internal" href="#fichiers-trop-vieux">Fichiers trop vieux</a></li>
 <li class="toctree-l4"><a class="reference internal" href="#a-votre-gout">A votre gout!</a></li>
@@ -114,29 +116,98 @@
              
   <section id="suppression-de-doublons">
 <h1>Suppression de Doublons<a class="headerlink" href="#suppression-de-doublons" title="Link to this heading"></a></h1>
+<p>Normalement, la suppression des doublons utilise l’intégralité du
+chemin d’accès pour identifier les fichiers qui n’ont pas été modifiés. Cela permet aux fichiers avec un contenu
+identique d’être publié dans différents répertoires et de ne pas être supprimé. Dans certains cas
+cas, la suppression de fichiers identiques devrait être effectuée quel que soit l’endroit où se trouve
+le fichier.  Définissez ‘nom’ pour les fichiers de nom identique, mais qui sont dans des répertoires
+différents pour qu’ils puissent être considéré comme des doublons. Utilisez <em>data_only</em> pour n’importe quel fichier,
+quel que soit le nom, pour qu’il puisse être considéré comme un doublon si la somme de contrôle correspond.</p>
+<p>Ceci est implémenté en tant qu’alias pour :</p>
+<blockquote>
+<div><p>callback_prepend nodupe.name</p>
+</div></blockquote>
+<p>ou:</p>
+<blockquote>
+<div><p>callback_prepend nodupe.data_only</p>
+</div></blockquote>
 <p>Lors qu’on achemine les données à travers de réseaux, il faut se préoccuper des “orages” de données
 causé par des boucles de transfert (un serveur A envoit à B, qui renvoit à C, qui renvoit à A.  Si A
 ne sait pas qu´il l´a déjà vu, on a un boucle infini, qui peut etre décrit comme un orage le volume
 est dérangeant.)</p>
 <p>Un attribut commun des flots de données critiques est d´avoir plusieurs serveurs qui produisent ces
 données. Si la stratégie de disponibilité requiert que les deux serveurs soient actifs en même temps,
-on a besoin de supprimer la production de la deuxième source. le potentiel pour des boucles, ou
-des transmissions redondantes de données est haut.</p>
+on a besoin de supprimer la production de la deuxième source. Le potentiel pour des boucles, ou
+des transmissions redondantes de données, est haut.</p>
 <p>Il s´avère supprimer les duplicat d´envoi a plein de cas d´usage et qu´un seule méthode ne suffit
-pas, alors sr3 permet la modification de la méthode implanté dans le module <em>sarracenia.flowcb.nodupe</em>
-pour augmenter la fléxibilité.</p>
+pas, alors sr3 permet la modification de la méthode implanté dans le module <em>sarracenia.flowcb.nodupe.</em></p>
 <p>La supression de doublons:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span>* crée un clé à partir d´un message d´annonce.
 * crée un chemin (path) à partir d´un message d´annonce.
+* si un message de notification a été reçu avec la même clé et le même chemin, il s&#39;agit alors d&#39;un doublon.
 </pre></div>
 </div>
 <p>Quand un message est à propos d´un message jugé un doublons, on cesse de le traiter.</p>
-<p>la clé d´un message d´annonce est préférablement simplement la somme de contrôle
-du champs <em>Identity</em>. Si la source de données ne fournit pas de champs <em>Identity</em>,
+<section id="identity-identite">
+<h2>Identity (Identité)<a class="headerlink" href="#identity-identite" title="Link to this heading"></a></h2>
+<p>Une clé (key) de message de notification est de préférence dérivée du champ <em>Identité</em> du message de notification.
+Ce champ est censé avoir la même valeur pour deux fichiers contenant les mêmes informations. Pour de nombreux
+types de données, une somme de contrôle binaire (par défaut, SHA512) peut être utilisée, mais pour
+d’autres produits, le traitement par différents services peut produire des produits équivalents,
+sans correspondance jusqu’au dernier bit. Exemples :</p>
+<ul class="simple">
+<li><p>Deux serveurs de traitement dont la sortie est en format XML incluant la balise « traité par le serveur X »</p></li>
+<li><p>Les horodatages des différentes transformations effectuées sur les données elles-mêmes sont susceptibles de différer.</p></li>
+<li><p>En GOES/DCS, les données brutes reçues des liaisons descendantes LRGS incluent une information sur la force
+du signal et les erreurs de parité corrigées, qui varient selon l’antenne.</p></li>
+</ul>
+<p>Pour prendre en charge plusieurs types de données, le champ d’identité est structuré de manière à
+permettre aux producteurs de données de spécifier d’autres méthodes de comparaison entre deux fichiers.
+Ces méthodes doivent être publiées afin que les utilisateurs de données en aval puissent confirmer
+les calculs en cas de perte des sommes de contrôle ou pour vérifier que les données ont été correctement
+reçues.  le champ d’identité dans un message :</p>
+<p><a href="#id1"><span class="problematic" id="id2">``</span></a><a href="#id3"><span class="problematic" id="id4">`</span></a></p>
+<blockquote>
+<div><p>“identity”: { “method” : __méthode_de_calcule__ , “value”: __valuer_selong_la_methode_pour_les_données__ }</p>
+</div></blockquote>
+<p><a href="#id5"><span class="problematic" id="id6">``</span></a><a href="#id7"><span class="problematic" id="id8">`</span></a></p>
+<p>Méthodes actuellement implémentées:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">sha512</span> <span class="o">-</span> <span class="n">exécute</span> <span class="n">SHA512</span> <span class="n">sur</span> <span class="n">le</span> <span class="n">contenu</span> <span class="n">du</span> <span class="n">fichier</span> <span class="p">(</span><span class="n">par</span> <span class="n">défaut</span><span class="p">)</span>
+<span class="n">md5</span> <span class="o">-</span> <span class="n">exécute</span> <span class="n">md5sum</span> <span class="n">sur</span> <span class="n">le</span> <span class="n">contenu</span> <span class="n">du</span> <span class="n">fichier</span> <span class="p">(</span><span class="n">obsolète</span><span class="p">,</span> <span class="n">utilisez</span> <span class="n">sha512</span><span class="p">)</span><span class="o">.</span>
+<span class="n">arbitraire</span> <span class="o">-</span> <span class="n">seul</span> <span class="n">le</span> <span class="n">producteur</span> <span class="n">connaît</span> <span class="n">le</span> <span class="n">contenu</span> <span class="p">(</span><span class="n">non</span> <span class="n">recommandé</span><span class="p">)</span><span class="o">.</span>
+<span class="n">md5name</span> <span class="o">-</span> <span class="n">exécute</span> <span class="n">la</span> <span class="n">somme</span> <span class="n">de</span> <span class="n">contrôle</span> <span class="n">md5sum</span> <span class="n">sur</span> <span class="n">le</span> <span class="n">nom</span> <span class="n">du</span> <span class="n">fichier</span> <span class="p">(</span><span class="n">ancienne</span> <span class="n">méthode</span><span class="p">,</span> <span class="n">omettre</span><span class="p">)</span><span class="o">.</span>
+<span class="n">cod</span><span class="p">,</span><span class="n">x</span> <span class="o">-</span> <span class="n">Calcule</span> <span class="n">à</span> <span class="n">l</span><span class="s1">&#39;aide de la méthode X après le téléchargement.</span>
+<span class="n">aléatoire</span> <span class="o">-</span> <span class="n">génère</span> <span class="n">un</span> <span class="n">identifiant</span> <span class="n">aléatoire</span> <span class="p">(</span><span class="n">ancienne</span> <span class="n">méthode</span><span class="p">,</span> <span class="n">omettre</span><span class="p">)</span><span class="o">.</span>
+</pre></div>
+</div>
+<p>Les méthodes sha512 et md5 implémentent des résumés de messages traditionnels basés sur le contenu.
+Ces méthodes fiables et reproductibles sont nettement privilégiées. Auparavant,
+le champ d’identité était considéré comme obligatoire, et certaines méthodes étaient donc fournies
+pour pallier les cas où les méthodes binaires n’étaient pas adaptées. Dans ces cas,
+il est aujourd’hui recommandé d’omettre complètement le champ d’identité. Les comparaisons
+seront ensuite effectuées avec d’autres champs, comme mtime et size.</p>
+<p>La méthode <em>Calculer lors du téléchargement</em> (COD) est utilisée, par exemple, lors de
+l’interrogation d’une ressource distante ne fournissant pas de sommes de contrôle,
+pour indiquer au téléchargeur de générer une somme de contrôle après le téléchargement,
+à l’intention des consommateurs en aval.</p>
+<p>La méthode <em>aléatoire</em> est un artefact de développement utilisé pour les tests.</p>
+<p>La méthode <em>arbitraire</em> est utilisée lorsque le producteur de données crée un champ pour
+déterminer si deux éléments sont identiques, mais qu’il ne peut pas être recalculé à
+partir des champs de message. Bien que cette méthode soit utile pour la suppression
+des doublons, aucune vérification n’est possible par les consommateurs ; elle
+ne fournit donc aucune assurance de l’intégrité des données et est considérée
+comme sous-optimale.</p>
+<p>Les producteurs sont vivement encouragés à fournir/contribuer des méthodes
+de vérification d’identité appropriées pour les données publiées.</p>
+<p>du champs <em>Identity</em>. Si la source de données ne fournit pas de champs <em>Identity</em>,
 on se fie sur d´autres champes dans le message: <em>mtime</em>, <em>size</em>, <em>pubTime.</em>
 Le champs <em>pubTime</em> étant mandatoire assure qu´un clé peut toujour être généré pour
 chaque message, mais des fois peut être inefficace.</p>
-<p>On peut allumer la suppresion de doublons, ou bien le supprimer avec la
+</section>
+<section id="duree-de-vie">
+<h2>Durée de vie<a class="headerlink" href="#duree-de-vie" title="Link to this heading"></a></h2>
+<p>la clé d´un message d´annonce est préférablement simplement la somme de contrôle
+On peut allumer la suppresion de doublons, ou bien le supprimer avec la
 ligne suivante dans le fichier de configuraation:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">nodupe_ttl</span> <span class="mi">300</span><span class="o">|</span><span class="n">off</span><span class="o">|</span><span class="n">on</span>
 </pre></div>
@@ -144,21 +215,22 @@ ligne suivante dans le fichier de configuraation:</p>
 <p>(les | indique les choix… alors soit nodupe_ttl 300 où nodup_ttl on, où nodupe_ttl off )
 quand on y fournit un chiffre c´est l´intervalle, en secondes, dont on se souvient
 d´un messages.</p>
-<section id="standard-base-sur-le-chemin-et-contenu">
-<h2>Standard (basé sur le chemin et contenu)<a class="headerlink" href="#standard-base-sur-le-chemin-et-contenu" title="Link to this heading"></a></h2>
+</section>
+<section id="nodupe-basis-path-base-sur-le-chemin-et-contenu-defaut">
+<h2>nodupe_basis path (basé sur le chemin et contenu, défaut)<a class="headerlink" href="#nodupe-basis-path-base-sur-le-chemin-et-contenu-defaut" title="Link to this heading"></a></h2>
 <p><strong>méthode</strong>: Quand les produits on le même clé et chemin, ils sont des doublons.</p>
-<p>Deux serveur peuvent envoyer le même produit, aven le même <em>relPath</em> à un serveur plus
+<p>Deux serveur peuvent envoyer le même produit, avec le même <em>relPath</em> à un serveur plus
 loin.</p>
 </section>
-<section id="data-base-uniquement-sur-le-contenu">
-<h2>Data (basé uniquement sur le contenu)<a class="headerlink" href="#data-base-uniquement-sur-le-contenu" title="Link to this heading"></a></h2>
+<section id="nodupe-basis-data-only-base-uniquement-sur-le-contenu">
+<h2>nodupe_basis data_only (basé uniquement sur le contenu)<a class="headerlink" href="#nodupe-basis-data-only-base-uniquement-sur-le-contenu" title="Link to this heading"></a></h2>
 <p><strong>method</strong>: Quand les produits on le même clé, ils sont des doublons.</p>
 <p>dans le ficher de configuration on devrait voir:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">nodupe_basis</span> <span class="n">data</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">nodupe_basis</span> <span class="n">data_only</span>
 </pre></div>
 </div>
 <p>ou bien:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">flowcb_prepend</span> <span class="n">sarracenia</span><span class="o">.</span><span class="n">flowcb</span><span class="o">.</span><span class="n">nodupe</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">Data</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">flowcb_prepend</span> <span class="n">sarracenia</span><span class="o">.</span><span class="n">flowcb</span><span class="o">.</span><span class="n">nodupe</span><span class="o">.</span><span class="n">data_only</span><span class="o">.</span><span class="n">Data_only</span>
 </pre></div>
 </div>
 <p>remplace la génération de clé de suppression des doublons standard pour inclure uniquement
@@ -168,15 +240,15 @@ est appelée avant la traitement de doublons integrée.</p>
 <p>Le produits identiques ont le même somme de contrôle.  à utiliser lorsque deux sources
 génèrent le même produit.</p>
 </section>
-<section id="name-base-uniquement-sur-le-nom">
-<h2>Name (basé uniquement sur le nom)<a class="headerlink" href="#name-base-uniquement-sur-le-nom" title="Link to this heading"></a></h2>
+<section id="nodupe-basis-name-only-base-uniquement-sur-le-nom">
+<h2>nodupe_basis name_only (basé uniquement sur le nom)<a class="headerlink" href="#nodupe-basis-name-only-base-uniquement-sur-le-nom" title="Link to this heading"></a></h2>
 <p><strong>method</strong>: Quand les fichiers ont le même nom, ils sont identiques.</p>
 <p>dans le fichier de configuration, soit:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">nodupe_basis</span> <span class="n">data</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">nodupe_basis</span> <span class="n">name_only</span>
 </pre></div>
 </div>
 <p>ou bien:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">flowcb_prepend</span> <span class="n">sarracenia</span><span class="o">.</span><span class="n">flowcb</span><span class="o">.</span><span class="n">nodupe</span><span class="o">.</span><span class="n">name</span><span class="o">.</span><span class="n">Name</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">flowcb_prepend</span> <span class="n">sarracenia</span><span class="o">.</span><span class="n">flowcb</span><span class="o">.</span><span class="n">nodupe</span><span class="o">.</span><span class="n">name_only</span>
 </pre></div>
 </div>
 <p>remplace la générations de clé de suppression de doublons en utilisant uniquement

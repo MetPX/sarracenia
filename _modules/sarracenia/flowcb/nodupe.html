@@ -113,33 +113,57 @@
 <span class="sd">    &quot;&quot;&quot;</span>
 
 
+<div class="viewcode-block" id="NoDupe.deriveKey">
+<a class="viewcode-back" href="../../../Reference/flowcb.html#sarracenia.flowcb.nodupe.NoDupe.deriveKey">[docs]</a>
     <span class="k">def</span> <span class="nf">deriveKey</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">msg</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot; The key is the first thing checked when doing duplicate suppression.</span>
+<span class="sd">            If the keys do not match, nodupe doesn&#39;t bother looking at the path/name/anything else.</span>
+<span class="sd">            i.e. if the keys for two messages don&#39;t match, they are not duplicates.</span>
+<span class="sd">                 if the keys *do* match, it doesn&#39;t necessarily mean that they are duplicates, nodupe</span>
+<span class="sd">                 then has to check if the path/name/something else matches (see _not_in_cache method)</span>
+<span class="sd">        &quot;&quot;&quot;</span>
 
         <span class="n">key</span><span class="o">=</span><span class="kc">None</span>
+
+        <span class="c1"># 1st priority: use the key from nodupe_override in the msg</span>
         <span class="k">if</span> <span class="p">(</span><span class="s1">&#39;nodupe_override&#39;</span> <span class="ow">in</span> <span class="n">msg</span><span class="p">)</span> <span class="ow">and</span> <span class="p">(</span><span class="s1">&#39;key&#39;</span> <span class="ow">in</span> <span class="n">msg</span><span class="p">[</span><span class="s1">&#39;nodupe_override&#39;</span><span class="p">]):</span>
             <span class="n">key</span> <span class="o">=</span> <span class="n">msg</span><span class="p">[</span><span class="s1">&#39;nodupe_override&#39;</span><span class="p">][</span><span class="s1">&#39;key&#39;</span><span class="p">]</span>
+
+        <span class="c1"># 2nd: derive from fileOp if fileOp is link or is a non-remove directory op</span>
         <span class="k">elif</span> <span class="s1">&#39;fileOp&#39;</span> <span class="ow">in</span> <span class="n">msg</span> <span class="p">:</span>
             <span class="k">if</span> <span class="s1">&#39;link&#39;</span> <span class="ow">in</span> <span class="n">msg</span><span class="p">[</span><span class="s1">&#39;fileOp&#39;</span><span class="p">]:</span>
                 <span class="n">key</span> <span class="o">=</span> <span class="n">msg</span><span class="p">[</span><span class="s1">&#39;fileOp&#39;</span><span class="p">][</span><span class="s1">&#39;link&#39;</span><span class="p">]</span>
             <span class="k">elif</span> <span class="s1">&#39;directory&#39;</span> <span class="ow">in</span> <span class="n">msg</span><span class="p">[</span><span class="s1">&#39;fileOp&#39;</span><span class="p">]:</span>
                 <span class="k">if</span> <span class="s1">&#39;remove&#39;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">msg</span><span class="p">[</span><span class="s1">&#39;fileOp&#39;</span><span class="p">]:</span>
                     <span class="n">key</span> <span class="o">=</span> <span class="n">msg</span><span class="p">[</span><span class="s1">&#39;relPath&#39;</span><span class="p">]</span>
+
+        <span class="c1"># 3rd: use identity (checksum) if available (cod = calculate on download, i.e. no checksum yet)</span>
         <span class="k">elif</span> <span class="p">(</span><span class="s1">&#39;identity&#39;</span> <span class="ow">in</span> <span class="n">msg</span><span class="p">)</span> <span class="ow">and</span> <span class="ow">not</span> <span class="p">(</span><span class="n">msg</span><span class="p">[</span><span class="s1">&#39;identity&#39;</span><span class="p">][</span><span class="s1">&#39;method&#39;</span><span class="p">]</span> <span class="ow">in</span> <span class="p">[</span><span class="s1">&#39;cod&#39;</span><span class="p">]):</span>
             <span class="n">key</span> <span class="o">=</span> <span class="n">msg</span><span class="p">[</span><span class="s1">&#39;identity&#39;</span><span class="p">][</span><span class="s1">&#39;method&#39;</span><span class="p">]</span> <span class="o">+</span> <span class="s1">&#39;,&#39;</span> <span class="o">+</span> <span class="n">msg</span><span class="p">[</span><span class="s1">&#39;identity&#39;</span><span class="p">][</span><span class="s1">&#39;value&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s1">&#39;</span><span class="se">\n</span><span class="s1">&#39;</span><span class="p">,</span> <span class="s1">&#39;&#39;</span><span class="p">)</span>
 
+        <span class="c1"># 4th: use relPath and time (and size, if known)</span>
+        <span class="c1">#   This is usually the case for polls, where we don&#39;t have the file&#39;s </span>
+        <span class="c1">#   checksum, but the size and modification time are known</span>
         <span class="k">if</span> <span class="ow">not</span> <span class="n">key</span><span class="p">:</span>
+            <span class="c1"># time comes from file modification time when available, or msg pubTime (required field in all msgs)</span>
             <span class="k">if</span> <span class="s1">&#39;mtime&#39;</span> <span class="ow">in</span> <span class="n">msg</span><span class="p">:</span>
                 <span class="n">t</span> <span class="o">=</span> <span class="n">msg</span><span class="p">[</span><span class="s1">&#39;mtime&#39;</span><span class="p">]</span>
             <span class="k">else</span><span class="p">:</span>
                 <span class="n">t</span> <span class="o">=</span> <span class="n">msg</span><span class="p">[</span><span class="s1">&#39;pubTime&#39;</span><span class="p">]</span>
-            <span class="k">if</span> <span class="s1">&#39;size&#39;</span> <span class="ow">in</span> <span class="n">msg</span><span class="p">:</span>
-                <span class="n">key</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">msg</span><span class="p">[</span><span class="s1">&#39;relPath&#39;</span><span class="p">]</span><span class="si">}</span><span class="s2">,</span><span class="si">{</span><span class="n">t</span><span class="si">}</span><span class="s2">,</span><span class="si">{</span><span class="n">msg</span><span class="p">[</span><span class="s1">&#39;size&#39;</span><span class="p">]</span><span class="si">}</span><span class="s2">&quot;</span>
+
+            <span class="k">if</span> <span class="s1">&#39;nodupe_override&#39;</span> <span class="ow">in</span> <span class="n">msg</span> <span class="ow">and</span> <span class="s1">&#39;path&#39;</span> <span class="ow">in</span> <span class="n">msg</span><span class="p">[</span><span class="s1">&#39;nodupe_override&#39;</span><span class="p">]:</span>
+                <span class="n">path</span> <span class="o">=</span> <span class="n">msg</span><span class="p">[</span><span class="s1">&#39;nodupe_override&#39;</span><span class="p">][</span><span class="s1">&#39;path&#39;</span><span class="p">]</span>
             <span class="k">else</span><span class="p">:</span>
-                <span class="n">key</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">msg</span><span class="p">[</span><span class="s1">&#39;relPath&#39;</span><span class="p">]</span><span class="si">}</span><span class="s2">,</span><span class="si">{</span><span class="n">t</span><span class="si">}</span><span class="s2">&quot;</span>
+                <span class="n">path</span> <span class="o">=</span> <span class="n">msg</span><span class="p">[</span><span class="s1">&#39;relPath&#39;</span><span class="p">]</span>
+
+            <span class="c1"># if file size is known, use it</span>
+            <span class="k">if</span> <span class="s1">&#39;size&#39;</span> <span class="ow">in</span> <span class="n">msg</span><span class="p">:</span>
+                <span class="n">key</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">path</span><span class="si">}</span><span class="s2">,</span><span class="si">{</span><span class="n">t</span><span class="si">}</span><span class="s2">,</span><span class="si">{</span><span class="n">msg</span><span class="p">[</span><span class="s1">&#39;size&#39;</span><span class="p">]</span><span class="si">}</span><span class="s2">&quot;</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">key</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">path</span><span class="si">}</span><span class="s2">,</span><span class="si">{</span><span class="n">t</span><span class="si">}</span><span class="s2">&quot;</span>
 
         <span class="k">return</span> <span class="n">key</span></div>
-
-
+</div>
 
 </pre></div>
 

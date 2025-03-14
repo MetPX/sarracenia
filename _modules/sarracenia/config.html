@@ -2177,12 +2177,17 @@
                 <span class="bp">self</span><span class="o">.</span><span class="n">logLevel</span> <span class="o">=</span> <span class="s1">&#39;critical&#39;</span>
 
         <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s1">&#39;nodupe_basis&#39;</span><span class="p">):</span>
-            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">nodupe_basis</span> <span class="o">==</span> <span class="s1">&#39;data&#39;</span><span class="p">:</span> 
-                <span class="bp">self</span><span class="o">.</span><span class="n">plugins_early</span><span class="o">.</span><span class="n">append</span><span class="p">(</span> <span class="s1">&#39;nodupe.data&#39;</span> <span class="p">)</span>
-                <span class="nb">delattr</span><span class="p">(</span> <span class="bp">self</span><span class="p">,</span> <span class="s1">&#39;nodupe_basis&#39;</span> <span class="p">)</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">nodupe_basis</span> <span class="ow">in</span> <span class="p">[</span> <span class="s1">&#39;data&#39;</span><span class="p">,</span> <span class="s1">&#39;data_only&#39;</span> <span class="p">]:</span> 
+                <span class="bp">self</span><span class="o">.</span><span class="n">plugins_early</span><span class="o">.</span><span class="n">append</span><span class="p">(</span> <span class="s1">&#39;nodupe.data_only&#39;</span> <span class="p">)</span>
+            <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">nodupe_basis</span> <span class="o">==</span> <span class="s1">&#39;path&#39;</span><span class="p">:</span> 
+                <span class="k">pass</span> <span class="c1"># default behaviour.</span>
+            <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">nodupe_basis</span> <span class="o">==</span> <span class="s1">&#39;path_only&#39;</span><span class="p">:</span> 
+                <span class="bp">self</span><span class="o">.</span><span class="n">plugins_early</span><span class="o">.</span><span class="n">append</span><span class="p">(</span> <span class="s1">&#39;nodupe.path_only&#39;</span> <span class="p">)</span>
+            <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">nodupe_basis</span> <span class="o">==</span> <span class="s1">&#39;name_only&#39;</span><span class="p">:</span> 
+                <span class="bp">self</span><span class="o">.</span><span class="n">plugins_early</span><span class="o">.</span><span class="n">append</span><span class="p">(</span> <span class="s1">&#39;nodupe.name_only&#39;</span> <span class="p">)</span>
             <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">nodupe_basis</span> <span class="o">==</span> <span class="s1">&#39;name&#39;</span><span class="p">:</span> 
                 <span class="bp">self</span><span class="o">.</span><span class="n">plugins_early</span><span class="o">.</span><span class="n">append</span><span class="p">(</span> <span class="s1">&#39;nodupe.name&#39;</span> <span class="p">)</span>
-                <span class="nb">delattr</span><span class="p">(</span> <span class="bp">self</span><span class="p">,</span> <span class="s1">&#39;nodupe_basis&#39;</span> <span class="p">)</span>
+            <span class="nb">delattr</span><span class="p">(</span> <span class="bp">self</span><span class="p">,</span> <span class="s1">&#39;nodupe_basis&#39;</span> <span class="p">)</span>
 
         <span class="k">if</span> <span class="n">config</span><span class="p">[</span><span class="o">-</span><span class="mi">5</span><span class="p">:]</span> <span class="o">==</span> <span class="s1">&#39;.conf&#39;</span><span class="p">:</span>
             <span class="n">cfg</span> <span class="o">=</span> <span class="n">config</span><span class="p">[:</span><span class="o">-</span><span class="mi">5</span><span class="p">]</span>
