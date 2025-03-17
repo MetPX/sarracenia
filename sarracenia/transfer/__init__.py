@@ -490,3 +490,5 @@ if features['sftp']['present']:
 if features['s3']['present']:
     import sarracenia.transfer.s3
 
+if features['azurestorage']['present']:
+    import sarracenia.transfer.azure

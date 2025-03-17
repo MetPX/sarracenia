@@ -54,7 +54,7 @@ features = {
     'amqp' : { 'modules_needed': [ 'amqp' ], 'present': False, 
             'lament' : 'cannot connect to rabbitmq brokers', 
             'rejoice' : 'can connect to rabbitmq brokers' },
-    'azurestorage' : { 'modules_needed': [ 'azure-storage-blob' ], 'present': False, 
+    'azurestorage' : { 'modules_needed': [ 'azure.storage.blob' ], 'present': False, 
             'lament' : 'cannot connect natively to Azure Stoarge accounts', 
             'rejoice' : 'can connect natively to Azure Stoarge accounts' },
    'appdirs' : { 'modules_needed': [ 'appdirs' ], 'present': False, 
