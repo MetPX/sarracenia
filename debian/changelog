@@ -1,4 +1,24 @@
-metpx-sr3 (3.00.57rc2) UNRELEASED; urgency=medium
+metpx-sr3 (3.00.58rc1) unstable; urgency=medium
+
+  * Azure transfer class improvements
+  * Fix #1398. Try a close when EOFError is encountered. (FTP)
+  * nodupe improvements (#1382): add path_only and name bases. IMPORTANT:
+    the previous nodupe_basis name is renamed to name_only. Configs will need
+    to be updated.
+  * Fix #884: add option to configure "safe" characters that should not get
+    quoted when URL encoding
+  * Fix #1395: directory removal race condition (impacted HPC mirroring)
+  * Fix #1393: NameError: name 'chunksize_from_str' is not defined
+  * S3 transfer class improvements (allows anonymous access, creates buckets
+    when they do not exist)
+  * Fix #1299: bulletin renamer fix
+  * Fix #1373: cp is in /bin (default accelCpCommand was wrong)
+  * New #1371: Sets the product name and version for AMQP connections
+  * New #1369: add attachment support to email sender plugin
+
+ -- Reid Sunderland <reid.sunderland@ssc-spc.gc.ca>  Mon, 17 Mar 2025 19:15:28 +0000
+
+metpx-sr3 (3.00.57) unstable; urgency=medium
 
   * fix #1366 ln -sf a b ... leave tmp file when a does not exist.
   * fix #1365 better error handling when makedirs fail.
@@ -6,11 +26,6 @@ metpx-sr3 (3.00.57rc2) UNRELEASED; urgency=medium
   * fix #1358 status displays of intervals over 1 month causes crashes.
   * fix #1351 download with arbitrary checksum. 
   * progress #1297 hard ordering of operations (still some use cases left.)
-
- -- peter <peter@bsqt.homeip.net>  Mon, 23 Dec 2024 00:56:15 -0500
-
-metpx-sr3 (3.00.57rc1) unstable; urgency=medium
-
   * New #1350 Add "down" and "disconnected" run states to sr3 status
   * New #1323 DESTFN=NONE::TIME now works.
   * New #1299 after_gather entry point added.
@@ -42,7 +57,7 @@ metpx-sr3 (3.00.57rc1) unstable; urgency=medium
   * fix #1241 sr3 status more compact.
   * fix #1206 exclude retries from lag calculation.
 
- -- SSC-5CD2310S60 <peter@bsqt.homeip.net>  Tue, 06 Dec 2024 16:42:09 -0500
+ -- Reid Sunderland <reid.sunderland@ssc-spc.gc.ca>  Mon, 20 Jan 2025 09:38:09 -0600
 
 metpx-sr3 (3.00.56) unstable; urgency=medium
 

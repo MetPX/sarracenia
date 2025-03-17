@@ -29,6 +29,8 @@ import paramiko
 import stat
 import json
 
+import urllib.parse
+
 from sarracenia.transfer import Transfer
 
 from azure.storage.blob import ContainerClient
@@ -55,6 +57,16 @@ class Azure(Transfer):
 
         self.__user_agent = 'Sarracenia/' + sarracenia.__version__
 
+        if hasattr(self.o, 'tlsRigour'):
+            self.o.tlsRigour = self.o.tlsRigour.lower()
+            if self.o.tlsRigour == 'lax':
+                self.connection_verify = False
+            else:
+                self.connection_verify = True
+
+        # The default INFO level for this logger is quite verbose, we might want to reduce it some day
+        # logging.getLogger('azure.core.pipeline.policies.http_logging_policy').setLevel('WARNING')
+
         self.__init()
     
 
@@ -71,8 +83,10 @@ class Azure(Transfer):
         self.sendTo = None
 
         self.account = None
-        self.container = None
+        self.container_url = None
         self.credentials = None
+        self.account = None
+        self.key = None
 
         self.path = ""
         self.cwd = ""
@@ -82,22 +96,49 @@ class Azure(Transfer):
         self._Metadata_Key = 'sarracenia_v3'
 
     def __credentials(self) -> bool:
-        logger.debug("%s" % self.sendTo)
+        # logger.debug("%s" % self.sendTo)
+        
+        sendTo = self.sendTo.lower().replace("azure://", "https://").replace("azblob://", "https://")
 
         try:
             ok, details = self.o.credentials.get(self.sendTo)
+            url = None
+            if details:
+                url = details.url
 
-            self.account = details.url.hostname
-            self.container = details.url.path.lstrip('/')
-            self.container_url = f"https://{self.account}.blob.core.windows.net/{self.container}"
+                self.account = url.username if url.username != '' else None
 
-            if hasattr(details, 'azure_credentials'):
+                if url.password is not None and url.password != '':
+                    self.key = urllib.parse.unquote_plus(url.password)
+                else:
+                    self.key = None
+
+                if url.password is not None and url.password in sendTo:
+                    sendTo = sendTo.replace(':'+ url.password, '')
+                
+                if url.username is not None and url.username in sendTo:
+                    sendTo = sendTo.replace(url.username + '@', '')
+    
+            self.container_url = sendTo
+
+            if details and hasattr(details, 'azure_credentials') and details.azure_credentials is not None:
                 self.credentials = details.azure_credentials
+                logger.debug("azure_credentials= is set, it will override any "+
+                             "username/password (account name/key) in the URL")
+                return True
+            elif self.account and self.key:
+                self.credentials = { "account_name": self.account,
+                                     "account_key":  self.key,
+                                   }
+                return True
+            else:
+                # assuming this is ok, for anonymous access
+                self.credentials = None
+                logger.debug(f"no credential for {self.sendTo}")
+                return True
 
-            return True
-
-        except:
-            logger.error("sr_azure/credentials: unable to get credentials for %s" % self.sendTo)
+        except Exception as e:
+            logger.error(f"sr_azure/credentials: unable to get credentials for {self.sendTo} ({e})")
             logger.debug('Exception details: ', exc_info=True)
 
         return False
@@ -149,11 +190,18 @@ class Azure(Transfer):
             return False
 
         try:
-            self.client = ContainerClient.from_container_url(container_url=self.container_url, 
-                                                            credential=self.credentials, connection_timeout=5, read_timeout=5, retry_total=1)
-            info = self.client.get_account_information(user_agent=self.__user_agent)
+            # logger.debug(f"connecting to {self.container_url} with credential {self.credentials}")
+            self.client = ContainerClient.from_container_url(container_url=self.container_url,
+                                                             credential=self.credentials,
+                                                             connection_timeout=self.o.timeout,
+                                                             read_timeout=self.o.timeout,
+                                                             retry_total=self.o.attempts,
+                                                             connection_verify=self.connection_verify,
+                                                             user_agent=self.__user_agent
+                                                             )
+            info = self.client.get_account_information()
             self.connected = True
-            logger.debug(f"Connected to container {self.container} in account {self.account} ({self.container_url}); sku:{info['sku_name']}, kind:{info['account_kind']}")
+            logger.debug(f"Connected to {self.container_url}; sku:{info['sku_name']}, kind:{info['account_kind']}")
             return True
 
         except azure.core.exceptions.ClientAuthenticationError as e:
@@ -165,7 +213,7 @@ class Azure(Transfer):
 
     def delete(self, path):
         logger.debug(f"deleting {path}")
-        self.client.delete_blob(path.lstrip('/'), user_agent=self.__user_agent)
+        self.client.delete_blob(path.lstrip('/'))
 
     def get(self,
             msg,
@@ -183,7 +231,7 @@ class Azure(Transfer):
         blob = self.client.get_blob_client(file_key)
 
         with open(local_file, 'wb') as file:
-          data = blob.download_blob(user_agent=self.__user_agent)
+          data = blob.download_blob()
           file.write(data.readall())
 
         rw_length = os.stat(local_file).st_size
@@ -205,7 +253,7 @@ class Azure(Transfer):
 
         self.entries = {}
 
-        blobs = self.client.walk_blobs(name_starts_with=self.path, user_agent=self.__user_agent)
+        blobs = self.client.walk_blobs(name_starts_with=self.path)
 
         for b in blobs:
             # files
@@ -261,26 +309,28 @@ class Azure(Transfer):
             local_offset=0,
             remote_offset=0,
             length=0) -> int:
-        logger.debug(f"uploading {local_file} to {remote_file}")
+        # logger.debug(f"uploading {local_file} to {remote_file}")
 
         file_key = self.path + remote_file
-        logger.debug(f"put {local_file} to http://{self.container_url}/{file_key}")
-        logger.debug(f"msg={msg}")
+        logger.debug(f"{local_file} to {self.container_url}/{file_key}")
+        # logger.debug(f"msg={msg}")
 
-        metadata = {
-                self._Metadata_Key: json.dumps({
-                        'identity': msg['identity'],
-                        'mtime': msg['mtime'],
-                    })
-            }
+        md = {}
+        if 'identity' in msg:
+            md['identity'] = msg['identity']
+        if 'mtime' in msg:
+            md['mtime'] = msg['mtime']
+
+        metadata = { self._Metadata_Key: json.dumps(md) }
 
         # upload
         try:
             with open(local_file, 'rb') as data:
-                new_file = self.client.upload_blob(name=file_key, data=data, metadata=metadata, user_agent=self.__user_agent)
+                new_file = self.client.upload_blob(name=file_key, data=data, metadata=metadata)
             #self.client.upload_file( Filename=local_file, Bucket=self.bucket, Key=file_key, Config=self.s3_transfer_config, ExtraArgs=extra_args)
 
-            write_size = new_file.get_blob_properties(user_agent=self.__user_agent).size
+            write_size = new_file.get_blob_properties().size
+            logger.debug(f'uploaded {local_file} to {self.container_url}/{file_key}')
             return write_size
         except Exception as e:
             logger.error(f"Something went wrong with the upload: {e}", exc_info=True)
@@ -296,16 +346,16 @@ class Azure(Transfer):
         from_url = self.container_url + "/" + remote_old + "?" + self.credentials
 
         logger.debug(f"remote_old={remote_old}; from_url={self.container_url}/{remote_old}; remote_new={remote_new}")
-        b_new.start_copy_from_url(from_url, user_agent=self.__user_agent)
-        self.client.delete_blob(remote_old.lstrip('/'), user_agent=self.__user_agent)
+        b_new.start_copy_from_url(from_url)
+        self.client.delete_blob(remote_old.lstrip('/'))
     
     def rmdir(self, path):
-        blobList=[*self.client.list_blobs(name_starts_with=path, user_agent=self.__user_agent)]
+        blobList=[*self.client.list_blobs(name_starts_with=path)]
         
         logger.debug(f"deleting {len(blobList)} blobs under {path}")
         while len(blobList) > 0:
             first256 = blobList[0:255]
-            self.client.delete_blobs(*first256, delete_snapshots='include', user_agent=self.__user_agent)     # delete_blobs() is faster!
+            self.client.delete_blobs(*first256, delete_snapshots='include')     # delete_blobs() is faster!
             logger.debug("deleted " + str(len(first256)) + " of " + str(len(blobList)) + " blobs")
             del blobList[0:255]
 

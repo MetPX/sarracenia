@@ -1337,7 +1337,7 @@ class Flow:
         if not os.path.isdir(msg['new_dir']):
             try:
                 self.worklist.directories_ok.append(msg['new_dir'])
-                os.makedirs(msg['new_dir'], 0o775, True)
+                os.makedirs(msg['new_dir'], self.o.permDirDefault, True)
             except Exception as ex:
                 logger.error("failed to make directory %s: %s" %
                              (msg['new_dir'], ex))
@@ -1770,18 +1770,33 @@ class Flow:
             new_file = msg['new_file']
 
             if not os.path.isdir(msg['new_dir']):
+
+                # if it's a remove and the directory is already deleted, don't re-create it (issue #1395)
+                if 'fileOp' in msg and 'remove' in msg['fileOp']:
+                    logger.info(f"can't remove {new_path}, the directory {msg['new_dir']} does not exist")
+                    self.reject(msg, 422,
+                                f"can't remove {new_path}, the directory {msg['new_dir']} does not exist")
+                    continue
+
                 try:
                     logger.debug( f"missing destination directories, makedirs: {msg['new_dir']} " )
                     self.worklist.directories_ok.append(msg['new_dir'])
-                    os.makedirs(msg['new_dir'], 0o775, True)
+                    os.makedirs(msg['new_dir'], self.o.permDirDefault, True)
                 except Exception as ex:
                     logger.warning("making %s: %s" % (msg['new_dir'], ex))
                     logger.debug('Exception details:', exc_info=True)
                     self.reject(msg, 422, f"cannot create directory {msg['new_dir']} to put file in it." )
                     continue
-        
-            os.chdir(msg['new_dir'])
-            logger.debug( f"chdir {msg['new_dir']}")
+            
+            # another try is needed in case something deletes new_dir before we chdir to it
+            try:
+                os.chdir(msg['new_dir'])
+                logger.debug( f"chdir {msg['new_dir']}")
+            except Exception as e:
+                logger.error(f"failed to chdir ({e}), possible race condition, deferring transfer of {new_path}")
+                logger.debug("Exception details:", exc_info=True)
+                self.worklist.failed.append(msg)
+                continue
 
             if 'fileOp' in msg :
                 if 'rename' in msg['fileOp']:
@@ -2108,7 +2123,7 @@ class Flow:
             try:
                 if not os.path.isdir(new_dir):
                     self.worklist.directories_ok.append(new_dir)
-                    os.makedirs(new_dir, 0o775, True)
+                    os.makedirs(new_dir, self.o.permDirDefault, True)
                 os.chdir(new_dir)
                 logger.debug( f"local cd to {new_dir}") 
             except Exception as ex:
