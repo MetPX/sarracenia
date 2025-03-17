@@ -1,4 +1,10 @@
-metpx-sr3 (3.00.57rc2) UNRELEASED; urgency=medium
+metpx-sr3 (3.00.58rc1) UNRELEASED; urgency=medium
+
+  * #1369 try to guess if file is an image
+
+ -- Reid Sunderland <reid.sunderland@ssc-spc.gc.ca>  Mon, 20 Jan 2025 16:32:59 +0000
+
+metpx-sr3 (3.00.57) unstable; urgency=medium
 
   * fix #1366 ln -sf a b ... leave tmp file when a does not exist.
   * fix #1365 better error handling when makedirs fail.
@@ -6,11 +12,6 @@ metpx-sr3 (3.00.57rc2) UNRELEASED; urgency=medium
   * fix #1358 status displays of intervals over 1 month causes crashes.
   * fix #1351 download with arbitrary checksum. 
   * progress #1297 hard ordering of operations (still some use cases left.)
-
- -- peter <peter@bsqt.homeip.net>  Mon, 23 Dec 2024 00:56:15 -0500
-
-metpx-sr3 (3.00.57rc1) unstable; urgency=medium
-
   * New #1350 Add "down" and "disconnected" run states to sr3 status
   * New #1323 DESTFN=NONE::TIME now works.
   * New #1299 after_gather entry point added.
@@ -42,7 +43,7 @@ metpx-sr3 (3.00.57rc1) unstable; urgency=medium
   * fix #1241 sr3 status more compact.
   * fix #1206 exclude retries from lag calculation.
 
- -- SSC-5CD2310S60 <peter@bsqt.homeip.net>  Tue, 06 Dec 2024 16:42:09 -0500
+ -- Reid Sunderland <reid.sunderland@ssc-spc.gc.ca>  Mon, 20 Jan 2025 09:38:09 -0600
 
 metpx-sr3 (3.00.56) unstable; urgency=medium
 

@@ -4,7 +4,7 @@ from sarracenia.flowcb import FlowCB
 logger = logging.getLogger(__name__)
 
 
-class Data(FlowCB):
+class Data_only(FlowCB):
     """
        duplicate suppression based on data alone. Overrides the path used for lookups
        in the cache so that all files have the same name, and so if the checksum

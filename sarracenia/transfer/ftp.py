@@ -190,8 +190,16 @@ class Ftp(Transfer):
 
         try:
             old_ftp.quit()
-        except:
-            pass
+        except EOFError:
+            # FTP quit will try to politely close the connection.
+            # Sometimes the client will already have the connection closed.
+            # We should close the connection permanently from our end when this happens.
+            # See https://github.com/MetPX/sarracenia/issues/1398
+            old_ftp.close()
+        except Exception as e:
+            logger.error("FTP connection couldn't close properly.")
+            logger.debug("Exception details:", exc_info=True)
+
         alarm_cancel()
 
     # connect...
