@@ -285,8 +285,16 @@
 
         <span class="k">try</span><span class="p">:</span>
             <span class="n">old_ftp</span><span class="o">.</span><span class="n">quit</span><span class="p">()</span>
-        <span class="k">except</span><span class="p">:</span>
-            <span class="k">pass</span>
+        <span class="k">except</span> <span class="ne">EOFError</span><span class="p">:</span>
+            <span class="c1"># FTP quit will try to politely close the connection.</span>
+            <span class="c1"># Sometimes the client will already have the connection closed.</span>
+            <span class="c1"># We should close the connection permanently from our end when this happens.</span>
+            <span class="c1"># See https://github.com/MetPX/sarracenia/issues/1398</span>
+            <span class="n">old_ftp</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+        <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="s2">&quot;FTP connection couldn&#39;t close properly.&quot;</span><span class="p">)</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;Exception details:&quot;</span><span class="p">,</span> <span class="n">exc_info</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
         <span class="n">alarm_cancel</span><span class="p">()</span>
 
     <span class="c1"># connect...</span>
