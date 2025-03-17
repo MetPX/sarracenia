@@ -54,6 +54,10 @@ ainsi que les paramètres nécessaires aux composants.  Le format est d'une entr
 - **s3://ID_de_clé_d'accès:clé_d'accès_secrète@nom-du-compartiment s3_session_token=une_grande_chaîne**
 - **s3://ID_de_clé_d'accès:clé_d'accès_secrète@nom-du-compartiment s3_endpoint=https://my-endpoint.com/**
 
+- **azure://nom_du_compte:clé_de_compte@votre_compte_de_stockage.blob.core.windows.net/**
+    - Tous les caractères spéciaux dans account_key doivent être codés en URL (%) lors de l'utilisation de ce format.
+- **azure://votre_compte_de_stockage.blob.core.windows.net/ azure_storage_credentials=clé_de_compte**
+
 Dans d’autres fichiers de configuration ou sur la ligne de commande, l’url n’a tout simplement pas le
 spécification du mot de passe ou de la clé. L’url donné dans les autres fichiers est recherchée
 dans credentials.conf.
@@ -82,6 +86,8 @@ Détails pris en charge :
     - ``s3_endpoint=<url>`` - utiliser un point de terminaison spécifique, comme un service non Amazon S3.
     - ``s3_session_token=<string>`` - lors de la spécification des informations d'identification pour S3, le champ du nom d'utilisateur est utilisé comme « ID de clé d'accès », le mot de passe comme « clé d'accès secrète ». Parfois, un jeton de session est également requis et peut être fourni avec cette option.
     - ``s3_anonymous`` - ne pas signer les demandes (accès anonyme). Équivalent à « --no-sign-request » lors de l'utilisation de la CLI S3.
+- Détails du Stockage Blob Azure:
+    - ``azure_storage_credentials=<string>`` - votre clé de compte. Il s'agit d'une alternative à l'utilisation de ``azure://nom_du_compte:clé_de_compte@votre_compte_de_stockage.blob.core.windows.net/``.
 
 déterminée. Cela peut être remplacé en spécifiant une méthode Particulière de connexion, ce qui peut être
 nécessaire si un broker prend en charge plusieurs méthodes et qu’une méthode incorrecte est automatiquement
