@@ -112,7 +112,7 @@
 <dd class="field-odd"><p>7</p>
 </dd>
 <dt class="field-even">Date<span class="colon">:</span></dt>
-<dd class="field-even"><p>Mar 17, 2025</p>
+<dd class="field-even"><p>Mar 19, 2025</p>
 </dd>
 <dt class="field-odd">Version<span class="colon">:</span></dt>
 <dd class="field-odd"><p>3.00.58rc1</p>
@@ -1178,8 +1178,8 @@ un message d´annonce sera produit :</p>
 côté consommateur. Après ce temps, le message d´annonce est rejeté par le flot.
 (0 indique un age infini sera accepté.)</p>
 </section>
-<section id="mirror-flag-defaut-off">
-<h4>mirror &lt;flag&gt; (défaut: off)<a class="headerlink" href="#mirror-flag-defaut-off" title="Link to this heading"></a></h4>
+<section id="mirror-flag-defaut-on-sauf-subcribe">
+<h4>mirror &lt;flag&gt; (défaut: on (sauf subcribe))<a class="headerlink" href="#mirror-flag-defaut-on-sauf-subcribe" title="Link to this heading"></a></h4>
 <p>L’option <strong>miroir</strong> peut être utilisée pour mettre en miroir l’arborescence des fichiers de dd.weather.gc.ca.
 Si l’option est défini a <strong>True</strong> le répertoire donné par l’option <strong>directory</strong> sera le nom de base
 de l’arborescence. Les fichiers acceptés sous ce répertoire seront placé sous le sous-répertoire
@@ -1194,7 +1194,10 @@ Par exemple, récupérer l’URL suivante, avec des options:</p>
 </div>
 <p>entraînerait la création des répertoires et du fichier
 /monrépertoirelocal/radar/PRECIP/GIF/WGJ/201312141900_WGJ_PRECIP_SNOW.gif
-Les paramètres de mirror peuvent être modifiés entre les options de répertoire.</p>
+Les paramètres de mirror peuvent être modifiés entre les options de répertoire.
+Pour avoir un effet, il faut que <em>mirror</em> apparait dans le fichier avant <em>accept</em></p>
+<p>Le composant <em>subscribe</em> est généralement utilisé pour le téléchargement finale, et <em>mirror off</em> signifie que le paramètre <em>directory</em> indiquera exactement où les fichiers sont téléchargés.</p>
+<p>Tous les autres composants sont utilisés dans les pompes de données, et la préservation de l’intégralité de l’arborescence est généralement souhaitée. Ainsi, pour tous les autres composants, <em>mirror on</em> est la valeur par défaut.</p>
 </section>
 <section id="no-count">
 <h4>no &lt;count&gt;<a class="headerlink" href="#no-count" title="Link to this heading"></a></h4>

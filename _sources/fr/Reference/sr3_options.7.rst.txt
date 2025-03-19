@@ -1209,7 +1209,7 @@ L’option **AgeMax** définit un temps pour lequel un message d´annonce peut a
 côté consommateur. Après ce temps, le message d´annonce est rejeté par le flot.
 (0 indique un age infini sera accepté.)
 
-mirror <flag> (défaut: off)
+mirror <flag> (défaut: on (sauf subcribe))
 ---------------------------
 
 L’option **miroir** peut être utilisée pour mettre en miroir l’arborescence des fichiers de dd.weather.gc.ca.
@@ -1227,6 +1227,12 @@ Par exemple, récupérer l’URL suivante, avec des options::
 entraînerait la création des répertoires et du fichier
 /monrépertoirelocal/radar/PRECIP/GIF/WGJ/201312141900_WGJ_PRECIP_SNOW.gif
 Les paramètres de mirror peuvent être modifiés entre les options de répertoire.
+Pour avoir un effet, il faut que *mirror* apparait dans le fichier avant *accept*
+
+Le composant *subscribe* est généralement utilisé pour le téléchargement finale, et *mirror off* signifie que le paramètre *directory* indiquera exactement où les fichiers sont téléchargés.
+
+Tous les autres composants sont utilisés dans les pompes de données, et la préservation de l'intégralité de l'arborescence est généralement souhaitée. Ainsi, pour tous les autres composants, *mirror on* est la valeur par défaut.
+
 
 no <count>
 ----------

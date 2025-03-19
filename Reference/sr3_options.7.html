@@ -113,7 +113,7 @@
 <dd class="field-odd"><p>7</p>
 </dd>
 <dt class="field-even">Date<span class="colon">:</span></dt>
-<dd class="field-even"><p>Mar 17, 2025</p>
+<dd class="field-even"><p>Mar 19, 2025</p>
 </dd>
 <dt class="field-odd">Version<span class="colon">:</span></dt>
 <dd class="field-odd"><p>3.00.58rc1</p>
@@ -1163,8 +1163,8 @@ a warning message will be produced:</p>
 be rejected when consuming. Messages older than Max value are discarded
 by the subscriber. (0 means no maximum age)</p>
 </section>
-<section id="mirror-flag-default-off">
-<h4>mirror &lt;flag&gt; (default: off)<a class="headerlink" href="#mirror-flag-default-off" title="Link to this heading"></a></h4>
+<section id="mirror-flag-default-on-except-subscribe">
+<h4>mirror &lt;flag&gt; (default: on (except subscribe))<a class="headerlink" href="#mirror-flag-default-on-except-subscribe" title="Link to this heading"></a></h4>
 <p>The  <strong>mirror</strong>  option can be used to mirror the dd.weather.gc.ca tree of the files.
 If set to  <strong>True</strong>  the directory given by the  <strong>directory</strong>  option
 will be the basename of a tree. Accepted files under that directory will be
@@ -1179,7 +1179,15 @@ For example retrieving the following url, with options:</p>
 </div>
 <p>would result in the creation of the directories and the file
 /mylocaldirectory/radar/PRECIP/GIF/WGJ/201312141900_WGJ_PRECIP_SNOW.gif
-mirror settings can be changed between directory options.</p>
+mirror settings can be changed between directory options.
+For a <em>mirror</em> setting to be effective, it needs to occur before the <em>accept</em>
+line in the configuration file.</p>
+<p>The <em>subscribe</em> component is usually used by end users for download, and
+<em>mirror off</em> means the <em>directory</em> setting will show exactly where the files
+are downloaded to.</p>
+<p>All the other components are used in data pumps, and usually preserving
+the entire tree is the desired behaviour. So for all other components
+<em>mirror on</em> is the default.</p>
 </section>
 <section id="no-count">
 <h4>no &lt;count&gt;<a class="headerlink" href="#no-count" title="Link to this heading"></a></h4>
