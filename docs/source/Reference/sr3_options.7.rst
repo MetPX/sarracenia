@@ -1226,7 +1226,7 @@ be rejected when consuming. Messages older than Max value are discarded
 by the subscriber. (0 means no maximum age) 
 
 
-mirror <flag> (default: off)
+mirror <flag> (default: on (except subscribe))
 ----------------------------
 
 The  **mirror**  option can be used to mirror the dd.weather.gc.ca tree of the files.
@@ -1244,6 +1244,16 @@ For example retrieving the following url, with options::
 would result in the creation of the directories and the file
 /mylocaldirectory/radar/PRECIP/GIF/WGJ/201312141900_WGJ_PRECIP_SNOW.gif
 mirror settings can be changed between directory options.
+For a *mirror* setting to be effective, it needs to occur before the *accept*
+line in the configuration file.
+
+The *subscribe* component is usually used by end users for download, and
+*mirror off* means the *directory* setting will show exactly where the files
+are downloaded to.
+
+All the other components are used in data pumps, and usually preserving
+the entire tree is the desired behaviour. So for all other components
+*mirror on* is the default.
 
 no <count>
 ----------
