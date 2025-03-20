@@ -423,9 +423,11 @@ def test_random_bulletin_with_BBB():
     assert worklist.incoming[0]['rename'] == 'FXCN06_CYTR_230939_AAA__00001'
 
 # Test 13: SM Bulletin with BBB - Add station mapping + SM/SI bulletin accomodities + conserve BBB header
+#          Also test AddSMHeader option
 def test_SM_bulletin_with_BBB():
     
     BaseOptions = Options()
+    BaseOptions.AddSMHeader = False
     renamer = Raw2bulletin(BaseOptions)
     am_instance = Am(BaseOptions)
 
@@ -442,7 +444,7 @@ def test_SM_bulletin_with_BBB():
     # Check correcting the bulletin contents of the bulletin
     am_instance.o.mapStations2AHL = ['SMCN06 CWAO COLL 71816 71818 71821 71825 71827 71828 71831 71832 71834 71841 71842 71845 71850 71854']
     new_bulletin, isProblem = am_instance.correctContents(bulletin, firstchars, lines, missing_ahl, station, charset)
-    assert new_bulletin == b'SMCN06 CWAO 030000 AAA\nAAXX 03004\n71816 11324 80313 10004 20003 30255 40318 52018 60031 77177 887//\n333 10017 20004 42001 70118 90983 93101=\n'
+    assert new_bulletin == b'SMCN06 CWAO 030000 AAA\n71816 11324 80313 10004 20003 30255 40318 52018 60031 77177 887//\n333 10017 20004 42001 70118 90983 93101=\n'
 
     message_test13['content']['value'] = new_bulletin.decode('iso-8859-1')
     message_test13["isProblem"] = isProblem

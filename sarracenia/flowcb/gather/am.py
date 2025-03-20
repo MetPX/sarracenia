@@ -36,6 +36,9 @@ Description:
             Binary bulletins are characterised by having certain sets of characters on its second line.
             This option allows to customise which binary strings to look for to determine if a bulletin is binary or not.
 
+        AddSMHeader (bool):
+            When True, add `AAXX ddhhmm4` after the bulletin header.
+
         mapStations2AHL (list):
             Some bulletins need to get their header constructed based on a bulletin station mapping file. In sr3, this file would normally be included as stations.inc.
             The format of a station mapping is the following, and is in relation to what was found on Sundew
@@ -92,6 +95,7 @@ class Am(FlowCB):
         self.o.add_option('MissingAMHeaders', 'str', 'CN00 CWAO')
         self.o.add_option('mapStations2AHL', 'list', [])
         self.o.add_option('binaryInitialCharacters', 'list', [b'BUFR' , b'GRIB', b'\211PNG'])
+        self.o.add_option('AddSMHeader', 'bool' , True)
 
         self.host = self.url.netloc.split(':')[0]
         self.port = int(self.url.netloc.split(':')[1])
@@ -390,7 +394,7 @@ class Am(FlowCB):
 
         # From Sundew ->  https://github.com/MetPX/Sundew/blob/main/lib/bulletinAm.py#L114-L115
         # AddSMHeader is set to True on all operational Sundew configs so no need to add an option
-        if bulletin_firstchars in ["SM", "SI"]:
+        if self.o.AddSMHeader and bulletin_firstchars in ["SM", "SI"]:
 
             logger.debug("Adding missing line in SI/SM bulletin")
 
