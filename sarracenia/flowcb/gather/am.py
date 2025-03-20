@@ -95,7 +95,7 @@ class Am(FlowCB):
         self.o.add_option('MissingAMHeaders', 'str', 'CN00 CWAO')
         self.o.add_option('mapStations2AHL', 'list', [])
         self.o.add_option('binaryInitialCharacters', 'list', [b'BUFR' , b'GRIB', b'\211PNG'])
-        self.o.add_option('AddSMHeader', 'bool' , True)
+        self.o.add_option('AddSMHeader', 'flag' , True)
 
         self.host = self.url.netloc.split(':')[0]
         self.port = int(self.url.netloc.split(':')[1])
