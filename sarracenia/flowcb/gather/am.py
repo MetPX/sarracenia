@@ -393,7 +393,6 @@ class Am(FlowCB):
                     break
 
         # From Sundew ->  https://github.com/MetPX/Sundew/blob/main/lib/bulletinAm.py#L114-L115
-        # AddSMHeader is set to True on all operational Sundew configs so no need to add an option
         if self.o.AddSMHeader and bulletin_firstchars in ["SM", "SI"]:
 
             logger.debug("Adding missing line in SI/SM bulletin")
