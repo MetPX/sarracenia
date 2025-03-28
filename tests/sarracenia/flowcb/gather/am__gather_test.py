@@ -424,7 +424,7 @@ def test_random_bulletin_with_BBB():
 
 # Test 13: SM Bulletin with BBB - Add station mapping + SM/SI bulletin accomodities + conserve BBB header
 #          Also test AddSMHeader option
-def test_SM_bulletin_with_BBB():
+def test_SM_bulletin_with_BBB_no_addsmheader():
     
     BaseOptions = Options()
     BaseOptions.AddSMHeader = False
@@ -454,3 +454,73 @@ def test_SM_bulletin_with_BBB():
 
     renamer.after_gather(worklist)
     assert worklist.incoming[0]['rename'] == 'SMCN06_CWAO_030000_AAA_71816_00001'
+
+# Test 14: Complete SM Bulletin with BBXX field - Should not add AAXX line afterwards
+def test_SM_bulletin_with_BBXX():
+    
+    BaseOptions = Options()
+    BaseOptions.AddSMHeader = True
+    renamer = Raw2bulletin(BaseOptions)
+    am_instance = Am(BaseOptions)
+
+    message_test14 = make_message()
+    message_test14['content']['encoding'] = 'iso-8859-1'
+    message_test14['content']['value'] = b'SMVD03 CYTR 280600\nBBXX\nCGAG 28064 99464 70525 41597 61814 10006 21014 40090 57009 70222\n86500 22213 01001 20705 86002=\n'
+
+    bulletin, firstchars, lines, missing_ahl, station, charset = _get_bulletin_info(message_test14)
+
+    bulletinHeader = lines[0].decode('iso-8859-1').replace(' ', '_')
+    message_test14['new_file'] = bulletinHeader + '__12345'
+    message_test14['new_dir'] = BaseOptions.directory
+
+    # Check correcting the bulletin contents of the bulletin
+    am_instance.o.mapStations2AHL = ['SMCN06 CWAO COLL 71816 71818 71821 71825 71827 71828 71831 71832 71834 71841 71842 71845 71850 71854']
+    new_bulletin, isProblem = am_instance.correctContents(bulletin, firstchars, lines, missing_ahl, station, charset)
+    # This is the mainline code and is needed for this particular use case. No mods to the bulletin contents.
+    if new_bulletin == b'':
+        new_bulletin = bulletin
+    assert new_bulletin == b'SMVD03 CYTR 280600\nBBXX\nCGAG 28064 99464 70525 41597 61814 10006 21014 40090 57009 70222\n86500 22213 01001 20705 86002=\n'
+
+    message_test14['content']['value'] = new_bulletin.decode('iso-8859-1')
+    message_test14["isProblem"] = isProblem
+
+    worklist = make_worklist()
+    worklist.incoming = [message_test14]
+
+    renamer.after_gather(worklist)
+    assert worklist.incoming[0]['rename'] == 'SMVD03_CYTR_280600__BBXX_00001'
+
+# Test 15: SM Bulletin with BBB - Add station mapping + SM/SI bulletin accomodities + conserve BBB header
+#          Also test AddSMHeader option
+def test_SM_bulletin_with_BBB_w_addsmheader():
+    
+    BaseOptions = Options()
+    BaseOptions.AddSMHeader = True
+    renamer = Raw2bulletin(BaseOptions)
+    am_instance = Am(BaseOptions)
+
+    message_test15 = make_message()
+    message_test15['content']['encoding'] = 'iso-8859-1'
+    message_test15['content']['value'] = b'SM 030000 AAA\n71816 11324 80313 10004 20003 30255 40318 52018 60031 77177 887//\n333 10017 20004 42001 70118 90983 93101=\n'
+
+    bulletin, firstchars, lines, missing_ahl, station, charset = _get_bulletin_info(message_test15)
+
+    bulletinHeader = lines[0].decode('iso-8859-1').replace(' ', '_')
+    message_test15['new_file'] = bulletinHeader + '__12345'
+    message_test15['new_dir'] = BaseOptions.directory
+
+    # Check correcting the bulletin contents of the bulletin
+    am_instance.o.mapStations2AHL = ['SMCN06 CWAO COLL 71816 71818 71821 71825 71827 71828 71831 71832 71834 71841 71842 71845 71850 71854']
+    new_bulletin, isProblem = am_instance.correctContents(bulletin, firstchars, lines, missing_ahl, station, charset)
+    assert new_bulletin == b'SMCN06 CWAO 030000 AAA\nAAXX 03004\n71816 11324 80313 10004 20003 30255 40318 52018 60031 77177 887//\n333 10017 20004 42001 70118 90983 93101=\n'
+
+    message_test15['content']['value'] = new_bulletin.decode('iso-8859-1')
+    message_test15["isProblem"] = isProblem
+
+    worklist = make_worklist()
+    worklist.incoming = [message_test15]
+
+    renamer.after_gather(worklist)
+    assert worklist.incoming[0]['rename'] == 'SMCN06_CWAO_030000_AAA_71816_00001'
+
+
