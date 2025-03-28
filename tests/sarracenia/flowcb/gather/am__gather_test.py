@@ -523,4 +523,38 @@ def test_SM_bulletin_with_BBB_w_addsmheader():
     renamer.after_gather(worklist)
     assert worklist.incoming[0]['rename'] == 'SMCN06_CWAO_030000_AAA_71816_00001'
 
+# Test 16: SN (Synoptic) Bulletin:
+def test_SN_syno_bulletin():
+    
+    BaseOptions = Options()
+    BaseOptions.AddSMHeader = True
+    renamer = Raw2bulletin(BaseOptions)
+    am_instance = Am(BaseOptions)
+
+    message_test16 = make_message()
+    message_test16['content']['encoding'] = 'iso-8859-1'
+    message_test16['content']['value'] = b'SNVD02 CWAO 280700\nBBXX\nYBVEWGM 28074 99475 70527 43/// /2610 10005 21022 40078 51029 7//// 8//// 90705 22200 0//// 2//// ='
+
+    bulletin, firstchars, lines, missing_ahl, station, charset = _get_bulletin_info(message_test16)
+
+    bulletinHeader = lines[0].decode('iso-8859-1').replace(' ', '_')
+    message_test16['new_file'] = bulletinHeader + '__12345'
+    message_test16['new_dir'] = BaseOptions.directory
+
+    # Check correcting the bulletin contents of the bulletin
+    new_bulletin, isProblem = am_instance.correctContents(bulletin, firstchars, lines, missing_ahl, station, charset)
+    # This is the mainline code and is needed for this particular use case. No mods to the bulletin contents.
+    if new_bulletin == b'':
+        new_bulletin = bulletin
+    assert new_bulletin == b'SNVD02 CWAO 280700\nBBXX\nYBVEWGM 28074 99475 70527 43/// /2610 10005 21022 40078 51029 7//// 8//// 90705 22200 0//// 2//// ='
+
+    message_test16['content']['value'] = new_bulletin.decode('iso-8859-1')
+    message_test16["isProblem"] = isProblem
+
+    worklist = make_worklist()
+    worklist.incoming = [message_test16]
+
+    renamer.after_gather(worklist)
+    assert worklist.incoming[0]['rename'] == 'SNVD02_CWAO_280700___00001'
+
 
