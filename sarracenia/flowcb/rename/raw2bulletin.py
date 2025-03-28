@@ -166,10 +166,7 @@ class Raw2bulletin(FlowCB):
                 if 'isProblem' in msg:
                     del(msg['isProblem'])
 
-                # Need to update the relPath with new filename, because it's not an after_accept. new_dir and new_file don't exist.
-                parts = msg['relPath'].split('/')
-                parts[-1] = new_file
-                msg['relPath'] = '/'.join(parts)
+                msg['rename'] = new_file
 
                 logger.info(f"New filename: {new_file}")
                 new_worklist.append(msg)

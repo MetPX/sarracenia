@@ -42,14 +42,26 @@ the filename in the email subject. For example: ::
 
     email_subject_prepend  Sent by Sarracenia: 
 
+There is also the option of sending a file as an attachment instead of embedding its contents in the email.
+To do this, there are two options that can be used.
+`` email_attachment `` is a boolean value to specify if you want to send files as attachments
+`` email_attachment_text `` is the optional text that can be added inside of the email content, with the attached file.
+    
+    email_attachment True
+    email_attachment_text Attached in this email is data coming from XXX
+
+
 Future Improvement Ideas:
   - SMTP on different ports and with authentication
-  - Attach the file instead of putting the contents in the body (useful for binary files)
     
 Original Author: Wahaj Taseer - June, 2019
 """
 
 from email.message import EmailMessage
+from email.mime.multipart import MIMEMultipart
+from email.mime.application import MIMEApplication
+from email.mime.text import MIMEText
+import mimetypes
 import logging
 import os.path
 import re
@@ -65,6 +77,8 @@ class Email(FlowCB):
         super().__init__(options,logger)
         self.o.add_option('email_from',            'str', default_value='')
         self.o.add_option('email_subject_prepend', 'str', default_value='')
+        self.o.add_option('email_attachment', 'flag', default_value=False)
+        self.o.add_option('email_attachment_text', 'str', default_value='')
 
         # Parse accept/reject mask arguments into email recipient lists
         try:
@@ -133,13 +147,28 @@ class Email(FlowCB):
         # Get list of recipients for this message, from the mask that matched the filename/path
         recipients = self.o.masks[msg['_mask_index']][-1]
 
+        file_type = mimetypes.guess_type(ipath)
+
         # Prepare the email message
-        emsg = EmailMessage()
         try:
-            with open(ipath) as fp:
-                emsg.set_content(fp.read())
+            # Build a non-text email message for the attachment if specified or if the file type can be deemed to be an image.
+            if self.o.email_attachment or 'image' in file_type[0]:
+                emsg = MIMEMultipart()
+                emsg_text = MIMEText(f"{self.o.email_attachment_text}")
+                # Add the attachment text that will be paired with the attachment data
+                emsg.attach(emsg_text)
+                with open(ipath, 'rb') as fp:
+                    attachment_data = fp.read()
+                attachment = MIMEApplication(attachment_data, name=os.path.basename(ipath))
+                # Add the attachment data to the email
+                emsg.attach(attachment)
+            else:
+                emsg = EmailMessage()
+                with open(ipath) as fp:
+                    emsg.set_content(fp.read())
         except Exception as e:
             logger.error(f"Failed to read {ipath}, can't send to {recipients}")
+            logger.debug('Exception details:', exc_info=True)
             # No retry if the file doesn't exist
             return -1
         

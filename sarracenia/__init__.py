@@ -466,6 +466,7 @@ known_report_codes = {
     404: "Not Found: no pattern match",
     406: "Not Acceptable: file older than fileAgeMax",
     410: "Gone: file too old",
+    415: "Unsupported Content Type: content (mime) type unsupported or unknown",
     417: "Expectation Failed: invalid notification message (corrupt headers)",
     422: "Unprocessable Content: could not determine path to transfer to",
     425: "Too Early: file younger than fileAgeMin",

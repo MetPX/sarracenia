@@ -50,6 +50,15 @@ passwords and settings needed by components.  The format is one entry per line. 
 - **ftp://user8:%2fdot8@host:990  implicit_ftps**
 - **https://ladsweb.modaps.eosdis.nasa.gov/ bearer_token=89APCBF0-FEBE-11EA-A705-B0QR41911BF4**
 
+- **s3://bucket-name s3_anonymous**
+- **s3://access_key_id:secret_access_key@bucket-name**
+- **s3://access_key_id:secret_access_key@bucket-name s3_session_token=a_big_string**
+- **s3://access_key_id:secret_access_key@bucket-name s3_endpoint=https://my-endpoint.com/**
+
+- **azure://account_name:account_key@your_storage_account.blob.core.windows.net/**
+    - Any special characters in the account_key should be URL (%) encoded when using this format. 
+- **azure://your_storage_account.blob.core.windows.net/ azure_storage_credentials=account_key**
+
 
 In other configuration files or on the command line, the url simply lacks the
 password or key specification.  The url given in the other files is looked
@@ -73,6 +82,12 @@ Supported details:
 - ``bearer_token=<token>`` (or ``bt=<token>``) - (HTTP) Bearer token for authentication
 - ``login_method=<PLAIN|AMQPLAIN|EXTERNAL|GSSAPI>`` - (AMQP) By default, the login method will be automatically determined. This can be overriden by explicity specifying a login method, which may be required if a broker supports multiple methods and an incorrect one is automatically selected.
 - ``implicit_ftps`` - (FTPS) Use implicit FTPS (otherwise, explicit FTPS is used). Setting this will also set ``tls`` to True.
+- Details for the S3 protocol:
+    - ``s3_endpoint=<url>`` - use a specific endpoint, such as a non-Amazon S3 service.
+    - ``s3_session_token=<string>`` - when specifying credentials for S3, the username field is used as the "Access Key ID", the password as the "Secret Access Key". Sometimes a Session Token is also required, and can be provided with this option.
+    - ``s3_anonymous`` - do not sign requests (anonymous access). Equivalent to ``--no-sign-request`` when using the S3 CLI.
+- Details for Azure blob storage:
+    - ``azure_storage_credentials=<string>`` - your account key. This is an alternative to using ``azure://account_name:account_key@your_storage_account.blob.core.windows.net/``. 
 
 Note::
  SFTP credentials are optional, in that sarracenia will look in the .ssh directory
@@ -80,7 +95,7 @@ Note::
 
  These strings are URL encoded, so if an account has a password with a special 
  character, its URL encoded equivalent can be supplied.  In the last example above, 
- **%2f** means that the actual password isi: **/dot8**
+ **%2f** means that the actual password is: **/dot8**
  The next to last password is:  **De:olonize**. ( %3a being the url encoded value for a colon character. )
 
 

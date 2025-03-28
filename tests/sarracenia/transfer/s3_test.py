@@ -172,7 +172,8 @@ def test_connect(build_client):
     transfer.o.credentials._parse('s3://testing_simple_bucket_creds')
     transfer.o.sendTo = 's3://testing_simple_bucket_creds'
 
-    assert transfer.connect() == False
+    # bucket that doesn't already exist will get created
+    assert transfer.connect() == True
 
     transfer.o.sendTo = 's3://' + TEST_BUCKET_NAME
     assert transfer.connect() == True

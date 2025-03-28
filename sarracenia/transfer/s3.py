@@ -106,6 +106,10 @@ class S3(Transfer):
                 self.client_args['aws_session_token'] = details.s3_session_token
             if hasattr(details, 's3_endpoint'):
                 self.client_args['endpoint_url'] = details.s3_endpoint
+            # equivalent to --no-sign-request with the s3 CLI
+            if hasattr(details, 's3_anonymous') and details.s3_anonymous:
+                self.s3_client_config = self.s3_client_config.merge(
+                                            botocore.config.Config(signature_version=botocore.UNSIGNED))
 
             return True
 
@@ -160,13 +164,37 @@ class S3(Transfer):
 
         try:
             self.client = boto3.client('s3', config=self.s3_client_config, **self.client_args)
-            buckets = self.client.list_buckets()
-            if self.bucket in [b['Name'] for b in buckets['Buckets']]:
-                self.connected = True
-                logger.debug(f"Connected to bucket {self.bucket} in {self.client.get_bucket_location(Bucket=self.bucket)['LocationConstraint']}")
-                return True
-            else:
-                logger.error(f"Can't find bucket called {self.bucket}")
+            
+            # does the bucket exist?
+            exists = False
+            response = None
+            try:
+                response = self.client.head_bucket(Bucket=self.bucket)
+                exists = True
+                logger.debug(f"bucket exists: {response}")
+            except botocore.exceptions.ClientError:
+                exists = False
+            
+            # try to create the bucket if it doesn't exist
+            if not exists:
+                try:
+                    # TODO: should support other parameters like ACL, etc.
+                    self.client.create_bucket(Bucket=self.bucket)
+                    response = self.client.head_bucket(Bucket=self.bucket)
+                    logger.info(f"bucket {self.bucket} was created successfully")
+                    exists = True
+                except Exception as e:
+                    logger.error(f"cannot access bucket {self.bucket}. {e} ({response})")
+                    logger.debug("Exception details:", exc_info=True)
+
+            if exists and response is not None:
+                try:
+                    loc = response['ResponseMetadata']['HTTPHeaders']['x-amz-bucket-region']
+                except:
+                    loc = 'Unknown Location'
+                logger.info(f"Connected to bucket {self.bucket} in {loc}")
+
+            return exists
 
         except botocore.exceptions.ClientError as e:
             logger.error(f"unable to establish boto3 connection: {e}")
@@ -175,7 +203,7 @@ class S3(Transfer):
         except Exception as e:
             logger.error(f"Something else happened: {e}", exc_info=True)
             
-        return False
+        return False 
 
     def delete(self, path):
         logger.debug("deleting %s" % path)

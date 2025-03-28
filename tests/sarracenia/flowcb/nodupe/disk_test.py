@@ -26,7 +26,7 @@ class Options:
 def make_message():
     m = SR3Message()
     m["pubTime"] = "20180118151049.356378078"
-    m["topic"] = "v02.post.sent_by_tsource2send"
+    m["topic"] = [ "v02", "post", "sent_by_tsource2send" ]
     m["mtime"] = "20180118151048"
     m["identity"] = { 
             "method": "md5", 
@@ -36,7 +36,6 @@ def make_message():
     m["from_cluster"] = "localhost"
     m["mode"] = "644"
     m["source"] = "tsource"
-    m["sum"] =  "d,c35f14e247931c3185d5dc69c5cd543e"
     m["to_clusters"] = "localhost"
     m["baseUrl"] =  "https://NotARealURL"
     m["relPath"] = "ThisIsAPath/To/A/File.txt"
