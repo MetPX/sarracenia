@@ -38,6 +38,11 @@ Instructions d’installation
 git
 ---
 
+3.0.58
+------
+
+*CHANGEMENT* : l'ancien ``nodupe_basis name`` a été renommé en ``nodupe_basis name_only``. Les fichiers de configuration devront être mis à jour pour changer **name** à **name_only**.
+
 3.0.56
 ------
 
