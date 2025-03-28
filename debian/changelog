@@ -1,4 +1,4 @@
-metpx-sr3 (3.00.58rc1) unstable; urgency=medium
+metpx-sr3 (3.00.58) unstable; urgency=medium
 
   * Azure transfer class improvements
   * Fix #1398. Try a close when EOFError is encountered. (FTP)
@@ -16,7 +16,7 @@ metpx-sr3 (3.00.58rc1) unstable; urgency=medium
   * New #1371: Sets the product name and version for AMQP connections
   * New #1369: add attachment support to email sender plugin
 
- -- Reid Sunderland <reid.sunderland@ssc-spc.gc.ca>  Mon, 17 Mar 2025 19:15:28 +0000
+ -- Reid Sunderland <reid.sunderland@ssc-spc.gc.ca>  Fri, 28 Mar 2025 19:33:15 +0000
 
 metpx-sr3 (3.00.57) unstable; urgency=medium
 
