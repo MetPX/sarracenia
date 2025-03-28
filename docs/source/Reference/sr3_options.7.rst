@@ -958,6 +958,13 @@ housekeeping <interval> (default: 300 seconds)
 The **housekeeping** option sets how often to execute periodic processing as determined by
 the list of on_housekeeping plugins. By default, it prints a log message every houskeeping interval.
 
+httpsSafeQuote <str> (default '/+')
+-----------------------------------
+
+Exclude certain special characters from being quoted (%xx format) in a https URL.
+Makes use of the *safe* parameter in https://docs.python.org/3/library/urllib.parse.html#urllib.parse.quote
+Only applicable for the HTTPs transfer driver.
+
 
 include config
 --------------
@@ -1085,10 +1092,8 @@ In directory ~/.cache/sarra/log::
 identity <string>
 ------------------
 
-All file notification messages include a checksum.  It is placed in the amqp message header will have as an
-entry *sum* with default value 'd,md5_checksum_on_data'.
-The *sum* option tell the program how to calculate the checksum.
-In v3, they are called Identity methods::
+File notification messages normally include a checksum, posted in the *identity*
+message field. The *identity* option tell the program how to calculate the checksum::
 
          cod,x      - Calculate On Download applying x
          sha512     - do SHA512 on file content  (default)
@@ -1107,6 +1112,10 @@ v2 options are a comma separated string.  Valid checksum flags are :
 * z,a : calculate checksum value using algorithm a and assign after download.
 
 .. [#] only implemented in C. ( see https://github.com/MetPX/sarracenia/issues/117 )
+
+The set of supported identity methods can be extends with user written plugins.
+
+More information: `Duplicate Suppression <../Explanation/DuplicateSuppression.html>`_
 
 
 logEvents ( default: after_accept,after_work,on_housekeeping )
@@ -1249,15 +1258,15 @@ which instance it is. e.g instance 3 will be spawned with --no 3
 nodupe_basis <data|name|path> (default: path)
 ---------------------------------------------
 
-A keyword option to identify which files are compared for
-duplicate suppression purposes. Normally, the duplicate suppression uses the entire path
+A keyword option to identify how files are compared for
+duplicate suppression purposes. 
+Normally, the duplicate suppression uses the entire path
 to identify files which have not changed. This allows for files with identical
 content to be posted in different directories and not be suppressed. In some
 cases, suppression of identical files should be done regardless of where in
-the tree the file resides.  Set 'name' for files of identical name, but in
+the tree the file resides. Set 'name' for files of identical name, but in
 different directories to be considered duplicates. Set to 'data' for any file,
 regardless of name, to be considered a duplicate if the checksum matches.
-
 
 This is implemented as an alias for:
 
@@ -1267,7 +1276,37 @@ or:
 
     callback_prepend nodupe.data
 
-More information: `Duplicate Suppresion <../Explanation/DuplicateSuppression.html>`_
+Table below lists the built-in options to set nodupe_basis:
+
++--------------+-----------------+-----------------------------------------------+
+| nodupe_basis | key             | path (which files will have keys compared.)   |
++--------------+-----------------+-----------------------------------------------+
+| path         | identity*       | relative path (from message) (DEFAULT)        |
++--------------+-----------------+-----------------------------------------------+
+| name         | identity*       | file name (last element of relative path.)    |
++--------------+-----------------+-----------------------------------------------+
+| data_only    | identity*       | not used (all files match). (Sundew method.)  |
++--------------+-----------------+-----------------------------------------------+
+| path_only    | relative path   | relative path                                 |
++--------------+-----------------+-----------------------------------------------+
+| name_only    | file name       | file name                                     |
++--------------+-----------------+-----------------------------------------------+
+
+* If identity is not provided in the message, then mtime and size will be used
+  as fall-backs. It is preferred that the data source define an *identity* field.
+
+A _duplicate_ is a message where both key and path match.
+
+When using *path_only*, for example, the path of the file is the only criterion
+used, and so the first receipt of a file with that path is taken as the *original*
+and any subsequent receipt is considered a duplicate.
+
+It is also straight-forward to create plugins to implement different criteria
+for duplicate detection, by setting a *nodupe_override* field in messages.
+
+More information: `Duplicate Suppression <../Explanation/DuplicateSuppression.html>`_
+
+
 
 fileAgeMax
 ----------
@@ -1313,7 +1352,7 @@ a time will result in 300 seconds (or 5 minutes) being the expiry interval.
 Default value in a Poll is 8 hours, should be longer than nodupe_fileAgeMax to prevent
 re-ingesting files that have aged out of the duplicate suppression cache.
 
-**Note that the duplicate suppresion store is local to each instance**. When N
+**Note that the duplicate suppression store is local to each instance**. When N
 instances share a queue, the first time a posting is received, it could be
 picked by one instance, and if a duplicate one is received it would likely
 be picked up by another instance. **For effective duplicate suppression with instances**,

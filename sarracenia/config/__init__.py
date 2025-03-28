@@ -187,7 +187,7 @@ str_options = [
     'accelCpCommand', 'accelWgetCommand', 'accelScpCommand',
     'action', 'admin', 'baseDir', 'broker', 'cluster', 'directory', 'exchange',
     'exchangeSuffix', 'feeder', 'filename', 'flatten', 'flowMain', 'header', 
-    'hostname', 'identity', 'inlineEncoding', 'logFormat', 'logLevel', 
+    'hostname', 'httpsSafeQuote', 'identity', 'inlineEncoding', 'logFormat', 'logLevel',
     'pollUrl', 'post_baseUrl', 'post_baseDir', 'post_broker', 'post_exchange',
     'post_exchangeSuffix', 'post_format', 'post_topic', 'queueName', 'queueShare', 'sendTo', 'rename',
     'report_exchange', 'source', 'strip', 'timezone', 'nodupe_ttl', 'nodupe_driver', 
@@ -1981,7 +1981,7 @@ class Config:
 
         for d in size_options:
             if hasattr(self, d) and (type(getattr(self, d)) is str):
-                setattr(self, d, chunksize_from_str(getattr(self, d)))
+                setattr(self, d, humanfriendly.parse_size(getattr(self, d)))
 
         for f in flag_options:
             if hasattr(self, f) and (type(getattr(self, f)) is str):
@@ -2003,12 +2003,17 @@ class Config:
                 self.logLevel = 'critical'
 
         if hasattr(self, 'nodupe_basis'):
-            if self.nodupe_basis == 'data': 
-                self.plugins_early.append( 'nodupe.data' )
-                delattr( self, 'nodupe_basis' )
+            if self.nodupe_basis in [ 'data', 'data_only' ]: 
+                self.plugins_early.append( 'nodupe.data_only' )
+            elif self.nodupe_basis == 'path': 
+                pass # default behaviour.
+            elif self.nodupe_basis == 'path_only': 
+                self.plugins_early.append( 'nodupe.path_only' )
+            elif self.nodupe_basis == 'name_only': 
+                self.plugins_early.append( 'nodupe.name_only' )
             elif self.nodupe_basis == 'name': 
                 self.plugins_early.append( 'nodupe.name' )
-                delattr( self, 'nodupe_basis' )
+            delattr( self, 'nodupe_basis' )
 
         if config[-5:] == '.conf':
             cfg = config[:-5]
