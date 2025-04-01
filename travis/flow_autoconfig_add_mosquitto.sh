@@ -41,6 +41,12 @@ EOT
 
 sudo mv /tmp/pwfile /etc/mosquitto
 
+# "Warning: File /etc/mosquitto/pwfile owner is not mosquitto. Future versions will refuse to load this file."
+# "Warning: File /etc/mosquitto/pwfile group is not mosquitto. Future versions will refuse to load this file."
+# "Warning: File /etc/mosquitto/pwfile has world readable permissions. Future versions will refuse to load this file."
+sudo chown mosquitto:mosquitto /etc/mosquitto/pwfile
+sudo chmod 0700 /etc/mosquitto/pwfile
+
 sudo mosquitto_passwd -U /etc/mosquitto/pwfile
 
 cat >/tmp/aclfile <<EOT
@@ -60,6 +66,10 @@ password_file /etc/mosquitto/pwfile
 max_inflight_messages 1000
 max_queued_messages 1000000
 message_size_limit 500000
+# persistence is false by default
+# "If false, the data will be stored in memory only."
+# i.e. data is lost when broker is restarted
+persistence true
 EOT
 sudo mv /tmp/sarra.conf /etc/mosquitto/conf.d
 
