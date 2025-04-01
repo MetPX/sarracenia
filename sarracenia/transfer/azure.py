@@ -341,13 +341,17 @@ class Azure(Transfer):
     
     def rename(self, remote_old, remote_new):
         remote_new = remote_new.lstrip('/')
-        b_new = self.client.get_blob_client(remote_new)
+        remote_new_wpath = self.path + remote_new
 
-        from_url = self.container_url + "/" + remote_old + "?" + self.credentials
+        remote_old_wpath = self.path + remote_old
 
-        logger.debug(f"remote_old={remote_old}; from_url={self.container_url}/{remote_old}; remote_new={remote_new}")
+        b_new = self.client.get_blob_client(remote_new_wpath)
+
+        from_url = self.container_url + "/" + remote_old_wpath + "?" + self.credentials
+
+        logger.debug(f"remote_old={remote_old_wpath}; from_url={self.container_url}/{remote_old_wpath}; remote_new={remote_new_wpath}")
         b_new.start_copy_from_url(from_url)
-        self.client.delete_blob(remote_old.lstrip('/'))
+        self.client.delete_blob(remote_old_wpath.lstrip('/'))
     
     def rmdir(self, path):
         blobList=[*self.client.list_blobs(name_starts_with=path)]
