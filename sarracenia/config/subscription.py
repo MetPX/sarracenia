@@ -1,4 +1,5 @@
 
+import copy
 import json
 import logging
 
@@ -42,7 +43,7 @@ class Subscriptions(list):
 
         jl=[]
         for s in self:
-            jd=s
+            jd=copy.deepcopy(s)
             jd['broker']=str(s['broker'])
             jl.append(jd)
 
