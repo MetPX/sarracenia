@@ -946,23 +946,6 @@ class Config:
                 setattr(result, k, copy.deepcopy(v, memo))
         return result
 
-    def hohoo_validate_urlstr(self, urlstr) -> tuple :
-        """
-           returns a tuple ( bool, expanded_url ) 
-           the bool is whether the expansion worked, and the expanded_url is one with
-           the added necessary authentication details from sarracenia.Credentials.
-
-        """
-        # check url and add credentials if needed from credential file
-        ok, cred_details = Config.credentials.get(urlstr)
-        if cred_details is None:
-            logging.critical("bad credential %s" % urlstr)
-            # Callers expect that a Credential object will be returned
-            cred_details = sarracenia.config.credentials.Credential()
-            cred_details.url = urllib.parse.urlparse(urlstr)
-            return False, cred_details
-        return True, cred_details
-
     def applyComponentDefaults( self, component ):
         """
           overlay defaults options for the given component to the given configuration.
