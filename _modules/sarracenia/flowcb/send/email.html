@@ -241,12 +241,13 @@
         <span class="c1"># Get list of recipients for this message, from the mask that matched the filename/path</span>
         <span class="n">recipients</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">o</span><span class="o">.</span><span class="n">masks</span><span class="p">[</span><span class="n">msg</span><span class="p">[</span><span class="s1">&#39;_mask_index&#39;</span><span class="p">]][</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
 
+        <span class="c1"># i.e. (type/subtype, encoding)</span>
         <span class="n">file_type</span> <span class="o">=</span> <span class="n">mimetypes</span><span class="o">.</span><span class="n">guess_type</span><span class="p">(</span><span class="n">ipath</span><span class="p">)</span>
 
         <span class="c1"># Prepare the email message</span>
         <span class="k">try</span><span class="p">:</span>
             <span class="c1"># Build a non-text email message for the attachment if specified or if the file type can be deemed to be an image.</span>
-            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">o</span><span class="o">.</span><span class="n">email_attachment</span> <span class="ow">or</span> <span class="s1">&#39;image&#39;</span> <span class="ow">in</span> <span class="n">file_type</span><span class="p">[</span><span class="mi">0</span><span class="p">]:</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">o</span><span class="o">.</span><span class="n">email_attachment</span> <span class="ow">or</span> <span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">file_type</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span> <span class="ow">and</span> <span class="n">file_type</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="ow">and</span> <span class="s1">&#39;image&#39;</span> <span class="ow">in</span> <span class="n">file_type</span><span class="p">[</span><span class="mi">0</span><span class="p">]):</span>
                 <span class="n">emsg</span> <span class="o">=</span> <span class="n">MIMEMultipart</span><span class="p">()</span>
                 <span class="n">emsg_text</span> <span class="o">=</span> <span class="n">MIMEText</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">o</span><span class="o">.</span><span class="n">email_attachment_text</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
                 <span class="c1"># Add the attachment text that will be paired with the attachment data</span>
