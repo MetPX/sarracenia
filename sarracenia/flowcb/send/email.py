@@ -147,12 +147,13 @@ class Email(FlowCB):
         # Get list of recipients for this message, from the mask that matched the filename/path
         recipients = self.o.masks[msg['_mask_index']][-1]
 
+        # i.e. (type/subtype, encoding)
         file_type = mimetypes.guess_type(ipath)
 
         # Prepare the email message
         try:
             # Build a non-text email message for the attachment if specified or if the file type can be deemed to be an image.
-            if self.o.email_attachment or 'image' in file_type[0]:
+            if self.o.email_attachment or (len(file_type) > 0 and file_type[0] and 'image' in file_type[0]):
                 emsg = MIMEMultipart()
                 emsg_text = MIMEText(f"{self.o.email_attachment_text}")
                 # Add the attachment text that will be paired with the attachment data
