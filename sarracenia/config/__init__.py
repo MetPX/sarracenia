@@ -2169,6 +2169,9 @@ class Config:
             logger.critical( f"{component}/{config} vip feature requested, but missing library: {' '.join(features['vip']['modules_needed'])} " )
             sys.exit(1)
 
+        if hasattr(self, 'broker') and self.broker is None and hasattr(self, 'post_broker') and self.post_broker is None:
+            logger.warning("Both broker and post_broker are set to None")
+
     def check_undeclared_options(self):
 
         alloptions = str_options + flag_options + float_options + list_options + set_options + count_options + size_options + duration_options
