@@ -302,7 +302,7 @@ class AMQP(Moth):
                         passive=passive,
                         durable=queue['durable'],
                         exclusive=False,
-                        auto_delete=self.o['auto_delete'],
+                        auto_delete=queue['auto_delete'],
                         nowait=False,
                         arguments=args)
                     if not passive:
@@ -314,7 +314,7 @@ class AMQP(Moth):
 
         except Exception as err:
             logger.error(
-                    f'connecting to: {queue["name"]}, durable: {queue["durable"]}, expire: {queue["expire"]}, auto_delete={self.o["auto_delete"]}'
+                    f'connecting to: {queue["name"]}, durable: {queue["durable"]}, expire: {queue["expire"]}, auto_delete={queue["auto_delete"]}'
                 )
             logger.error( f"failed queue declare to {broker.url.hostname}: {err}" )
             logger.debug('Exception details: ', exc_info=True)
@@ -419,7 +419,7 @@ class AMQP(Moth):
 
         except Exception as err:
             logger.error(
-                f'connecting to: {queue["name"]}, durable: {queue["durable"]}, expire: {queue["expire"]}, auto_delete={self.o["auto_delete"]}'
+                f'connecting to: {queue["name"]}, durable: {queue["durable"]}, expire: {queue["expire"]}, auto_delete={queue["auto_delete"]}'
             )
             logger.error( f"failed connection to {broker.url.hostname}: {err}" )
             logger.debug('Exception details: ', exc_info=True)

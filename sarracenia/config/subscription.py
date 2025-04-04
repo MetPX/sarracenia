@@ -16,7 +16,7 @@ class Subscription(dict):
         self['queue']={ 'name': queueName, 'cleanup_needed': None }
         for a in [ 'auto_delete', 'durable', 'expire', 'prefetch', 'qos', 'queueBind', 'queueDeclare' ]:
             aa = a.replace('queue','').lower()
-            if hasattr(options, a) and getattr(options,a):
+            if hasattr(options, a):
                 self['queue'][aa] = getattr(options,a)
 
 class Subscriptions(list):
@@ -33,6 +33,8 @@ class Subscriptions(list):
                     ok, broker = options.credentials.validate_urlstr(s['broker'])
                     if ok:
                         s['broker'] = broker
+            if 'auto_delete' not in self:
+                s['auto_delete'] = options.auto_delete
             return self
         except Exception as Ex:
             logger.debug( f"failed {fn}: {Ex}" )
