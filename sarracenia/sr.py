@@ -1841,10 +1841,16 @@ class sr_GlobalState:
                         'broker': o.broker,
                         'dry_run': self.options.dry_run,
                         'echangeDeclare': False,
-                        'queueDeclare': False,
-                        'queueBind': False,
                         'broker': o.broker,
-                        'queueName': o.queueName_resolved,
+                        'subscriptions' : [ {
+                            'broker': o.broker, 
+                            'queue': { 
+                                      'name': o.queueName_resolved,
+                                      'durable': o.durable,
+                                      'expire': o.expire,
+                                      'declare': False,
+                                      'bind': False
+                                      }} ],
                         'message_strategy': { 'stubborn':True }
                     })
                 qdc.getSetup()

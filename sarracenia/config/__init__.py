@@ -2079,7 +2079,7 @@ class Config:
 
             if (self.bindings == [] and hasattr(self, 'exchange')):
                 self.bindings = [(self.exchange, self.topicPrefix, [ '#' ])]
-                self.subscriptions.append(Subscription(self, self.queueName, '#'))
+                self.subscriptions.append(Subscription(self, self.queueName, [ '#' ]))
 
             # read old subscriptions, compare to current.
             #old_subscriptions=self.subscriptions.read(self, self.subscriptionsPath)
