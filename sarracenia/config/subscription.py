@@ -1,6 +1,8 @@
 
 import copy
 import json
+import os
+
 import logging
 
 logger = logging.getLogger(__name__)
@@ -23,6 +25,10 @@ class Subscriptions(list):
     # list of subscription
 
     def read(self,options,fn):
+
+        if not os.path.exists(fn):
+            return None
+
         try:
             with open(fn,'r') as f:
                 #self=json.loads(f.readlines())
@@ -36,6 +42,7 @@ class Subscriptions(list):
             if 'auto_delete' not in self:
                 s['auto_delete'] = options.auto_delete
             return self
+
         except Exception as Ex:
             logger.debug( f"failed {fn}: {Ex}" )
             logger.debug('Exception details: ', exc_info=True)
