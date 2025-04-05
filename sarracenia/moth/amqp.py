@@ -265,7 +265,7 @@ class AMQP(Moth):
 
     def _queueDeclare(self,passive=False) ->  int:
 
-        subscription=self.o['subscriptions'][0]
+        subscription=self.o['subscriptions'][self.o['subscription_index']]
         queue=subscription['queue']
         broker = subscription['broker']
 
@@ -360,7 +360,7 @@ class AMQP(Moth):
             logger.critical( f"too soon to connect again will try in: {self.next_connect_time-start} seconds" )
             return
 
-        subscription=self.o['subscriptions'][0]
+        subscription=self.o['subscriptions'][self.o['subscription_index']]
         queue=subscription['queue']
         broker = subscription['broker']
 
@@ -509,16 +509,21 @@ class AMQP(Moth):
 
     def getCleanUp(self) -> None:
 
+        if not 'subscriptions' in self.o:
+            return 
+
+        s=self.o['subscriptions'][self.o['subscription_index']]
+        q=s['queue']
         try:
             if self.o['dry_run']:
-                logger.info("deleting queue (dry run) %s" % self.o['queueName'] )
+                logger.info("deleting queue (dry run) %s" % q['name'] )
             else:
-                logger.info("deleting queue %s" % self.o['queueName'] )
+                logger.info("deleting queue %s" % q['name'] )
                 if hasattr(self,'channel'):
-                    self.channel.queue_delete(self.o['queueName'])
+                    self.channel.queue_delete(q['name'])
         except Exception as err:
             logger.error("failed to {} with {}".format(
-                self.o['broker'].url.hostname, err))
+                s['broker'].url.hostname, err))
             logger.debug('Exception details: ', exc_info=True)
 
     def newMessages(self) -> list:

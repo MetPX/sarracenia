@@ -834,6 +834,7 @@ class Config:
         """
         self.bindings = []
         self.subscriptions = Subscriptions()
+        self.subscription_index = 0
         self.__admin = None
         self.__broker = None
         self.__post_broker = None

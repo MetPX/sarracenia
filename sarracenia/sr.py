@@ -476,6 +476,10 @@ class sr_GlobalState:
                         self.states[c][cfg]['has_state'] = False
                         self.states[c][cfg]['noVip'] = None
                         
+                        if os.path.exists('subscriptions.json'):
+                            s = Subscriptions()
+                            self.states[c][cfg]['subscriptions'] = s.read( \
+                                self.configs[c][cfg]['options'], 'subscriptions.json')
 
                         for pathname in os.listdir():
                             p = pathlib.Path(pathname)
@@ -845,6 +849,7 @@ class sr_GlobalState:
                     xl = self.__resolved_exchanges(c, cfg, o)
                     q = self.__guess_queueName(c, cfg, o)
 
+                q = s['queue']
                     self.configs[c][cfg]['options'].queueName_resolved = q
 
                     for exch in xl:
@@ -1832,31 +1837,31 @@ class sr_GlobalState:
                 break
             (c, cfg) = f.split(os.sep)
 
+            if 'subscriptions' not in self.states[c][cfg]:
+                continue
+
             o = self.configs[c][cfg]['options']
 
-            if hasattr(o, 'queueName_resolved'):
-                #print('deleting: %s is: %s @ %s' % (f, o.queueName_resolved, o.broker.url.hostname ))
-                qdc = sarracenia.moth.Moth.subFactory(
-                    {
-                        'broker': o.broker,
-                        'dry_run': self.options.dry_run,
-                        'echangeDeclare': False,
-                        'broker': o.broker,
-                        'subscriptions' : [ {
-                            'broker': o.broker, 
-                            'queue': { 
-                                      'name': o.queueName_resolved,
-                                      'durable': o.durable,
-                                      'expire': o.expire,
-                                      'declare': False,
-                                      'bind': False
-                                      }} ],
-                        'message_strategy': { 'stubborn':True }
-                    })
-                qdc.getSetup()
-                qdc.getCleanUp()
-                qdc.close()
-                queues_to_delete.append((o.broker, o.queueName_resolved))
+            for s in self.states[c][cfg]['subscriptions']:
+                q = s['queue']
+                if 'name' in q:
+                    print('deleting: %s is: %s @ %s' % (f, q['name'], o.broker.url.hostname ))
+                    if type(o.broker) == str:
+                        ok, o.broker = o.credentials.validate_urlstr( o.broker )
+                    qdc = sarracenia.moth.Moth.subFactory(
+                        {
+                            'broker': o.broker,
+                            'dry_run': self.options.dry_run,
+                            'credentials': o.credentials,
+                            'echangeDeclare': False,
+                            'subscription_index': 0,
+                            'subscriptions' : [ s ],
+                            'message_strategy': { 'stubborn':True }
+                        })
+                    qdc.getSetup()
+                    qdc.getCleanUp()
+                    qdc.close()
+                    queues_to_delete.append((o.broker, q['name']))
 
         for h in self.brokers:
             if self.please_stop:
