@@ -287,7 +287,7 @@ class AMQP(Moth):
                 if queue['expire']:
                     x = int(queue['expire'] * 1000)
                     if x > 0: args['x-expires'] = x
-                if self.o['messageAgeMax']:
+                if 'messageAgeMax' in self.o and self.o['messageAgeMax']:
                     x = int(self.o['messageAgeMax'] * 1000)
                     if x > 0: args['x-message-ttl'] = x
 
@@ -704,7 +704,7 @@ class AMQP(Moth):
             else:
                 exchange = self.o['exchange']
 
-        if self.o['messageAgeMax']:
+        if 'messageAgeMax' in self.o and self.o['messageAgeMax']:
             ttl = "%d" * int(
                 sarracenia.durationToSeconds(self.o['messageAgeMax']) * 1000)
         else:
