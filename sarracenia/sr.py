@@ -849,9 +849,6 @@ class sr_GlobalState:
                     xl = self.__resolved_exchanges(c, cfg, o)
                     q = self.__guess_queueName(c, cfg, o)
 
-                q = s['queue']
-                    self.configs[c][cfg]['options'].queueName_resolved = q
-
                     for exch in xl:
                         if exch in self.brokers[host]['exchanges']:
                             self.brokers[host]['exchanges'][exch].append(q)
@@ -1583,14 +1580,21 @@ class sr_GlobalState:
                 continue
             logging.info('looking at %s/%s ' % (c, cfg))
             o = self.configs[c][cfg]['options']
-            od = o.dictify()
-            if hasattr(o, 'queueName_resolved'):
-                od['broker'] = o.broker
-                od['queueName'] = o.queueName_resolved
+            if not hasattr(o,'subscriptions'):
+                continue
+
+            i=0
+            for s in o.subscriptions:
+                logger.critical( f" {s=}" )
+                od = o.dictify()
+                od['broker'] = s['broker']
+                od['queueName'] = s['queue']['name']
                 od['dry_run'] = self.options.dry_run
+                od['subscription_index']=i
                 qdc = sarracenia.moth.Moth.subFactory(od)
                 qdc.getSetup()
                 qdc.close()
+                i += 1
 
         # run on_declare plugins.
         for f in self.filtered_configurations:
