@@ -1849,9 +1849,10 @@ class sr_GlobalState:
             for s in self.states[c][cfg]['subscriptions']:
                 q = s['queue']
                 if 'name' in q:
-                    print('deleting: %s is: %s @ %s' % (f, q['name'], o.broker.url.hostname ))
                     if type(o.broker) == str:
-                        ok, o.broker = o.credentials.validate_urlstr( o.broker )
+                        ok, o.broker = o.credentials.get( o.broker )
+
+                    print('deleting: %s is: %s @ %s' % (f, q['name'], o.broker.url.hostname ))
                     qdc = sarracenia.moth.Moth.subFactory(
                         {
                             'broker': o.broker,
