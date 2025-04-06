@@ -621,7 +621,6 @@ class AMQP(Moth):
             m['_deleteOnPost'].remove('ack_id')
             return False
         
-        #logger.info( f"acknowledging {m['ack_id']}" )
         ebo = 1
         while True:
             try:
