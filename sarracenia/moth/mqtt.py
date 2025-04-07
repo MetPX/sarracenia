@@ -178,7 +178,7 @@ class MQTT(Moth):
             self.rx_msg[3]=[]
             self.rx_msg[4]=[]
             self.rx_msg_mutex.release()
-
+            self.broker = None
       
         logger.warning("note: mqtt support is newish, not very well tested")
 
@@ -367,6 +367,7 @@ class MQTT(Moth):
                 cs = True
                 logger.info( f" cid=+{cid}+"  )
 
+            self.broker = str(self.o['broker'])
             props = Properties(PacketTypes.CONNECT)
             if 'expire' in self.o and self.o['expire']:
                 props.SessionExpiryInterval = int(self.o['expire'])
@@ -398,9 +399,9 @@ class MQTT(Moth):
                 for i in range(1,session_mxi ):
                     icid = self.o['queueName'] + "_i%02d" %  i
                     logger.info( f"declare session for instances {icid}" )
-                    decl_client = self.__clientSetup(icid)
-                    decl_client.on_connect = MQTT.__sub_on_connect
-                    decl_client.connect( self.o['broker'].url.hostname, port=self.__sslClientSetup(decl_client), \
+                    self.client = self.__clientSetup(icid)
+                    self.client.on_connect = MQTT.__sub_on_connect
+                    self.client.connect( self.o['broker'].url.hostname, port=self.__sslClientSetup(self.client), \
                        clean_start=False, properties=props )
                     while (self.connect_in_progress) or (self.subscribe_in_progress > 0):
                         logger.info( f"waiting ({ebo} seconds) for broker to confirm subscription is set up.")
@@ -408,9 +409,9 @@ class MQTT(Moth):
                         if self._stop_requested:
                             return
                         if ebo < 60: ebo *= 2
-                        decl_client.loop(ebo)
-                    decl_client.disconnect()
-                    decl_client.loop_stop()
+                        self.client.loop(ebo)
+                    self.client.disconnect()
+                    self.client.loop_stop()
                     logger.info( f"instance declaration for {icid} done" )
                 
         except Exception as err:
@@ -560,7 +561,10 @@ class MQTT(Moth):
         message.deriveSource( self.o )
         message.deriveTopics( self.o, topic=mqttMessage.topic, separator='/' )
 
-        message['ack_id'] = mqttMessage.mid
+        message['ack_id'] = { 'delivery_tag':  mqttMessage.mid, 
+                              'broker':        self.broker,
+                            }
+
         message['qos'] = mqttMessage.qos
         message['local_offset'] = 0
         message['_deleteOnPost'] |= set( ['exchange', 'local_offset', 'ack_id', 'qos' ])
@@ -640,8 +644,8 @@ class MQTT(Moth):
     def ack(self, m: sarracenia.Message ) -> None:
 
         if 'ack_id' in m:
-            logger.info('mid=%d' % m['ack_id'])
-            self.client.ack( m['ack_id'], m['qos'] )
+            logger.info( f"mid={m['ack_id']}")
+            self.client.ack( m['ack_id']['delivery_tag'], m['qos'] )
             del m['ack_id']
             m['_deleteOnPost'].remove('ack_id')
         return True
