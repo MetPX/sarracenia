@@ -75,8 +75,8 @@ class Message(FlowCB):
         if hasattr(self,'consumers'):
             i=0
             for c in self.consumers:
-                if hasattr(self.o,'subscribers'):
-                    b=str(self.o.subscribers[i]['broker'])
+                if hasattr(self.o,'subscriptions'):
+                    b=str(self.o.subscriptions[i]['broker'])
                     if hasattr(c,'metricsReport'):
                         reports[b]=c.metricsReport()
                 i+=1
@@ -88,10 +88,11 @@ class Message(FlowCB):
             return
 
         mm = self.metricsReport()
-        for m in mm:
+        for b in mm:
+            m = mm[b]
             average = (m['rxByteCount'] /
                    m['rxGoodCount'] if m['rxGoodCount'] != 0 else 0)
-            logger.info( f"messages: good: {m['rxGoodCount']} bad: {m['rxBadCount']} " +\
+            logger.info( f"from {b} messages: good: {m['rxGoodCount']} bad: {m['rxBadCount']} " +\
                f"bytes: {naturalSize(m['rxByteCount'])} " +\
                f"average: {naturalSize(average)}" )
 
