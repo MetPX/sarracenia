@@ -165,6 +165,8 @@ class MQTT(Moth):
         if 'max_queued_messages' in self.o and type(self.o['max_queued_messages']) is not int:
             self.o['max_queued_messages'] = int( self.o['max_queued_messages'] )
 
+        self.is_subscriber = is_subscriber
+
         if is_subscriber:
 
             if 'receiveMaximum' in queue and type(queue['receiveMaximum']) is not int:
@@ -301,8 +303,7 @@ class MQTT(Moth):
         if not client and hasattr(self,'client'):
             client=self.client
 
-        if 'subscriptions' in self.o and self.o['subscriptions']:
-            logger.critical( f" {self.o['subscriptions']=} {self.o['subscription_index']=} " )
+        if self.is_subscriber and 'subscriptions' in self.o and self.o['subscriptions']:
             s=self.o['subscriptions'][self.o['subscription_index']]
             queue=s['queue']
             broker=s['broker']
