@@ -178,8 +178,9 @@ perm_options = [ 'permDefault', 'permDirDefault','permLog']
 
 # options that apply to queues, and so must appear before subtopic resolves queues characteristics.
 #
-queue_options = [ 'auto_delete', 'broker', 'durable', 'exchange', 'exchangeSuffix', 'expire', 'prefetch', \
-                    'qos', 'queueBind',  'queueDeclare' ]
+queue_options = [ 'auto_delete', 'broker', 'clean_session', 'durable', 'exchange', 'exchangeSuffix',  \
+                  'expire', 'max_inflight_messages', 'max_queued_messages',  'prefetch',  \
+                 'qos', 'queueBind',  'queueDeclare' , 'receiveMaximum', 'tlsRigour']
 
 size_options = ['accelThreshold', 'blockSize', 'bufSize', 'byteRateMax', 'fileSizeMax', 'inlineByteMax']
 

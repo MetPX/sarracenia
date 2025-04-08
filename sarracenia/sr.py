@@ -1850,12 +1850,18 @@ class sr_GlobalState:
                 q = s['queue']
                 if 'name' in q:
                     if type(o.broker) == str:
-                        ok, o.broker = o.credentials.get( o.broker )
+                        ok, broker = o.credentials.get( o.broker )
+                    else:
+                        broker=o.broker
 
-                    print('deleting: %s is: %s @ %s' % (f, q['name'], o.broker.url.hostname ))
+                    if not broker:
+                        print( f" could not resolve broker: {o.broker} " )
+                        continue
+
+                    print('deleting: %s is: %s @ %s' % (f, q['name'], broker.url.hostname ))
                     qdc = sarracenia.moth.Moth.subFactory(
                         {
-                            'broker': o.broker,
+                            'broker': broker,
                             'dry_run': self.options.dry_run,
                             'credentials': o.credentials,
                             'echangeDeclare': False,
@@ -1866,7 +1872,7 @@ class sr_GlobalState:
                     qdc.getSetup()
                     qdc.getCleanUp()
                     qdc.close()
-                    queues_to_delete.append((o.broker, q['name']))
+                    queues_to_delete.append((broker, q['name']))
 
         for h in self.brokers:
             if self.please_stop:

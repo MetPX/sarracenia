@@ -16,8 +16,14 @@ class Subscription(dict):
         self['bindings'] = [ { 'exchange': options.exchange, 'prefix': options.topicPrefix, 'sub': subtopic } ]
 
         self['queue']={ 'name': queueName, 'cleanup_needed': None }
-        for a in [ 'auto_delete', 'durable', 'expire', 'prefetch', 'qos', 'queueBind', 'queueDeclare' ]:
-            aa = a.replace('queue','').lower()
+        for a in [ 'auto_delete', 'clean_session', 'durable', 'expire', 'max_inflight_messages', \
+                'max_queued_messages', \
+                'prefetch', 'queueBind', 'queueDeclare', 'qos', 'receiveMaximum', 'tlsRigour' ]:
+            if 'queue' in a:
+                aa = a.replace('queue','').lower()
+            else:
+                aa = a
+
             if hasattr(options, a):
                 self['queue'][aa] = getattr(options,a)
 
