@@ -835,6 +835,7 @@ class Config:
         """
         self.bindings = []
         self.subscriptions = Subscriptions()
+        self.old_subscriptions = Subscriptions()
         self.subscription_index = 0
         self.__admin = None
         self.__broker = None
@@ -912,6 +913,7 @@ class Config:
 	    #self.post_topicPrefix = None
         self.pstrip = False
         self.queueName = None
+        self.resolved_queueName = None
         self.queueShare = "${USER}_${HOSTNAME}_${RAND8}"
         self.randomize = False
         self.rename = None
@@ -1254,6 +1256,8 @@ class Config:
                 for s in d['subscriptions']:
                     s['broker'] = str(s['broker']) 
             elif k in ['old_subscriptions' ]:
+                if not c['old_subscriptions']:
+                    continue
                 d['old_subscriptions'] = c['old_subscriptions']
                 for s in d['old_subscriptions']:
                     s['broker'] = str(s['broker'])
@@ -1388,7 +1392,7 @@ class Config:
             return
 
         self._resolve_exchange()
-        self.queueName = self._resolveQueueName(self.component,self.config)
+        self.resolved_queueName = self._resolveQueueName(self.component,self.config)
 
         if type(subtopic_string) is str:
             if self.broker.url.scheme == 'amq' :
@@ -1398,7 +1402,7 @@ class Config:
             
         if hasattr(self, 'exchange') and hasattr(self, 'topicPrefix'):
             self.bindings.append((self.exchange, self.topicPrefix, subtopic))
-            self.subscriptions.add(Subscription(self, self.queueName, subtopic))
+            self.subscriptions.add(Subscription(self, self.queueName, self.resolved_queueName, subtopic))
 
     def _parse_v2plugin(self, entryPoint, value):
         """
@@ -1602,7 +1606,10 @@ class Config:
         if k == 'continue':
             return
             
-        line = list(map(lambda x: self._varsub(x), line))
+        # the exceptions here need to be evaluated later, they are template variables.
+        # should not be substituted too early.
+        if k not in ['queueName', 'queueShare' ]:
+            line = list(map(lambda x: self._varsub(x), line))
 
         if len(line) == 1:
             v = True
@@ -1770,7 +1777,7 @@ class Config:
             # specify a second queue with different bindings... so this warning could be complaining about something 
             # that is correct.   but in every current case, the warning will be helpful.
             if ( k == 'queueName' ) and self.subtopic_seen:
-                logger.warning( f"{','.join(self.files)}:{lineno} queueName usually should be before subtopic in configs: subtopic to default queue" )
+                    logger.warning( f"{','.join(self.files)}:{lineno} queueName usually should be before subtopic in configs: subtopic to default queue" )
             if ( k == 'directory' ) and not self.download:
                 logger.info( f"{','.join(self.files)}:{lineno} if download is false, directory has no effect" )
 
@@ -1820,18 +1827,18 @@ class Config:
         if not os.path.isdir(os.path.dirname(self.queue_filename)):
             pathlib.Path(os.path.dirname(self.queue_filename)).mkdir(parents=True, exist_ok=True)
 
-        if not os.path.isfile(self.queue_filename) and (self.queueName is not None): 
+        if not os.path.isfile(self.queue_filename) and (self.resolved_queueName is not None): 
             tmpQfile=self.queue_filename+'.tmp'
             if not os.path.isfile(tmpQfile): 
                 f = open(tmpQfile, 'w')
-                f.write(self.queueName)
+                f.write(self.resolved_queueName)
                 f.close()
                 os.rename( tmpQfile, self.queue_filename )
             else:
-                logger.info( f'Queue name {self.queueName} being persisted to {self.queue_filename} by some other process, so ignoring it.' )
+                logger.info( f'Queue name {self.resolved_queueName} being persisted to {self.queue_filename} by some other process, so ignoring it.' )
                 return
 
-            logger.debug( f'queue name {self.queueName} persisted to {self.queue_filename}' )
+            logger.debug( f'queue name {self.resolved_queueName} persisted to {self.queue_filename}' )
 
 
 
@@ -1854,13 +1861,13 @@ class Config:
 
         self.queue_filename = queuefile
 
-        if not hasattr(self, 'old_subscriptions'):
+        if not self.old_subscriptions:
             self.subscriptionsPath=self._getSubscriptionsFileName(self.component,self.config)
             self.old_subscriptions=self.subscriptions.read(self, self.subscriptionsPath)
 
-        if hasattr(self, 'old_subscriptions') and self.old_subscriptions:
+        if self.old_subscriptions:
             for s in self.old_subscriptions:
-                if self.broker == s['broker']:
+                if self.broker == s['broker'] and self.queueName == s['queue']['template']:
                     #logger.info( f" {s['queue']['name']=} ")
                     return s['queue']['name']
 
@@ -1880,7 +1887,7 @@ class Config:
 
         """
 
-        queueName=self.queueName
+        queueName=self._varsub(self.queueName)
         if hasattr(self,'no') and self.no > 1:
 
             config_read_try=0
@@ -1910,7 +1917,7 @@ class Config:
             if ( queueName is None ) or ( queueName == '' ):
                 queueShare = self._varsub(self.queueShare)
                 queueName = f"q_{self.broker.url.username}." + '.'.join([component,cfg,queueShare])
-                logger.debug( f'default guessed queueName  {self.queueName} ' )
+                logger.debug( f'default guessed queueName  {queueName} ' )
         return queueName 
 
 
@@ -2064,7 +2071,7 @@ class Config:
 
         if self.broker and self.broker.url and self.broker.url.username:
             self._resolve_exchange()
-            self.queueName = self._resolveQueueName(component,cfg)
+            self.resolved_queueName = self._resolveQueueName(component,cfg)
 
         valid_inlineEncodings = [ 'guess', 'text', 'binary' ]
         if hasattr(self, 'inlineEncoding') and self.inlineEncoding not in valid_inlineEncodings:
@@ -2086,7 +2093,7 @@ class Config:
 
             if (self.bindings == [] and hasattr(self, 'exchange')):
                 self.bindings = [(self.exchange, self.topicPrefix, [ '#' ])]
-                self.subscriptions.append(Subscription(self, self.queueName, [ '#' ]))
+                self.subscriptions.append(Subscription(self, self.queueName, self.resolved_queueName, [ '#' ]))
 
             # read old subscriptions, compare to current.
             #old_subscriptions=self.subscriptions.read(self, self.subscriptionsPath)
@@ -2514,7 +2521,7 @@ class Config:
                 namespace.bindings = []
 
             namespace._resolve_exchange()
-            qn = namespace._resolveQueueName(namespace.component,namespace.config)
+            resolved_qn = namespace._resolveQueueName(namespace.component,namespace.config)
 
             if not hasattr(namespace, 'broker'):
                 raise Exception('broker needed before subtopic')
@@ -2536,7 +2543,7 @@ class Config:
 
             namespace.bindings.append(
                 (namespace.exchange, topicPrefix, values))
-            namespace.subscriptions.add(Subscription(namespace, qn, values))
+            namespace.subscriptions.add(Subscription(namespace, namespace.queueName, resolved_qn, values))
 
     def parse_args(self, isPost=False):
         """

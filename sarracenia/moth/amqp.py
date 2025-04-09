@@ -559,7 +559,10 @@ class AMQP(Moth):
             if (not hasattr(self,'channel')) or (not hasattr(self,'connection')) or not self.connection:
                 return None
 
-            raw_msg = self.channel.basic_get(self.o['queueName'])
+            subscription=self.o['subscriptions'][self.o['subscription_index']]
+            queue=subscription['queue']
+
+            raw_msg = self.channel.basic_get(queue['name'])
             if (raw_msg is None) and (self.connection.connected):
                 return None
             else:
@@ -584,7 +587,7 @@ class AMQP(Moth):
                 return msg
         except Exception as err:
             logger.warning("failed %s: %s" %
-                           (self.o['queueName'], err))
+                           (queue['name'], err))
             logger.debug('Exception details: ', exc_info=True)
 
         if not self.o['message_strategy']['stubborn']:

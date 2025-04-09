@@ -10,12 +10,12 @@ logger = logging.getLogger(__name__)
 
 class Subscription(dict):
 
-    def __init__(self, options, queueName, subtopic):
+    def __init__(self, options, queueName_template, queueName, subtopic):
 
         self['broker'] = options.broker
         self['bindings'] = [ { 'exchange': options.exchange, 'prefix': options.topicPrefix, 'sub': subtopic } ]
 
-        self['queue']={ 'name': queueName, 'cleanup_needed': None }
+        self['queue']={ 'name': queueName, 'template': queueName_template, 'cleanup_needed': None }
         for a in [ 'auto_delete', 'clean_session', 'durable', 'expire', 'max_inflight_messages', \
                 'max_queued_messages', \
                 'prefetch', 'queueBind', 'queueDeclare', 'qos', 'receiveMaximum', 'tlsRigour' ]:
@@ -52,7 +52,7 @@ class Subscriptions(list):
         except Exception as Ex:
             logger.debug( f"failed {fn}: {Ex}" )
             logger.debug('Exception details: ', exc_info=True)
-            return None
+            return []
 
     def write(self,fn):
 
@@ -90,6 +90,8 @@ class Subscriptions(list):
             
     def deltAnalyze(self, other):
         """
+           NOT IMPLEMENTED!
+
            given one list of subscriptions, and another set of subscriptions.
 
            return the list of subscriptions that are in other, but not in self.
