@@ -1253,6 +1253,11 @@ class Config:
                 d['subscriptions'] = c['subscriptions']
                 for s in d['subscriptions']:
                     s['broker'] = str(s['broker']) 
+            elif k in ['old_subscriptions' ]:
+                d['old_subscriptions'] = c['old_subscriptions']
+                for s in d['old_subscriptions']:
+                    s['broker'] = str(s['broker'])
+
             else:
                 d[k] = copy.deepcopy(c[k])
 
