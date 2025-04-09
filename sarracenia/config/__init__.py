@@ -1611,6 +1611,9 @@ class Config:
         if k not in ['queueName', 'queueShare' ]:
             line = list(map(lambda x: self._varsub(x), line))
 
+        if k in [ 'queueName' ]:
+            self.resolved_queueName = None
+
         if len(line) == 1:
             v = True
         else:
@@ -1867,7 +1870,7 @@ class Config:
 
         if self.old_subscriptions:
             for s in self.old_subscriptions:
-                if self.broker == s['broker'] and self.queueName == s['queue']['template']:
+                if (self.broker == s['broker']) and (self.queueName == s['queue']['template']):
                     #logger.info( f" {s['queue']['name']=} ")
                     return s['queue']['name']
 
@@ -1886,8 +1889,11 @@ class Config:
           will come out differently every time. So even in the case of a fixed queue name, need to write 
 
         """
+        if self.resolved_queueName:
+            queueName=self.resolved_queueName
+        else:
+            queueName=self._varsub(self.queueName)
 
-        queueName=self._varsub(self.queueName)
         if hasattr(self,'no') and self.no > 1:
 
             config_read_try=0
