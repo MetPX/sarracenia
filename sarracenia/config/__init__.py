@@ -1886,7 +1886,6 @@ class Config:
         # assert, neither old subscriptions, nor current ones available.
 
         queueName=''
-        #while (not hasattr(self, 'queueName')) or (self.queueName is None):
         """
 
           normal:
@@ -1901,28 +1900,30 @@ class Config:
           will come out differently every time. So even in the case of a fixed queue name, need to write 
 
         """
-        if hasattr(self,'no') and self.no > 1:
 
-            config_read_try=0
-            if os.path.isfile(queuefile):
-                f = open(queuefile, 'r')
-                queueName = f.read()
-                f.close()
+        if len(self.subscriptions)+len(self.old_subscriptions) < 1:
+            if hasattr(self,'no') and self.no > 1:
 
-            logger.debug( f'instance read queueName {queueName} from queue state file {queuefile}' )
-            if len(queueName) < 1:
-                  logger.critical( f'failed to read queue name from {queuefile}')
-                  sys.exit(2)
-        else: 
-            # only lead instance (0-foreground, 1-start, or none in the case of 'declare')
-            # should write the state file.
+                config_read_try=0
+                if os.path.isfile(queuefile):
+                    f = open(queuefile, 'r')
+                    queueName = f.read()
+                    f.close()
+
+                logger.debug( f'instance read queueName {queueName} from queue state file {queuefile}' )
+                if len(queueName) < 1:
+                      logger.critical( f'failed to read queue name from {queuefile}')
+                      sys.exit(2)
+            else: 
+                # only lead instance (0-foreground, 1-start, or none in the case of 'declare')
+                # should write the state file.
     
-            # lead instance should
-            if not self.__queue_file_read and os.path.isfile(queuefile):
-                f = open(queuefile, 'r')
-                queueName = f.read()
-                f.close()
-                self.__queue_file_read=True
+                # lead instance should
+                if not self.__queue_file_read and os.path.isfile(queuefile):
+                    f = open(queuefile, 'r')
+                    queueName = f.read()
+                    f.close()
+                    self.__queue_file_read=True
             
         #if the queuefile is corrupt, then will need to guess anyways.
 
@@ -1934,7 +1935,7 @@ class Config:
         if not queueName:
             queueShare = self._varsub(self.queueShare)
             queueName = f"q_{self.broker.url.username}." + '.'.join([component,cfg,queueShare])
-            logger.debug( f'default guessed queueName  {queueName} ' )
+            logger.warning( f'queueName expansion failed, applying built-in override: {queueName} ' )
 
         return queueName 
 
