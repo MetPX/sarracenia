@@ -59,7 +59,6 @@ default_options = {
     'logLevel': 'info',
     'persistent': True,
     'prefetch': 25,
-    'queueName': None,
     'queueBind': True,
     'queueDeclare': True,
     'reset': False,
