@@ -1868,7 +1868,7 @@ class Config:
         if self.subscriptions:
             for s in self.subscriptions:
                 if (self.broker == s['broker']) and (self.queueName == s['queue']['template']):
-                    #logger.info( f" {s['queue']['name']=} ")
+                    logger.info( f" from new  {s['queue']['name']=}  ( part of {self.subscriptions}")
                     return s['queue']['name']
 
         # assert: no subscriptions available.
@@ -1880,7 +1880,7 @@ class Config:
         if self.old_subscriptions:
             for s in self.old_subscriptions:
                 if (self.broker == s['broker']) and (self.queueName == s['queue']['template']):
-                    #logger.info( f" {s['queue']['name']=} ")
+                    logger.info( f" from old {s['queue']['name']=} ")
                     return s['queue']['name']
 
         # assert, neither old subscriptions, nor current ones available.
@@ -1924,6 +1924,7 @@ class Config:
                     queueName = f.read()
                     f.close()
                     self.__queue_file_read=True
+                    logger.info( f" from qname file {queueName} ")
             
         #if the queuefile is corrupt, then will need to guess anyways.
 

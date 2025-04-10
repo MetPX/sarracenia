@@ -16,16 +16,16 @@ class Subscription(dict):
         self['bindings'] = [ { 'exchange': options.exchange, 'prefix': options.topicPrefix, 'sub': subtopic } ]
 
         self['queue']={ 'name': queueName, 'template': queueName_template, 'cleanup_needed': None }
-        for a in [ 'auto_delete', 'clean_session', 'durable', 'expire', 'max_inflight_messages', \
-                'max_queued_messages', \
-                'prefetch', 'queueBind', 'queueDeclare', 'qos', 'receiveMaximum', 'tlsRigour' ]:
-            if 'queue' in a:
-                aa = a.replace('queue','').lower()
-            else:
-                aa = a
-
+        for a in [ 'queueBind', 'queueDeclare' ]:
+            aa = a.replace('queue','').lower()
             if hasattr(options, a):
                 self['queue'][aa] = getattr(options,a)
+
+        for a in [ 'auto_delete', 'clean_session', 'durable', 'expire', 'max_inflight_messages', \
+                'max_queued_messages',  'prefetch', 'qos', 'receiveMaximum', 'tlsRigour' ]:
+            if hasattr(options, a):
+                self['queue'][a] = getattr(options,a)
+
 
 class Subscriptions(list):
     # list of subscription
@@ -38,7 +38,7 @@ class Subscriptions(list):
         try:
             with open(fn,'r') as f:
                 #self=json.loads(f.readlines())
-                self=json.load(f)
+                self=copy.deepcopy(json.load(f))
 
             for s in self:
                 if type(s['broker']) is str:
