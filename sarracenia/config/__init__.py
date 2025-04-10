@@ -840,7 +840,6 @@ class Config:
         self.__admin = None
         self.__broker = None
         self.__post_broker = None
-        self.__queue_file_read = False
 
         if Config.credentials is None:
             Config.credentials = sarracenia.config.credentials.CredentialDB()
@@ -1919,11 +1918,10 @@ class Config:
                 # should write the state file.
     
                 # lead instance should
-                if not self.__queue_file_read and os.path.isfile(queuefile):
+                if os.path.isfile(queuefile):
                     f = open(queuefile, 'r')
                     queueName = f.read()
                     f.close()
-                    self.__queue_file_read=True
                     logger.info( f" from qname file {queueName} ")
             
         #if the queuefile is corrupt, then will need to guess anyways.
