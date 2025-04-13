@@ -1334,10 +1334,12 @@ class Config:
 
         if type(oth) == dict:
             for k in oth.keys():
-                self._merge_field(k, self._varsub(oth[k]))
+                v = self._varsub(oth[k]) if k not in ['queueName','queueShare'] else oth[k]
+                self._merge_field(k, v)
         else:
             for k in oth.__dict__.keys():
-                self._merge_field(k, self._varsub(getattr(oth, k)))
+                v = self._varsub(getattr(oth, k)) if k not in ['queueName','queueShare'] else getattr(oth,k)
+                self._merge_field(k, v)
 
     def _override_field(self, key, value):
         if key == 'masks':
