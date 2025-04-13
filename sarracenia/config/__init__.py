@@ -1872,6 +1872,9 @@ class Config:
         # look for template in old subscriptions.
         if self.old_subscriptions:
             for s in self.old_subscriptions:
+                # with older releases, there is a single queue, and no template.
+                if 'template' not in s['queue']:
+                    return s['queue']['name']
                 if (str(self.broker) == str(s['broker'])) and (self.queueName == s['queue']['template']):
                     #logger.info( f" from old {s['queue']['name']=} ")
                     return s['queue']['name']
