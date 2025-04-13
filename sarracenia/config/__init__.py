@@ -1863,14 +1863,6 @@ class Config:
 
         self.queue_filename = queuefile
 
-        # look for template in existing resolved subscriptions.
-        if self.subscriptions:
-            for s in self.subscriptions:
-                if (self.broker == s['broker']) and (self.queueName == s['queue']['template']):
-                    logger.info( f" from new  {s['queue']['name']=}  ( part of {self.subscriptions}")
-                    return s['queue']['name']
-
-        # assert: no subscriptions available.
         if not self.old_subscriptions:
             self.subscriptionsPath=self._getSubscriptionsFileName(self.component,self.config)
             self.old_subscriptions=self.subscriptions.read(self, self.subscriptionsPath)
@@ -1882,6 +1874,14 @@ class Config:
                     logger.info( f" from old {s['queue']['name']=} ")
                     return s['queue']['name']
 
+        # look for template in existing resolved subscriptions.
+        if self.subscriptions:
+            for s in self.subscriptions:
+                if (self.broker == s['broker']) and (self.queueName == s['queue']['template']):
+                    logger.info( f" from new  {s['queue']['name']=}  ( part of {self.subscriptions}")
+                    return s['queue']['name']
+
+        # assert: no subscriptions available.
         # assert, neither old subscriptions, nor current ones available.
 
         queueName=''
