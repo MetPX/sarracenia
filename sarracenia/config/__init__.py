@@ -1839,10 +1839,10 @@ class Config:
                 f.close()
                 os.rename( tmpQfile, self.queue_filename )
             else:
-                logger.info( f'Queue name {resolved_queueName} being persisted to {self.queue_filename} by some other process, so ignoring it.' )
+                #logger.info( f'Queue name {resolved_queueName} being persisted to {self.queue_filename} by some other process, so ignoring it.' )
                 return
 
-            logger.debug( f'queue name {resolved_queueName} persisted to {self.queue_filename}' )
+            #logger.debug( f'queue name {resolved_queueName} persisted to {self.queue_filename}' )
 
 
 
@@ -1873,14 +1873,14 @@ class Config:
         if self.old_subscriptions:
             for s in self.old_subscriptions:
                 if (self.broker == s['broker']) and (self.queueName == s['queue']['template']):
-                    logger.info( f" from old {s['queue']['name']=} ")
+                    #logger.info( f" from old {s['queue']['name']=} ")
                     return s['queue']['name']
 
         # look for template in existing resolved subscriptions.
         if self.subscriptions:
             for s in self.subscriptions:
                 if (self.broker == s['broker']) and (self.queueName == s['queue']['template']):
-                    logger.info( f" from new  {s['queue']['name']=}  ( part of {self.subscriptions}")
+                    #logger.info( f" from new  {s['queue']['name']=}  ( part of {self.subscriptions}")
                     return s['queue']['name']
 
         # assert: no subscriptions available.
@@ -1911,7 +1911,7 @@ class Config:
                     queueName = f.read()
                     f.close()
 
-                logger.debug( f'instance read queueName {queueName} from queue state file {queuefile}' )
+                logger.info( f'instance read legacy queueName {queueName} from queue state file {queuefile}' )
                 if len(queueName) < 1:
                       logger.critical( f'failed to read queue name from {queuefile}')
                       sys.exit(2)
@@ -1924,7 +1924,7 @@ class Config:
                     f = open(queuefile, 'r')
                     queueName = f.read()
                     f.close()
-                    logger.info( f" from qname file {queueName} ")
+                    #logger.info( f" from qname file {queueName} ")
             
         #if the queuefile is corrupt, then will need to guess anyways.
 
