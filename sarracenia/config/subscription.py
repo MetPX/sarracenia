@@ -33,7 +33,7 @@ class Subscriptions(list):
     def read(self,options,fn):
 
         if not os.path.exists(fn):
-            return None
+            return []
 
         try:
             with open(fn,'r') as f:
