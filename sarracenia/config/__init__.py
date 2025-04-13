@@ -1872,14 +1872,14 @@ class Config:
         # look for template in old subscriptions.
         if self.old_subscriptions:
             for s in self.old_subscriptions:
-                if (self.broker == s['broker']) and (self.queueName == s['queue']['template']):
+                if (str(self.broker) == str(s['broker'])) and (self.queueName == s['queue']['template']):
                     #logger.info( f" from old {s['queue']['name']=} ")
                     return s['queue']['name']
 
         # look for template in existing resolved subscriptions.
         if self.subscriptions:
             for s in self.subscriptions:
-                if (self.broker == s['broker']) and (self.queueName == s['queue']['template']):
+                if (str(self.broker) == str(s['broker'])) and (self.queueName == s['queue']['template']):
                     #logger.info( f" from new  {s['queue']['name']=}  ( part of {self.subscriptions}")
                     return s['queue']['name']
 
