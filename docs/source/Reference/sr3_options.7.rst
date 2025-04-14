@@ -1627,26 +1627,26 @@ queueName|queue|queue_name|qn
 By default, components create a queue name that should be unique. The
 default queueName components create follows the following convention:
 
-   **q_<brokerUser>.<programName>.<configName>.<queueShare>**
+   **q_${BROKER_USER}.${COMPONENT}.${CONFIG}.${QUEUESHARE}**
 
 Where:
 
-* *brokerUser* is the username used to connect to the broker (often: *anonymous* )
+* *BROKER_USER* is the username used to connect to the broker (often: *anonymous* )
 
-* *programName* is the component using the queue (e.g. *subscribe* ),
+* *COMPONENT* is the progream using the queue (e.g. *subscribe* ),
 
-* *configName* is the configuration file used to tune component behaviour.
+* *CONFIG* is the configuration file used to tune component behaviour.
 
-* *queueShare* defaults to ${USER}_${HOSTNAME}_${RAND8} but should be overridden with the 
+* *QUEUESHARE* defaults to ${USER}_${HOSTNAME}_${RAND8} but should be overridden with the 
   *queueShare* configuration option.
 
 Users can override the default provided that it starts with **q_<brokerUser>**.
 
 When multiple instances are used, they will all use the same queue, for trivial
 multi-tasking. If multiple computers have a shared home file system, then the
-queueName is written to:
+queueName is among the settings written to:
 
- ~/.cache/sarra/<programName>/<configName>/<programName>_<configName>_<brokerUser>.qname
+ ~/.cache/sarra/<programName>/<configName>/subscriptions.json
 
 Instances started on any node with access to the same shared file will use the
 same queue. Some may want use the *queueName* option as a more explicit method
