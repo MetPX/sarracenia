@@ -71,6 +71,11 @@ class AMQPConsumer(AMQP):
 
     def getSetup(self) -> None:
         super().getSetup()
+
+        # super getSetup failed
+        if self.connection is None:
+            return
+
         # (re)create local msg queue. Anything in the queue is invalid after re-creating a connection.
         self._raw_msg_q = queue.Queue() 
 
@@ -96,6 +101,9 @@ class AMQPConsumer(AMQP):
         try:
             if not self.connection:
                 self.getSetup()
+            # check again, fail if it didn't connect
+            if not self.connection:
+                return None
 
             # trigger incoming event processing
             try:
