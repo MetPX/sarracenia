@@ -1646,7 +1646,7 @@ When multiple instances are used, they will all use the same queue, for trivial
 multi-tasking. If multiple computers have a shared home file system, then the
 queueName is among the settings written to:
 
- ~/.cache/sarra/<programName>/<configName>/subscriptions.json
+ ~/.cache/sr3/${COMPONENT}/${CONFIG}/subscriptions.json
 
 Instances started on any node with access to the same shared file will use the
 same queue. Some may want use the *queueName* option as a more explicit method

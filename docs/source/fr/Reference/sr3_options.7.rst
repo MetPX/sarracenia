@@ -1605,26 +1605,27 @@ queueName|queue|queue_name|qn
 Par défaut, les composants créent un nom de fil d’attente qui doit être unique. Par défaut, le
 queueName crée par les composants suit la convention suivante :
 
-   **q_<utilisateurDeCourtier>.<nomDuProgramme>.<nomDeConfig>.<queueShare>**
+   **q_${BROKER_USER}.${COMPONENT}.${CONFIG}.${QUEUESHARE}**
 
 Ou:
 
-* *utilisateurDeCourtier* est le nom d’utilisateur utilisé pour se connecter au courtier (souvent: *anonymous* )
+* *BROKER_USER* est le nom d’utilisateur utilisé pour se connecter au courtier (souvent: *anonymous* )
 
-* *nomDuProgramme* est le composant qui utilise la fil d’attente (par exemple *subscribe* ),
+* *COMPONENT* est le composant qui utilise la fil d’attente (par exemple *subscribe* ),
 
-* *nomDeConfig* est le fichier de configuration utilisé pour régler le comportement des composants.
+* *CONFIG* est le nom de fichier de configuration utilisé pour régler le comportement des composants.
 
-*  *queueShare* est par défaut ${USER}_${HOSTNAME}_${RAND8} mais doit être remplacé par le
- Option de configuration *queueShare*.
+*  *QUEUESHARE* est par défaut ${USER}_${HOSTNAME}_${RAND8} peut être modifier par l'option de 
+   configuration *queueShare*.
 
-Les utilisateurs peuvent remplacer le défaut à condition qu’il commence par **q_<utilisateurDeCourtier>**.
+
+Les utilisateurs peuvent remplacer le défaut à condition qu’il commence par **q_${BROKER_USER}**.
 
 Lorsque plusieurs instances sont utilisées, elles utilisent toutes la même fil d’attente, pour faire plusieurs
 taches simples à la fois. Si plusieurs ordinateurs disposent d’un système de fichiers domestique partagé, le
 queueName est écrit à :
 
- ~/.cache/sarra/<nomDuProgramme>/<nomDeConfig>/<nomDuProgramme>_<nomDeConfig>_<utilisateurDeCourtier>.qname
+ ~/.cache/sr3/<nomDuProgramme>/<nomDeConfig>/subscriptions.json
 
 Les instances démarrées sur n’importe quel nœud ayant accès au même fichier partagé utiliseront la
 même fil d’attente. Certains voudront peut-être utiliser l’option *queueName* comme méthode plus explicite
