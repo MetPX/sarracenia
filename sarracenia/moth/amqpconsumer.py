@@ -75,8 +75,8 @@ class AMQPConsumer(AMQP):
         self._raw_msg_q = queue.Queue() 
 
         subscription = self.o['subscriptions'][self.o['subscription_index']]
-        queue = subscription['queue']
-        self._active_consumer_tag = self.channel.basic_consume(queue=queue['name'],
+        sub_queue = subscription['queue']
+        self._active_consumer_tag = self.channel.basic_consume(queue=sub_queue['name'],
                                                                consumer_tag=self._request_consumer_tag,
                                                                no_ack=False, 
                                                                callback=self.__get_on_message)
@@ -135,8 +135,8 @@ class AMQPConsumer(AMQP):
                 return msg
         except Exception as err:
             subscription = self.o['subscriptions'][self.o['subscription_index']]
-            queue = subscription['queue']
-            logger.warning("failed %s: %s" % (queue['name'], err))
+            sub_queue = subscription['queue']
+            logger.warning("failed %s: %s" % (sub_queue['name'], err))
             logger.debug('Exception details: ', exc_info=True)
 
         if not self.o['message_strategy']['stubborn']:
