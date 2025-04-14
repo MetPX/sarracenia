@@ -283,7 +283,7 @@ class AMQP(Moth):
             if queue['declare'] and queue['name']:
 
                 args = {}
-                if queue['expire']:
+                if 'expire' in queue and queue['expire'] is not None :
                     x = int(queue['expire'] * 1000)
                     if x > 0: args['x-expires'] = x
                 if 'messageAgeMax' in self.o and self.o['messageAgeMax']:
@@ -551,15 +551,15 @@ class AMQP(Moth):
             logger.error("getting from a publisher")
             return None
 
+        subscription=self.o['subscriptions'][self.o['subscription_index']]
+        queue=subscription['queue']
+    
         try:
             if not self.connection:
                 self.getSetup()
 
             if (not hasattr(self,'channel')) or (not hasattr(self,'connection')) or not self.connection:
                 return None
-
-            subscription=self.o['subscriptions'][self.o['subscription_index']]
-            queue=subscription['queue']
 
             raw_msg = self.channel.basic_get(queue['name'])
             if (raw_msg is None) and (self.connection.connected):
@@ -585,8 +585,7 @@ class AMQP(Moth):
                 logger.debug("new msg: %s" % msg)
                 return msg
         except Exception as err:
-            logger.warning("failed %s: %s" %
-                           (queue['name'], err))
+            logger.warning("failed %s: %s" % (queue['name'], err))
             logger.debug('Exception details: ', exc_info=True)
 
         if not self.o['message_strategy']['stubborn']:

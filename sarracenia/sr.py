@@ -1585,7 +1585,6 @@ class sr_GlobalState:
 
             i=0
             for s in o.subscriptions:
-                logger.critical( f" {s=}" )
                 od = o.dictify()
                 od['broker'] = s['broker']
                 od['queueName'] = s['queue']['name']
