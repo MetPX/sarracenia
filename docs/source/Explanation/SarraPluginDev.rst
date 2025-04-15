@@ -235,7 +235,6 @@ Use the _sr3_ _show_ command to view all active settings resulting from a config
      'baseDir': None,
      'baseUrl_relPath': False,
      'batch': 20,
-     'bindings': [('xsarra', ['v03', 'post'], ['#'])],
      'broker': 'amqp://tfeed@localhost/',
      'bufSize': 1048576,
      'byteRateMax': None,

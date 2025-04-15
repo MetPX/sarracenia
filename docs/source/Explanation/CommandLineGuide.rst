@@ -286,7 +286,6 @@ View all configuration settings (the result of all parsing... what the flow comp
     'baseDir': None,
     'baseUrl_relPath': False,
     'batch': 100,
-    'bindings': [('xs_tsource_poll', ['v03', 'post'], ['#'])],
     'broker': 'amqp://tsource@localhost/',
     'bufSize': 1048576,
     'byteRateMax': None,

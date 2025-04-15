@@ -670,8 +670,15 @@ class Config:
          cfg.component = 'subscribe'
          cfg.config = 'flow_demo'
          cfg.action = 'start'
-         cfg.bindings = [ ('xpublic', ['v02', 'post'], ['*', 'WXO-DD', 'observations', 'swob-ml', '#' ]) ]
-         cfg.queueName='q_anonymous.subscriber_test2'
+         cfg.subscriptions= [ { 
+             'broker': cfg.broker,
+             'bindings': { 'exchange': 'xpublic', 'prefix': ['v02', 'post'], 'sub': [ '*.WXO-DD.observations.swob-ml.#' ] },
+             'queue': { 
+                 'name' : 'q_anonymous.subscriber_test2', 
+                 'template':'q_${BROKER_USER}_${COMPONENT}_${CONFIG}_${HOSTNAME}_Demo123' ,
+                 'expire': 600,
+                 }
+             } ]
          cfg.download=True
          cfg.batch=1
          cfg.messageCountMax=5
@@ -833,7 +840,6 @@ class Config:
         """
           instantiate an empty Configuration
         """
-        self.bindings = []
         self.subscriptions = Subscriptions()
         self.old_subscriptions = Subscriptions()
         self.subscription_index = 0
@@ -1405,7 +1411,6 @@ class Config:
                 subtopic = subtopic_string.split('/')
             
         if hasattr(self, 'exchange') and hasattr(self, 'topicPrefix'):
-            self.bindings.append((self.exchange, self.topicPrefix, subtopic))
             self.subscriptions.add(Subscription(self, self.queueName, resolved_queueName, subtopic))
 
     def _parse_v2plugin(self, entryPoint, value):
@@ -2114,8 +2119,7 @@ class Config:
 
         if self.broker and self.broker.url and self.broker.url.username:
 
-            if (self.bindings == [] and hasattr(self, 'exchange')):
-                self.bindings = [(self.exchange, self.topicPrefix, [ '#' ])]
+            if ((len(self.subscriptions) == 0) and hasattr(self, 'exchange')):
                 self.subscriptions.append(Subscription(self, self.queueName, resolved_queueName, [ '#' ]))
 
             # read old subscriptions, compare to current.
@@ -2541,7 +2545,7 @@ class Config:
         def __call__(self, parser, namespace, values, option_string):
 
             if values == 'None':
-                namespace.bindings = []
+                namespace.subscriptions = []
 
             namespace._resolve_exchange()
             resolved_qn = namespace._resolveQueueName(namespace.component,namespace.config)
@@ -2564,8 +2568,6 @@ class Config:
                else:
                    topicPrefix = namespace.topicPrefix.split('/')
 
-            namespace.bindings.append(
-                (namespace.exchange, topicPrefix, values))
             namespace.subscriptions.add(Subscription(namespace, namespace.queueName, resolved_qn, values))
 
     def parse_args(self, isPost=False):
@@ -2711,9 +2713,6 @@ class Config:
                             nargs='?',
                             default=self.identity_method,
                             help='choose a different checksumming method for the files posted')
-        if hasattr(self, 'bindings'):
-            parser.set_defaults(bindings=self.bindings)
-
 
         parser.add_argument(
             '--logLevel',

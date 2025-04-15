@@ -12,7 +12,6 @@ logger = logging.getLogger(__name__)
 default_options = {
     'acceptUnmatched': True,
     'batch': 100,
-    'bindings': [],
     'broker': None,
     'dry_run': False,
     'exchange': 'xpublic',
@@ -189,7 +188,7 @@ class Moth():
 
        *  'queueName'  : Mandatory, name of a queue. (only in AMQP... hmm...)
 
-       *  'bindings' : [ list of bindings ]
+       *  'subscriptions' : [ list of config.subscription.Subscription ]
 
        *  'loop'
 

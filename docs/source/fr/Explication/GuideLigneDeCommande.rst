@@ -286,7 +286,6 @@ Afficher tous les paramètres de configuration (le résultat de toutes les analy
      'baseDir': None,
      'baseUrl_relPath': False,
      'batch': 20,
-     'bindings': [('xsarra', ['v03', 'post'], ['#'])],
      'broker': 'amqp://tfeed@localhost/',
      'bufSize': 1048576,
      'byteRateMax': None,

@@ -145,9 +145,18 @@ class Sarracenia:
         and create corresponding python option dictionaries. One can supply small 
         dictionaries for example::
 
+          options = sarracenia.config.no_file_config()
+          options['broker'] = sarracenia.config.credentials.Credential(
+                    'amqps://anonymous:anonymous@hpfx.collab.science.gc.ca')
           options['topicPrefix'] = [ 'v02', 'post' ]
-          options['bindings'] = [ ('xpublic', [ 'v02', 'post'] , [ '#' ] )]
-          options['queueName'] = 'q_anonymous_' + socket.getfqdn() + '_SomethingHelpfulToYou'
+          options['subscriptions'] = sarracenia.config.subscription.Subscriptions( [
+               sarracenia.config.subscription.Subscriptions( 
+                  options, 
+                  options['queueName'],
+                  'q_anonymous_' + socket.getfqdn() + '_SomethingHelpfulToYou',
+                  '#' 
+               ) ] )
+
 
         Above is an example of a minimal options dictionary taken from the tutorial 
         example called moth_api_consumer.py. often 
