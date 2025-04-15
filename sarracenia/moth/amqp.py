@@ -353,15 +353,14 @@ class AMQP(Moth):
             logger.critical( f"no broker given" )
             return
 
-       
-        start = time.time()
-        if start < self.next_connect_time:
-            logger.critical( f"too soon to connect again will try in: {self.next_connect_time-start} seconds" )
-            return
-
         subscription=self.o['subscriptions'][self.o['subscription_index']]
         queue=subscription['queue']
         broker = subscription['broker']
+
+        start = time.time()
+        if start < self.next_connect_time:
+            logger.critical( f"too soon to connect again to {str(broker)} index={self.o['subscription_index']} will try in: {self.next_connect_time-start} seconds" )
+            return
 
         # It does not really matter how it fails, the recovery approach is always the same:
         # tear the whole thing down, and start over.
