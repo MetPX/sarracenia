@@ -433,7 +433,6 @@ class Moth():
         ebo = 2**self.next_connect_failures
         next_try = min(attempt_duration * ebo, 600)
         self.next_connect_time = now + next_try
-        logger.error( f"could not connect. next try in {next_try} seconds.")
 
     def splitPick(self,message) -> int:
         """

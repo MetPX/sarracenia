@@ -22,7 +22,7 @@ class Subscription(dict):
                 self['queue'][aa] = getattr(options,a)
 
         for a in [ 'auto_delete', 'clean_session', 'durable', 'expire', 'max_inflight_messages', \
-                'max_queued_messages',  'prefetch', 'qos', 'receiveMaximum', 'tlsRigour' ]:
+                'max_queued_messages',  'prefetch', 'qos', 'receiveMaximum', 'tlsRigour', 'topic' ]:
             if hasattr(options, a):
                 self['queue'][a] = getattr(options,a)
 

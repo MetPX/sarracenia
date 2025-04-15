@@ -133,16 +133,20 @@ class MQTT(Moth):
         self.next_connect_time = now
         self.next_connect_failures = 0
 
-        if 'qos' in self.o:
-            if type(self.o['qos']) is not int:
-                self.o['qos'] = int(self.o['qos'])
-        else:
+        if 'qos' not in self.o:
             self.o['qos'] = 1
+        elif type(self.o['qos']) is not int:
+            self.o['qos'] = int(self.o['qos'])
 
         if is_subscriber:
             s=self.o['subscriptions'][self.o['subscription_index']]
             queue=s['queue']
             broker=s['broker']
+
+            if 'qos' in queue:
+                queue['qos'] = int(queue['qos'])
+            else:
+                queue['qos'] = int(self.o['qos'])
 
 
         me = "%s.%s" % (__class__.__module__, __class__.__name__)
@@ -228,21 +232,28 @@ class MQTT(Moth):
         # FIXME: enhancement could subscribe accepts multiple (subj, qos) tuples so, could do this in one RTT.
         userdata.connected=True
         userdata.subscribe_mutex.acquire()
-        for binding_tuple in userdata.o['bindings']:
 
-            if 'topic' in userdata.o:
-                subj=userdata.o['topic']
+        s=userdata.o['subscriptions'][userdata.o['subscription_index']]
+        queue=s['queue']
+        broker=s['broker']
+
+        for binding_dict in s['bindings']:
+
+            if 'topic' in queue:
+                subj=queue['topic']
             else:
-                exchange, prefix, subtopic = binding_tuple
+                exchange = binding_dict["exchange"]
+                prefix = binding_dict["prefix"]
+                subtopic = binding_dict["sub"]
                 logger.info( f"tuple: {exchange} {prefix} {subtopic}")
 
-                subj = '/'.join(['$share', userdata.o['queueName'], exchange] +
+                subj = '/'.join(['$share', queue['name'], exchange] +
                                 prefix + subtopic)
 
-            (res, mid) = client.subscribe(subj, qos=userdata.o['qos'])
+            (res, mid) = client.subscribe(subj, qos=queue['qos'])
             userdata.subscribe_in_progress += 1
             logger.info( f"request to subscribe to: {subj}, mid={mid} "
-                    f"qos={userdata.o['qos']} sent: {paho.mqtt.client.error_string(res)}" )
+                    f"qos={queue['qos']} sent: {paho.mqtt.client.error_string(res)}" )
         userdata.subscribe_mutex.release()
         userdata.metricsConnect()
 
@@ -286,7 +297,7 @@ class MQTT(Moth):
             userdata.pending_publishes.remove(mid)
         else:
             userdata.unexpected_publishes.append(mid)
-            logger.info( f"BUG: ack for message we do not know we published. mid={mid}" )
+            logger.warning( f"BUG: ack for message we do not know we published. mid={mid}" )
 
     def __sslClientSetup(self,client=None) -> int:
         """
@@ -389,6 +400,11 @@ class MQTT(Moth):
         queue=s['queue']
         broker=s['broker']
 
+        start = time.time()
+        if start < self.next_connect_time:
+            logger.critical( f"too soon to connect again to {str(broker)} index={self.o['subscription_index']} will try in: {self.next_connect_time-start} seconds" )
+            return
+
         try:
             cs = self.o['clean_session']
             if ('name' in queue) and ('no' in self.o):
@@ -447,8 +463,9 @@ class MQTT(Moth):
                     logger.info( f"instance declaration for {icid} done" )
                 
         except Exception as err:
-            logger.error( f"failed to {broker.url.hostname} with {err}" )
-            logger.error('Exception details: ', exc_info=True)
+            logger.error( f"failed to connect for subscription to {str(broker)} with {err}" )
+            logger.debug('Exception details: ', exc_info=True)
+            self.setEbo(start)
 
 
     def putSetup(self):
@@ -460,6 +477,11 @@ class MQTT(Moth):
         self.connected=False
             
         if self._stop_requested:
+            return
+
+        start = time.time()
+        if start < self.next_connect_time:
+            logger.critical( f"too soon to connect for publishing to {str(self.o['broker'])} will try in: {self.next_connect_time-start} seconds" )
             return
 
         try:

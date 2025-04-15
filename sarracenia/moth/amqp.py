@@ -272,7 +272,7 @@ class AMQP(Moth):
             # from sr_consumer.build_connection...
             if not self.connection or not self.connection.connected:
                 if not self.__connect(broker):
-                    logger.critical('could not connect')
+                    logger.critical('could not connect to {str(broker)}')
                     if hasattr(self,'metrics'):
                         self.metrics['brokerQueuedMessageCount'] = -2
                     return -2
@@ -320,24 +320,8 @@ class AMQP(Moth):
 
         if hasattr(self,'metrics'):
             self.metrics['brokerQueuedMessageCount'] = -1
-        return -1
 
-    def setEbo(self,start)->None:
-        """  Calculate next retry time using exponential backoff
-             note that it doesn't look like classic EBO because the time
-             is multiplied by how long it took to fail. Long failures should not
-             be retried quickly, but short failures can be variable in duration.
-             If the timing of failures is variable, the "attempt_duration" will be low, 
-             and so the next_try might get smaller even though it hasn't succeeded yet... 
-             it should eventually settle down to a long period though.
-        """
-        now=time.time()
-        attempt_duration = now - start
-        self.next_connect_failures += 1
-        ebo = 2**self.next_connect_failures
-        next_try = min(attempt_duration * ebo, 600)
-        self.next_connect_time = now + next_try
-        logger.error( f"could not connect. next try in {next_try} seconds.")
+        return -1
 
     def getSetup(self) -> None:
         """
@@ -355,7 +339,7 @@ class AMQP(Moth):
 
         subscription=self.o['subscriptions'][self.o['subscription_index']]
         queue=subscription['queue']
-        broker = subscription['broker']
+        broker=subscription['broker']
 
         start = time.time()
         if start < self.next_connect_time:
@@ -419,12 +403,16 @@ class AMQP(Moth):
             logger.error(
                 f'connecting to: {queue["name"]}, durable: {queue["durable"]}, expire: {queue["expire"]}, auto_delete={queue["auto_delete"]}'
             )
-            logger.error( f"failed connection to {broker.url.hostname}: {err}" )
+            logger.error( f"failed connection to {str(broker)}: {err}" )
             logger.debug('Exception details: ', exc_info=True)
             self.setEbo(start)
             self.connection = None
 
+
     def putSetup(self) -> None:
+
+        if self._stop_requested:
+            return
 
         start = time.time()
         if start < self.next_connect_time:
@@ -434,9 +422,6 @@ class AMQP(Moth):
         # It does not really matter how it fails, the recovery approach is always the same:
         # tear the whole thing down, and start over.
         try:
-            if self._stop_requested:
-                return
-
             if self.o['broker'] is None:
                 logger.critical( f"no broker given" )
                 return
