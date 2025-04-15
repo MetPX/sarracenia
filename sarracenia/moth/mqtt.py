@@ -247,13 +247,7 @@ class MQTT(Moth):
         userdata.metricsConnect()
 
 
-    def __sub_on_subscribe(client,
-                           userdata,
-                           mid,
-                           reason_codes,
-                           properties=None):
-
- 
+    def __sub_on_subscribe(client, userdata, mid, reason_codes, properties=None):
 
         for sub_result in reason_codes:
             if sub_result == 1:

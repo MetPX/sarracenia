@@ -428,7 +428,7 @@ class AMQP(Moth):
 
         start = time.time()
         if start < self.next_connect_time:
-            logger.critical( f"too soon to connect again will try in: {self.next_connect_time-start} seconds" )
+            logger.critical( f"too soon to connect to {str(broker)} index={self.o['subscription_index']}. Will try again in: {self.next_connect_time-start} seconds" )
             return
 
         # It does not really matter how it fails, the recovery approach is always the same:
