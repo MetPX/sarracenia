@@ -25,6 +25,7 @@ import fnmatch
 import getpass
 import inspect
 import json
+import sarracenia.make_json_serializable
 import logging
 import os
 import os.path
