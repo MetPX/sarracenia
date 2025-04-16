@@ -106,11 +106,7 @@ class Disk(NoDupe):
 
         logger.debug( f"entry already in NoDupe cache: key={key}" )
         kdict = self.cache_dict[key]
-        present = relpath in kdict
-
-        if kdict[relpath]+ self.o.nodupe_ttl < self.now :
-            present=False
-            del kdict[relpath]
+        present = relpath in kdict and (kdict[relpath]+self.o.nodupe_ttl) >= self.now
 
         kdict[relpath] = self.now
 
