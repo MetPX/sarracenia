@@ -102,9 +102,12 @@ class Disk(NoDupe):
             self.count += 1
             return True
 
+         
+
         logger.debug( f"entry already in NoDupe cache: key={key}" )
         kdict = self.cache_dict[key]
-        present = relpath in kdict
+        present = relpath in kdict and (kdict[relpath]+self.o.nodupe_ttl) >= self.now
+
         kdict[relpath] = self.now
 
         # differ or newer, write to file
