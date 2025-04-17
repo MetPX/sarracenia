@@ -38,10 +38,16 @@ Instructions d’installation
 git
 ---
 
+*CHANGEMENT*: l'ancien ``overwrite no`` est remplacé par ``nodupe_basis name_only``. Les fichiers convertis seront modifiés, mais les
+configurations actuels de sr3 devraient être modifié.
+
+*CHANGEMENT*: option ``overwrite`` est supprimé en faveur de nodupe_basis.
+
 3.0.58
 ------
 
 *CHANGEMENT* : l'ancien ``nodupe_basis name`` a été renommé en ``nodupe_basis name_only``. Les fichiers de configuration devront être mis à jour pour changer **name** à **name_only**.
+
 
 3.0.56
 ------

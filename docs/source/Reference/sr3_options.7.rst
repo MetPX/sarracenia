@@ -1406,17 +1406,6 @@ posting to a broker. The valid argument values are:
 FIXME: The **outlet** option came from the C implementation ( *sr3_cpump*  ) and it has not
 been used much in the python implementation.
 
-overwrite <flag> (default: off)
--------------------------------
-
-The  **overwrite**  option,if set to false, avoid unnecessary downloads under these conditions :
-
-1- the file to be downloaded is already on the user's file system at the right place and
-
-2- the checksum of the amqp message matched the one of the file.
-
-The default is False.
-
 path <path>
 -----------
 

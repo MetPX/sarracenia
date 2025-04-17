@@ -342,7 +342,6 @@ View all configuration settings (the result of all parsing... what the flow comp
      'msg_total_interval': '0',
      'fileAgeMax': 0,
      'nodupe_ttl': 0,
-     'overwrite': True,
      'permCopy': True,
      'permDefault': 0,
      'permDirDefault': 509,

@@ -1533,8 +1533,7 @@ class Flow:
                 # FIXME If the file is partitioned, then it is the new_file with a partition suffix.
                 #if ('self.target_file == msg['new_file'] ) and ( fsiz != msg['size'] ):
                 if (fsiz != msg['size']):
-                    logger.debug("%s file size different, so cannot be the same" %
-                             (msg['new_path']))
+                    logger.debug( f"{msg['new_path']} file size different, so cannot be the same")
                     return True
 
             else:
@@ -1556,8 +1555,7 @@ class Flow:
                         pass
 
                 if new_mtime <= old_mtime:
-                    self.reject(msg, 406,
-                            "mtime not newer %s " % (msg['new_path']))
+                    self.reject(msg, 406, f"mtime not newer {msg['new_path']}")
                     return False
                 else:
                     logger.debug(
@@ -1565,8 +1563,7 @@ class Flow:
                                 f"newer (new: {new_mtime,} vs old: {old_mtime} )" )
 
         elif method in ['random', 'cod']:
-            logger.debug("content_match %s sum random/zero/cod never matches" %
-                         (msg['new_path']))
+            logger.debug( f" {msg['new_path']} sum random/zero/cod never matches" )
             return True
 
         if not 'identity' in msg: 
@@ -1951,14 +1948,8 @@ class Flow:
                 # overwriting existing file.
 
             # FIXME: decision of whether to download, goes here.
-            if os.path.isfile(new_path):
-                if not self.o.overwrite:
-                    self.reject(msg, 204,
-                                "not overwriting existing file %s" % new_path)
-                    continue
-
-                if not self.file_should_be_downloaded(msg):
-                    continue
+            if os.path.isfile(new_path) and not self.file_should_be_downloaded(msg):
+                 continue
 
             # download content
             if 'content' in msg.keys():

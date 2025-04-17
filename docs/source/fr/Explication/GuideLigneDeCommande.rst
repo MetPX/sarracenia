@@ -342,7 +342,6 @@ Afficher tous les paramètres de configuration (le résultat de toutes les analy
      'msg_total_interval': '0',
      'fileAgeMax': 0,
      'nodupe_ttl': 0,
-     'overwrite': True,
      'permCopy': True,
      'permDefault': 0,
      'permDirDefault': 509,

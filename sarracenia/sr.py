@@ -2905,6 +2905,14 @@ class sr_GlobalState:
                         else:
                             logger.error( f"unknown checksum spec: {line}")
                             continue
+                    elif k == 'overwrite':
+                        if line[1].lower() in [ 'off', 'no', 'false']:
+                            logger.info( f" obsolete keyword: overwrite off, replaced by nodupe_basis name_only" )
+                            v3_cfg.write(f'nodupe_basis name_only\n')
+                            continue
+                        else:
+                            # overwrite is always true in sr3.
+                            continue
                     elif k == 'queueName':
                         if subtopicFound or not queueName:
                             continue

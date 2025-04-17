@@ -217,7 +217,7 @@ Utilisez la commande _sr3_ _show_ pour afficher tous les paramètres actifs rés
     logFormat='%(asctime)s [%(levelname)s] %(name)s %(funcName)s %(message)s', logLevel='info', log_reject=True, lr_backupCount=5, lr_interval=1,
     lr_when='midnight', masks="...nia/insects/flakey_broker', None, re.compile('.*'), True, True, 0, False, '/')]", message_count_max=0, message_rate_max=0,
     message_rate_min=0, message_strategy={'reset': True, 'stubborn': True, 'failure_duration': '5m'}, message_ttl=0, mirror=True, notify_only=False,
-    overwrite=True, plugins=['sample.Sample', 'sarracenia.flowcb.log.Log'], post_baseDir='/home/peter/sarra_devdocroot', post_baseUrl='http://localhost:8001',
+    plugins=['sample.Sample', 'sarracenia.flowcb.log.Log'], post_baseDir='/home/peter/sarra_devdocroot', post_baseUrl='http://localhost:8001',
     post_documentRoot=None, post_exchange=['xflow_public'], post_exchanges=[], prefetch=1, preserve_mode=True, preserve_time=False, program_name='sarra',
     pstrip=False, queue_filename='/home/peter/.cache/sr3/sarra/download_f20/sarra.download_f20.tfeed.qname',
     queue_name='q_tfeed_sarra.download_f20.65966332.70396990', randid='52f9', realpathPost=False, report=False, report_daemons=False, reset=False,
@@ -481,9 +481,6 @@ Quelques exemples :
 
 *self.o.inflight*
   Le paramètre actuel de *inflight* (voir `Delivery Completion <FileCompletion.html>`_)
-
-*self.o.overwrite*
-  qui contrôle si les fichiers déjà téléchargés doivent être remplacés sans condition.
 
 *self.o.discard*
   Si les fichiers doivent être supprimés après leur téléchargement.
