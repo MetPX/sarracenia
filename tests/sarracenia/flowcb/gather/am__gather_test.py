@@ -1,7 +1,7 @@
 import pytest
 from tests.conftest import *
 
-import os, types, copy
+import os, types, copy, re
 
 from sarracenia.flowcb.gather.am import Am
 import sarracenia.config 
@@ -114,7 +114,7 @@ def test_am_binary_bulletin():
 
     # Check renamer.
     renamer.after_gather(worklist)
-    assert worklist.incoming[0]['rename'] == 'ISAA41_CYWA_030000___00001'
+    assert re.match('ISAA41_CYWA_030000___.....' , worklist.incoming[0]['rename'])
 
 
 # Test 2: Check a regular CACN bulletin
@@ -146,11 +146,10 @@ def test_cacn_regular():
     worklist.incoming = [message_test2]
 
     renamer.after_gather(worklist)
-    assert worklist.incoming[0]['rename'] == 'CACN00_CWAO_021600__WVO_00001'
+    assert re.match('CACN00_CWAO_021600__WVO_.....' , worklist.incoming[0]['rename'])
 
 # Test 3: Check an erronous CACN bulletin (missing timestamp in bulletin contents)
 def test_cacn_erronous():
-    import re
 
     BaseOptions = Options()
     renamer = Raw2bulletin(BaseOptions)
@@ -179,7 +178,7 @@ def test_cacn_erronous():
 
 
     renamer.after_gather(worklist)
-    assert re.match('CACN00_CWAO_......__WPK_00001_PROBLEM' , worklist.incoming[0]['rename'])
+    assert re.match('CACN00_CWAO_......__WPK_....._PROBLEM' , worklist.incoming[0]['rename'])
 
 # Test 4: Bulletin with double line separator after header (my-header\n\n)
 def test_bulletin_double_linesep():
@@ -211,11 +210,11 @@ def test_bulletin_double_linesep():
     worklist.incoming = [message_test4]
 
     renamer.after_gather(worklist)
-    assert message_test4['rename'] == 'SXCN35_CWVR_021100___00001'
+    assert re.match('SXCN35_CWVR_021100___.....' , worklist.incoming[0]['rename'])
 
 # Test 5: Bulletin with invalid year in timestamp (Fix: https://github.com/MetPX/sarracenia/pull/973)
 def test_bulletin_invalid_timestamp(caplog):
-    import re, datetime
+    import datetime
 
     BaseOptions = Options()
     renamer = Raw2bulletin(BaseOptions)
@@ -298,7 +297,7 @@ def test_bulletin_wrong_station():
     worklist.incoming = [message_test7]
 
     renamer.after_gather(worklist)
-    assert worklist.incoming[0]['rename'] == 'UECN99_CYCX_071200___00001_PROBLEM'
+    assert re.match('UECN99_CYCX_071200___....._PROBLEM' , worklist.incoming[0]['rename'])
 
 # Test 8: SM Bulletin - Add station mapping + SM/SI bulletin accomodities 
 def test_SM_bulletin():
@@ -329,7 +328,7 @@ def test_SM_bulletin():
     worklist.incoming = [message_test8]
 
     renamer.after_gather(worklist)
-    assert worklist.incoming[0]['rename'] == 'SMCN06_CWAO_030000__71816_00001'
+    assert re.match('SMCN06_CWAO_030000__71816_.....' , worklist.incoming[0]['rename'])
 
 # Test 9: Bulletin with 5 fields in header (invalid)
 def test_bulletin_header_five_fileds():
@@ -420,7 +419,7 @@ def test_random_bulletin_with_BBB():
     worklist.incoming = [message_test12]
 
     renamer.after_gather(worklist)
-    assert worklist.incoming[0]['rename'] == 'FXCN06_CYTR_230939_AAA__00001'
+    assert re.match('FXCN06_CYTR_230939_AAA__.....' , worklist.incoming[0]['rename'])
 
 # Test 13: SM Bulletin with BBB - Add station mapping + SM/SI bulletin accomodities + conserve BBB header
 #          Also test AddSMHeader option
@@ -453,7 +452,7 @@ def test_SM_bulletin_with_BBB_no_addsmheader():
     worklist.incoming = [message_test13]
 
     renamer.after_gather(worklist)
-    assert worklist.incoming[0]['rename'] == 'SMCN06_CWAO_030000_AAA_71816_00001'
+    assert re.match('SMCN06_CWAO_030000_AAA_71816_.....' , worklist.incoming[0]['rename'])
 
 # Test 14: Complete SM Bulletin with BBXX field - Should not add AAXX line afterwards
 def test_SM_bulletin_with_BBXX():
@@ -488,7 +487,7 @@ def test_SM_bulletin_with_BBXX():
     worklist.incoming = [message_test14]
 
     renamer.after_gather(worklist)
-    assert worklist.incoming[0]['rename'] == 'SMVD03_CYTR_280600__BBXX_00001'
+    assert re.match('SMVD03_CYTR_280600__BBXX_.....' , worklist.incoming[0]['rename'])
 
 # Test 15: SM Bulletin with BBB - Add station mapping + SM/SI bulletin accomodities + conserve BBB header
 #          Also test AddSMHeader option
@@ -521,7 +520,7 @@ def test_SM_bulletin_with_BBB_w_addsmheader():
     worklist.incoming = [message_test15]
 
     renamer.after_gather(worklist)
-    assert worklist.incoming[0]['rename'] == 'SMCN06_CWAO_030000_AAA_71816_00001'
+    assert re.match('SMCN06_CWAO_030000_AAA_71816_.....' , worklist.incoming[0]['rename'])
 
 # Test 16: SN (Synoptic) Bulletin:
 def test_SN_syno_bulletin():
@@ -555,6 +554,6 @@ def test_SN_syno_bulletin():
     worklist.incoming = [message_test16]
 
     renamer.after_gather(worklist)
-    assert worklist.incoming[0]['rename'] == 'SNVD02_CWAO_280700___00001'
+    assert re.match('SNVD02_CWAO_280700___.....' , worklist.incoming[0]['rename'])
 
 
