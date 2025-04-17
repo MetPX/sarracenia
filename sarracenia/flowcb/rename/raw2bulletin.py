@@ -21,7 +21,7 @@ Examples:
        WACN07 CWAO 082327
        CZEG AIRMET E1 VALID 080105/080505 CWEG-
 
-       Output filename: WACN07_CWAO_082327_CZEG__00001
+       Output filename: WACN07_CWAO_082327__CZEG_00001
     
     Another RAW Ninjo file
        FTCN32 CWAO 100500 AAM
@@ -36,7 +36,7 @@ Examples:
         CACN00 CWAO 141600
         PQU
 
-       Output filename: CACN00_CWAO_141600_PQU__00003
+       Output filename: CACN00_CWAO_141600__PQU_00003
 
     A ISA binary bulletin
        Input filename: ISAA41_CYZX_162000__00035 
