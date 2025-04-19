@@ -486,8 +486,7 @@ class AMQP(Moth):
                     err_msg = str(err).replace("Exchange.delete: (406) PRECONDITION_FAILED - exchange ", "")
                     logger.warning("failed to delete exchange: %s" % err_msg)
         except Exception as err:
-            logger.error("failed on {} with {}".format(
-                self.o['broker'].url.hostname, err))
+            logger.error( f"failed on {str(self.o['broker'])} with {err}" ) 
             logger.debug('Exception details: ', exc_info=True)
 
     def getCleanUp(self) -> None:
@@ -505,8 +504,7 @@ class AMQP(Moth):
                 if hasattr(self,'channel'):
                     self.channel.queue_delete(q['name'])
         except Exception as err:
-            logger.error("failed to {} with {}".format(
-                s['broker'].url.hostname, err))
+            logger.error( f"failed to {str(s['broker'])} with {err}" )
             logger.debug('Exception details: ', exc_info=True)
 
     def newMessages(self) -> list:

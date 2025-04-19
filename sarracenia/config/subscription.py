@@ -73,7 +73,7 @@ class Subscriptions(list):
 
         found=False
         for s in self:
-            if ( s['broker'] == new_subscription['broker'] ) and \
+            if ( str(s['broker']) == str(new_subscription['broker']) ) and \
                ( s['queue']['name'] == new_subscription['queue']['name'] ):
                newb = new_subscription['bindings'][0]
                for b in s['bindings']:
