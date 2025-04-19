@@ -2039,23 +2039,25 @@ class Config:
                                             component, cfg)
 
         if self.post_broker is not None and self.post_broker.url is not None:
-            if not hasattr(self,
-                           'post_exchange') or self.post_exchange is None:
+            if not hasattr(self, 'post_exchange') or self.post_exchange is None:
                 self.post_exchange = 'xs_%s' % self.post_broker.url.username
 
-            if hasattr(self, 'post_exchangeSuffix'):
-                self.post_exchange += '_%s' % self.post_exchangeSuffix
+            post_broker_isList = hasattr(self,'post_exchange') and type(self.post_exchange) is list
 
-            if hasattr(self,'post_exchange') and (type(self.post_exchange) is list ):
-                pass
-            elif hasattr(self, 'post_exchangeSplit') and self.post_exchangeSplit > 1:
-                l = []
-                for i in range(0, int(self.post_exchangeSplit)):
-                    y = self.post_exchange + '%02d' % i
-                    l.append(y)
-                self.post_exchange = l
-            else:
-                self.post_exchange = [self.post_exchange]
+            if not post_broker_isList:
+                if hasattr(self, 'post_exchangeSuffix'):
+                    self.post_exchange += '_%s' % self.post_exchangeSuffix
+
+                if hasattr(self,'post_exchange') and (type(self.post_exchange) is list ):
+                    pass
+                elif hasattr(self, 'post_exchangeSplit') and self.post_exchangeSplit > 1:
+                    l = []
+                    for i in range(0, int(self.post_exchangeSplit)):
+                        y = self.post_exchange + '%02d' % i
+                        l.append(y)
+                    self.post_exchange = l
+                else:
+                    self.post_exchange = [self.post_exchange]
 
             if (component in ['poll' ]) and (hasattr(self,'vip') and self.vip):
                 if (not hasattr(self,'exchange') or not self.exchange):
