@@ -50,6 +50,7 @@ from sarracenia import durationToSeconds, site_config_dir, user_config_dir, user
 from sarracenia.featuredetection import features
 import sarracenia.config.credentials
 from  sarracenia.config.subscription import Subscription,Subscriptions
+from  sarracenia.config.publisher import Publisher,Publishers
 import sarracenia.flow
 import sarracenia.flowcb
 
@@ -842,6 +843,7 @@ class Config:
         """
         self.subscriptions = Subscriptions()
         self.old_subscriptions = Subscriptions()
+        self.publishers= Publishers()
         self.subscription_index = 0
         self.__admin = None
         self.__broker = None
@@ -995,6 +997,10 @@ class Config:
 
     @post_broker.setter
     def post_broker(self, v):
+
+        if hasattr(self,'post_broker') and self.post_broker:
+            self.publishers.add(Publisher(self))
+
         if type(v) is str:
             ok, cred_details = self.credentials.validate_urlstr(v)
             if ok:
@@ -1259,17 +1265,12 @@ class Config:
                    i+=1
             elif k in ['broker', 'post_broker' ]:
                 d[k]=str(c[k])
-            elif k in ['subscriptions' ]:
-                d['subscriptions'] = c['subscriptions']
-                for s in d['subscriptions']:
-                    s['broker'] = str(s['broker']) 
-            elif k in ['old_subscriptions' ]:
-                if not c['old_subscriptions']:
-                    continue
-                d['old_subscriptions'] = c['old_subscriptions']
-                for s in d['old_subscriptions']:
-                    s['broker'] = str(s['broker'])
-
+            elif k in ['subscriptions', 'old_subscriptions', 'publishers' ]:
+                d[k] = c[k]
+                for s in d[k]:
+                    for b in ['broker', 'post_broker']:
+                        if b in s:
+                            s[b] = str(s[b]) 
             else:
                 d[k] = copy.deepcopy(c[k])
 
@@ -2092,6 +2093,10 @@ class Config:
                         self.exchange = self.post_exchange
                 if (not hasattr(self,'broker') or not self.broker):
                     self.broker = self.post_broker
+
+        if hasattr(self,'post_broker') and self.post_broker:
+            self.publishers.add( Publisher(self) )
+            #logger.critical( f"last publisher {self.publishers=}") 
 
         if not ( hasattr(self, 'source') or self.sourceFromExchange):
             if hasattr(self, 'post_broker') and hasattr(self.post_broker,'url') and self.post_broker.url.username:
