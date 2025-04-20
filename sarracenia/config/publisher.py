@@ -53,7 +53,12 @@ class Publisher(dict):
             logger.error("malformed publisher, missing (post_)exchange")
             return
 
-        for a in [ 'auto_delete', 'durable', 'exchangeDeclare', 'exchangeSplit', 'messageAgeMax', 
+        for a in [ 'exchangeSplit', 'topicPrefix' ]:
+            aa = "post_"+a
+            if hasattr(options, aa):
+                self[a] = getattr(options,aa)
+
+        for a in [ 'auto_delete', 'durable', 'exchangeDeclare', 'messageAgeMax', 
                   'messageDebugDump', 'persistent', 'timeout' ]:
             if hasattr(options, a):
                 self[a] = getattr(options,a)
@@ -70,9 +75,7 @@ class Publishers(list):
             return
 
         for s in self:
-            #logger.debug( f" {s=}  vs. {new_publisher=} ")
-            #logger.debug( f" {str(s['broker'])=}  vs. {str(new_publisher['broker'])=} ")
-            if s == {}:
+            if s == {} or not 'broker' in s or not 'exchange' in s:
                 continue
 
             if ( str(s['broker']) == str(new_publisher['broker']) ) and \
