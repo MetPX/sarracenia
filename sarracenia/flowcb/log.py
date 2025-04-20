@@ -110,12 +110,19 @@ class Log(FlowCB):
         if self.o.logMessageDump:
             return msg.dumps()
 
-        s = "to "
-        if 'post_exchange' in msg and ('post_topic' in msg) and \
-            not msg['post_topic'].startswith(msg['post_exchange']) :
-            s+= f"exchange: {msg['post_exchange']} " 
-        if 'post_topic' in msg:
-            s+= f"topic: {msg['post_topic']} "
+        s = "to"
+        if 'posts' in msg:
+            for p in msg['posts']:
+                if 'broker' in p:
+                    s+= f" {p['broker']}"
+                if 'exchange' in p and ('topic' in p) and \
+                    not p['topic'].startswith(p['exchange']) :
+                    s+= f",{p['exchange']}" 
+                if 'topic' in p:
+                    s+= f",{p['topic']}"
+        else:
+            s+= 'nowhere?'
+        s+=" "
 
         if 'fileOp' in msg:
             op=','.join(msg['fileOp'].keys())

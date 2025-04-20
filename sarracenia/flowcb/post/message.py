@@ -3,6 +3,7 @@
 # Copyright (C) Her Majesty The Queen in Right of Canada, Environment Canada, 2008-2020
 #
 
+import copy
 import logging
 
 import sarracenia.moth
@@ -19,60 +20,95 @@ class Message(FlowCB):
 
         super().__init__(options,logger)
 
-        if hasattr(self.o, 'post_broker'):
-            props = sarracenia.moth.default_options
+        if not hasattr(self.o, 'post_broker'):
+            return
+
+        self.posters=[]
+        i=0
+
+        for p in self.o.publishers:
+            props = copy.deepcopy(sarracenia.moth.default_options)
             props.update(self.o.dictify())
-
+            props.update(p)
             # adjust settings post_xxx to be xxx, as Moth does not use post_ ones.
-            for k in [ 'broker', 'exchange', 'topicPrefix', 'exchangeSplit', 'topic', 'messageAgeMax' ]:
-                post_one='post_'+k
-                if hasattr( self.o, post_one ): 
-                    #props.update({ k: getattr(self.o,post_one) } )
-                    props[ k ] = getattr(self.o,post_one)
+            self.posters.append(sarracenia.moth.Moth.pubFactory(props))
+            i+=1
+        else:
+            logger.critical( f"Missing publishers.")
 
-            self.poster = sarracenia.moth.Moth.pubFactory(props)
 
     def post(self, worklist):
         old_ok = worklist.ok
         worklist.ok = []
         all_good=True
         for m in old_ok:
-            try:
-                if all_good and hasattr(self.poster,'putNewMessage') and self.poster.putNewMessage(m):
-                    worklist.ok.append(m)
-                else:
-                    all_good=False
-                    worklist.failed.append(m)
-            except Exception as e:
-                all_good = False
+            i=0
+            failures=[]
+            for p in self.posters:
+               if hasattr(p,'putNewMessage'):
+                   try:
+                       if 'post_failures' in m: 
+                           if i in m['post_failures']:
+                               p.putNewMessage(m)
+                       else:
+                           p.putNewMessage(m)
+
+                   except Exception as e:
+                       if i not in failures:
+                           failures.append(i)
+                       logger.error(f"crashed: {e}")
+                       logger.debug("Exception details:", exc_info=True)
+
+               else:
+                   failures.append( i )
+               i+=1
+                   
+            if len(failures)<1:
+                if 'post_failures' in m:
+                   del m['post_failures']
+                worklist.ok.append(m)
+            else:
+                m['post_failures'] = failures
+                m['_deleteOnPost'] |= set(['post_failures'])
                 worklist.failed.append(m)
-                logger.error(f"crashed: {e}")
-                logger.debug("Exception details:", exc_info=True)
+
 
     def metricsReport(self) -> dict:
-        if hasattr(self,'poster') and self.poster:
-            return self.poster.metricsReport()
-        else:
-            return {}
+
+        reports={}
+        if hasattr(self,'posters'):
+            i=0
+            for p in self.posters:
+                if hasattr(p,'metricsReport'): 
+                    reports[str(self.o.publishers[i]['broker'])] = p.metricsReport()
+                i+=1
+        return reports 
 
     def on_housekeeping(self):
-        if hasattr(self,'poster') and self.poster:
-            m = self.poster.metricsReport()
-            logger.debug(
-                f"messages: good: {m['txGoodCount']} bad: {m['txBadCount']} bytes: {m['txByteCount']}"
-            )
-            self.poster.metricsReset()
+
+        if hasattr(self,'posters') and len(self.posters)>0:
+            i=0
+            for p in self.posters:
+                m = p.metricsReport()
+                logger.debug(
+                        f"messages to {str(self.o.subscriptions[i]['broker'])} good: {m['txGoodCount']} bad: {m['txBadCount']} bytes: {m['txByteCount']}"
+                )
+                p.metricsReset()
+                i+=1
         else:
             logger.debug( "no metrics available" )
 
     def on_start(self):
-        if hasattr(self,'poster') and self.poster:
-            self.poster.putSetup()
+        for p in self.posters:
+            if hasattr(p,'putSetup'):
+                p.putSetup()
+
         logger.debug('starting')
 
     def on_stop(self):
-        if hasattr(self,'poster') and self.poster:
-            self.poster.close()
+        for p in self.posters:
+            if hasattr(p,'close'):
+                p.close()
         logger.debug('closing')
     
     def please_stop(self) -> None:
@@ -81,4 +117,6 @@ class Message(FlowCB):
         super().please_stop()
         if hasattr(self, 'poster') and self.poster:
             logger.debug("asking Moth publisher to please_stop")
-            self.poster.please_stop()
+            for p in self.posters:
+                if hasattr(p,'please_stop'):
+                    p.please_stop()

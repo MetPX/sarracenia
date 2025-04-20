@@ -715,9 +715,10 @@ class AMQP(Moth):
                              (version, type(raw_body),  raw_body))
             logger.info('raw message headers: type: %s value: %s' % (type(headers),  headers))
 
-        message['post_topic'] = topic
-        message['post_exchange'] = exchange
-        message['_deleteOnPost'] |= set( ['post_exchange', 'post_topic'] )
+        if not 'posts' in message: 
+            message['posts'] = []
+        message['posts'].append( { 'broker':str(self.o['broker']), 'topic': topic, 'exchange':exchange } ) 
+        message['_deleteOnPost'] |= set( ['posts'] )
         del headers['topic']
 
         if headers :  
