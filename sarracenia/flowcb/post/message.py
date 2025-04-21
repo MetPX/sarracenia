@@ -49,9 +49,11 @@ class Message(FlowCB):
                    try:
                        if 'post_failures' in m: 
                            if i in m['post_failures']:
-                               p.putNewMessage(m)
+                               if not p.putNewMessage(m):
+                                   failures.append(i)
                        else:
-                           p.putNewMessage(m)
+                           if not p.putNewMessage(m):
+                               failures.append(i)
 
                    except Exception as e:
                        if i not in failures:
