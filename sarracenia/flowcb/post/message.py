@@ -86,12 +86,12 @@ class Message(FlowCB):
 
     def on_housekeeping(self):
 
-        if hasattr(self,'posters') and len(self.posters)>0:
+        if hasattr(self,'publishers') and len(self.publishers)>0:
             i=0
             for p in self.posters:
                 m = p.metricsReport()
                 logger.debug(
-                        f"messages to {str(self.o.subscriptions[i]['broker'])} good: {m['txGoodCount']} bad: {m['txBadCount']} bytes: {m['txByteCount']}"
+                        f"messages to {str(self.o.publishers[i]['broker'])} good: {m['txGoodCount']} bad: {m['txBadCount']} bytes: {m['txByteCount']}"
                 )
                 p.metricsReset()
                 i+=1
