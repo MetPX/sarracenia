@@ -381,7 +381,7 @@ def test_broker_finalize():
      options.parse_line( options.component, options.config, "subscribe/ex1", 1, "directory ~/ex1" )
      options.parse_line( options.component, options.config, "subscribe/ex1", 1, "no 1" )
      
-     assert( len(options.bindings) == 0 )
+     assert( len(options.subscriptions) == 0 )
      assert( options.directory == '~/ex1' )
      assert( not hasattr( options, 'queue_filename' )  )
      assert( options.queueName == 'q_${BROKER_USER}.${COMPONENT}.${CONFIG}.${QUEUESHARE}'   )
@@ -394,7 +394,7 @@ def test_broker_finalize():
      assert( type(options.queueName) == str )
      assert( options.queueName.startswith('q_${BROKER_USER}.${COMPONENT}')  )
      assert( options.directory == os.path.expanduser( '~/ex1' ) )
-     assert( len(options.bindings) == 1 )
+     assert( len(options.subscriptions) == 1 )
      assert( options.exchange == 'xs_bunnypeer' )
      assert( options.post_exchange == [ 'xs_bunnypeer' ] )
      assert( hasattr(options,'nodupe_ttl') )
@@ -402,4 +402,4 @@ def test_broker_finalize():
      assert( hasattr(options,'pid_filename') )
      assert( hasattr(options,'retry_path') )
      assert( hasattr(options,'novipFilename') )
-     assert( hasattr(options,'bindings') )
+     assert( hasattr(options,'publishers') )
