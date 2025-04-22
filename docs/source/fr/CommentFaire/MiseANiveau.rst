@@ -38,6 +38,14 @@ Instructions d’installation
 git
 ---
 
+3.0.59
+------
+
+
+*CHANGEMENT* : les *bindings* de l'API Python sont remplacées par des *subscriptions*. L'API est très différente, voir les exemples.
+Les *subscriptions* permettent l'usage  de plusieurs files d'attente et de plusieurs courtiers pour les abonnements.
+
+
 3.0.58
 ------
 

@@ -178,8 +178,9 @@ perm_options = [ 'permDefault', 'permDirDefault','permLog']
 
 # options that apply to queues, and so must appear before subtopic resolves queues characteristics.
 #
-queue_options = [ 'auto_delete', 'broker', 'durable', 'exchange', 'exchangeSuffix', 'expire', 'prefetch', \
-                    'qos', 'queueBind',  'queueDeclare' ]
+queue_options = [ 'auto_delete', 'broker', 'clean_session', 'durable', 'exchange', 'exchangeSuffix',  \
+                  'expire', 'max_inflight_messages', 'max_queued_messages',  'prefetch',  \
+                 'qos', 'queueBind',  'queueDeclare' , 'receiveMaximum', 'tlsRigour']
 
 size_options = ['accelThreshold', 'blockSize', 'bufSize', 'byteRateMax', 'fileSizeMax', 'inlineByteMax']
 
@@ -669,8 +670,15 @@ class Config:
          cfg.component = 'subscribe'
          cfg.config = 'flow_demo'
          cfg.action = 'start'
-         cfg.bindings = [ ('xpublic', ['v02', 'post'], ['*', 'WXO-DD', 'observations', 'swob-ml', '#' ]) ]
-         cfg.queueName='q_anonymous.subscriber_test2'
+         cfg.subscriptions= [ { 
+             'broker': cfg.broker,
+             'bindings': { 'exchange': 'xpublic', 'prefix': ['v02', 'post'], 'sub': [ '*.WXO-DD.observations.swob-ml.#' ] },
+             'queue': { 
+                 'name' : 'q_anonymous.subscriber_test2', 
+                 'template':'q_${BROKER_USER}_${COMPONENT}_${CONFIG}_${HOSTNAME}_Demo123' ,
+                 'expire': 600,
+                 }
+             } ]
          cfg.download=True
          cfg.batch=1
          cfg.messageCountMax=5
@@ -832,12 +840,12 @@ class Config:
         """
           instantiate an empty Configuration
         """
-        self.bindings = []
         self.subscriptions = Subscriptions()
+        self.old_subscriptions = Subscriptions()
+        self.subscription_index = 0
         self.__admin = None
         self.__broker = None
         self.__post_broker = None
-        self.__queue_file_read = False
 
         if Config.credentials is None:
             Config.credentials = sarracenia.config.credentials.CredentialDB()
@@ -909,8 +917,8 @@ class Config:
         self.post_messageAgeMax = 0
 	    #self.post_topicPrefix = None
         self.pstrip = False
-        self.queueName = None
         self.queueShare = "${USER}_${HOSTNAME}_${RAND8}"
+        self.queueName = "q_${BROKER_USER}.${COMPONENT}.${CONFIG}.${QUEUESHARE}"
         self.randomize = False
         self.rename = None
         self.randid = "%04x" % randint(0, 65536)
@@ -945,23 +953,6 @@ class Config:
             else:
                 setattr(result, k, copy.deepcopy(v, memo))
         return result
-
-    def hohoo_validate_urlstr(self, urlstr) -> tuple :
-        """
-           returns a tuple ( bool, expanded_url ) 
-           the bool is whether the expansion worked, and the expanded_url is one with
-           the added necessary authentication details from sarracenia.Credentials.
-
-        """
-        # check url and add credentials if needed from credential file
-        ok, cred_details = Config.credentials.get(urlstr)
-        if cred_details is None:
-            logging.critical("bad credential %s" % urlstr)
-            # Callers expect that a Credential object will be returned
-            cred_details = sarracenia.config.credentials.Credential()
-            cred_details.url = urllib.parse.urlparse(urlstr)
-            return False, cred_details
-        return True, cred_details
 
     def applyComponentDefaults( self, component ):
         """
@@ -1023,6 +1014,10 @@ class Config:
             return word
 
         result = word
+
+        if ( '${QUEUESHARE}' in word ):
+            result = result.replace('${QUEUESHARE}', self._varsub(self.queueShare) ) 
+
         if (('${BROKER_USER}' in word) and hasattr(self, 'broker') and self.broker is not None and
                 self.broker.url is not None and hasattr(self.broker.url, 'username')):
             result = result.replace('${BROKER_USER}', self.broker.url.username)
@@ -1268,6 +1263,13 @@ class Config:
                 d['subscriptions'] = c['subscriptions']
                 for s in d['subscriptions']:
                     s['broker'] = str(s['broker']) 
+            elif k in ['old_subscriptions' ]:
+                if not c['old_subscriptions']:
+                    continue
+                d['old_subscriptions'] = c['old_subscriptions']
+                for s in d['old_subscriptions']:
+                    s['broker'] = str(s['broker'])
+
             else:
                 d[k] = copy.deepcopy(c[k])
 
@@ -1338,10 +1340,12 @@ class Config:
 
         if type(oth) == dict:
             for k in oth.keys():
-                self._merge_field(k, self._varsub(oth[k]))
+                v = self._varsub(oth[k]) if k not in ['queueName','queueShare'] else oth[k]
+                self._merge_field(k, v)
         else:
             for k in oth.__dict__.keys():
-                self._merge_field(k, self._varsub(getattr(oth, k)))
+                v = self._varsub(getattr(oth, k)) if k not in ['queueName','queueShare'] else getattr(oth,k)
+                self._merge_field(k, v)
 
     def _override_field(self, key, value):
         if key == 'masks':
@@ -1398,7 +1402,7 @@ class Config:
             return
 
         self._resolve_exchange()
-        self.queueName = self._resolveQueueName(self.component,self.config)
+        resolved_queueName = self._resolveQueueName(self.component,self.config)
 
         if type(subtopic_string) is str:
             if self.broker.url.scheme == 'amq' :
@@ -1407,8 +1411,7 @@ class Config:
                 subtopic = subtopic_string.split('/')
             
         if hasattr(self, 'exchange') and hasattr(self, 'topicPrefix'):
-            self.bindings.append((self.exchange, self.topicPrefix, subtopic))
-            self.subscriptions.add(Subscription(self, self.queueName, subtopic))
+            self.subscriptions.add(Subscription(self, self.queueName, resolved_queueName, subtopic))
 
     def _parse_v2plugin(self, entryPoint, value):
         """
@@ -1612,7 +1615,10 @@ class Config:
         if k == 'continue':
             return
             
-        line = list(map(lambda x: self._varsub(x), line))
+        # the exceptions here need to be evaluated later, they are template variables.
+        # should not be substituted too early.
+        if k not in ['queueName', 'queueShare' ]:
+            line = list(map(lambda x: self._varsub(x), line))
 
         if len(line) == 1:
             v = True
@@ -1780,7 +1786,7 @@ class Config:
             # specify a second queue with different bindings... so this warning could be complaining about something 
             # that is correct.   but in every current case, the warning will be helpful.
             if ( k == 'queueName' ) and self.subtopic_seen:
-                logger.warning( f"{','.join(self.files)}:{lineno} queueName usually should be before subtopic in configs: subtopic to default queue" )
+                    logger.warning( f"{','.join(self.files)}:{lineno} queueName usually should be before subtopic in configs: subtopic to default queue" )
             if ( k == 'directory' ) and not self.download:
                 logger.info( f"{','.join(self.files)}:{lineno} if download is false, directory has no effect" )
 
@@ -1824,24 +1830,24 @@ class Config:
         sfile += os.sep + "subscriptions.json"
         return sfile
 
-    def _writeQueueFile(self):
+    def _writeQueueFile(self, resolved_queueName):
 
         # first make sure directory exists.
         if not os.path.isdir(os.path.dirname(self.queue_filename)):
             pathlib.Path(os.path.dirname(self.queue_filename)).mkdir(parents=True, exist_ok=True)
 
-        if not os.path.isfile(self.queue_filename) and (self.queueName is not None): 
+        if not os.path.isfile(self.queue_filename) and (resolved_queueName is not None): 
             tmpQfile=self.queue_filename+'.tmp'
             if not os.path.isfile(tmpQfile): 
                 f = open(tmpQfile, 'w')
-                f.write(self.queueName)
+                f.write(resolved_queueName)
                 f.close()
                 os.rename( tmpQfile, self.queue_filename )
             else:
-                logger.info( f'Queue name {self.queueName} being persisted to {self.queue_filename} by some other process, so ignoring it.' )
+                #logger.info( f'Queue name {resolved_queueName} being persisted to {self.queue_filename} by some other process, so ignoring it.' )
                 return
 
-            logger.debug( f'queue name {self.queueName} persisted to {self.queue_filename}' )
+            #logger.debug( f'queue name {resolved_queueName} persisted to {self.queue_filename}' )
 
 
 
@@ -1864,17 +1870,31 @@ class Config:
 
         self.queue_filename = queuefile
 
-        if not hasattr(self, 'old_subscriptions'):
+        if not self.old_subscriptions:
             self.subscriptionsPath=self._getSubscriptionsFileName(self.component,self.config)
             self.old_subscriptions=self.subscriptions.read(self, self.subscriptionsPath)
 
-        if hasattr(self, 'old_subscriptions') and self.old_subscriptions:
+        # look for template in old subscriptions.
+        if self.old_subscriptions:
             for s in self.old_subscriptions:
-                if self.broker == s['broker']:
-                    #logger.info( f" {s['queue']['name']=} ")
+                # with older releases, there is a single queue, and no template.
+                if 'template' not in s['queue']:
+                    return s['queue']['name']
+                if (str(self.broker) == str(s['broker'])) and (self.queueName == s['queue']['template']):
+                    #logger.info( f" from old {s['queue']['name']=} ")
                     return s['queue']['name']
 
-        #while (not hasattr(self, 'queueName')) or (self.queueName is None):
+        # look for template in existing resolved subscriptions.
+        if self.subscriptions:
+            for s in self.subscriptions:
+                if (str(self.broker) == str(s['broker'])) and (self.queueName == s['queue']['template']):
+                    #logger.info( f" from new  {s['queue']['name']=}  ( part of {self.subscriptions}")
+                    return s['queue']['name']
+
+        # assert: no subscriptions available.
+        # assert, neither old subscriptions, nor current ones available.
+
+        queueName=''
         """
 
           normal:
@@ -1890,37 +1910,42 @@ class Config:
 
         """
 
-        queueName=self.queueName
-        if hasattr(self,'no') and self.no > 1:
+        if len(self.subscriptions)+len(self.old_subscriptions) < 1:
+            if hasattr(self,'no') and self.no > 1:
 
-            config_read_try=0
-            if os.path.isfile(queuefile):
-                f = open(queuefile, 'r')
-                queueName = f.read()
-                f.close()
-            else:
-                queueName = ''
+                config_read_try=0
+                if os.path.isfile(queuefile):
+                    f = open(queuefile, 'r')
+                    queueName = f.read()
+                    f.close()
 
-            logger.debug( f'instance read queueName {queueName} from queue state file {queuefile}' )
-            if len(queueName) < 1:
-                  logger.critical( f'failed to read queue name from {queuefile}')
-                  sys.exit(2)
-        else: 
-            # only lead instance (0-foreground, 1-start, or none in the case of 'declare')
-            # should write the state file.
+                logger.info( f'instance read legacy queueName {queueName} from queue state file {queuefile}' )
+                if len(queueName) < 1:
+                      logger.critical( f'failed to read queue name from {queuefile}')
+                      sys.exit(2)
+            else: 
+                # only lead instance (0-foreground, 1-start, or none in the case of 'declare')
+                # should write the state file.
     
-            # lead instance should
-            if not self.__queue_file_read and os.path.isfile(queuefile):
-                f = open(queuefile, 'r')
-                queueName = f.read()
-                f.close()
-                self.__queue_file_read=True
+                # lead instance should
+                if os.path.isfile(queuefile):
+                    f = open(queuefile, 'r')
+                    queueName = f.read()
+                    f.close()
+                    #logger.info( f" from qname file {queueName} ")
             
-            #if the queuefile is corrupt, then will need to guess anyways.
-            if ( queueName is None ) or ( queueName == '' ):
-                queueShare = self._varsub(self.queueShare)
-                queueName = f"q_{self.broker.url.username}." + '.'.join([component,cfg,queueShare])
-                logger.debug( f'default guessed queueName  {self.queueName} ' )
+        #if the queuefile is corrupt, then will need to guess anyways.
+
+        # expand from template.
+        if not queueName:
+            queueName = self._varsub(self.queueName)
+
+        # if that fails expand from default. (SHOULD NEVER GET HERE.)
+        if not queueName:
+            queueShare = self._varsub(self.queueShare)
+            queueName = f"q_{self.broker.url.username}." + '.'.join([component,cfg,queueShare])
+            logger.warning( f'queueName expansion failed, applying built-in override: {queueName} ' )
+
         return queueName 
 
 
@@ -2076,7 +2101,7 @@ class Config:
 
         if self.broker and self.broker.url and self.broker.url.username:
             self._resolve_exchange()
-            self.queueName = self._resolveQueueName(component,cfg)
+            resolved_queueName = self._resolveQueueName(component,cfg)
 
         valid_inlineEncodings = [ 'guess', 'text', 'binary' ]
         if hasattr(self, 'inlineEncoding') and self.inlineEncoding not in valid_inlineEncodings:
@@ -2096,19 +2121,18 @@ class Config:
 
         if self.broker and self.broker.url and self.broker.url.username:
 
-            if (self.bindings == [] and hasattr(self, 'exchange')):
-                self.bindings = [(self.exchange, self.topicPrefix, [ '#' ])]
-                self.subscriptions.append(Subscription(self, self.queueName, '#'))
+            if ((len(self.subscriptions) == 0) and hasattr(self, 'exchange')):
+                self.subscriptions.append(Subscription(self, self.queueName, resolved_queueName, [ '#' ]))
 
             # read old subscriptions, compare to current.
             #old_subscriptions=self.subscriptions.read(self, self.subscriptionsPath)
         
         if self.action in [ 'start', 'foreground', 'declare' ] and \
                 (not hasattr(self,'no') or self.no < 2) and  \
-                self.broker and self.broker.url :
+                len(self.subscriptions) > 0:
 
             self.subscriptions.write(self.subscriptionsPath)
-            self._writeQueueFile()
+            self._writeQueueFile(self.subscriptions[0]['queue']['name'])
 
         if hasattr(self, 'documentRoot') and (self.documentRoot is not None):
             path = os.path.expanduser(os.path.abspath(self.documentRoot))
@@ -2526,10 +2550,10 @@ class Config:
         def __call__(self, parser, namespace, values, option_string):
 
             if values == 'None':
-                namespace.bindings = []
+                namespace.subscriptions = []
 
             namespace._resolve_exchange()
-            qn = namespace._resolveQueueName(namespace.component,namespace.config)
+            resolved_qn = namespace._resolveQueueName(namespace.component,namespace.config)
 
             if not hasattr(namespace, 'broker'):
                 raise Exception('broker needed before subtopic')
@@ -2549,9 +2573,7 @@ class Config:
                else:
                    topicPrefix = namespace.topicPrefix.split('/')
 
-            namespace.bindings.append(
-                (namespace.exchange, topicPrefix, values))
-            namespace.subscriptions.add(Subscription(namespace, qn, values))
+            namespace.subscriptions.add(Subscription(namespace, namespace.queueName, resolved_qn, values))
 
     def parse_args(self, isPost=False):
         """
@@ -2696,9 +2718,6 @@ class Config:
                             nargs='?',
                             default=self.identity_method,
                             help='choose a different checksumming method for the files posted')
-        if hasattr(self, 'bindings'):
-            parser.set_defaults(bindings=self.bindings)
-
 
         parser.add_argument(
             '--logLevel',
@@ -2719,7 +2738,8 @@ class Config:
                             help='instance number of this process')
         parser.add_argument('--queueName',
                             nargs='?',
-                            help='name of AMQP consumer queue to create')
+                            help='name of AMQP consumer queue to create',
+                            default=self.queueName )
         parser.add_argument('--post_broker',
                             nargs='?',
                             help='broker to post downloaded files to')

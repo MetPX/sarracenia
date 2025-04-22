@@ -25,6 +25,7 @@ import fnmatch
 import getpass
 import inspect
 import json
+import sarracenia.make_json_serializable
 import logging
 import os
 import os.path
@@ -476,6 +477,10 @@ class sr_GlobalState:
                         self.states[c][cfg]['has_state'] = False
                         self.states[c][cfg]['noVip'] = None
                         
+                        if os.path.exists('subscriptions.json'):
+                            s = Subscriptions()
+                            self.states[c][cfg]['subscriptions'] = s.read( \
+                                self.configs[c][cfg]['options'], 'subscriptions.json')
 
                         for pathname in os.listdir():
                             p = pathlib.Path(pathname)
@@ -844,8 +849,6 @@ class sr_GlobalState:
                     host = self._init_broker_host(o.broker.url.netloc)
                     xl = self.__resolved_exchanges(c, cfg, o)
                     q = self.__guess_queueName(c, cfg, o)
-
-                    self.configs[c][cfg]['options'].queueName_resolved = q
 
                     for exch in xl:
                         if exch in self.brokers[host]['exchanges']:
@@ -1578,14 +1581,20 @@ class sr_GlobalState:
                 continue
             logging.info('looking at %s/%s ' % (c, cfg))
             o = self.configs[c][cfg]['options']
-            od = o.dictify()
-            if hasattr(o, 'queueName_resolved'):
-                od['broker'] = o.broker
-                od['queueName'] = o.queueName_resolved
+            if not hasattr(o,'subscriptions'):
+                continue
+
+            i=0
+            for s in o.subscriptions:
+                od = o.dictify()
+                od['broker'] = s['broker']
+                od['queueName'] = s['queue']['name']
                 od['dry_run'] = self.options.dry_run
+                od['subscription_index']=i
                 qdc = sarracenia.moth.Moth.subFactory(od)
                 qdc.getSetup()
                 qdc.close()
+                i += 1
 
         # run on_declare plugins.
         for f in self.filtered_configurations:
@@ -1832,25 +1841,38 @@ class sr_GlobalState:
                 break
             (c, cfg) = f.split(os.sep)
 
+            if 'subscriptions' not in self.states[c][cfg]:
+                continue
+
             o = self.configs[c][cfg]['options']
 
-            if hasattr(o, 'queueName_resolved'):
-                #print('deleting: %s is: %s @ %s' % (f, o.queueName_resolved, o.broker.url.hostname ))
-                qdc = sarracenia.moth.Moth.subFactory(
-                    {
-                        'broker': o.broker,
-                        'dry_run': self.options.dry_run,
-                        'echangeDeclare': False,
-                        'queueDeclare': False,
-                        'queueBind': False,
-                        'broker': o.broker,
-                        'queueName': o.queueName_resolved,
-                        'message_strategy': { 'stubborn':True }
-                    })
-                qdc.getSetup()
-                qdc.getCleanUp()
-                qdc.close()
-                queues_to_delete.append((o.broker, o.queueName_resolved))
+            for s in self.states[c][cfg]['subscriptions']:
+                q = s['queue']
+                if 'name' in q:
+                    if type(o.broker) == str:
+                        ok, broker = o.credentials.get( o.broker )
+                    else:
+                        broker=o.broker
+
+                    if not broker:
+                        print( f" could not resolve broker: {o.broker} " )
+                        continue
+
+                    print('deleting: %s is: %s @ %s' % (f, q['name'], broker.url.hostname ))
+                    qdc = sarracenia.moth.Moth.subFactory(
+                        {
+                            'broker': broker,
+                            'dry_run': self.options.dry_run,
+                            'credentials': o.credentials,
+                            'echangeDeclare': False,
+                            'subscription_index': 0,
+                            'subscriptions' : [ s ],
+                            'message_strategy': { 'stubborn':True }
+                        })
+                    qdc.getSetup()
+                    qdc.getCleanUp()
+                    qdc.close()
+                    queues_to_delete.append((broker, q['name']))
 
         for h in self.brokers:
             if self.please_stop:

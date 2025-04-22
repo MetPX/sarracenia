@@ -12,7 +12,6 @@ logger = logging.getLogger(__name__)
 default_options = {
     'acceptUnmatched': True,
     'batch': 100,
-    'bindings': [],
     'broker': None,
     'dry_run': False,
     'exchange': 'xpublic',
@@ -189,7 +188,7 @@ class Moth():
 
        *  'queueName'  : Mandatory, name of a queue. (only in AMQP... hmm...)
 
-       *  'bindings' : [ list of bindings ]
+       *  'subscriptions' : [ list of config.subscription.Subscription ]
 
        *  'loop'
 
@@ -434,7 +433,6 @@ class Moth():
         ebo = 2**self.next_connect_failures
         next_try = min(attempt_duration * ebo, 600)
         self.next_connect_time = now + next_try
-        logger.error( f"could not connect. next try in {next_try} seconds.")
 
     def splitPick(self,message) -> int:
         """

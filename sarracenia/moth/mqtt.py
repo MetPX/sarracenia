@@ -133,11 +133,20 @@ class MQTT(Moth):
         self.next_connect_time = now
         self.next_connect_failures = 0
 
-        if 'qos' in self.o:
-            if type(self.o['qos']) is not int:
-                self.o['qos'] = int(self.o['qos'])
-        else:
+        if 'qos' not in self.o:
             self.o['qos'] = 1
+        elif type(self.o['qos']) is not int:
+            self.o['qos'] = int(self.o['qos'])
+
+        if is_subscriber:
+            s=self.o['subscriptions'][self.o['subscription_index']]
+            queue=s['queue']
+            broker=s['broker']
+
+            if 'qos' in queue:
+                queue['qos'] = int(queue['qos'])
+            else:
+                queue['qos'] = int(self.o['qos'])
 
 
         me = "%s.%s" % (__class__.__module__, __class__.__name__)
@@ -160,7 +169,19 @@ class MQTT(Moth):
         if 'max_queued_messages' in self.o and type(self.o['max_queued_messages']) is not int:
             self.o['max_queued_messages'] = int( self.o['max_queued_messages'] )
 
+        self.is_subscriber = is_subscriber
+
         if is_subscriber:
+
+            if 'receiveMaximum' in queue and type(queue['receiveMaximum']) is not int:
+                queue['receiveMaximum'] = min( int( queue['receiveMaximum'] ), 65535 )
+
+            if 'max_inflight_messages' in queue and type(queue['max_inflight_messages']) is not int:
+                queue['max_inflight_messages'] = int( queue['max_inflight_messages'] )
+
+            if 'max_queued_messages' in queue and type(queue['max_queued_messages']) is not int:
+                queue['max_queued_messages'] = int( queue['max_queued_messages'] )
+
             self.subscribe_mutex = threading.Lock()
             self.subscribe_mutex.acquire()
             self.subscribe_in_progress = 0
@@ -178,7 +199,7 @@ class MQTT(Moth):
             self.rx_msg[3]=[]
             self.rx_msg[4]=[]
             self.rx_msg_mutex.release()
-
+            self.broker = None
       
         logger.warning("note: mqtt support is newish, not very well tested")
 
@@ -211,32 +232,33 @@ class MQTT(Moth):
         # FIXME: enhancement could subscribe accepts multiple (subj, qos) tuples so, could do this in one RTT.
         userdata.connected=True
         userdata.subscribe_mutex.acquire()
-        for binding_tuple in userdata.o['bindings']:
 
-            if 'topic' in userdata.o:
-                subj=userdata.o['topic']
+        s=userdata.o['subscriptions'][userdata.o['subscription_index']]
+        queue=s['queue']
+        broker=s['broker']
+
+        for binding_dict in s['bindings']:
+
+            if 'topic' in queue:
+                subj=queue['topic']
             else:
-                exchange, prefix, subtopic = binding_tuple
+                exchange = binding_dict["exchange"]
+                prefix = binding_dict["prefix"]
+                subtopic = binding_dict["sub"]
                 logger.info( f"tuple: {exchange} {prefix} {subtopic}")
 
-                subj = '/'.join(['$share', userdata.o['queueName'], exchange] +
+                subj = '/'.join(['$share', queue['name'], exchange] +
                                 prefix + subtopic)
 
-            (res, mid) = client.subscribe(subj, qos=userdata.o['qos'])
+            (res, mid) = client.subscribe(subj, qos=queue['qos'])
             userdata.subscribe_in_progress += 1
             logger.info( f"request to subscribe to: {subj}, mid={mid} "
-                    f"qos={userdata.o['qos']} sent: {paho.mqtt.client.error_string(res)}" )
+                    f"qos={queue['qos']} sent: {paho.mqtt.client.error_string(res)}" )
         userdata.subscribe_mutex.release()
         userdata.metricsConnect()
 
 
-    def __sub_on_subscribe(client,
-                           userdata,
-                           mid,
-                           reason_codes,
-                           properties=None):
-
- 
+    def __sub_on_subscribe(client, userdata, mid, reason_codes, properties=None):
 
         for sub_result in reason_codes:
             if sub_result == 1:
@@ -275,7 +297,7 @@ class MQTT(Moth):
             userdata.pending_publishes.remove(mid)
         else:
             userdata.unexpected_publishes.append(mid)
-            logger.info( f"BUG: ack for message we do not know we published. mid={mid}" )
+            logger.warning( f"BUG: ack for message we do not know we published. mid={mid}" )
 
     def __sslClientSetup(self,client=None) -> int:
         """
@@ -286,15 +308,29 @@ class MQTT(Moth):
         if not client and hasattr(self,'client'):
             client=self.client
 
-        if self.o['broker'].url.scheme[-1] == 's':
+        if self.is_subscriber and 'subscriptions' in self.o and self.o['subscriptions']:
+            s=self.o['subscriptions'][self.o['subscription_index']]
+            queue=s['queue']
+            broker=s['broker']
+        else:
+            broker=self.o['broker']
+            queue=self.o
+
+        if broker.url.scheme[-1] == 's':
             port = 8883
-            self.o['tlsRigour'] = self.o['tlsRigour'].lower()
-            if self.o['tlsRigour'] == 'lax':
+            if 'tlsRigour' in queue:
+                queue['tlsRigour'] = queue['tlsRigour'].lower()
+            elif 'tlsRigour' in self.o: 
+                queue['tlsRigour'] = self.o['tlsRigour'].lower()
+            else:
+                queue['tlsRigour'] = 'normal'
+
+            if queue['tlsRigour'] == 'lax':
                 self.tlsctx = ssl.create_default_context()
                 self.tlsctx.check_hostname = False
                 self.tlsctx.verify_mode = ssl.CERT_NONE
 
-            elif self.o['tlsRigour'] == 'strict':
+            elif queue['tlsRigour'] == 'strict':
                 self.tlsctx = ssl.SSLContext(ssl.PROTOCOL_TLS)
                 self.tlsctx.options |= ssl.OP_NO_TLSv1
                 self.tlsctx.options |= ssl.OP_NO_TLSv1_1
@@ -304,7 +340,7 @@ class MQTT(Moth):
                 # TODO Find a way to reintroduce certificate revocation (CRL) in the future
                 #  self.tlsctx.verify_flags = ssl.VERIFY_CRL_CHECK_CHAIN
                 #  https://github.com/MetPX/sarracenia/issues/330
-            elif self.o['tlsRigour'] == 'normal':
+            elif queue['tlsRigour'] == 'normal':
                 self.tlsctx = ssl.create_default_context()
             else:
                 self.logger.warning(
@@ -314,16 +350,20 @@ class MQTT(Moth):
         else:
             port = 1883
 
-        if self.o['broker'].url.port:
-            port = self.o['broker'].url.port
+        if broker.url.port:
+            port = broker.url.port
         return port
 
     def __clientSetup(self, cid) -> paho.mqtt.client.Client:
 
+        s=self.o['subscriptions'][self.o['subscription_index']]
+        queue=s['queue']
+        broker=s['broker']
+
         self.connect_in_progress = True
 
-        self.transport= 'websocket' if (self.o['broker'].url.scheme[-2:] == 'ws' ) or  \
-           (self.o['broker'].url.scheme[-1] == 'w' ) else 'tcp'
+        self.transport= 'websocket' if (broker.url.scheme[-2:] == 'ws' ) or  \
+           (broker.url.scheme[-1] == 'w' ) else 'tcp'
 
         client = paho.mqtt.client.Client( \
                     callback_api_version = paho.mqtt.client.CallbackAPIVersion.VERSION2, \
@@ -338,11 +378,10 @@ class MQTT(Moth):
         client.on_message = MQTT.__sub_on_message
         client.on_subscribe = MQTT.__sub_on_subscribe
         # defaults to 20... kind of a mix of "batch" and prefetch...
-        if 'max_inflight_messages' in self.o:
-            client.max_inflight_messages_set(self.o['max_inflight_messages'])
+        if 'max_inflight_messages' in queue:
+            client.max_inflight_messages_set(queue['max_inflight_messages'])
 
-        client.username_pw_set(self.o['broker'].url.username,
-                               unquote(self.o['broker'].url.password))
+        client.username_pw_set(broker.url.username, unquote(broker.url.password))
         return client
 
     def getSetup(self):
@@ -357,26 +396,36 @@ class MQTT(Moth):
         if self._stop_requested:
             return
 
+        s=self.o['subscriptions'][self.o['subscription_index']]
+        queue=s['queue']
+        broker=s['broker']
+
+        start = time.time()
+        if start < self.next_connect_time:
+            logger.critical( f"too soon to connect again to {str(broker)} index={self.o['subscription_index']} will try in: {self.next_connect_time-start} seconds" )
+            return
+
         try:
             cs = self.o['clean_session']
-            if ('queueName' in self.o) and ('no' in self.o):
-                cid = self.o['queueName'] + "_i%02d" % self.o['no']
+            if ('name' in queue) and ('no' in self.o):
+                cid = queue['name'] + "_i%02d" % self.o['no']
             else:
                 #cid = ''.join(random.choice(string.ascii_lowercase) for i in range(10))
                 cid = None
                 cs = True
                 logger.info( f" cid=+{cid}+"  )
 
+            self.broker = str(broker)
             props = Properties(PacketTypes.CONNECT)
-            if 'expire' in self.o and self.o['expire']:
-                props.SessionExpiryInterval = int(self.o['expire'])
-            if 'receiveMaximum' in self.o:
-                props.ReceiveMaximum = self.o['receiveMaximum']
+            if 'expire' in queue and queue['expire']:
+                props.SessionExpiryInterval = int(queue['expire'])
+            if 'receiveMaximum' in queue:
+                props.ReceiveMaximum = queue['receiveMaximum']
 
             logger.info( f"is no around? {self.o['no']} " )
             if ('no' in self.o) and self.o['no'] > 0: # instances 'started'
                 self.client = self.__clientSetup(cid)
-                self.client.connect( self.o['broker'].url.hostname, port=self.__sslClientSetup(), \
+                self.client.connect( broker.url.hostname, port=self.__sslClientSetup(), \
                        clean_start=False, properties=props )
                 self.client.enable_logger(logger)
                 self.client.loop_start()
@@ -396,11 +445,11 @@ class MQTT(Moth):
                     session_mxi=2
 
                 for i in range(1,session_mxi ):
-                    icid = self.o['queueName'] + "_i%02d" %  i
+                    icid = queue['name'] + "_i%02d" %  i
                     logger.info( f"declare session for instances {icid}" )
-                    decl_client = self.__clientSetup(icid)
-                    decl_client.on_connect = MQTT.__sub_on_connect
-                    decl_client.connect( self.o['broker'].url.hostname, port=self.__sslClientSetup(decl_client), \
+                    self.client = self.__clientSetup(icid)
+                    self.client.on_connect = MQTT.__sub_on_connect
+                    self.client.connect( broker.url.hostname, port=self.__sslClientSetup(self.client), \
                        clean_start=False, properties=props )
                     while (self.connect_in_progress) or (self.subscribe_in_progress > 0):
                         logger.info( f"waiting ({ebo} seconds) for broker to confirm subscription is set up.")
@@ -408,14 +457,15 @@ class MQTT(Moth):
                         if self._stop_requested:
                             return
                         if ebo < 60: ebo *= 2
-                        decl_client.loop(ebo)
-                    decl_client.disconnect()
-                    decl_client.loop_stop()
+                        self.client.loop(ebo)
+                    self.client.disconnect()
+                    self.client.loop_stop()
                     logger.info( f"instance declaration for {icid} done" )
                 
         except Exception as err:
-            logger.error( f"failed to {self.o['broker'].url.hostname} with {err}" )
-            logger.error('Exception details: ', exc_info=True)
+            logger.error( f"failed to connect for subscription to {str(broker)} with {err}" )
+            logger.debug('Exception details: ', exc_info=True)
+            self.setEbo(start)
 
 
     def putSetup(self):
@@ -427,6 +477,11 @@ class MQTT(Moth):
         self.connected=False
             
         if self._stop_requested:
+            return
+
+        start = time.time()
+        if start < self.next_connect_time:
+            logger.critical( f"too soon to connect for publishing to {str(self.o['broker'])} will try in: {self.next_connect_time-start} seconds" )
             return
 
         try:
@@ -477,8 +532,8 @@ class MQTT(Moth):
                 return
 
         except Exception as err:
-            logger.error("failed to {self.o['broker'].url.hostname} with {err}" )
-            logger.error('Exception details: ', exc_info=True)
+            logger.error( f"failed to {self.o['broker'].url.hostname} with {err}" )
+            logger.error( "Exception details: ", exc_info=True)
 
     def __sub_on_message(client, userdata, msg):
         """
@@ -503,14 +558,21 @@ class MQTT(Moth):
 
     def getCleanUp(self):
 
+        if not 'subscriptions' in self.o:
+            return
+
+        s=self.o['subscriptions'][self.o['subscription_index']]
+        queue=s['queue']
+        broker=s['broker']
+
         if not ('no' in self.o):
             props = Properties(PacketTypes.CONNECT)
             props.SessionExpiryInterval = 1
             for i in range(1,self.o['instances']+1):
-                icid= self.o['queueName'] + "_i%02d" % i
+                icid= queue['name'] + "_i%02d" % i
                 logger.info( f"cleanup session {icid}" )
                 myclient = self.__clientSetup( icid )
-                myclient.connect( self.o['broker'].url.hostname, port=self.__sslClientSetup(myclient), \
+                myclient.connect( broker.url.hostname, port=self.__sslClientSetup(myclient), \
                    clean_start=False, properties=props )
                 while self.connect_in_progress:
                     myclient.loop(0.1)
@@ -560,7 +622,10 @@ class MQTT(Moth):
         message.deriveSource( self.o )
         message.deriveTopics( self.o, topic=mqttMessage.topic, separator='/' )
 
-        message['ack_id'] = mqttMessage.mid
+        message['ack_id'] = { 'delivery_tag':  mqttMessage.mid, 
+                              'broker':        self.broker,
+                            }
+
         message['qos'] = mqttMessage.qos
         message['local_offset'] = 0
         message['_deleteOnPost'] |= set( ['exchange', 'local_offset', 'ack_id', 'qos' ])
@@ -640,10 +705,11 @@ class MQTT(Moth):
     def ack(self, m: sarracenia.Message ) -> None:
 
         if 'ack_id' in m:
-            logger.info('mid=%d' % m['ack_id'])
-            self.client.ack( m['ack_id'], m['qos'] )
-            del m['ack_id']
-            m['_deleteOnPost'].remove('ack_id')
+            logger.info( f"mid={m['ack_id']}")
+            if m['ack_id']['broker'] == self.broker:
+                self.client.ack( m['ack_id']['delivery_tag'], m['qos'] )
+                del m['ack_id']
+                m['_deleteOnPost'].remove('ack_id')
         return True
 
     def putNewMessage(self,
