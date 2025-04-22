@@ -1492,24 +1492,22 @@ pour que les liaisons de sujet s’appliquent à la file d’attente spécifié.
 <p>Par défaut, les composants créent un nom de fil d’attente qui doit être unique. Par défaut, le
 queueName crée par les composants suit la convention suivante :</p>
 <blockquote>
-<div><p><strong>q_&lt;utilisateurDeCourtier&gt;.&lt;nomDuProgramme&gt;.&lt;nomDeConfig&gt;.&lt;queueShare&gt;</strong></p>
+<div><p><strong>q_${BROKER_USER}.${COMPONENT}.${CONFIG}.${QUEUESHARE}</strong></p>
 </div></blockquote>
 <p>Ou:</p>
 <ul class="simple">
-<li><p><em>utilisateurDeCourtier</em> est le nom d’utilisateur utilisé pour se connecter au courtier (souvent: <em>anonymous</em> )</p></li>
-<li><p><em>nomDuProgramme</em> est le composant qui utilise la fil d’attente (par exemple <em>subscribe</em> ),</p></li>
-<li><p><em>nomDeConfig</em> est le fichier de configuration utilisé pour régler le comportement des composants.</p></li>
-<li><p><em>queueShare</em> est par défaut ${USER}_${HOSTNAME}_${RAND8} mais doit être remplacé par le</p></li>
+<li><p><em>BROKER_USER</em> est le nom d’utilisateur utilisé pour se connecter au courtier (souvent: <em>anonymous</em> )</p></li>
+<li><p><em>COMPONENT</em> est le composant qui utilise la fil d’attente (par exemple <em>subscribe</em> ),</p></li>
+<li><p><em>CONFIG</em> est le nom de fichier de configuration utilisé pour régler le comportement des composants.</p></li>
+<li><p><em>QUEUESHARE</em> est par défaut ${USER}_${HOSTNAME}_${RAND8} peut être modifier par l’option de
+configuration <em>queueShare</em>.</p></li>
 </ul>
-<blockquote>
-<div><p>Option de configuration <em>queueShare</em>.</p>
-</div></blockquote>
-<p>Les utilisateurs peuvent remplacer le défaut à condition qu’il commence par <strong>q_&lt;utilisateurDeCourtier&gt;</strong>.</p>
+<p>Les utilisateurs peuvent remplacer le défaut à condition qu’il commence par <strong>q_${BROKER_USER}</strong>.</p>
 <p>Lorsque plusieurs instances sont utilisées, elles utilisent toutes la même fil d’attente, pour faire plusieurs
 taches simples à la fois. Si plusieurs ordinateurs disposent d’un système de fichiers domestique partagé, le
 queueName est écrit à :</p>
 <blockquote>
-<div><p>~/.cache/sarra/&lt;nomDuProgramme&gt;/&lt;nomDeConfig&gt;/&lt;nomDuProgramme&gt;_&lt;nomDeConfig&gt;_&lt;utilisateurDeCourtier&gt;.qname</p>
+<div><p>~/.cache/sr3/&lt;nomDuProgramme&gt;/&lt;nomDeConfig&gt;/subscriptions.json</p>
 </div></blockquote>
 <p>Les instances démarrées sur n’importe quel nœud ayant accès au même fichier partagé utiliseront la
 même fil d’attente. Certains voudront peut-être utiliser l’option <em>queueName</em> comme méthode plus explicite

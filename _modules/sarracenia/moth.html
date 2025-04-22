@@ -95,7 +95,6 @@
 <span class="n">default_options</span> <span class="o">=</span> <span class="p">{</span>
     <span class="s1">&#39;acceptUnmatched&#39;</span><span class="p">:</span> <span class="kc">True</span><span class="p">,</span>
     <span class="s1">&#39;batch&#39;</span><span class="p">:</span> <span class="mi">100</span><span class="p">,</span>
-    <span class="s1">&#39;bindings&#39;</span><span class="p">:</span> <span class="p">[],</span>
     <span class="s1">&#39;broker&#39;</span><span class="p">:</span> <span class="kc">None</span><span class="p">,</span>
     <span class="s1">&#39;dry_run&#39;</span><span class="p">:</span> <span class="kc">False</span><span class="p">,</span>
     <span class="s1">&#39;exchange&#39;</span><span class="p">:</span> <span class="s1">&#39;xpublic&#39;</span><span class="p">,</span>
@@ -274,7 +273,7 @@
 
 <span class="sd">       *  &#39;queueName&#39;  : Mandatory, name of a queue. (only in AMQP... hmm...)</span>
 
-<span class="sd">       *  &#39;bindings&#39; : [ list of bindings ]</span>
+<span class="sd">       *  &#39;subscriptions&#39; : [ list of config.subscription.Subscription ]</span>
 
 <span class="sd">       *  &#39;loop&#39;</span>
 
@@ -547,8 +546,7 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">next_connect_failures</span> <span class="o">+=</span> <span class="mi">1</span>
         <span class="n">ebo</span> <span class="o">=</span> <span class="mi">2</span><span class="o">**</span><span class="bp">self</span><span class="o">.</span><span class="n">next_connect_failures</span>
         <span class="n">next_try</span> <span class="o">=</span> <span class="nb">min</span><span class="p">(</span><span class="n">attempt_duration</span> <span class="o">*</span> <span class="n">ebo</span><span class="p">,</span> <span class="mi">600</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">next_connect_time</span> <span class="o">=</span> <span class="n">now</span> <span class="o">+</span> <span class="n">next_try</span>
-        <span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span> <span class="sa">f</span><span class="s2">&quot;could not connect. next try in </span><span class="si">{</span><span class="n">next_try</span><span class="si">}</span><span class="s2"> seconds.&quot;</span><span class="p">)</span></div>
+        <span class="bp">self</span><span class="o">.</span><span class="n">next_connect_time</span> <span class="o">=</span> <span class="n">now</span> <span class="o">+</span> <span class="n">next_try</span></div>
 
 
 <div class="viewcode-block" id="Moth.splitPick">

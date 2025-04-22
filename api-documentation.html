@@ -116,8 +116,15 @@ a given component an configuration,  (all in one call.)</p></li>
 <span class="n">cfg</span><span class="o">.</span><span class="n">component</span> <span class="o">=</span> <span class="s1">&#39;subscribe&#39;</span>
 <span class="n">cfg</span><span class="o">.</span><span class="n">config</span> <span class="o">=</span> <span class="s1">&#39;flow_demo&#39;</span>
 <span class="n">cfg</span><span class="o">.</span><span class="n">action</span> <span class="o">=</span> <span class="s1">&#39;start&#39;</span>
-<span class="n">cfg</span><span class="o">.</span><span class="n">bindings</span> <span class="o">=</span> <span class="p">[</span> <span class="p">(</span><span class="s1">&#39;xpublic&#39;</span><span class="p">,</span> <span class="p">[</span><span class="s1">&#39;v02&#39;</span><span class="p">,</span> <span class="s1">&#39;post&#39;</span><span class="p">],</span> <span class="p">[</span><span class="s1">&#39;*&#39;</span><span class="p">,</span> <span class="s1">&#39;WXO-DD&#39;</span><span class="p">,</span> <span class="s1">&#39;observations&#39;</span><span class="p">,</span> <span class="s1">&#39;swob-ml&#39;</span><span class="p">,</span> <span class="s1">&#39;#&#39;</span> <span class="p">])</span> <span class="p">]</span>
-<span class="n">cfg</span><span class="o">.</span><span class="n">queueName</span><span class="o">=</span><span class="s1">&#39;q_anonymous.subscriber_test2&#39;</span>
+<span class="n">cfg</span><span class="o">.</span><span class="n">subscriptions</span><span class="o">=</span> <span class="p">[</span> <span class="p">{</span>
+    <span class="s1">&#39;broker&#39;</span><span class="p">:</span> <span class="n">cfg</span><span class="o">.</span><span class="n">broker</span><span class="p">,</span>
+    <span class="s1">&#39;bindings&#39;</span><span class="p">:</span> <span class="p">{</span> <span class="s1">&#39;exchange&#39;</span><span class="p">:</span> <span class="s1">&#39;xpublic&#39;</span><span class="p">,</span> <span class="s1">&#39;prefix&#39;</span><span class="p">:</span> <span class="p">[</span><span class="s1">&#39;v02&#39;</span><span class="p">,</span> <span class="s1">&#39;post&#39;</span><span class="p">],</span> <span class="s1">&#39;sub&#39;</span><span class="p">:</span> <span class="p">[</span> <span class="s1">&#39;*.WXO-DD.observations.swob-ml.#&#39;</span> <span class="p">]</span> <span class="p">},</span>
+    <span class="s1">&#39;queue&#39;</span><span class="p">:</span> <span class="p">{</span>
+        <span class="s1">&#39;name&#39;</span> <span class="p">:</span> <span class="s1">&#39;q_anonymous.subscriber_test2&#39;</span><span class="p">,</span>
+        <span class="s1">&#39;template&#39;</span><span class="p">:</span><span class="s1">&#39;q_$</span><span class="si">{BROKER_USER}</span><span class="s1">_$</span><span class="si">{COMPONENT}</span><span class="s1">_$</span><span class="si">{CONFIG}</span><span class="s1">_$</span><span class="si">{HOSTNAME}</span><span class="s1">_Demo123&#39;</span> <span class="p">,</span>
+        <span class="s1">&#39;expire&#39;</span><span class="p">:</span> <span class="mi">600</span><span class="p">,</span>
+        <span class="p">}</span>
+    <span class="p">}</span> <span class="p">]</span>
 <span class="n">cfg</span><span class="o">.</span><span class="n">download</span><span class="o">=</span><span class="kc">True</span>
 <span class="n">cfg</span><span class="o">.</span><span class="n">batch</span><span class="o">=</span><span class="mi">1</span>
 <span class="n">cfg</span><span class="o">.</span><span class="n">messageCountMax</span><span class="o">=</span><span class="mi">5</span>
@@ -192,14 +199,6 @@ a given component an configuration,  (all in one call.)</p></li>
 <dd><p>Before final use, take the existing settings, and infer any missing needed defaults from what is provided.
 Should be called prior to using a configuration.</p>
 <p>There are default options that apply only if they are not overridden…</p>
-</dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py">
-<span class="sig-name descname"><span class="pre">hohoo_validate_urlstr</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">urlstr</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">tuple</span></span></span><a class="reference internal" href="_modules/sarracenia/config.html#Config.hohoo_validate_urlstr"><span class="viewcode-link"><span class="pre">[source]</span></span></a></dt>
-<dd><p>returns a tuple ( bool, expanded_url )
-the bool is whether the expansion worked, and the expanded_url is one with
-the added necessary authentication details from sarracenia.Credentials.</p>
 </dd></dl>
 
 <dl class="py method">
@@ -551,9 +550,17 @@ in memory version of the configuration settings that are applicable</p>
 <p>see the sarracenia.config.Config class for functions to parse configuration files
 and create corresponding python option dictionaries. One can supply small
 dictionaries for example:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">options</span><span class="p">[</span><span class="s1">&#39;topicPrefix&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="p">[</span> <span class="s1">&#39;v02&#39;</span><span class="p">,</span> <span class="s1">&#39;post&#39;</span> <span class="p">]</span>
-<span class="n">options</span><span class="p">[</span><span class="s1">&#39;bindings&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="p">[</span> <span class="p">(</span><span class="s1">&#39;xpublic&#39;</span><span class="p">,</span> <span class="p">[</span> <span class="s1">&#39;v02&#39;</span><span class="p">,</span> <span class="s1">&#39;post&#39;</span><span class="p">]</span> <span class="p">,</span> <span class="p">[</span> <span class="s1">&#39;#&#39;</span> <span class="p">]</span> <span class="p">)]</span>
-<span class="n">options</span><span class="p">[</span><span class="s1">&#39;queueName&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;q_anonymous_&#39;</span> <span class="o">+</span> <span class="n">socket</span><span class="o">.</span><span class="n">getfqdn</span><span class="p">()</span> <span class="o">+</span> <span class="s1">&#39;_SomethingHelpfulToYou&#39;</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">options</span> <span class="o">=</span> <span class="n">sarracenia</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">no_file_config</span><span class="p">()</span>
+<span class="n">options</span><span class="p">[</span><span class="s1">&#39;broker&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">sarracenia</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">credentials</span><span class="o">.</span><span class="n">Credential</span><span class="p">(</span>
+          <span class="s1">&#39;amqps://anonymous:anonymous@hpfx.collab.science.gc.ca&#39;</span><span class="p">)</span>
+<span class="n">options</span><span class="p">[</span><span class="s1">&#39;topicPrefix&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="p">[</span> <span class="s1">&#39;v02&#39;</span><span class="p">,</span> <span class="s1">&#39;post&#39;</span> <span class="p">]</span>
+<span class="n">options</span><span class="p">[</span><span class="s1">&#39;subscriptions&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">sarracenia</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">subscription</span><span class="o">.</span><span class="n">Subscriptions</span><span class="p">(</span> <span class="p">[</span>
+     <span class="n">sarracenia</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">subscription</span><span class="o">.</span><span class="n">Subscriptions</span><span class="p">(</span>
+        <span class="n">options</span><span class="p">,</span>
+        <span class="n">options</span><span class="p">[</span><span class="s1">&#39;queueName&#39;</span><span class="p">],</span>
+        <span class="s1">&#39;q_anonymous_&#39;</span> <span class="o">+</span> <span class="n">socket</span><span class="o">.</span><span class="n">getfqdn</span><span class="p">()</span> <span class="o">+</span> <span class="s1">&#39;_SomethingHelpfulToYou&#39;</span><span class="p">,</span>
+        <span class="s1">&#39;#&#39;</span>
+     <span class="p">)</span> <span class="p">]</span> <span class="p">)</span>
 </pre></div>
 </div>
 <p>Above is an example of a minimal options dictionary taken from the tutorial
@@ -1016,7 +1023,7 @@ consumer queues (AMQP.)</p>
 <li><p>‘batch’  : 100  # how many messages to get at once</p></li>
 <li><p>‘broker’ : an sr_broker ?</p></li>
 <li><p>‘queueName’  : Mandatory, name of a queue. (only in AMQP… hmm…)</p></li>
-<li><p>‘bindings’ : [ list of bindings ]</p></li>
+<li><p>‘subscriptions’ : [ list of config.subscription.Subscription ]</p></li>
 <li><p>‘loop’</p></li>
 </ul>
 <p><strong>optional:</strong></p>

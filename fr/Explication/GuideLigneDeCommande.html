@@ -358,130 +358,201 @@ les actions <strong>start</strong>, <strong>foreground</strong> ou <strong>resta
 <section id="show">
 <h4>show<a class="headerlink" href="#show" title="Link to this heading"></a></h4>
 <p>Afficher tous les paramètres de configuration (le résultat de toutes les analyses… ce que les composants du flux voient réellement)</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="o">%</span> <span class="n">sr3</span> <span class="n">show</span> <span class="n">subscribe</span><span class="o">/</span><span class="n">q_f71</span>
-<span class="mi">2022</span><span class="o">-</span><span class="mi">03</span><span class="o">-</span><span class="mi">20</span> <span class="mi">15</span><span class="p">:</span><span class="mi">30</span><span class="p">:</span><span class="mi">32</span><span class="p">,</span><span class="mi">507</span> <span class="mi">1084652</span> <span class="p">[</span><span class="n">INFO</span><span class="p">]</span> <span class="n">sarracenia</span><span class="o">.</span><span class="n">config</span> <span class="n">parse_fil</span> <span class="n">download_f20</span><span class="o">.</span><span class="n">conf</span><span class="p">:</span><span class="mi">35</span> <span class="n">obsolete</span> <span class="n">v2</span><span class="p">:</span><span class="s2">&quot;on_message msg_log&quot;</span> <span class="n">converted</span> <span class="n">to</span> <span class="n">sr3</span><span class="p">:</span><span class="s2">&quot;logEvents after_accept&quot;</span>
-<span class="mi">2022</span><span class="o">-</span><span class="mi">03</span><span class="o">-</span><span class="mi">20</span> <span class="mi">15</span><span class="p">:</span><span class="mi">30</span><span class="p">:</span><span class="mi">32</span><span class="p">,</span><span class="mi">508</span> <span class="mi">1084652</span> <span class="p">[</span><span class="n">INFO</span><span class="p">]</span> <span class="n">sarracenia</span><span class="o">.</span><span class="n">config</span> <span class="n">parse_file</span> <span class="n">tsource2send_f50</span><span class="o">.</span><span class="n">conf</span><span class="p">:</span><span class="mi">26</span> <span class="n">obsolete</span> <span class="n">v2</span><span class="p">:</span><span class="s2">&quot;on_message msg_rawlog&quot;</span> <span class="n">converted</span> <span class="n">to</span> <span class="n">sr3</span><span class="p">:</span><span class="s2">&quot;logEvents after_accept&quot;</span>
-<span class="mi">2022</span><span class="o">-</span><span class="mi">03</span><span class="o">-</span><span class="mi">20</span> <span class="mi">15</span><span class="p">:</span><span class="mi">30</span><span class="p">:</span><span class="mi">32</span><span class="p">,</span><span class="mi">508</span> <span class="mi">1084652</span> <span class="p">[</span><span class="n">INFO</span><span class="p">]</span> <span class="n">sarracenia</span><span class="o">.</span><span class="n">config</span> <span class="n">parse_file</span> <span class="n">rabbitmqtt_f22</span><span class="o">.</span><span class="n">conf</span><span class="p">:</span><span class="mi">6</span> <span class="n">obsolete</span> <span class="n">v2</span><span class="p">:</span><span class="s2">&quot;on_message msg_log&quot;</span> <span class="n">converted</span> <span class="n">to</span> <span class="n">sr3</span><span class="p">:</span><span class="s2">&quot;logEvents after_accept&quot;</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">fractal</span><span class="o">%</span> <span class="n">sr3</span> <span class="n">show</span> <span class="n">sarra</span><span class="o">/</span><span class="n">download_f20</span>
 
-<span class="n">Config</span> <span class="n">of</span> <span class="n">subscribe</span><span class="o">/</span><span class="n">q_f71</span><span class="p">:</span>
-<span class="p">{</span><span class="s1">&#39;_Config__admin&#39;</span><span class="p">:</span> <span class="s1">&#39;amqp://bunnymaster@localhost/ None True True False False None None&#39;</span><span class="p">,</span>
- <span class="s1">&#39;_Config__broker&#39;</span><span class="p">:</span> <span class="s1">&#39;amqp://tsource@localhost/ None True True False False None None&#39;</span><span class="p">,</span>
- <span class="s1">&#39;_Config__post_broker&#39;</span><span class="p">:</span> <span class="kc">None</span><span class="p">,</span>
- <span class="s1">&#39;accelThreshold&#39;</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span>
+<span class="mi">2025</span><span class="o">-</span><span class="mi">04</span><span class="o">-</span><span class="mi">14</span> <span class="mi">09</span><span class="p">:</span><span class="mi">27</span><span class="p">:</span><span class="mi">08</span><span class="p">,</span><span class="mi">834</span> <span class="mi">1314778</span> <span class="p">[</span><span class="n">DEBUG</span><span class="p">]</span> <span class="n">sarracenia</span><span class="o">.</span><span class="n">flow</span> <span class="n">loadCallbacks</span> <span class="n">flowCallback</span> <span class="n">plugins</span> <span class="n">to</span> <span class="n">load</span><span class="p">:</span> <span class="p">[</span><span class="s1">&#39;sarracenia.flowcb.post.message.Message&#39;</span><span class="p">,</span> <span class="s1">&#39;sarracenia.flowcb.gather.message.Message&#39;</span><span class="p">,</span> <span class="s1">&#39;sarracenia.flowcb.retry.Retry&#39;</span><span class="p">,</span> <span class="s1">&#39;sarracenia.flowcb.housekeeping.resources.Resources&#39;</span><span class="p">,</span> <span class="s1">&#39;sarracenia.flowcb.nodupe.disk.Disk&#39;</span><span class="p">,</span> <span class="s1">&#39;log&#39;</span><span class="p">]</span>
+<span class="mi">2025</span><span class="o">-</span><span class="mi">04</span><span class="o">-</span><span class="mi">14</span> <span class="mi">09</span><span class="p">:</span><span class="mi">27</span><span class="p">:</span><span class="mi">08</span><span class="p">,</span><span class="mi">836</span> <span class="mi">1314778</span> <span class="p">[</span><span class="n">DEBUG</span><span class="p">]</span> <span class="n">sarracenia</span><span class="o">.</span><span class="n">flowcb</span><span class="o">.</span><span class="n">retry</span> <span class="fm">__init__</span> <span class="n">logLevel</span><span class="o">=</span><span class="n">debug</span>
+<span class="mi">2025</span><span class="o">-</span><span class="mi">04</span><span class="o">-</span><span class="mi">14</span> <span class="mi">09</span><span class="p">:</span><span class="mi">27</span><span class="p">:</span><span class="mi">08</span><span class="p">,</span><span class="mi">837</span> <span class="mi">1314778</span> <span class="p">[</span><span class="n">DEBUG</span><span class="p">]</span> <span class="n">sarracenia</span><span class="o">.</span><span class="n">flowcb</span><span class="o">.</span><span class="n">nodupe</span><span class="o">.</span><span class="n">disk</span> <span class="fm">__init__</span> <span class="n">NoDupe</span> <span class="n">init</span>
+<span class="mi">2025</span><span class="o">-</span><span class="mi">04</span><span class="o">-</span><span class="mi">14</span> <span class="mi">09</span><span class="p">:</span><span class="mi">27</span><span class="p">:</span><span class="mi">08</span><span class="p">,</span><span class="mi">838</span> <span class="mi">1314778</span> <span class="p">[</span><span class="n">DEBUG</span><span class="p">]</span> <span class="n">sarracenia</span><span class="o">.</span><span class="n">flowcb</span><span class="o">.</span><span class="n">log</span> <span class="fm">__init__</span> <span class="n">sarra</span> <span class="n">initialized</span> <span class="k">with</span><span class="p">:</span> <span class="n">logEvents</span><span class="p">:</span> <span class="p">{</span><span class="s1">&#39;post&#39;</span><span class="p">,</span> <span class="s1">&#39;after_accept&#39;</span><span class="p">,</span> <span class="s1">&#39;after_post&#39;</span><span class="p">,</span> <span class="s1">&#39;after_work&#39;</span><span class="p">,</span> <span class="s1">&#39;on_housekeeping&#39;</span><span class="p">,</span> <span class="s1">&#39;reject&#39;</span><span class="p">},</span>  <span class="n">logMessageDump</span><span class="p">:</span> <span class="kc">False</span>
+<span class="mi">2025</span><span class="o">-</span><span class="mi">04</span><span class="o">-</span><span class="mi">14</span> <span class="mi">09</span><span class="p">:</span><span class="mi">27</span><span class="p">:</span><span class="mi">08</span><span class="p">,</span><span class="mi">838</span> <span class="mi">1314778</span> <span class="p">[</span><span class="n">DEBUG</span><span class="p">]</span> <span class="n">sarracenia</span><span class="o">.</span><span class="n">flow</span> <span class="n">loadCallbacks</span> <span class="n">complete</span>
+
+<span class="n">Config</span> <span class="n">of</span> <span class="n">sarra</span><span class="o">/</span><span class="n">download_f20</span><span class="p">:</span> <span class="p">(</span><span class="k">with</span> <span class="n">callbacks</span><span class="p">)</span>
+<span class="p">{</span><span class="s1">&#39;_Config__admin&#39;</span><span class="p">:</span> <span class="s1">&#39;amqp://bunnymaster@localhost/&#39;</span><span class="p">,</span>
+ <span class="s1">&#39;_Config__broker&#39;</span><span class="p">:</span> <span class="s1">&#39;amqp://tfeed@localhost/&#39;</span><span class="p">,</span>
+ <span class="s1">&#39;_Config__post_broker&#39;</span><span class="p">:</span> <span class="s1">&#39;amqp://tfeed@localhost/&#39;</span><span class="p">,</span>
+ <span class="s1">&#39;accelThreshold&#39;</span><span class="p">:</span> <span class="mi">100</span><span class="p">,</span>
  <span class="s1">&#39;acceptSizeWrong&#39;</span><span class="p">:</span> <span class="kc">False</span><span class="p">,</span>
- <span class="s1">&#39;acceptUnmatched&#39;</span><span class="p">:</span> <span class="kc">False</span><span class="p">,</span>
- <span class="s1">&#39;admin&#39;</span><span class="p">:</span> <span class="s1">&#39;amqp://bunnymaster@localhost/ None True True False False None None&#39;</span><span class="p">,</span>
+ <span class="s1">&#39;acceptUnmatched&#39;</span><span class="p">:</span> <span class="kc">True</span><span class="p">,</span>
+ <span class="s1">&#39;action&#39;</span><span class="p">:</span> <span class="s1">&#39;show&#39;</span><span class="p">,</span>
+ <span class="s1">&#39;admin&#39;</span><span class="p">:</span> <span class="s1">&#39;amqp://bunnymaster@localhost/&#39;</span><span class="p">,</span>
+ <span class="s1">&#39;amqp_consumer&#39;</span><span class="p">:</span> <span class="kc">False</span><span class="p">,</span>
  <span class="s1">&#39;attempts&#39;</span><span class="p">:</span> <span class="mi">3</span><span class="p">,</span>
  <span class="s1">&#39;auto_delete&#39;</span><span class="p">:</span> <span class="kc">False</span><span class="p">,</span>
  <span class="s1">&#39;baseDir&#39;</span><span class="p">:</span> <span class="kc">None</span><span class="p">,</span>
  <span class="s1">&#39;baseUrl_relPath&#39;</span><span class="p">:</span> <span class="kc">False</span><span class="p">,</span>
- <span class="s1">&#39;batch&#39;</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span>
- <span class="s1">&#39;bindings&#39;</span><span class="p">:</span> <span class="p">[(</span><span class="s1">&#39;xs_tsource_poll&#39;</span><span class="p">,</span> <span class="p">[</span><span class="s1">&#39;v03&#39;</span><span class="p">,</span> <span class="s1">&#39;post&#39;</span><span class="p">],</span> <span class="p">[</span><span class="s1">&#39;#&#39;</span><span class="p">])],</span>
- <span class="s1">&#39;broker&#39;</span><span class="p">:</span> <span class="s1">&#39;amqp://tsource@localhost/ None True True False False None None&#39;</span><span class="p">,</span>
- <span class="s1">&#39;bufsize&#39;</span><span class="p">:</span> <span class="mi">1048576</span><span class="p">,</span>
+ <span class="s1">&#39;batch&#39;</span><span class="p">:</span> <span class="mi">20</span><span class="p">,</span>
+ <span class="s1">&#39;broker&#39;</span><span class="p">:</span> <span class="s1">&#39;amqp://tfeed@localhost/&#39;</span><span class="p">,</span>
+ <span class="s1">&#39;bufSize&#39;</span><span class="p">:</span> <span class="mi">1048576</span><span class="p">,</span>
  <span class="s1">&#39;byteRateMax&#39;</span><span class="p">:</span> <span class="kc">None</span><span class="p">,</span>
- <span class="s1">&#39;cfg_run_dir&#39;</span><span class="p">:</span> <span class="s1">&#39;/home/peter/.cache/sr3/subscribe/q_f71&#39;</span><span class="p">,</span>
- <span class="s1">&#39;component&#39;</span><span class="p">:</span> <span class="s1">&#39;subscribe&#39;</span><span class="p">,</span>
- <span class="s1">&#39;config&#39;</span><span class="p">:</span> <span class="s1">&#39;q_f71&#39;</span><span class="p">,</span>
+ <span class="s1">&#39;cfg_run_dir&#39;</span><span class="p">:</span> <span class="s1">&#39;/home/peter/.cache/sr3/fractal/sarra/download_f20&#39;</span><span class="p">,</span>
+ <span class="s1">&#39;component&#39;</span><span class="p">:</span> <span class="s1">&#39;sarra&#39;</span><span class="p">,</span>
+ <span class="s1">&#39;config&#39;</span><span class="p">:</span> <span class="s1">&#39;download_f20&#39;</span><span class="p">,</span>
+ <span class="s1">&#39;config_search_path&#39;</span><span class="p">:</span> <span class="p">[</span><span class="s1">&#39;.&#39;</span><span class="p">,</span> <span class="s1">&#39;/home/peter/.config/sr3&#39;</span><span class="p">,</span> <span class="s1">&#39;/home/peter/Sarracenia/sr3/sarracenia/examples&#39;</span><span class="p">,</span> <span class="s1">&#39;/home/peter/Sarracenia/sr3/sarracenia/examples/flow&#39;</span><span class="p">],</span>
  <span class="s1">&#39;currentDir&#39;</span><span class="p">:</span> <span class="kc">None</span><span class="p">,</span>
- <span class="s1">&#39;debug&#39;</span><span class="p">:</span> <span class="kc">False</span><span class="p">,</span>
- <span class="s1">&#39;declared_exchanges&#39;</span><span class="p">:</span> <span class="p">[],</span>
+ <span class="s1">&#39;debug&#39;</span><span class="p">:</span> <span class="kc">True</span><span class="p">,</span>
+ <span class="s1">&#39;declared_exchanges&#39;</span><span class="p">:</span> <span class="p">[</span><span class="s1">&#39;xs_tfeed&#39;</span><span class="p">,</span> <span class="s1">&#39;xs_tfeed_hoho&#39;</span><span class="p">],</span>
  <span class="s1">&#39;declared_users&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s1">&#39;anonymous&#39;</span><span class="p">:</span> <span class="s1">&#39;subscriber&#39;</span><span class="p">,</span> <span class="s1">&#39;eggmeister&#39;</span><span class="p">:</span> <span class="s1">&#39;subscriber&#39;</span><span class="p">,</span> <span class="s1">&#39;ender&#39;</span><span class="p">:</span> <span class="s1">&#39;source&#39;</span><span class="p">,</span> <span class="s1">&#39;tfeed&#39;</span><span class="p">:</span> <span class="s1">&#39;feeder&#39;</span><span class="p">,</span> <span class="s1">&#39;tsource&#39;</span><span class="p">:</span> <span class="s1">&#39;source&#39;</span><span class="p">,</span> <span class="s1">&#39;tsub&#39;</span><span class="p">:</span> <span class="s1">&#39;subscriber&#39;</span><span class="p">},</span>
  <span class="s1">&#39;delete&#39;</span><span class="p">:</span> <span class="kc">False</span><span class="p">,</span>
- <span class="s1">&#39;destfn_script&#39;</span><span class="p">:</span> <span class="kc">None</span><span class="p">,</span>
- <span class="s1">&#39;directory&#39;</span><span class="p">:</span> <span class="s1">&#39;//home/peter/sarra_devdocroot/recd_by_srpoll_test1&#39;</span><span class="p">,</span>
+ <span class="s1">&#39;destfn_scripts&#39;</span><span class="p">:</span> <span class="p">[],</span>
+ <span class="s1">&#39;directory&#39;</span><span class="p">:</span> <span class="s1">&#39;/home/peter/sarra_devdocroot&#39;</span><span class="p">,</span>
  <span class="s1">&#39;discard&#39;</span><span class="p">:</span> <span class="kc">False</span><span class="p">,</span>
+ <span class="s1">&#39;displayFull&#39;</span><span class="p">:</span> <span class="kc">False</span><span class="p">,</span>
  <span class="s1">&#39;documentRoot&#39;</span><span class="p">:</span> <span class="kc">None</span><span class="p">,</span>
  <span class="s1">&#39;download&#39;</span><span class="p">:</span> <span class="kc">True</span><span class="p">,</span>
+ <span class="s1">&#39;dry_run&#39;</span><span class="p">:</span> <span class="kc">False</span><span class="p">,</span>
  <span class="s1">&#39;durable&#39;</span><span class="p">:</span> <span class="kc">True</span><span class="p">,</span>
- <span class="s1">&#39;env_declared&#39;</span><span class="p">:</span> <span class="p">[</span><span class="s1">&#39;FLOWBROKER&#39;</span><span class="p">,</span> <span class="s1">&#39;MQP&#39;</span><span class="p">,</span> <span class="s1">&#39;SFTPUSER&#39;</span><span class="p">,</span> <span class="s1">&#39;TESTDOCROOT&#39;</span><span class="p">],</span>
- <span class="s1">&#39;exchange&#39;</span><span class="p">:</span> <span class="s1">&#39;xs_tsource_poll&#39;</span><span class="p">,</span>
+ <span class="s1">&#39;env_declared&#39;</span><span class="p">:</span> <span class="p">[</span><span class="s1">&#39;FLOWBROKER&#39;</span><span class="p">,</span> <span class="s1">&#39;SFTPUSER&#39;</span><span class="p">,</span> <span class="s1">&#39;TESTDOCROOT&#39;</span><span class="p">,</span> <span class="s1">&#39;MQP&#39;</span><span class="p">,</span> <span class="s1">&#39;several&#39;</span><span class="p">,</span> <span class="s1">&#39;PRIMARY_DIR&#39;</span><span class="p">,</span> <span class="s1">&#39;COPY_DIR&#39;</span><span class="p">],</span>
+ <span class="s1">&#39;exchange&#39;</span><span class="p">:</span> <span class="s1">&#39;xsarra&#39;</span><span class="p">,</span>
  <span class="s1">&#39;exchangeDeclare&#39;</span><span class="p">:</span> <span class="kc">True</span><span class="p">,</span>
- <span class="s1">&#39;exchangeSuffix&#39;</span><span class="p">:</span> <span class="s1">&#39;poll&#39;</span><span class="p">,</span>
- <span class="s1">&#39;expire&#39;</span><span class="p">:</span> <span class="mf">1800.0</span><span class="p">,</span>
+ <span class="s1">&#39;expire&#39;</span><span class="p">:</span> <span class="mf">25200.0</span><span class="p">,</span>
  <span class="s1">&#39;feeder&#39;</span><span class="p">:</span> <span class="n">ParseResult</span><span class="p">(</span><span class="n">scheme</span><span class="o">=</span><span class="s1">&#39;amqp&#39;</span><span class="p">,</span> <span class="n">netloc</span><span class="o">=</span><span class="s1">&#39;tfeed@localhost&#39;</span><span class="p">,</span> <span class="n">path</span><span class="o">=</span><span class="s1">&#39;/&#39;</span><span class="p">,</span> <span class="n">params</span><span class="o">=</span><span class="s1">&#39;&#39;</span><span class="p">,</span> <span class="n">query</span><span class="o">=</span><span class="s1">&#39;&#39;</span><span class="p">,</span> <span class="n">fragment</span><span class="o">=</span><span class="s1">&#39;&#39;</span><span class="p">),</span>
- <span class="s1">&#39;fileEvents&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s1">&#39;create&#39;</span><span class="p">,</span> <span class="s1">&#39;link&#39;</span><span class="p">,</span> <span class="s1">&#39;modify&#39;</span><span class="p">,</span> <span class="s1">&#39;delete&#39;</span><span class="p">,</span> <span class="s1">&#39;mkdir&#39;</span><span class="p">,</span> <span class="s1">&#39;rmdir&#39;</span> <span class="p">},</span>
- <span class="s1">&#39;file_total_interval&#39;</span><span class="p">:</span> <span class="s1">&#39;0&#39;</span><span class="p">,</span>
- <span class="s1">&#39;filename&#39;</span><span class="p">:</span> <span class="s1">&#39;WHATFN&#39;</span><span class="p">,</span>
+ <span class="s1">&#39;fileAgeMax&#39;</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span>
+ <span class="s1">&#39;fileAgeMin&#39;</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span>
+ <span class="s1">&#39;fileEvents&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s1">&#39;link&#39;</span><span class="p">,</span> <span class="s1">&#39;rmdir&#39;</span><span class="p">,</span> <span class="s1">&#39;delete&#39;</span><span class="p">,</span> <span class="s1">&#39;create&#39;</span><span class="p">,</span> <span class="s1">&#39;mkdir&#39;</span><span class="p">,</span> <span class="s1">&#39;modify&#39;</span><span class="p">},</span>
+ <span class="s1">&#39;fileSizeMax&#39;</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span>
+ <span class="s1">&#39;filename&#39;</span><span class="p">:</span> <span class="kc">None</span><span class="p">,</span>
+ <span class="s1">&#39;files&#39;</span><span class="p">:</span> <span class="p">[],</span>
  <span class="s1">&#39;fixed_headers&#39;</span><span class="p">:</span> <span class="p">{},</span>
  <span class="s1">&#39;flatten&#39;</span><span class="p">:</span> <span class="s1">&#39;/&#39;</span><span class="p">,</span>
+ <span class="s1">&#39;flowMain&#39;</span><span class="p">:</span> <span class="kc">None</span><span class="p">,</span>
  <span class="s1">&#39;hostdir&#39;</span><span class="p">:</span> <span class="s1">&#39;fractal&#39;</span><span class="p">,</span>
  <span class="s1">&#39;hostname&#39;</span><span class="p">:</span> <span class="s1">&#39;fractal&#39;</span><span class="p">,</span>
- <span class="s1">&#39;housekeeping&#39;</span><span class="p">:</span> <span class="mi">300</span><span class="p">,</span>
+ <span class="s1">&#39;housekeeping&#39;</span><span class="p">:</span> <span class="mf">60.0</span><span class="p">,</span>
+ <span class="s1">&#39;identity_arbitrary_value&#39;</span><span class="p">:</span> <span class="kc">None</span><span class="p">,</span>
+ <span class="s1">&#39;identity_method&#39;</span><span class="p">:</span> <span class="s1">&#39;sha512&#39;</span><span class="p">,</span>
  <span class="s1">&#39;imports&#39;</span><span class="p">:</span> <span class="p">[],</span>
- <span class="s1">&#39;inflight&#39;</span><span class="p">:</span> <span class="kc">None</span><span class="p">,</span>
+ <span class="s1">&#39;inflight&#39;</span><span class="p">:</span> <span class="s1">&#39;.tmp&#39;</span><span class="p">,</span>
  <span class="s1">&#39;inline&#39;</span><span class="p">:</span> <span class="kc">False</span><span class="p">,</span>
  <span class="s1">&#39;inlineByteMax&#39;</span><span class="p">:</span> <span class="mi">4096</span><span class="p">,</span>
  <span class="s1">&#39;inlineEncoding&#39;</span><span class="p">:</span> <span class="s1">&#39;guess&#39;</span><span class="p">,</span>
  <span class="s1">&#39;inlineOnly&#39;</span><span class="p">:</span> <span class="kc">False</span><span class="p">,</span>
  <span class="s1">&#39;instances&#39;</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span>
- <span class="s1">&#39;identity_arbitrary_value&#39;</span><span class="p">:</span> <span class="kc">None</span><span class="p">,</span>
- <span class="s1">&#39;identity_method&#39;</span><span class="p">:</span> <span class="s1">&#39;sha512&#39;</span><span class="p">,</span>
- <span class="s1">&#39;logEvents&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s1">&#39;after_work&#39;</span><span class="p">,</span> <span class="s1">&#39;after_accept&#39;</span><span class="p">,</span> <span class="s1">&#39;on_housekeeping&#39;</span><span class="p">},</span>
+ <span class="s1">&#39;lineno&#39;</span><span class="p">:</span> <span class="mi">75</span><span class="p">,</span>
+ <span class="s1">&#39;logDuplicates&#39;</span><span class="p">:</span> <span class="kc">False</span><span class="p">,</span>
+ <span class="s1">&#39;logEvents&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s1">&#39;post&#39;</span><span class="p">,</span> <span class="s1">&#39;after_accept&#39;</span><span class="p">,</span> <span class="s1">&#39;after_post&#39;</span><span class="p">,</span> <span class="s1">&#39;after_work&#39;</span><span class="p">,</span> <span class="s1">&#39;on_housekeeping&#39;</span><span class="p">,</span> <span class="s1">&#39;reject&#39;</span><span class="p">},</span>
  <span class="s1">&#39;logFormat&#39;</span><span class="p">:</span> <span class="s1">&#39;</span><span class="si">%(asctime)s</span><span class="s1"> [</span><span class="si">%(levelname)s</span><span class="s1">] </span><span class="si">%(name)s</span><span class="s1"> </span><span class="si">%(funcName)s</span><span class="s1"> </span><span class="si">%(message)s</span><span class="s1">&#39;</span><span class="p">,</span>
- <span class="s1">&#39;logLevel&#39;</span><span class="p">:</span> <span class="s1">&#39;info&#39;</span><span class="p">,</span>
- <span class="s1">&#39;logReject&#39;</span><span class="p">:</span> <span class="kc">False</span><span class="p">,</span>
+ <span class="s1">&#39;logJson&#39;</span><span class="p">:</span> <span class="kc">False</span><span class="p">,</span>
+ <span class="s1">&#39;logLevel&#39;</span><span class="p">:</span> <span class="s1">&#39;debug&#39;</span><span class="p">,</span>
+ <span class="s1">&#39;logMetrics&#39;</span><span class="p">:</span> <span class="kc">False</span><span class="p">,</span>
+ <span class="s1">&#39;logReject&#39;</span><span class="p">:</span> <span class="kc">True</span><span class="p">,</span>
  <span class="s1">&#39;logRotateCount&#39;</span><span class="p">:</span> <span class="mi">5</span><span class="p">,</span>
  <span class="s1">&#39;logRotateInterval&#39;</span><span class="p">:</span> <span class="mi">86400</span><span class="p">,</span>
- <span class="s1">&#39;logStdout&#39;</span><span class="p">:</span> <span class="kc">True</span><span class="p">,</span>
+ <span class="s1">&#39;logStdout&#39;</span><span class="p">:</span> <span class="kc">False</span><span class="p">,</span>
  <span class="s1">&#39;log_flowcb_needed&#39;</span><span class="p">:</span> <span class="kc">False</span><span class="p">,</span>
- <span class="s1">&#39;masks&#39;</span><span class="p">:</span> <span class="p">[</span><span class="s1">&#39;accept .* into //home/peter/sarra_devdocroot/recd_by_srpoll_test1 with mirror:True strip:.*sent_by_tsource2send/&#39;</span><span class="p">],</span>
+ <span class="s1">&#39;masks&#39;</span><span class="p">:</span> <span class="p">[],</span>
  <span class="s1">&#39;messageAgeMax&#39;</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span>
  <span class="s1">&#39;messageCountMax&#39;</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span>
- <span class="s1">&#39;messageDebugDump&#39;</span><span class="p">:</span> <span class="kc">False</span><span class="p">,</span>
+ <span class="s1">&#39;messageDebugDump&#39;</span><span class="p">:</span> <span class="kc">True</span><span class="p">,</span>
  <span class="s1">&#39;messageRateMax&#39;</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span>
  <span class="s1">&#39;messageRateMin&#39;</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span>
  <span class="s1">&#39;message_strategy&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s1">&#39;failure_duration&#39;</span><span class="p">:</span> <span class="s1">&#39;5m&#39;</span><span class="p">,</span> <span class="s1">&#39;reset&#39;</span><span class="p">:</span> <span class="kc">True</span><span class="p">,</span> <span class="s1">&#39;stubborn&#39;</span><span class="p">:</span> <span class="kc">True</span><span class="p">},</span>
- <span class="s1">&#39;message_ttl&#39;</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span>
+ <span class="s1">&#39;metricsFilename&#39;</span><span class="p">:</span> <span class="s1">&#39;/home/peter/.cache/sr3/fractal/metrics/sarra_download_f20_00.json&#39;</span><span class="p">,</span>
+ <span class="s1">&#39;metrics_writeInterval&#39;</span><span class="p">:</span> <span class="mi">5</span><span class="p">,</span>
  <span class="s1">&#39;mirror&#39;</span><span class="p">:</span> <span class="kc">True</span><span class="p">,</span>
- <span class="s1">&#39;msg_total_interval&#39;</span><span class="p">:</span> <span class="s1">&#39;0&#39;</span><span class="p">,</span>
- <span class="s1">&#39;fileAgeMax&#39;</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span>
- <span class="s1">&#39;nodupe_ttl&#39;</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span>
+ <span class="s1">&#39;no&#39;</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span>
+ <span class="s1">&#39;nodupe_driver&#39;</span><span class="p">:</span> <span class="s1">&#39;disk&#39;</span><span class="p">,</span>
+ <span class="s1">&#39;nodupe_ttl&#39;</span><span class="p">:</span> <span class="mf">600.0</span><span class="p">,</span>
+ <span class="s1">&#39;novipFilename&#39;</span><span class="p">:</span> <span class="s1">&#39;/home/peter/.cache/sr3/fractal/sarra/download_f20//sarra_download_f20_00.noVip&#39;</span><span class="p">,</span>
+ <span class="s1">&#39;old_subscriptions&#39;</span><span class="p">:</span> <span class="p">[{</span><span class="s1">&#39;auto_delete&#39;</span><span class="p">:</span> <span class="kc">False</span><span class="p">,</span>
+                        <span class="s1">&#39;bindings&#39;</span><span class="p">:</span> <span class="p">[{</span><span class="s1">&#39;exchange&#39;</span><span class="p">:</span> <span class="s1">&#39;xsarra&#39;</span><span class="p">,</span> <span class="s1">&#39;prefix&#39;</span><span class="p">:</span> <span class="p">[</span><span class="s1">&#39;v03&#39;</span><span class="p">,</span> <span class="s1">&#39;post&#39;</span><span class="p">],</span> <span class="s1">&#39;sub&#39;</span><span class="p">:</span> <span class="p">[</span><span class="s1">&#39;#&#39;</span><span class="p">]}],</span>
+                        <span class="s1">&#39;broker&#39;</span><span class="p">:</span> <span class="s1">&#39;amqp://tfeed@localhost/&#39;</span><span class="p">,</span>
+                        <span class="s1">&#39;queue&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s1">&#39;auto_delete&#39;</span><span class="p">:</span> <span class="kc">False</span><span class="p">,</span>
+                                  <span class="s1">&#39;bind&#39;</span><span class="p">:</span> <span class="kc">True</span><span class="p">,</span>
+                                  <span class="s1">&#39;cleanup_needed&#39;</span><span class="p">:</span> <span class="kc">None</span><span class="p">,</span>
+                                  <span class="s1">&#39;declare&#39;</span><span class="p">:</span> <span class="kc">True</span><span class="p">,</span>
+                                  <span class="s1">&#39;durable&#39;</span><span class="p">:</span> <span class="kc">True</span><span class="p">,</span>
+                                  <span class="s1">&#39;expire&#39;</span><span class="p">:</span> <span class="mf">25200.0</span><span class="p">,</span>
+                                  <span class="s1">&#39;name&#39;</span><span class="p">:</span> <span class="s1">&#39;q_tfeed.sarra.download_f20.peter_fractal_70374978&#39;</span><span class="p">,</span>
+                                  <span class="s1">&#39;prefetch&#39;</span><span class="p">:</span> <span class="mi">25</span><span class="p">,</span>
+                                  <span class="s1">&#39;template&#39;</span><span class="p">:</span> <span class="s1">&#39;q_$</span><span class="si">{BROKER_USER}</span><span class="s1">.$</span><span class="si">{COMPONENT}</span><span class="s1">.$</span><span class="si">{CONFIG}</span><span class="s1">.$</span><span class="si">{QUEUESHARE}</span><span class="s1">&#39;</span><span class="p">,</span>
+                                  <span class="s1">&#39;tlsRigour&#39;</span><span class="p">:</span> <span class="s1">&#39;normal&#39;</span><span class="p">}}],</span>
  <span class="s1">&#39;overwrite&#39;</span><span class="p">:</span> <span class="kc">True</span><span class="p">,</span>
+ <span class="s1">&#39;path&#39;</span><span class="p">:</span> <span class="p">[],</span>
  <span class="s1">&#39;permCopy&#39;</span><span class="p">:</span> <span class="kc">True</span><span class="p">,</span>
  <span class="s1">&#39;permDefault&#39;</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span>
  <span class="s1">&#39;permDirDefault&#39;</span><span class="p">:</span> <span class="mi">509</span><span class="p">,</span>
  <span class="s1">&#39;permLog&#39;</span><span class="p">:</span> <span class="mi">384</span><span class="p">,</span>
+ <span class="s1">&#39;persistent&#39;</span><span class="p">:</span> <span class="kc">True</span><span class="p">,</span>
+ <span class="s1">&#39;pid_filename&#39;</span><span class="p">:</span> <span class="s1">&#39;/home/peter/.cache/sr3/fractal/sarra/download_f20//sarra_download_f20_00.pid&#39;</span><span class="p">,</span>
  <span class="s1">&#39;plugins_early&#39;</span><span class="p">:</span> <span class="p">[],</span>
- <span class="s1">&#39;plugins_late&#39;</span><span class="p">:</span> <span class="p">[</span><span class="s1">&#39;sarracenia.flowcb.log.Log&#39;</span><span class="p">],</span>
- <span class="s1">&#39;post_baseDir&#39;</span><span class="p">:</span> <span class="kc">None</span><span class="p">,</span>
- <span class="s1">&#39;post_baseUrl&#39;</span><span class="p">:</span> <span class="kc">None</span><span class="p">,</span>
- <span class="s1">&#39;post_broker&#39;</span><span class="p">:</span> <span class="kc">None</span><span class="p">,</span>
+ <span class="s1">&#39;plugins_late&#39;</span><span class="p">:</span> <span class="p">[</span><span class="s1">&#39;log&#39;</span><span class="p">],</span>
+ <span class="s1">&#39;post_baseDir&#39;</span><span class="p">:</span> <span class="s1">&#39;/home/peter/sarra_devdocroot&#39;</span><span class="p">,</span>
+ <span class="s1">&#39;post_baseUrl&#39;</span><span class="p">:</span> <span class="s1">&#39;http://localhost:8001/&#39;</span><span class="p">,</span>
+ <span class="s1">&#39;post_broker&#39;</span><span class="p">:</span> <span class="s1">&#39;amqp://tfeed@localhost/&#39;</span><span class="p">,</span>
  <span class="s1">&#39;post_documentRoot&#39;</span><span class="p">:</span> <span class="kc">None</span><span class="p">,</span>
+ <span class="s1">&#39;post_exchange&#39;</span><span class="p">:</span> <span class="p">[</span><span class="s1">&#39;xflow_public&#39;</span><span class="p">],</span>
  <span class="s1">&#39;post_exchanges&#39;</span><span class="p">:</span> <span class="p">[],</span>
+ <span class="s1">&#39;post_format&#39;</span><span class="p">:</span> <span class="s1">&#39;v03&#39;</span><span class="p">,</span>
+ <span class="s1">&#39;post_messageAgeMax&#39;</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span>
  <span class="s1">&#39;post_topicPrefix&#39;</span><span class="p">:</span> <span class="p">[</span><span class="s1">&#39;v03&#39;</span><span class="p">,</span> <span class="s1">&#39;post&#39;</span><span class="p">],</span>
  <span class="s1">&#39;prefetch&#39;</span><span class="p">:</span> <span class="mi">25</span><span class="p">,</span>
- <span class="s1">&#39;pstrip&#39;</span><span class="p">:</span> <span class="s1">&#39;.*sent_by_tsource2send/&#39;</span><span class="p">,</span>
+ <span class="s1">&#39;pstrip&#39;</span><span class="p">:</span> <span class="kc">False</span><span class="p">,</span>
  <span class="s1">&#39;queueBind&#39;</span><span class="p">:</span> <span class="kc">True</span><span class="p">,</span>
  <span class="s1">&#39;queueDeclare&#39;</span><span class="p">:</span> <span class="kc">True</span><span class="p">,</span>
- <span class="s1">&#39;queueName&#39;</span><span class="p">:</span> <span class="s1">&#39;q_tsource_subscribe.q_f71.76359618.62916076&#39;</span><span class="p">,</span>
- <span class="s1">&#39;queue_filename&#39;</span><span class="p">:</span> <span class="s1">&#39;/home/peter/.cache/sr3/subscribe/q_f71/subscribe.q_f71.tsource.qname&#39;</span><span class="p">,</span>
- <span class="s1">&#39;randid&#39;</span><span class="p">:</span> <span class="s1">&#39;cedf&#39;</span><span class="p">,</span>
+ <span class="s1">&#39;queueName&#39;</span><span class="p">:</span> <span class="s1">&#39;q_$</span><span class="si">{BROKER_USER}</span><span class="s1">.$</span><span class="si">{COMPONENT}</span><span class="s1">.$</span><span class="si">{CONFIG}</span><span class="s1">.$</span><span class="si">{QUEUESHARE}</span><span class="s1">&#39;</span><span class="p">,</span>
+ <span class="s1">&#39;queueShare&#39;</span><span class="p">:</span> <span class="s1">&#39;$</span><span class="si">{USER}</span><span class="s1">_$</span><span class="si">{HOSTNAME}</span><span class="s1">_$</span><span class="si">{RAND8}</span><span class="s1">&#39;</span><span class="p">,</span>
+ <span class="s1">&#39;queue_filename&#39;</span><span class="p">:</span> <span class="s1">&#39;/home/peter/.cache/sr3/fractal/sarra/download_f20/sarra.download_f20.tfeed.qname&#39;</span><span class="p">,</span>
+ <span class="s1">&#39;randid&#39;</span><span class="p">:</span> <span class="s1">&#39;502e&#39;</span><span class="p">,</span>
  <span class="s1">&#39;randomize&#39;</span><span class="p">:</span> <span class="kc">False</span><span class="p">,</span>
  <span class="s1">&#39;realpathPost&#39;</span><span class="p">:</span> <span class="kc">False</span><span class="p">,</span>
+ <span class="s1">&#39;recursive&#39;</span><span class="p">:</span> <span class="kc">True</span><span class="p">,</span>
  <span class="s1">&#39;rename&#39;</span><span class="p">:</span> <span class="kc">None</span><span class="p">,</span>
  <span class="s1">&#39;report&#39;</span><span class="p">:</span> <span class="kc">False</span><span class="p">,</span>
  <span class="s1">&#39;reset&#39;</span><span class="p">:</span> <span class="kc">False</span><span class="p">,</span>
- <span class="s1">&#39;resolved_qname&#39;</span><span class="p">:</span> <span class="s1">&#39;q_tsource_subscribe.q_f71.76359618.62916076&#39;</span><span class="p">,</span>
- <span class="s1">&#39;retry_ttl&#39;</span><span class="p">:</span> <span class="mf">1800.0</span><span class="p">,</span>
- <span class="s1">&#39;settings&#39;</span><span class="p">:</span> <span class="p">{},</span>
+ <span class="s1">&#39;resolved_exchanges&#39;</span><span class="p">:</span> <span class="p">[</span><span class="s1">&#39;xflow_public&#39;</span><span class="p">],</span>
+ <span class="s1">&#39;retryEmptyBeforeExit&#39;</span><span class="p">:</span> <span class="kc">False</span><span class="p">,</span>
+ <span class="s1">&#39;retry_path&#39;</span><span class="p">:</span> <span class="s1">&#39;/home/peter/.cache/sr3/fractal/sarra/download_f20//sarra_download_f20_00.retry&#39;</span><span class="p">,</span>
+ <span class="s1">&#39;retry_refilter&#39;</span><span class="p">:</span> <span class="kc">False</span><span class="p">,</span>
+ <span class="s1">&#39;retry_ttl&#39;</span><span class="p">:</span> <span class="mf">25200.0</span><span class="p">,</span>
+ <span class="s1">&#39;runStateThreshold_cpuSlow&#39;</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span>
+ <span class="s1">&#39;runStateThreshold_disconnected&#39;</span><span class="p">:</span> <span class="mi">80</span><span class="p">,</span>
+ <span class="s1">&#39;runStateThreshold_hung&#39;</span><span class="p">:</span> <span class="mi">450</span><span class="p">,</span>
+ <span class="s1">&#39;runStateThreshold_idle&#39;</span><span class="p">:</span> <span class="mi">900</span><span class="p">,</span>
+ <span class="s1">&#39;runStateThreshold_lag&#39;</span><span class="p">:</span> <span class="mi">30</span><span class="p">,</span>
+ <span class="s1">&#39;runStateThreshold_reject&#39;</span><span class="p">:</span> <span class="mi">80</span><span class="p">,</span>
+ <span class="s1">&#39;runStateThreshold_retry&#39;</span><span class="p">:</span> <span class="mi">1000</span><span class="p">,</span>
+ <span class="s1">&#39;runStateThreshold_slow&#39;</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span>
+ <span class="s1">&#39;settings&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s1">&#39;sarracenia.moth.amqp.AMQP&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s1">&#39;logLevel&#39;</span><span class="p">:</span> <span class="s1">&#39;info&#39;</span><span class="p">},</span> <span class="s1">&#39;sarracenia.moth.mqtt.MQTT&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s1">&#39;logLevel&#39;</span><span class="p">:</span> <span class="s1">&#39;debug&#39;</span><span class="p">}},</span>
  <span class="s1">&#39;sleep&#39;</span><span class="p">:</span> <span class="mf">0.1</span><span class="p">,</span>
- <span class="s1">&#39;statehost&#39;</span><span class="p">:</span> <span class="kc">False</span><span class="p">,</span>
+ <span class="s1">&#39;source&#39;</span><span class="p">:</span> <span class="s1">&#39;tfeed&#39;</span><span class="p">,</span>
+ <span class="s1">&#39;sourceFromExchange&#39;</span><span class="p">:</span> <span class="kc">False</span><span class="p">,</span>
+ <span class="s1">&#39;sourceFromMessage&#39;</span><span class="p">:</span> <span class="kc">False</span><span class="p">,</span>
+ <span class="s1">&#39;statehost&#39;</span><span class="p">:</span> <span class="kc">True</span><span class="p">,</span>
  <span class="s1">&#39;strip&#39;</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span>
+ <span class="s1">&#39;subscription_index&#39;</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span>
+ <span class="s1">&#39;subscriptions&#39;</span><span class="p">:</span> <span class="p">[{</span><span class="s1">&#39;bindings&#39;</span><span class="p">:</span> <span class="p">[{</span><span class="s1">&#39;exchange&#39;</span><span class="p">:</span> <span class="s1">&#39;xsarra&#39;</span><span class="p">,</span> <span class="s1">&#39;prefix&#39;</span><span class="p">:</span> <span class="p">[</span><span class="s1">&#39;v03&#39;</span><span class="p">,</span> <span class="s1">&#39;post&#39;</span><span class="p">],</span> <span class="s1">&#39;sub&#39;</span><span class="p">:</span> <span class="p">[</span><span class="s1">&#39;#&#39;</span><span class="p">]}],</span>
+                    <span class="s1">&#39;broker&#39;</span><span class="p">:</span> <span class="s1">&#39;amqp://tfeed@localhost/&#39;</span><span class="p">,</span>
+                    <span class="s1">&#39;queue&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s1">&#39;auto_delete&#39;</span><span class="p">:</span> <span class="kc">False</span><span class="p">,</span>
+                              <span class="s1">&#39;bind&#39;</span><span class="p">:</span> <span class="kc">True</span><span class="p">,</span>
+                              <span class="s1">&#39;cleanup_needed&#39;</span><span class="p">:</span> <span class="kc">None</span><span class="p">,</span>
+                              <span class="s1">&#39;declare&#39;</span><span class="p">:</span> <span class="kc">True</span><span class="p">,</span>
+                              <span class="s1">&#39;durable&#39;</span><span class="p">:</span> <span class="kc">True</span><span class="p">,</span>
+                              <span class="s1">&#39;expire&#39;</span><span class="p">:</span> <span class="mf">25200.0</span><span class="p">,</span>
+                              <span class="s1">&#39;name&#39;</span><span class="p">:</span> <span class="s1">&#39;q_tfeed.sarra.download_f20.peter_fractal_70374978&#39;</span><span class="p">,</span>
+                              <span class="s1">&#39;prefetch&#39;</span><span class="p">:</span> <span class="mi">25</span><span class="p">,</span>
+                              <span class="s1">&#39;template&#39;</span><span class="p">:</span> <span class="s1">&#39;q_$</span><span class="si">{BROKER_USER}</span><span class="s1">.$</span><span class="si">{COMPONENT}</span><span class="s1">.$</span><span class="si">{CONFIG}</span><span class="s1">.$</span><span class="si">{QUEUESHARE}</span><span class="s1">&#39;</span><span class="p">,</span>
+                              <span class="s1">&#39;tlsRigour&#39;</span><span class="p">:</span> <span class="s1">&#39;normal&#39;</span><span class="p">}}],</span>
+ <span class="s1">&#39;subscriptionsPath&#39;</span><span class="p">:</span> <span class="s1">&#39;/home/peter/.cache/sr3/fractal/sarra/download_f20/subscriptions.json&#39;</span><span class="p">,</span>
  <span class="s1">&#39;subtopic&#39;</span><span class="p">:</span> <span class="p">[],</span>
- <span class="s1">&#39;timeCopy&#39;</span><span class="p">:</span> <span class="kc">True</span><span class="p">,</span>
+ <span class="s1">&#39;subtopic_seen&#39;</span><span class="p">:</span> <span class="kc">False</span><span class="p">,</span>
+ <span class="s1">&#39;sundew_compat_regex_first_match_is_zero&#39;</span><span class="p">:</span> <span class="kc">False</span><span class="p">,</span>
+ <span class="s1">&#39;timeCopy&#39;</span><span class="p">:</span> <span class="kc">False</span><span class="p">,</span>
  <span class="s1">&#39;timeout&#39;</span><span class="p">:</span> <span class="mi">300</span><span class="p">,</span>
  <span class="s1">&#39;timezone&#39;</span><span class="p">:</span> <span class="s1">&#39;UTC&#39;</span><span class="p">,</span>
- <span class="s1">&#39;tls_rigour&#39;</span><span class="p">:</span> <span class="s1">&#39;normal&#39;</span><span class="p">,</span>
+ <span class="s1">&#39;tlsRigour&#39;</span><span class="p">:</span> <span class="s1">&#39;normal&#39;</span><span class="p">,</span>
+ <span class="s1">&#39;topicCopy&#39;</span><span class="p">:</span> <span class="kc">False</span><span class="p">,</span>
  <span class="s1">&#39;topicPrefix&#39;</span><span class="p">:</span> <span class="p">[</span><span class="s1">&#39;v03&#39;</span><span class="p">,</span> <span class="s1">&#39;post&#39;</span><span class="p">],</span>
- <span class="s1">&#39;undeclared&#39;</span><span class="p">:</span> <span class="p">[</span><span class="s1">&#39;msg_total_interval&#39;</span><span class="p">,</span> <span class="s1">&#39;file_total_interval&#39;</span><span class="p">],</span>
+ <span class="s1">&#39;undeclared&#39;</span><span class="p">:</span> <span class="p">[],</span>
  <span class="s1">&#39;users&#39;</span><span class="p">:</span> <span class="kc">False</span><span class="p">,</span>
+ <span class="s1">&#39;v2compatRenameDoublePost&#39;</span><span class="p">:</span> <span class="kc">False</span><span class="p">,</span>
  <span class="s1">&#39;v2plugin_options&#39;</span><span class="p">:</span> <span class="p">[],</span>
- <span class="s1">&#39;v2plugins&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s1">&#39;plugin&#39;</span><span class="p">:</span> <span class="p">[</span><span class="s1">&#39;msg_total_save&#39;</span><span class="p">,</span> <span class="s1">&#39;file_total_save&#39;</span><span class="p">]},</span>
+ <span class="s1">&#39;v2plugins&#39;</span><span class="p">:</span> <span class="p">{},</span>
+ <span class="s1">&#39;varTimeOffset&#39;</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span>
  <span class="s1">&#39;vhost&#39;</span><span class="p">:</span> <span class="s1">&#39;/&#39;</span><span class="p">,</span>
- <span class="s1">&#39;vip&#39;</span><span class="p">:</span> <span class="p">[]}</span>
+ <span class="s1">&#39;vip&#39;</span><span class="p">:</span> <span class="p">[],</span>
+ <span class="s1">&#39;wololo&#39;</span><span class="p">:</span> <span class="kc">False</span><span class="p">}</span>
 
-<span class="o">%</span>
+<span class="n">fractal</span><span class="o">%</span>
 </pre></div>
 </div>
 </section>
@@ -891,6 +962,71 @@ On peut désactiver la liaison de fil d’attente comme cela:</p>
 </pre></div>
 </div>
 <p>(False, ou off marchera aussi.)</p>
+<p>Il est également possible de configurer un client pour qu’il gère plusieurs
+abonnés (avec plusieurs files d’attente, potentiellement sur différents brokers).
+Par exemple, on peut configurer un datamart haute disponibilité comme suit :</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">broker</span> <span class="n">amqps</span><span class="p">:</span><span class="o">//</span><span class="n">dd</span><span class="o">.</span><span class="n">weather</span><span class="o">.</span><span class="n">gc</span><span class="o">.</span><span class="n">ca</span><span class="o">/</span>
+<span class="n">topicPrefix</span> <span class="n">v02</span><span class="o">.</span><span class="n">post</span>
+
+<span class="n">subtopic</span> <span class="o">*.</span><span class="n">WXO</span><span class="o">-</span><span class="n">DD</span><span class="o">.</span><span class="n">bulletins</span><span class="o">.</span><span class="n">alphanumeric</span><span class="o">.</span><span class="c1">#</span>
+
+<span class="n">broker</span> <span class="n">amqps</span><span class="p">:</span><span class="o">//</span><span class="n">hpfx</span><span class="o">.</span><span class="n">collab</span><span class="o">.</span><span class="n">science</span><span class="o">.</span><span class="n">gc</span><span class="o">.</span><span class="n">ca</span><span class="o">/</span>
+<span class="n">subtopic</span> <span class="o">*.</span><span class="n">WXO</span><span class="o">-</span><span class="n">DD</span><span class="o">.</span><span class="n">bulletins</span><span class="o">.</span><span class="n">alphanumeric</span><span class="o">.</span><span class="c1">#</span>
+
+<span class="n">directory</span> <span class="o">/</span><span class="n">tmp</span><span class="o">/</span><span class="n">hpfx_amis</span><span class="o">/</span>
+</pre></div>
+</div>
+<p>La configuration ci-dessus crée des files d’attente sur deux brokers (dd et hpfx) :</p>
+<ul class="simple">
+<li><p>Le <em>broker</em> lance la définition d’un abonnement.</p></li>
+<li><p>Les options suivantes définissent ses préférences.</p></li>
+<li><p>Le <em>subtopic</em> déclenche l’évaluation.</p></li>
+</ul>
+<p>Les paramètres saisis sont ensuite utilisés pour créer un abonnement lorsqu’une
+entrée de <em>subtopic</em> est trouvée dans la configuration.</p>
+<p>Les abonnements ainsi créés sont visibles dans le show sr3 :</p>
+<blockquote>
+<div><dl>
+<dt>‘subscriptions’: [{‘bindings’: [{‘exchange’: ‘xpublic’, ‘prefix’: [‘v02’, ‘post’], ‘sub’: [’<a href="#id1"><span class="problematic" id="id2">*</span></a>.WXO-DD.bulletins.alphanumeric.#’]}],</dt><dd><blockquote>
+<div><p>‘broker’: ‘amqps://anonymous&#64;dd.weather.gc.ca/’,
+‘queue’: {‘auto_delete’: False,</p>
+<blockquote>
+<div><p>‘bind’: True,
+‘cleanup_needed’: None,
+‘declare’: True,
+‘durable’: True,
+‘expire’: 600.0,
+‘name’: ‘q_anonymous.subscribe.dual_amis.peter_fractal_14948564’,
+‘prefetch’: 25,
+‘template’: ‘q_${BROKER_USER}.${COMPONENT}.${CONFIG}.${QUEUESHARE}’,
+‘tlsRigour’: ‘normal’}},</p>
+</div></blockquote>
+</div></blockquote>
+<dl>
+<dt>{‘bindings’: [{‘exchange’: ‘xpublic’, ‘prefix’: [‘v02’, ‘post’], ‘sub’: [’<a href="#id3"><span class="problematic" id="id4">*</span></a>.WXO-DD.bulletins.alphanumeric.#’]}],</dt><dd><p>‘broker’: ‘amqps://anonymous&#64;hpfx.collab.science.gc.ca/’,
+‘queue’: {‘auto_delete’: False,</p>
+<blockquote>
+<div><p>‘bind’: True,
+‘cleanup_needed’: None,
+‘declare’: True,
+‘durable’: True,
+‘expire’: 600.0,
+‘name’: ‘q_anonymous.subscribe.dual_amis.peter_fractal_82263266’,
+‘prefetch’: 25,
+‘template’: ‘q_${BROKER_USER}.${COMPONENT}.${CONFIG}.${QUEUESHARE}’,
+‘tlsRigour’: ‘normal’}}],</p>
+</div></blockquote>
+</dd>
+</dl>
+</dd>
+</dl>
+</div></blockquote>
+<p>Le paramètre utilisé dans un abonnement donné est le dernier saisi avant l’apparition du sous-thème dans le fichier.
+Remarque :</p>
+<p>L’option de fichier de configuration ou l’argument de ligne de commande <em>queueName</em>
+entraîne la définition du champ <em>queue[‘template’]</em>. Lorsque le sous-thème est trouvé,
+ce modèle subit une substitution de variable pour créer la valeur du champ <em>queue[‘name’]</em>,
+utilisé avec le broker.</p>
 </section>
 </section>
 <section id="filtrage-cote-client">

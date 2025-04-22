@@ -1514,22 +1514,22 @@ for the setting to apply to a given queue.</p>
 <p>By default, components create a queue name that should be unique. The
 default queueName components create follows the following convention:</p>
 <blockquote>
-<div><p><strong>q_&lt;brokerUser&gt;.&lt;programName&gt;.&lt;configName&gt;.&lt;queueShare&gt;</strong></p>
+<div><p><strong>q_${BROKER_USER}.${COMPONENT}.${CONFIG}.${QUEUESHARE}</strong></p>
 </div></blockquote>
 <p>Where:</p>
 <ul class="simple">
-<li><p><em>brokerUser</em> is the username used to connect to the broker (often: <em>anonymous</em> )</p></li>
-<li><p><em>programName</em> is the component using the queue (e.g. <em>subscribe</em> ),</p></li>
-<li><p><em>configName</em> is the configuration file used to tune component behaviour.</p></li>
-<li><p><em>queueShare</em> defaults to ${USER}_${HOSTNAME}_${RAND8} but should be overridden with the
+<li><p><em>BROKER_USER</em> is the username used to connect to the broker (often: <em>anonymous</em> )</p></li>
+<li><p><em>COMPONENT</em> is the progream using the queue (e.g. <em>subscribe</em> ),</p></li>
+<li><p><em>CONFIG</em> is the configuration file used to tune component behaviour.</p></li>
+<li><p><em>QUEUESHARE</em> defaults to ${USER}_${HOSTNAME}_${RAND8} but should be overridden with the
 <em>queueShare</em> configuration option.</p></li>
 </ul>
 <p>Users can override the default provided that it starts with <strong>q_&lt;brokerUser&gt;</strong>.</p>
 <p>When multiple instances are used, they will all use the same queue, for trivial
 multi-tasking. If multiple computers have a shared home file system, then the
-queueName is written to:</p>
+queueName is among the settings written to:</p>
 <blockquote>
-<div><p>~/.cache/sarra/&lt;programName&gt;/&lt;configName&gt;/&lt;programName&gt;_&lt;configName&gt;_&lt;brokerUser&gt;.qname</p>
+<div><p>~/.cache/sr3/${COMPONENT}/${CONFIG}/subscriptions.json</p>
 </div></blockquote>
 <p>Instances started on any node with access to the same shared file will use the
 same queue. Some may want use the <em>queueName</em> option as a more explicit method

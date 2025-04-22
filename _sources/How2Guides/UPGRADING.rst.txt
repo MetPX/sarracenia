@@ -39,6 +39,13 @@ Installation Instructions
 git
 ---
 
+3.0.59
+------
+
+*CHANGE*: python API *bindings* being replaced by *subscriptions.* API is quite different, see examples.
+*Subscriptions* enables multi-queue and multi-broker support for subscribing. 
+
+
 3.0.58
 ------
 
