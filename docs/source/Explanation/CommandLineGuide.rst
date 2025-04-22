@@ -710,18 +710,20 @@ Setting the Broker
 
 **broker [amqp|mqtt]{s}://<user>:<password>@<brokerhost>[:port]/<vhost>**
 
-A URI is used to configure a connection to a notification message pump, either
-an MQTT or an AMQP broker. Some Sarracenia components set a reasonable default for 
-that option.  provide the normal user,host,port of connections. In most configuration files,
-the password is missing. The password is normally only included in the credentials.conf file.
+A subscription declaration begins with a *broker* setting. The URI argument 
+given to *broker* is used to configure a connection to a notification message pump, 
+either an MQTT or an AMQP broker. Some Sarracenia components set a reasonable default 
+for that option.  provide the normal user,host,port of connections. 
+In most configuration files, the password is missing. The password is normally only included 
+in the credentials.conf file.
 
 Sarracenia work has not used vhosts, so **vhost** should almost always be **/**.
 
 for more info on the AMQP URI format: ( https://www.rabbitmq.com/uri-spec.html )
 
-
 either in the default.conf or each specific configuration file.
-The broker option tell each component which broker to contact.
+The *broker* option tell each component which broker to contact.
+
 
 **broker [amqp|mqtt]{s}://<user>:<pw>@<brokerhost>[:port]/<vhost>**
 
@@ -730,6 +732,12 @@ The broker option tell each component which broker to contact.
 
 Once connected to an AMQP broker, the user needs to bind a queue
 to exchanges and topics to determine the notification messages of interest.
+
+After the *broker* option is given, it needs to be followed by a *subtopic*
+entry to complete the subscription. Between the two options like:
+*topicPrefix*, *exchange*, *exchangeSuffix*, *expire*, *timeout*,
+*queueName*, etc...  can be used to modify subscription parameters.
+
 
 Creating the Queue
 ------------------
@@ -1030,7 +1038,7 @@ credential information to connect to the output **AMQP** broker.
 
 Once connected to the source AMQP broker, the program builds notifications after
 the download of a file has occurred. To build the notification and send it to
-the next hop broker, the user sets these options :
+the next hop broker, the user sets these options:
 
 * **post_baseDir     <path>    (optional)**
 * **post_topicPrefix <pfx> (default: 'v03')**
@@ -1038,6 +1046,13 @@ the next hop broker, the user sets these options :
 * **post_baseUrl     <url>     (MANDATORY)**
 
 FIXME: Examples of what these are for, what they do...
+
+Supplying additional *post_broker* options, as well as corresponding
+*post_exchange*, *post_topicPrefix*, in the configuration will
+cause the component to send the notification messages to an additional
+destination.
+
+
 
 
 NAMING EXCHANGES
