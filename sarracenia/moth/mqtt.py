@@ -768,6 +768,11 @@ class MQTT(Moth):
             topic = topic.replace('#', '%23')
             topic = topic.replace('+', '%2B')
 
+            if not 'posts' in message:
+                message['posts'] = []
+
+            message['posts'].append({ 'broker':str(self.o['broker']), 'topic': topic, 'exchange':exchange } )
+
             del headers['topic']
 
             if headers:
