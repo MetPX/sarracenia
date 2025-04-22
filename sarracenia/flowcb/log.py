@@ -121,7 +121,7 @@ class Log(FlowCB):
                 if 'topic' in p:
                     s+= f",{p['topic']}"
         else:
-            s+= 'nowhere?'
+            s+= ' nowhere?'
         s+=" "
 
         if 'fileOp' in msg:
