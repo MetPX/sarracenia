@@ -58,6 +58,9 @@ class Publisher(dict):
             if hasattr(options, aa):
                 self[a] = getattr(options,aa)
 
+        if not hasattr(options, 'post_topicPrefix') and hasattr(options, 'topicPrefix'):
+            self['topicPrefix'] = options.topicPrefix
+
         for a in [ 'auto_delete', 'durable', 'exchangeDeclare', 'messageAgeMax', 
                   'messageDebugDump', 'persistent', 'timeout' ]:
             if hasattr(options, a):
