@@ -660,7 +660,10 @@ class AMQP(Moth):
         # The caller probably doesn't expect the message to get modified by this method, so use a copy of the message
         body = copy.deepcopy(message)
 
-        version = body['_format']
+        if 'format' in self.o:
+            version=self.o['format']
+        else:
+            version = body['_format']
 
 
         if '_deleteOnPost' in body:
