@@ -761,16 +761,8 @@ class Message(dict):
         msg = Message()
 
         #FIXME no variable substitution... o.variableExpansion ?
-        if hasattr(o,'post_format') :
-            msg['_format'] = o.post_format
-        elif hasattr(o,'post_topicPrefix') and o.post_topicPrefix[0] in [ 'v02', 'v03' ]:
-            msg['_format'] = o.post_topicPrefix[0]
-        else:
-            msg['_format'] = 'v03'
 
-        if hasattr(o, 'post_exchange'):
-            msg['exchange'] = o.post_exchange
-        elif hasattr(o, 'exchange'):
+        if hasattr(o, 'exchange'):
             msg['exchange'] = o.exchange
 
         if hasattr(o, 'blockSize') and (o.blockSize > 1) and lstat and \
@@ -996,16 +988,6 @@ class Message(dict):
                 logger.error('missing post_baseUrl setting')
                 return
 
-        if options.post_format:
-            msg['post_format'] = options.post_format
-        elif options.post_topicPrefix:
-            msg['post_format'] = options.post_topicPrefix[0]
-        elif options.topicPrefix != msg['_format']:
-            logger.warning( f"received message in {msg['_format']} format, expected {options.post_topicPrefix} " )
-            msg['post_format'] = options.topicPrefix[0]
-        else:
-            msg['post_format'] = msg['_format']
-           
         if hasattr(options, 'post_baseDir') and ( type(options.post_baseDir) is str ) \
             and ( len(options.post_baseDir) > 1):
             pbd_str = options.variableExpansion(options.post_baseDir, msg)

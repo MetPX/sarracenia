@@ -53,6 +53,13 @@ class Publisher(dict):
             logger.error("malformed publisher, missing (post_)exchange")
             return
 
+        if hasattr(options,'post_format') :
+            self['format'] = options.post_format
+        elif hasattr(options,'post_topicPrefix') and options.post_topicPrefix[0] in [ 'v02', 'v03' ]:
+            self['format'] = options.post_topicPrefix[0]
+        else:
+            self['format'] = 'v03'
+
         for a in [ 'exchangeSplit', 'topicPrefix' ]:
             aa = "post_"+a
             if hasattr(options, aa):
