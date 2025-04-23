@@ -2046,9 +2046,6 @@ class Config:
         else:
             cfg = config
 
-        if not hasattr(self, 'post_topicPrefix'):
-           self.post_topicPrefix = self.topicPrefix
-
         if not hasattr(self, 'retry_ttl' ):
            self.retry_ttl = self.expire
 
@@ -2070,33 +2067,8 @@ class Config:
 
             post_broker_isList = hasattr(self,'post_exchange') and type(self.post_exchange) is list
 
-            if not post_broker_isList:
-                if hasattr(self, 'post_exchangeSuffix'):
-                    self.post_exchange += '_%s' % self.post_exchangeSuffix
-
-                if hasattr(self,'post_exchange') and (type(self.post_exchange) is list ):
-                    pass
-                elif hasattr(self, 'post_exchangeSplit') and self.post_exchangeSplit > 1:
-                    l = []
-                    for i in range(0, int(self.post_exchangeSplit)):
-                        y = self.post_exchange + '%02d' % i
-                        l.append(y)
-                    self.post_exchange = l
-                else:
-                    self.post_exchange = [self.post_exchange]
-
-            if (component in ['poll' ]) and (hasattr(self,'vip') and self.vip):
-                if (not hasattr(self,'exchange') or not self.exchange):
-                    if type(self.post_exchange) is list:
-                        self.exchange = self.post_exchange[0]
-                    else:
-                        self.exchange = self.post_exchange
-                if (not hasattr(self,'broker') or not self.broker):
-                    self.broker = self.post_broker
-
         if hasattr(self,'post_broker') and self.post_broker:
             self.publishers.add( Publisher(self) )
-            #logger.critical( f"last publisher {self.publishers=}") 
 
         if not ( hasattr(self, 'source') or self.sourceFromExchange):
             if hasattr(self, 'post_broker') and hasattr(self.post_broker,'url') and self.post_broker.url.username:
@@ -2129,9 +2101,6 @@ class Config:
             if ((len(self.subscriptions) == 0) and hasattr(self, 'exchange')):
                 self.subscriptions.append(Subscription(self, self.queueName, resolved_queueName, [ '#' ]))
 
-            # read old subscriptions, compare to current.
-            #old_subscriptions=self.subscriptions.read(self, self.subscriptionsPath)
-        
         if self.action in [ 'start', 'foreground', 'declare' ] and \
                 (not hasattr(self,'no') or self.no < 2) and  \
                 len(self.subscriptions) > 0:
