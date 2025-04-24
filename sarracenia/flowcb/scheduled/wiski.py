@@ -37,8 +37,14 @@ logger = logging.getLogger(__name__)
 class Wiski(Scheduled):
     """
       
-       Plugin to Poll a WISKIS server that uses  ( https://www.kisters.net/wiski )
-       Uses the kiwis_pie ( https://github.com/amacd31/kiwis_pie ) to do that.
+       Plugin to Poll a WISKIS server that uses
+            https://www.kisters.net/wiski
+
+       Uses the kiwis_pie package to do that.
+            https://github.com/amacd31/kiwis_pie
+
+       Documentation on the kiwis_pie package can be found on
+            https://kiwis-pie.readthedocs.io/en/latest/api/kiwis_pie.html
 
        In the credentials.conf file, need an authentication  entry like:
 
