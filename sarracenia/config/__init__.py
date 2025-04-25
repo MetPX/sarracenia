@@ -2070,6 +2070,9 @@ class Config:
         if hasattr(self,'post_broker') and self.post_broker:
             self.publishers.add( Publisher(self) )
 
+            if component in ['poll'] and hasattr(self,'vip') and self.vip:
+                self.broker=self.post_broker
+
         if not ( hasattr(self, 'source') or self.sourceFromExchange):
             if hasattr(self, 'post_broker') and hasattr(self.post_broker,'url') and self.post_broker.url.username:
                self.source = self.post_broker.url.username
