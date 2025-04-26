@@ -976,11 +976,18 @@ class Message(dict):
     
         newFullPath = new_dir + '/' + new_file
         
+        # post_base settings.
+        setting_post_baseUrl=None
+        setting_post_baseDir=None
+        if options.publishers and len(options.publishers) > options.publisher_index:
+             setting_post_baseUrl = options.publishers[options.publisher_index]['baseUrl']
+             setting_post_baseDir = options.publishers[options.publisher_index]['baseDir']
+
         # post_baseUrl option set in msg overrides other possible options
         if 'post_baseUrl' in msg:
             baseUrl_str = msg['post_baseUrl']
-        elif options.post_baseUrl:
-            baseUrl_str = options.variableExpansion(options.post_baseUrl, msg)
+        elif setting_post_baseUrl:
+            baseUrl_str = options.variableExpansion( setting_post_baseUrl, msg)
         else:
             if 'baseUrl' in msg:
                 baseUrl_str = msg['baseUrl']
@@ -988,9 +995,9 @@ class Message(dict):
                 logger.error('missing post_baseUrl setting')
                 return
 
-        if hasattr(options, 'post_baseDir') and ( type(options.post_baseDir) is str ) \
-            and ( len(options.post_baseDir) > 1):
-            pbd_str = options.variableExpansion(options.post_baseDir, msg)
+        if setting_post_baseDir and len(setting_post_baseDir) > 1:
+
+            pbd_str = options.variableExpansion( setting_post_baseDir, msg)
             parsed_baseUrl = sarracenia.baseUrlParse(baseUrl_str)
 
             if newFullPath.startswith(pbd_str):
@@ -1000,8 +1007,8 @@ class Message(dict):
                     parsed_baseUrl.path):
                 newFullPath = newFullPath.replace(parsed_baseUrl.path, '', 1)
 
-        if ('new_dir' not in msg) and options.post_baseDir:
-            msg['new_dir'] = options.post_baseDir
+        if ('new_dir' not in msg) and setting_post_baseDir:
+            msg['new_dir'] = setting_post_baseDir
             
         msg['new_baseUrl'] = baseUrl_str
 
