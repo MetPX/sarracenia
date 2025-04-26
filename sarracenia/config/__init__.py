@@ -844,6 +844,7 @@ class Config:
         self.subscriptions = Subscriptions()
         self.old_subscriptions = Subscriptions()
         self.publishers= Publishers()
+        self.publisher_index = 0
         self.subscription_index = 0
         self.__admin = None
         self.__broker = None

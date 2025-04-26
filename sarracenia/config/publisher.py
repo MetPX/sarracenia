@@ -60,10 +60,13 @@ class Publisher(dict):
         else:
             self['format'] = 'v03'
 
-        for a in [ 'exchangeSplit', 'topicPrefix' ]:
+        for a in [ 'baseDir', 'baseUrl', 'exchangeSplit', 'topicPrefix' ]:
             aa = "post_"+a
             if hasattr(options, aa):
                 self[a] = getattr(options,aa)
+
+        if not 'post_baseUrl' in a and hasattr(options,'pollUrl') and options.pollUrl:
+            self['baseUrl'] = options.pollUrl
 
         if not hasattr(options, 'post_topicPrefix') and hasattr(options, 'topicPrefix'):
             self['topicPrefix'] = options.topicPrefix
