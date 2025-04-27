@@ -693,6 +693,9 @@ class MQTT(Moth):
         if len(self.rx_msg) > 0:
             m = self.rx_msg[self.rx_msg_iToApp][0]
             self.rx_msg[self.rx_msg_iToApp] = self.rx_msg[self.rx_msg_iToApp][1:]
+            m['subscription_index'] = self.o['subscription_index']
+            m['_deleteOnPost'] |= set( ['subscription_index'] )
+
         else:
             m = None
         self._rotateInputBuffers()
