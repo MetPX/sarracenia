@@ -858,7 +858,14 @@ class Flow:
             if self.o.post_baseDir:
                 new_dir = self.o.variableExpansion(self.o.post_baseDir, msg)
         d=None
-        if self.o.baseDir:
+       
+        if 'subcription_index' in msg:
+            logger.critical( f" {msg['subscription_index']=} {self.o.subscriptions=}")
+            old_baseDir = self.o.subscriptions[msg['subscription_index']]['baseDir']
+        else:
+            old_baseDir = self.o.baseDir
+
+        if old_baseDir:
             if new_dir:
                 d = new_dir
             elif self.o.post_baseDir:
@@ -928,9 +935,9 @@ class Flow:
                     if f in msg['fileOp']:
                         msg['fileOp'][f] = flatten.join(msg['fileOp'][f].split('/'))
                             
-        if self.o.baseDir:
+        if old_baseDir:
             # remove baseDir from relPath if present.
-            token_baseDir = self.o.baseDir.split('/')[1:]
+            token_baseDir = old_baseDir.split('/')[1:]
             remcnt=0
             if len(token) > len(token_baseDir):
                 for i in range(0,len(token_baseDir)):
@@ -942,11 +949,11 @@ class Flow:
                     token=token[remcnt:] 
 
             if d:
-                if 'fileOp' in msg and len(self.o.baseDir) > 1:
+                if 'fileOp' in msg and len(old_baseDir) > 1:
                     for f in ['link', 'hlink', 'rename']:
                         if (f in msg['fileOp']) :
-                            if msg['fileOp'][f].startswith(self.o.baseDir):
-                                msg['fileOp'][f] = msg['fileOp'][f].replace(self.o.baseDir, d, 1)
+                            if msg['fileOp'][f].startswith(old_baseDir):
+                                msg['fileOp'][f] = msg['fileOp'][f].replace(old_baseDir, d, 1)
 
         elif 'fileOp' in msg and new_dir:
             u = sarracenia.baseUrlParse(msg['baseUrl'])

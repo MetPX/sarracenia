@@ -25,6 +25,7 @@ class Subscription(dict):
                 'max_queued_messages',  'prefetch', 'qos', 'receiveMaximum', 'tlsRigour', 'topic' ]:
             if hasattr(options, a):
                 self['queue'][a] = getattr(options,a)
+        self['baseDir'] = options.baseDir
 
 
 class Subscriptions(list):

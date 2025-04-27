@@ -68,6 +68,13 @@ class Publisher(dict):
         if not 'post_baseUrl' in a and hasattr(options,'pollUrl') and options.pollUrl:
             self['baseUrl'] = options.pollUrl
 
+        if not 'baseDir' in self and not self.baseDir:
+            if self['baseUrl'] and ( self['baseUrl'][0:5] in [ 'file:' ] ):
+                self['baseDir'] = self['baseUrl'][5:]
+            elif self['baseUrl'] and ( self['baseUrl'][0:5] in [ 'sftp:' ] ):
+                u =  sarracenia.baseUrlParse(self['baseUrl'])
+                self['baseDir'] = u.path
+
         if not hasattr(options, 'post_topicPrefix') and hasattr(options, 'topicPrefix'):
             self['topicPrefix'] = options.topicPrefix
 
