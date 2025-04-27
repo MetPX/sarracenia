@@ -2118,7 +2118,7 @@ class Config:
                 path = os.path.realpath(path)
 
             if sys.platform == 'win32' and words0.find('\\'):
-                logger.warning("{component}/{config} %s %s" % (words0, words1))
+                logger.warning( f"{component}/{config} {words0} {words1}" )
                 logger.warning(
                     "use of backslash ( \\ ) is an escape character. For a path separator use forward slash ( / )."
                 )
@@ -2150,7 +2150,7 @@ class Config:
                 self.post_baseDir = u.path
             elif self.baseDir is not None:
                 self.post_baseDir = os.path.expanduser(self.baseDir)
-                logger.debug("{component}/{config} defaulting post_baseDir to same as baseDir")
+                logger.debug( f"{component}/{config} defaulting post_baseDir to same as baseDir")
 
 
         if self.messageCountMax > 0:
