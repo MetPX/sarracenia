@@ -552,6 +552,8 @@ class AMQP(Moth):
                 self.metrics['rxByteCount'] += len(raw_msg.body)
                 try: 
                     msg = self._msgRawToDict(raw_msg)
+                    msg['subscription_index'] = self.o['subscription_index']
+                    msg['_deleteOnPost'] |= set( ['subscription_index'] )
                 except Exception as err:
                     logger.error("message decode failed. raw message: %s" % raw_msg.body )
                     logger.debug('Exception details: ', exc_info=True)
