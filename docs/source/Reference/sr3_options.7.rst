@@ -2019,6 +2019,8 @@ nodes. Statehost adds the node name after the cache directory to make it
 unique to each node. So each node has it's own statefiles and logs.
 example, on a node named goofy,  ~/.cache/sarra/log/ becomes ~/.cache/sarra/goofy/log.
 
+**Because *statehost* modifies settings storage, it must be at the beginning of a configuration file**
+
 strip <count|regexp> (default: 0)
 ---------------------------------
 
