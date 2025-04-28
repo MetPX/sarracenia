@@ -330,6 +330,7 @@ class AMQP(Moth):
         if message_strategy is stubborn, will loop here forever.
              connect, declare queue, apply bindings.
         """
+
         if self._stop_requested:
             return
 

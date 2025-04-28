@@ -65,7 +65,7 @@ class Subscriptions(list):
 
         try:
             with open(fn,'w') as f:
-                f.write(json.dumps(jl))
+                f.write(json.dumps(jl,sort_keys=True, indent=4))
         except Exception as Ex:
             logger.error( f"failed: {fn}: {Ex}" )
             logger.debug('Exception details: ', exc_info=True)

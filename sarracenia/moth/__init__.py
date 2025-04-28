@@ -205,15 +205,20 @@ class Moth():
     @staticmethod
     def subFactory(props) -> 'Moth':
 
-        if not props['broker'] :
+        if 'subscription_index' in props:
+            subIndex = props['subscription_index']
+            broker = props['subscriptions'][subIndex]['broker']
+        elif not props['broker'] :
             logger.error('no broker specified')
             return None
+        else:
+            broker = props['broker']
 
-        if not hasattr(props['broker'],'url'):
+        if not hasattr(broker,'url'):
             logger.error('invalid broker url')
             return None
 
-        if not ProtocolPresent(props['broker'].url.scheme):
+        if not ProtocolPresent(broker.url.scheme):
            logger.error('unknown broker scheme/protocol specified')
            return None
 
@@ -226,7 +231,7 @@ class Moth():
                 if driver == 'amqpconsumer':
                     # driver needs to be amqp to match with the broker URL's scheme
                     driver = 'amqp'
-            scheme=props['broker'].url.scheme
+            scheme=broker.url.scheme
             if (scheme == driver) or \
                ( (scheme[0:-1] == driver) and (scheme[-1] in [ 's', 'w' ])) or \
                ( (scheme[0:-2] == driver) and (scheme[-2] == 'ws')):
@@ -236,21 +241,26 @@ class Moth():
 
     @staticmethod
     def pubFactory(props) -> 'Moth':
-        if not props['broker']:
+        if 'publisher_index' in props:
+            pubIndex = props['publisher_index']
+            broker = props['publishers'][pubIndex]['broker']
+        elif not props['broker']:
             logger.error('no broker specified')
             return None
+        else:
+            broker = props['broker']
 
-        if not hasattr(props['broker'],'url'):
+        if not hasattr(broker,'url'):
             logger.error('invalid broker url')
             return None
 
-        if not ProtocolPresent(props['broker'].url.scheme):
+        if not ProtocolPresent(broker.url.scheme):
            logger.error('unknown broker scheme/protocol specified')
            return None
 
+        scheme=broker.url.scheme
         for sc in Moth.__subclasses__():
             driver=sc.__name__.lower()
-            scheme=props['broker'].url.scheme
             if (scheme == driver) or \
                ( (scheme[0:-1] == driver) and (scheme[-1] in [ 's', 'w' ])) or \
                ( (scheme[0:-2] == driver) and (scheme[-2] == 'ws')):
@@ -301,6 +311,18 @@ class Moth():
             self.o.update(props)
 
         me = 'sarracenia.moth.Moth'
+
+        if is_subscriber:
+            if 'subscriber_index' in self.o:
+                subscription=self.o['subscriptions'][self.o['subscription_index']]
+                broker = subscription['broker']
+                self.o['broker'] = broker
+                self.o['exchange'] = subscription['exchange']
+        else:
+            if 'publisher_index' in self.o:
+                publisher=self.o['publishers'][self.o['publisher_index']]
+                self.o['broker'] = publisher['broker']
+                self.o['exchange'] = publisher['exchange']
 
         # apply settings from props.
         if 'settings' in self.o:
