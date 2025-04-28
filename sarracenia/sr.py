@@ -1409,10 +1409,10 @@ class sr_GlobalState:
 
                 if hasattr(o, "subscriptions") and len(o.subscriptions):
                     for s in o.subscriptions:
-                        filtered_users.append(f"{s.broker.url.username}@{s.broker.url.hostname}")
+                        filtered_users.append(f"{s['broker'].url.username}@{s['broker'].url.hostname}")
                 if hasattr(o, "publishers") and len(o.publishers):
                     for p in o.publishers:
-                        filtered_users.append(f"{p.broker.url.username}@{p.broker.url.hostname}")
+                        filtered_users.append(f"{p['broker'].url.username}@{p['broker'].url.hostname}")
                 if hasattr(o, "report_broker") and o.report_broker:
                     filtered_users.append(f"{o.report_broker.url.username}@{o.report_broker.url.hostname}")
 
