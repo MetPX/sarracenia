@@ -458,6 +458,8 @@ class Flow:
         """
         self.worklist.rejected.append(m)
         m.setReport(code, reason)
+        self.ack([m])
+        
 
     def stop_request(self) -> None:
         """ called by the signal handler to tell self and FlowCB classes to stop. Without this,
@@ -484,6 +486,7 @@ class Flow:
         )
 
     def ack(self, mlist) -> None:
+        logger.critical("acking {m}" )
         if "ack" in self.plugins:
             for p in self.plugins["ack"]:
                 if self.o.logLevel.lower() == 'debug' :
@@ -1345,7 +1348,6 @@ class Flow:
 
         logger.debug("data inlined with message, no need to download")
         path = msg['new_dir'] + os.path.sep + msg['new_file']
-        #path = msg['new_relPath']
 
         try:
             f = os.fdopen(os.open(path, os.O_RDWR | os.O_CREAT), 'rb+')
@@ -1392,14 +1394,6 @@ class Flow:
                     % (len(data), msg['size']))
                 return False
 
-        #try:
-        #    for p in self.plugins['on_data']:
-        #        data = p(data)
-
-        #except Exception as ex:
-        #    logger.warning("plugin failed: %s" % (p, ex))
-        #    return False
-
         data_algo.update(data)
 
         #FIXME: If data is changed by plugins, need to update content header.
@@ -1420,7 +1414,7 @@ class Flow:
             f.truncate()
             f.close()
             self.set_local_file_attributes(path, msg)
-
+            self.ack([msg])
         except Exception as ex:
             logger.warning("failed writing and finalizing: %s" % (path, ex))
             return False
@@ -1756,6 +1750,7 @@ class Flow:
                   revamped rename algorithm requires only 1 message, ignore newname.
                 """
                 self.worklist.ok.append(msg)
+                self.ack([msg])
                 continue
 
             if not 'new_dir' in msg or not msg['new_dir']:
@@ -1796,6 +1791,7 @@ class Flow:
                 logger.error(f"failed to chdir ({e}), possible race condition, deferring transfer of {new_path}")
                 logger.debug("Exception details:", exc_info=True)
                 self.worklist.failed.append(msg)
+                self.ack([msg])
                 continue
 
             if 'fileOp' in msg :
@@ -1805,6 +1801,7 @@ class Flow:
                         self.removeOneFile(msg['fileOp']['rename'])
                         msg.setReport(201, 'old unlinked %s' % msg['fileOp']['rename'])
                         self.worklist.ok.append(msg)
+                        self.ack([msg])
                         self.metrics['flow']['transferRxFiles'] += 1
                         self.metrics['flow']['transferRxLast'] = msg['report']['timeCompleted']
 
@@ -1816,6 +1813,7 @@ class Flow:
                         # if rename fails, recover by falling through to download the data anyways.
                         if ok:
                             self.worklist.ok.append(msg)
+                            self.ack([msg])
                             self.metrics['flow']['transferRxFiles'] += 1
                             msg.setReport(201, 'renamed')
                             self.metrics['flow']['transferRxLast'] = msg['report']['timeCompleted']
@@ -1829,6 +1827,7 @@ class Flow:
                     if self.removeOneFile(new_path):
                         msg.setReport(201, 'rmdired')
                         self.worklist.ok.append(msg)
+                        self.ack([msg])
                         self.metrics['flow']['transferRxFiles'] += 1
                         self.metrics['flow']['transferRxLast'] = msg['report']['timeCompleted']
                     else:
@@ -1846,6 +1845,7 @@ class Flow:
                     if self.removeOneFile(new_path):
                         msg.setReport(201, 'removed')
                         self.worklist.ok.append(msg)
+                        self.ack([msg])
                         self.metrics['flow']['transferRxFiles'] += 1
                         self.metrics['flow']['transferRxLast'] = msg['report']['timeCompleted']
                     else:
@@ -1865,6 +1865,7 @@ class Flow:
                     if self.mkdir(msg):
                         msg.setReport(201, 'made directory')
                         self.worklist.ok.append(msg)
+                        self.ack([msg])
                         self.metrics['flow']['transferRxFiles'] += 1
                         self.metrics['flow']['transferRxLast'] = msg['report']['timeCompleted']
                     else:
@@ -1880,6 +1881,7 @@ class Flow:
                     if self.link1file(msg):
                         msg.setReport(201, 'linked')
                         self.worklist.ok.append(msg)
+                        self.ack([msg])
                         self.metrics['flow']['transferRxFiles'] += 1
                         self.metrics['flow']['transferRxLast'] = msg['report']['timeCompleted']
                         continue
@@ -1947,6 +1949,7 @@ class Flow:
                             'inflight file already exists. race condition, deferring transfer of %s'
                             % msg['new_path'])
                     self.worklist.failed.append(msg)
+                    self.ack([msg])
                     continue
                 # overwriting existing file.
 
@@ -1965,6 +1968,7 @@ class Flow:
                 if self.write_inline_file(msg):
                     msg.setReport(201, "Download successful (inline content)")
                     self.worklist.ok.append(msg)
+                    self.ack([msg])
                     self.metrics['flow']['transferRxLast'] = msg['report']['timeCompleted']
                     continue
                 logger.warning(
@@ -1989,6 +1993,7 @@ class Flow:
                     if 'content' in msg:
                         del msg['content']
                     self.worklist.ok.append(msg)
+                    self.ack([msg])
                     self.metrics['flow']['transferRxLast'] = msg['report']['timeCompleted']
                     break
                 elif ok == -1:
@@ -2002,9 +2007,9 @@ class Flow:
                 i = i + 1
 
             if not ok:
-                logger.error(
-                    "gave up downloading for now, appending to retry queue")
+                logger.error( "gave up downloading for now, appending to retry queue")
                 self.worklist.failed.append(msg)
+                self.ack([msg])
             # FIXME: file reassembly missing?
             #if self.inplace : file_reassemble(self)
 
@@ -2268,6 +2273,8 @@ class Flow:
 
             if ('blocks' in msg) and (msg['blocks']['method'] == 'inplace'):
                 msg['blocks']['method'] = 'separate'
+ 
+            self.ack([msg])
 
             if (len_written == block_length):
                 if not self.o.dry_run:
@@ -2980,14 +2987,17 @@ class Flow:
                 retval = self.send(msg, self.o)
                 if retval > 0:
                     self.worklist.ok.append(msg)
+                    self.ack([msg])
                     break
                 elif retval < 0:
                     self.worklist.rejected.append(msg)
+                    self.ack([msg])
                     break
 
                 i = i + 1
             if retval == 0:
                 self.worklist.failed.append(msg)
+                self.ack([msg])
         self.worklist.incoming = []
 
 
