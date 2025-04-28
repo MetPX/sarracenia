@@ -933,7 +933,7 @@ class Message(dict):
         msg['report'] = {'code': code, 'timeCompleted': nowstr(), 'message': text}
         msg['_deleteOnPost'] |= set(['report'])
 
-    def updatePaths(msg, options, new_dir=None, new_file=None):
+    def updatePaths(msg, options, new_dir=None, new_file=None, publisher_index=0):
         """
         set the new_* fields in the message based on changed file placement.
         if new_* options are ommitted updaste the rest of the fields in 
@@ -979,9 +979,9 @@ class Message(dict):
         # post_base settings.
         setting_post_baseUrl=None
         setting_post_baseDir=None
-        if options.publishers and len(options.publishers) > options.publisher_index:
-             setting_post_baseUrl = options.publishers[options.publisher_index]['baseUrl']
-             setting_post_baseDir = options.publishers[options.publisher_index]['baseDir']
+        if hasattr(options,'publishers') and len(options.publishers) > publisher_index:
+             setting_post_baseUrl = options.publishers[publisher_index]['baseUrl']
+             setting_post_baseDir = options.publishers[publisher_index]['baseDir']
 
         # post_baseUrl option set in msg overrides other possible options
         if 'post_baseUrl' in msg:
