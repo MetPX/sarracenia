@@ -44,26 +44,36 @@ class Message(FlowCB):
         for m in old_ok:
             i=0
             failures=[]
-            for p in self.posters:
-               if hasattr(p,'putNewMessage'):
-                   try:
-                       if 'post_failures' in m: 
-                           if i in m['post_failures']:
-                               if not p.putNewMessage(m):
-                                   failures.append(i)
-                       else:
-                           if not p.putNewMessage(m):
-                               failures.append(i)
-
-                   except Exception as e:
-                       if i not in failures:
-                           failures.append(i)
-                       logger.error(f"crashed: {e}")
-                       logger.debug("Exception details:", exc_info=True)
-
-               else:
-                   failures.append( i )
-               i+=1
+            if 'publisher_index' in m:
+                i=m['publisher_index']
+                p=self.posters[i]
+                if hasattr(p,'putNewMessage'):
+                    try:
+                        if not p.putNewMessage(m):
+                            failures.append(i)
+                    except Exception as e:
+                        failures.append(i)
+            else:
+                for p in self.posters:
+                    if hasattr(p,'putNewMessage'):
+                        try:
+                            if 'post_failures' in m: 
+                                if i in m['post_failures']:
+                                    if not p.putNewMessage(m):
+                                        failures.append(i)
+                            else:
+                                if not p.putNewMessage(m):
+                                    failures.append(i)
+     
+                        except Exception as e:
+                            if i not in failures:
+                                failures.append(i)
+                            logger.error(f"crashed: {e}")
+                            logger.debug("Exception details:", exc_info=True)
+     
+                    else:
+                        failures.append( i )
+                    i+=1
                    
             if len(failures)<1:
                 if 'post_failures' in m:
