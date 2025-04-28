@@ -2001,6 +2001,10 @@ nœuds. Statehost ajoute le nom du nœud après le répertoire de cache pour le 
 unique à chaque nœud. Ainsi, chaque nœud a ses propres fichiers d’état et journaux.
 Par exemple, sur un nœud nommé goofy, ~/.cache/sarra/log/ devient ~/.cache/sarra/goofy/log/.
 
+**L'option *statehost* doit être placé au début du fichier de configuration**
+
+
+
 strip <count|regexp> (défaut: 0)
 --------------------------------
 
