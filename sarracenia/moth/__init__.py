@@ -323,6 +323,7 @@ class Moth():
                 publisher=self.o['publishers'][self.o['publisher_index']]
                 self.o['broker'] = publisher['broker']
                 self.o['exchange'] = publisher['exchange']
+                self.o['topicPrefix'] = publisher['topicPrefix']
 
         # apply settings from props.
         if 'settings' in self.o:

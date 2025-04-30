@@ -30,6 +30,7 @@ class Message(FlowCB):
             props = copy.deepcopy(sarracenia.moth.default_options)
             props.update(self.o.dictify())
             props.update(p)
+            props['publisher_index']=i
             # adjust settings post_xxx to be xxx, as Moth does not use post_ ones.
             self.posters.append(sarracenia.moth.Moth.pubFactory(props))
             i+=1
