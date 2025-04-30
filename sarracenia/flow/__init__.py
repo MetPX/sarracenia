@@ -1274,6 +1274,7 @@ class Flow:
         for m in self.worklist.ok:
             if len(self.o.publishers) <= 1: # save creation of new messages (a lot of space & time savings.)
                 self.work_message_adjust(m)
+                m['publisher_index'] = 0
             else: # replace output messages with 1 per publishing destination.
                 i=0
                 for p in self.o.publishers:
@@ -1281,7 +1282,7 @@ class Flow:
                     new_m.copyDict(m)
                     new_m['publisher_index'] = i
                     new_m.updatePaths( self.o, m['new_dir'], m['new_file'], i )
-                    self.work_message_adjust(m)
+                    self.work_message_adjust(new_m)
                     post_messages.append(new_m) 
                     i += 1
                     
