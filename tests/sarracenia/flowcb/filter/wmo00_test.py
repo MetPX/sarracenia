@@ -134,6 +134,7 @@ def test_after_accept(tmp_path):
     m = make_message()
     worklist.incoming = [ m ]
 
+    print( f" {m=} " )
     accumulator.after_accept( worklist )
 
     assert len(worklist.incoming) == 1

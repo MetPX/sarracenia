@@ -396,7 +396,7 @@ def test_broker_finalize():
      assert( options.directory == os.path.expanduser( '~/ex1' ) )
      assert( len(options.subscriptions) == 1 )
      assert( options.exchange == 'xs_bunnypeer' )
-     assert( options.post_exchange == [ 'xs_bunnypeer' ] )
+     assert( options.post_exchange == 'xs_bunnypeer' )
      assert( hasattr(options,'nodupe_ttl') )
      assert( hasattr(options,'metricsFilename') )
      assert( hasattr(options,'pid_filename') )
