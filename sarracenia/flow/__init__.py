@@ -1174,14 +1174,14 @@ class Flow:
                 self.worklist.incoming.extend(new_incoming)
                 so_far += len(new_incoming) 
 
+            self._runCallbacksWorklist('after_gather')
+
             # if we gathered enough with a subset of plugins then return.
             if not keep_going or (so_far >= self.o.batch):
                 if (self.o.component == 'poll' ):
                     self.worklist.poll_catching_up=True
 
                 return
-
-        self._runCallbacksWorklist('after_gather')
 
         # gather is an extended version of poll.
         if self.o.component != 'poll':

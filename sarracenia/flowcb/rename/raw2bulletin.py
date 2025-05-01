@@ -91,16 +91,21 @@ class Raw2bulletin(FlowCB):
             # If called by a sarra, should always have post_baseDir, so should be OK in specifying it
             path = self.o.post_baseDir + '/' + msg['relPath']
 
-            data = msg.getContent(self.o)
-
             # Determine if bulletin is binary or not
             # From sundew source code
-            if data.splitlines()[1][:4] in self.o.binaryInitialCharacters:
-                # Decode data, only text. The raw binary data contains the header in which we're interested. Only get that header.
-                data = data.splitlines()[0].decode('ascii')
-            else:
-                # Data is not binary
-                data = data.decode(self.o.inputCharset)
+            try:
+                data = msg.getContent(self.o)
+
+                if data.splitlines()[1][:4] in self.o.binaryInitialCharacters:
+                    # Decode data, only text. The raw binary data contains the header in which we're interested. Only get that header.
+                    data = data.splitlines()[0].decode('ascii')
+                else:
+                    # Data is not binary
+                    data = data.decode(self.o.inputCharset)
+            except Exception as e:
+                logger.error(f"Error encountered trying to fetch or decode data. Error message {e}")
+                worklist.rejected.append(msg)
+                continue
 
 
             if not data:
@@ -113,6 +118,9 @@ class Raw2bulletin(FlowCB):
             #first_line  = first_line.strip(' ')
             #first_line  = first_line.strip('\t')
             first_line  = lines[0].split(' ')
+
+            # Sometimes bulletins have carriage returns at the end of the first line. Remove if applicable
+            first_line[-1]  = first_line[-1].replace('\r', '')
 
             # Build header from bulletin
             header = self.bulletinHandler.buildHeader(first_line)
@@ -136,7 +144,7 @@ class Raw2bulletin(FlowCB):
             stn_id = self.bulletinHandler.getStation(data)
 
             # Generate a sequence (random ints)
-            seq = self.bulletinHandler.getSequence()
+            seq = self.bulletinHandler.getRandom()
 
             # Assign a default value for messages not coming from AM
             if 'isProblem' not in msg:
@@ -172,7 +180,8 @@ class Raw2bulletin(FlowCB):
                 new_worklist.append(msg)
                 
             except Exception as e:
-                logger.error(f"Error in renaming. Error message: {e}")
+                logger.error(f"Error in renaming the filename. Error message: {e}")
+                worklist.rejected.append(msg)
                 continue
 
         worklist.incoming = new_worklist
