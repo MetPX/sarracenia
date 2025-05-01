@@ -156,8 +156,8 @@ class Bulletin:
             logger.error(f"Could not fetch file data of from either message content or {path}. Error details: {e}")
             return None
 
-    def getSequence(self):
-        """ sequence number to make the file unique...
+    def getRandom(self):
+        """ Generate Random number to make the file unique...
         """
         return str(random.randint(0, 99999)).zfill(5)
 
@@ -247,8 +247,8 @@ class Bulletin:
                 station = ''
 
             # Added to SR3
-            # The station needs to be alphanumeric, between 3 and 5 characters. If not, don't assign a station
-            if re.search('^[a-zA-Z0-9]{3,5}$', station) == None:
+            # The station needs to be alphanumeric, between 3 and 6 characters. If not, don't assign a station
+            if re.search('^[a-zA-Z0-9]{3,6}$', station) == None:
                 station = None
 
         return station
