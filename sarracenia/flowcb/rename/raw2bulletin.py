@@ -96,7 +96,8 @@ class Raw2bulletin(FlowCB):
             try:
                 data = msg.getContent(self.o)
 
-                if data.splitlines()[1][:4] in self.o.binaryInitialCharacters:
+                # Also accept bulletins that only have one line (health check bulletins)
+                if len(data.splitlines()) == 1 or data.splitlines()[1][:4] in self.o.binaryInitialCharacters:
                     # Decode data, only text. The raw binary data contains the header in which we're interested. Only get that header.
                     data = data.splitlines()[0].decode('ascii')
                 else:
@@ -141,7 +142,9 @@ class Raw2bulletin(FlowCB):
             BBB = self.bulletinHandler.getBBB(first_line)
 
             # Get the station ID from bulletin
-            stn_id = self.bulletinHandler.getStation(data)
+            if not len(data.splitlines()) == 1:
+                stn_id = self.bulletinHandler.getStation(data)
+            else: stn_id = ''
 
             # Generate a sequence (random ints)
             seq = self.bulletinHandler.getRandom()
