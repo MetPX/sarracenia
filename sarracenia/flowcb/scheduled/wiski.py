@@ -46,6 +46,7 @@ class Wiski(Scheduled):
        Documentation on the kiwis_pie package can be found on
             https://kiwis-pie.readthedocs.io/en/latest/api/kiwis_pie.html
 
+
        In the credentials.conf file, need an authentication  entry like:
 
        https://user:password@theserver.com
@@ -57,7 +58,7 @@ class Wiski(Scheduled):
        wiski polling parametrization (these are defined by and passed to kiwis_pie):
 
        wiski_ts_length -- how long a timeseries to request (default is 24 hours)
-       wiski_ts_name   -- name of the timeseries (not used currently.)
+       wiski_ts_name   -- list of timeseries to ingest
        wiski_return_fields -- Fields of data to retrieve and to be included in resulted file.
        wiski_reject_parameterTypeName -- Parameters to reject from a given station (example 'Battery Voltage')
 
@@ -97,7 +98,7 @@ class Wiski(Scheduled):
 
         # meteorological parameter settings.
         self.o.add_option( 'wiski_ts_length', 'duration', '24h' )
-        self.o.add_option( 'wiski_ts_name', 'str', 'caw_Cmd' )
+        self.o.add_option( 'wiski_ts_name', 'list', [] )
         self.o.add_option( 'wiski_reject_parameterTypeName', 'list', [] )
         self.o.add_option( 'wiski_return_fields', 'list' , ['Timestamp','Value'])
         
@@ -191,7 +192,7 @@ class Wiski(Scheduled):
             if self.stop_requested:
                 return (False, messages)
 
-            timeseries = k.get_timeseries_list(station_id = station_id , return_fields=['ts_id', 'parametertype_name'] )
+            timeseries = k.get_timeseries_list(station_id = station_id , return_fields=['ts_id', 'ts_name', 'parametertype_name'] )
             parameters = k.get_parameter_list(station_id = station_id)
             logger.debug( f"looping over the timeseries: \n{timeseries}" )
             logger.debug( f"Parameter options: \n{parameters}" )
@@ -203,22 +204,25 @@ class Wiski(Scheduled):
 
             for i in range(len(timeseries['ts_id'].values)):
                 ts_id = timeseries['ts_id'].values[i]
+                ts_name = timeseries['ts_name'].values[i]
                 parameter_type = timeseries['parametertype_name'].values[i]
 
                 if self.o.wiski_reject_parameterTypeName != [] and parameter_type in self.o.wiski_reject_parameterTypeName:
                     logger.debug(f"Parameter type rejected due to not being specified in reject list : {self.o.wiski_reject_parameterTypeName}. Skipping.")
+                elif self.o.wiski_ts_name != [] and ts_name not in self.o.wiski_ts_name:
+                    logger.debug(f"Timeseries name rejected due to not being specified in list : {self.o.wiski_ts_name}. Skipping.")
                 else:
 
                     parameter_type = parameter_type.replace(' ', '_').replace(')','_').replace('(','_').replace('/','_')
 
                     # writing files on windows is quite painful, so many illegal characters.
                     if sys.platform.startswith( "win" ):
-                        fname = f"{directory}{os.sep}ts_{ts_id}_{station_no}__{parameter_type}.csv" 
+                        fname = f"{directory}{os.sep}ts_{ts_name}_{station_no}__{parameter_type}.csv"
                         fname = fname[0:3]+fname[3:].replace(':','_').replace('.','_',1).replace('+','_').replace('-','_')
                     else:
-                        fname = f"{directory}{os.sep}ts_{ts_id}_{station_no}__{parameter_type}.csv"
+                        fname = f"{directory}{os.sep}ts_{ts_name}_{station_no}__{parameter_type}.csv"
 
-                    logger.info( f"Timeseries {ts_id} for station_id {station_no} to be written to: {fname}" )
+                    logger.info( f"Timeseries {ts_name} for station_id {station_no} to be written to: {fname}" )
     
                     #ts=k.get_timeseries_values(ts_id = ts_id, to = date(2023,1,31), **{'from': date(2023,1,1)})
                     ts=k.get_timeseries_values(ts_id = ts_id, to = now, **{'from': then}, return_fields=self.o.wiski_return_fields)
