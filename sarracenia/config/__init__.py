@@ -1015,7 +1015,7 @@ class Config:
 
         if word is None:
             return word
-        elif type(word) in [bool, int, float, octal_number]:
+        elif type(word) in [bool, int, float, octal_number, sarracenia.config.credentials.Credential]:
             return word
         elif not '$' in word:
             return word
@@ -1255,7 +1255,7 @@ class Config:
         # for python > 3.7
         #c = copy.deepcopy(self.dictify())
         # but older python needs:
-        c = self.dictify()
+        c = copy.deepcopy(self.dictify())
         d={}
         for k in c:
             if k == 'masks':
@@ -1300,6 +1300,18 @@ class Config:
         if hasattr(self, 'post_broker'):
             cd['post_broker'] = self.post_broker
 
+        i=0
+        for s in self.subscriptions:
+            if 'broker' in s:
+                s['broker'] = self.subscriptions[i]['broker']
+            i+=1
+
+        i=0
+        for p in self.publishers:
+            if 'broker' in p:
+                p['broker'] = self.publishers[i]['broker']
+            i+=1
+ 
         return cd
 
     

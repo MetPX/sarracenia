@@ -551,7 +551,7 @@ class Message(dict):
         if 'mtime' in msg:
             xattr.set('mtime', msg['mtime'])
 
-        logger.debug("mtime persisted, calc_method: {calc_method}")
+        logger.debug( f"mtime persisted, calc_method: {calc_method}" )
 
         if calc_method[:4] == 'cod,' and len(calc_method) > 2:
             sumstr = calc_method
