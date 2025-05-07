@@ -873,7 +873,7 @@ high availability datamart configuration like so::
    broker amqps://hpfx.collab.science.gc.ca/
    subtopic *.WXO-DD.bulletins.alphanumeric.#
 
-   directory /tmp/hpfx_amis/
+   directory /tmp/dual_amis/
 
 The above configuration will create queues on two brokers (dd and hpfx): 
 
@@ -2163,7 +2163,7 @@ sanity_log_dead <interval> (default: 1.5*housekeeping)
 The **sanity_log_dead** option sets how long to consider too long before restarting
 a component.
 
-nodup_ttl <off|on|999> (default: off)
+nodupe_ttl <off|on|999> (default: off)
 -------------------------------------
 
 The cleanup of expired elements in the duplicate suppression store happens at
