@@ -439,7 +439,7 @@ class AMQP(Moth):
             broker_str = self.o['broker'].url.geturl().replace(
                 ':' + self.o['broker'].url.password + '@', '@')
 
-            #logger.debug('putSetup ... 1. connected to {}'.format(broker_str ) )
+            logger.debug( f"putSetup ... 1. connected to {broker_str}" )
 
             if self.o['exchangeDeclare']:
                 logger.debug('putSetup ... 1. declaring {}'.format(

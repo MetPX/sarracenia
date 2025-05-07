@@ -82,18 +82,20 @@ class PostFormat:
            https://metpx.github.io/sarracenia/Explanation/Concepts.html#amqp-v09-rabbitmq-settings
 
         """
+ 
+        p = options['publishers'][options['publisher_index']]
 
-        if options['broker'].url.scheme.startswith('mqtt'):
-            if ( 'exchange' in options ) and ( 'topicPrefix' in options ):
-                if 'exchangeSplit' in options and options['exchangeSplit'] > 1:
-                    idx = sum( bytearray(msg['identity']['value'], 'ascii')) % len(options['exchange'])
-                    exchange = options['exchange'][idx]
+        if p['broker'].url.scheme.startswith('mqtt'):
+            if ( 'exchange' in p ) and ( 'topicPrefix' in p ):
+                if 'exchangeSplit' in p and p['exchangeSplit'] > 1:
+                    idx = sum( bytearray(msg['identity']['value'], 'ascii')) % len(p['exchange'])
+                    exchange = p['exchange'][idx]
                 else:
-                    exchange = options['exchange'][0]
-            topic_prefix = [exchange] + options['topicPrefix']
+                    exchange = p['exchange'][0]
+            topic_prefix = [exchange] + p['topicPrefix']
             topic_separator='/'
         else:
-            topic_prefix = options['topicPrefix']
+            topic_prefix = p['topicPrefix']
             topic_separator='.'
 
         if 'topic' in msg:
@@ -101,8 +103,8 @@ class PostFormat:
                 topic = msg['topic']
             else:
                 topic = msg['topic'].split(topic_separator)
-        elif 'topic' in options and options['topic'] and (type(options['topic']) is not list):
-            topic = options['topic'].split(topic_separator)
+        elif 'topic' in p and p['topic'] and (type(p['topic']) is not list):
+            topic = p['topic'].split(topic_separator)
         else:
             if 'relPath' in msg: 
                 topic = topic_prefix + msg['relPath'].split('/')[0:-1]

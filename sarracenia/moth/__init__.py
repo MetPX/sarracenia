@@ -243,7 +243,10 @@ class Moth():
     def pubFactory(props) -> 'Moth':
         if 'publisher_index' in props:
             pubIndex = props['publisher_index']
-            broker = props['publishers'][pubIndex]['broker']
+            publisher = props['publishers'][pubIndex]
+            broker = publisher['broker']
+            props['broker'] = broker
+            props['exchange'] = publisher['exchange']
         elif not props['broker']:
             logger.error('no broker specified')
             return None
@@ -251,12 +254,12 @@ class Moth():
             broker = props['broker']
 
         if not hasattr(broker,'url'):
-            logger.error('invalid broker url')
+            logger.error( f"invalid broker url: {str(broker)} {type(broker)}")
             return None
 
         if not ProtocolPresent(broker.url.scheme):
-           logger.error('unknown broker scheme/protocol specified')
-           return None
+            logger.error( f"unknown broker scheme/protocol specified: {broker.url.scheme}")
+            return None
 
         scheme=broker.url.scheme
         for sc in Moth.__subclasses__():
@@ -267,7 +270,7 @@ class Moth():
                 return sc(props, False)
 
         # ProtocolPresent test should ensure that we never get here...
-        logger.error('broker intialization failure')
+        logger.error('broker {str(broker)} intialization failure')
         return None
     
     @staticmethod
