@@ -2650,7 +2650,7 @@ class sr_GlobalState:
         configs_running = 0
         now = time.time()
 
-                
+        configs_extant=0                
         for c in sorted(self.configs):
             for cfg in sorted(self.configs[c]):
                 f = c + os.sep + cfg
@@ -2658,6 +2658,7 @@ class sr_GlobalState:
                     continue
                 if self.configs[c][cfg]['status'] == 'include':
                     continue
+                configs_extant+=1
 
                 if not (c in self.states and cfg in self.states[c]):
                     continue
@@ -2748,8 +2749,8 @@ class sr_GlobalState:
                 bad = 1
                 print( f"pid:{pid} \"{self.strays[pid]}\" is not a configured instance" )
 
-            print('      Total Running Configs: %3d ( Processes: %d missing: %d stray: %d )' %
-                (configs_running, len(self.procs), len(self.missing), stray ) )
+            print('      Total Running Configs: %3d/%d ( Processes: %d missing: %d stray: %d )' %
+                (configs_running, configs_extant, len(self.procs), len(self.missing), stray ) )
             print('                     Memory: uss:%s rss:%s vms:%s ' % ( \
                   naturalSize( self.resources['uss'] ), \
                   naturalSize( self.resources['rss'] ), naturalSize( self.resources['vms'] )\
