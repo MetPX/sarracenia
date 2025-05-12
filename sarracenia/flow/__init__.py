@@ -486,7 +486,6 @@ class Flow:
         )
 
     def ack(self, mlist) -> None:
-        logger.critical("acking {m}" )
         if "ack" in self.plugins:
             for p in self.plugins["ack"]:
                 if self.o.logLevel.lower() == 'debug' :
