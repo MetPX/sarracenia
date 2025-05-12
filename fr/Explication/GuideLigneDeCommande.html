@@ -842,16 +842,17 @@ partie “consommateur” de les programmes de Sarracenia.</p>
 <section id="reglage-de-broker">
 <h3>Réglage de Broker<a class="headerlink" href="#reglage-de-broker" title="Link to this heading"></a></h3>
 <p><strong>broker [amqp|mqtt]{s}://&lt;user&gt;:&lt;password&gt;&#64;&lt;brokerhost&gt;[:port]/&lt;vhost&gt;</strong></p>
-<p>Un URI AMQP est utilisé pour configurer une connexion à une pompe à messages
-(AMQP broker). Certains composants de Sarracenia définissent une valeur par
-défaut raisonnable pour cette option. Vous fournissez l’utilisateur normal,
-l’hôte, le port des connexions. Dans la plupart des fichiers de configuration,
-le mot de passe est manquant. Le mot de passe n’est normalement inclus que dans
-le fichier credentials.conf.</p>
+<p>Une déclaration d’abonnement commence par un paramètre <em>broker</em>. L’argument URI donné
+à <em>broker</em> permet de configurer une connexion à une pompe de messages de notification,
+qu’il s’agisse d’un broker MQTT ou AMQP. Certains composants Sarracenia définissent
+une valeur par défaut raisonnable pour cette option. Fournissez les paramètres utilisateur,
+hôte et port habituels des connexions. Dans la plupart des fichiers de configuration,
+le mot de passe est manquant. Il est généralement inclus uniquement dans le
+fichier credentials.conf.</p>
 <p>L´application Sarracenia n’a pas utilisé vhosts, donc <strong>vhost</strong> devrait toujours être <strong>/</strong>.</p>
 <p>pour plus d’informations sur le format URI de l’AMQP : ( <a class="reference external" href="https://www.rabbitmq.com/uri-spec.html">https://www.rabbitmq.com/uri-spec.html</a>))</p>
 <p>soit dans le fichier default.conf, soit dans chaque fichier de configuration spécifique.
-L’option courtier indique à chaque composante quel courtier contacter.</p>
+L’option <em>broker</em> indique à chaque composante quel courtier contacter.</p>
 <p><strong>broker [amqp|mqtt]{s}://&lt;user&gt;:&lt;pw&gt;&#64;&lt;brokerhost&gt;[:port]/&lt;vhost&gt;</strong></p>
 <dl class="simple">
 <dt>::</dt><dd><p>(par défaut : Aucun et il est obligatoire de le définir)</p>
@@ -859,6 +860,10 @@ L’option courtier indique à chaque composante quel courtier contacter.</p>
 </dl>
 <p>Une fois connecté à un courtier AMQP, l’utilisateur doit lier une fil d’attente.
 à l´*exchange* et aux thèmes (<em>topics</em>) pour déterminer les messages intérêsseants.</p>
+<p>Une fois l’option <em>broker</em> spécifiée, elle doit être suivie d’une entrée <em>subtopic</em>
+pour finaliser l’abonnement. Entre ces deux options, vous pouvez utiliser <em>topicPrefix</em>,
+<em>exchange</em>, <em>exchangeSuffix</em>, <em>expire</em>, <em>timeout</em>, <em>queueName</em>, etc. pour modifier
+les paramètres d’abonnement.</p>
 </section>
 <section id="configuration-de-fil-d-attente">
 <h3>Configuration de fil d´attente<a class="headerlink" href="#configuration-de-fil-d-attente" title="Link to this heading"></a></h3>
@@ -1137,7 +1142,7 @@ informations d’identification pour se connecter au courtier de sortie <strong>
 <p><strong>post_broker [amqp|mqtt]{s}://&lt;user&gt;:&lt;pw&gt;&#64;&lt;brokerhost&gt;[:port]/&lt;vhost&gt;</strong></p>
 <p>Une fois connecté au courtier de source AMQP, le programme génère des notifications après que
 le téléchargement d’un fichier a eu lieu. Pour générer la notification et l’envoyer au
-courtier au saut suivant, l’utilisateur définit ces options :</p>
+prochain courtier, l’utilisateur définit ces options:</p>
 <ul class="simple">
 <li><p><strong>post_baseDir     &lt;path&gt;    (facultatif)</strong></p></li>
 <li><p><strong>post_topicPrefix &lt;pfx&gt; (par défaut: ‘v03’)</strong></p></li>
@@ -1145,6 +1150,9 @@ courtier au saut suivant, l’utilisateur définit ces options :</p>
 <li><p><strong>post_baseUrl     &lt;url&gt;     (OBLIGATOIRE)</strong></p></li>
 </ul>
 <p>FIXME : Des exemples de ce à quoi ils servent, de ce qu’ils font…</p>
+<p>Si plusieurs options <em>post_broker</em> sont déclarés, ainsi que les options <em>post_exchange</em>
+et <em>post_topicPrefix</em> correspondantes dans la configuration, ca entraînera l’envoi
+des messages de notification vers des destinations supplémentaires.</p>
 <section id="convention-d-appellation-des-exchanges">
 <h3>Convention d´appellation des EXCHANGES<a class="headerlink" href="#convention-d-appellation-des-exchanges" title="Link to this heading"></a></h3>
 <ol class="arabic simple">

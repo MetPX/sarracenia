@@ -160,10 +160,13 @@
 </div>
 <div class="output_area docutils container">
 <div class="highlight"><pre>
-2024-01-12 15:51:55,713 127453 [INFO] sarracenia.config finalize overriding batch for consistency with messageCountMax: {self.batch}
-2024-01-12 15:51:55,714 127453 [INFO] root remove removing subscribe/hpfx_amis
+2025-05-06 16:06:14,267 402740 [WARNING] sarracenia.config parse_line ./dual_amis.conf:20 broker needs to appear before *subtopic* unless you need different queues to have different settings
+2025-05-06 16:06:14,267 402740 [INFO] sarracenia.config finalize subscribe/dual_amis.conf overriding batch for consistency with messageCountMax: 10
+2025-05-06 16:06:14,269 402740 [ERROR] root cleanup [&#39;subscribe/hpfx_amis.conf&#39;] configuration not found
 
-add: 2024-01-12 15:51:56,975 127456 [INFO] sarracenia.sr add copying: /home/peter/Sarracenia/sr3/sarracenia/examples/subscribe/hpfx_amis.conf to /home/peter/.config/sr3/subscribe/hpfx_amis.conf
+2025-05-06 16:06:15,451 402745 [WARNING] sarracenia.config parse_line ./dual_amis.conf:20 broker needs to appear before *subtopic* unless you need different queues to have different settings
+2025-05-06 16:06:15,451 402745 [INFO] sarracenia.config finalize subscribe/dual_amis.conf overriding batch for consistency with messageCountMax: 10
+add: 2025-05-06 16:06:15,453 402745 [INFO] sarracenia.sr add copying: /home/peter/Sarracenia/sr3/sarracenia/examples/subscribe/hpfx_amis.conf to /home/peter/.config/sr3/subscribe/hpfx_amis.conf
 
 </pre></div></div>
 </div>
@@ -189,47 +192,56 @@ add: 2024-01-12 15:51:56,975 127456 [INFO] sarracenia.sr add copying: /home/pete
 </div>
 <div class="output_area docutils container">
 <div class="highlight"><pre>
-2024-01-12 15:52:22,624 127524 [INFO] sarracenia.config finalize overriding batch for consistency with messageCountMax: {self.batch}
+2025-05-06 16:06:24,326 402759 [WARNING] sarracenia.config parse_line ./dual_amis.conf:20 broker needs to appear before *subtopic* unless you need different queues to have different settings
+2025-05-06 16:06:24,326 402759 [INFO] sarracenia.config finalize subscribe/dual_amis.conf overriding batch for consistency with messageCountMax: 10
+2025-05-06 16:06:24,326 402759 [INFO] sarracenia.config finalize subscribe/hpfx_amis.conf overriding batch for consistency with messageCountMax: 10
 Provided callback classes: ( /home/peter/Sarracenia/sr3/sarracenia )
-flowcb/accept/auth_NASA_Earthdata.py flowcb/accept/auth_copernicus.py
-flowcb/accept/auth_eumetsat.py   flowcb/accept/dateappend.py
-flowcb/accept/delete.py          flowcb/accept/downloadbaseurl.py
-flowcb/accept/hourtree.py        flowcb/accept/httptohttps.py
-flowcb/accept/longflow.py        flowcb/accept/pathreplace.py
-flowcb/accept/posthourtree.py    flowcb/accept/postoverride.py
-flowcb/accept/printlag.py        flowcb/accept/rename4jicc.py
-flowcb/accept/renamedmf.py       flowcb/accept/renamewhatfn.py
-flowcb/accept/save.py            flowcb/accept/speedo.py
+flowcb/accept/bc_trans.py        flowcb/accept/dateappend.py
+flowcb/accept/delete.py          flowcb/accept/distbydir.py
+flowcb/accept/downloadbaseurl.py flowcb/accept/hourtree.py
+flowcb/accept/httptohttps.py     flowcb/accept/longflow.py
+flowcb/accept/pathreplace.py     flowcb/accept/posthourtree.py
+flowcb/accept/postoverride.py    flowcb/accept/printlag.py
+flowcb/accept/rename4jicc.py     flowcb/accept/renamedmf.py
+flowcb/accept/renamewhatfn.py    flowcb/accept/save.py
+flowcb/accept/sftp_absolute.py   flowcb/accept/speedo.py
 flowcb/accept/sundewpxroute.py   flowcb/accept/testretry.py
-flowcb/accept/toclusters.py      flowcb/accept/tohttp.py
-flowcb/accept/tolocal.py         flowcb/accept/tolocalfile.py
+flowcb/accept/toclusters.py      flowcb/accept/tolocalfile.py
 flowcb/accept/trim_legacy_fields.py flowcb/accept/wmotypesuffix.py
-flowcb/amserver.py               flowcb/block_reassembly.py
-flowcb/clamav.py                 flowcb/destfn/replace.py
-flowcb/destfn/sample.py          flowcb/download/mail_ingest.py
+flowcb/authenticate/bc_trans.py  flowcb/authenticate/copernicus.py
+flowcb/authenticate/eumetsat.py  flowcb/authenticate/nasa_earthdata.py
+flowcb/block_reassembly.py       flowcb/clamav.py
+flowcb/destfn/replace.py         flowcb/destfn/sample.py
+flowcb/download/mail_ingest.py   flowcb/filter/content_type.py
 flowcb/filter/deleteflowfiles.py flowcb/filter/fdelay.py
-flowcb/filter/pclean_f90.py      flowcb/filter/pclean_f92.py
-flowcb/filter/wmo2msc.py         flowcb/gather/file.py
+flowcb/filter/geometry.py        flowcb/filter/pclean_f90.py
+flowcb/filter/pclean_f92.py      flowcb/filter/wmo00_accumulate.py
+flowcb/filter/wmo00_split.py     flowcb/filter/wmo2msc.py
+flowcb/gather/am.py              flowcb/gather/file.py
 flowcb/gather/message.py         flowcb/housekeeping/resources.py
 flowcb/log.py                    flowcb/mdelaylatest.py
-flowcb/nodupe/data.py            flowcb/nodupe/disk.py
-flowcb/nodupe/name.py            flowcb/nodupe/redis.py
+flowcb/nodupe/data_only.py       flowcb/nodupe/disk.py
+flowcb/nodupe/name.py            flowcb/nodupe/name_only.py
+flowcb/nodupe/path_only.py       flowcb/nodupe/redis.py
 flowcb/pclean.py                 flowcb/poll/airnow.py
-flowcb/poll/eumetsat.py          flowcb/poll/mail.py
+flowcb/poll/copernicus_marine_s3.py flowcb/poll/eumetsat.py
+flowcb/poll/mail.py              flowcb/poll/nasa_cmr.py
 flowcb/poll/nasa_mls_nrt.py      flowcb/poll/nexrad.py
 flowcb/poll/noaa_hydrometric.py  flowcb/poll/odata.py
-flowcb/poll/poll_NASA_CMR.py     flowcb/poll/rate_limit.py
-flowcb/poll/s3bucket.py          flowcb/poll/usgs.py
-flowcb/post/message.py           flowcb/report.py
+flowcb/poll/rate_limit.py        flowcb/poll/s3bucket.py
+flowcb/poll/usgs.py              flowcb/post/message.py
+flowcb/rename/raw2bulletin.py    flowcb/report.py
 flowcb/retry.py                  flowcb/rootchown.py
 flowcb/run.py                    flowcb/rxqueue_gzip.py
-flowcb/sample.py                 flowcb/scheduled/wiski.py
+flowcb/sample.py                 flowcb/scheduled/http_with_metadata.py
+flowcb/scheduled/poll.py         flowcb/scheduled/wiski.py
 flowcb/send/am.py                flowcb/send/email.py
-flowcb/shiftdir2baseurl.py       flowcb/trace_on_stop.py
-flowcb/v2wrapper.py              flowcb/wistree.py
-flowcb/work/age.py               flowcb/work/check.py
-flowcb/work/citypage_check.py    flowcb/work/delete.py
-flowcb/work/rxpipe.py            flowcb/work/send_egc_les.py
+flowcb/send/s3CloudSender.py     flowcb/shiftdir2baseurl.py
+flowcb/trace_on_stop.py          flowcb/v2wrapper.py
+flowcb/wistree.py                flowcb/work/age.py
+flowcb/work/check.py             flowcb/work/citypage_check.py
+flowcb/work/delete.py            flowcb/work/rxpipe.py
+flowcb/work/send_egc_les.py
 </pre></div></div>
 </div>
 <p>Adding that line to the configuration means that the wistree flowcb subclass (source above) will be added to the flow, changing processing by having its routines called… the main one being <em>after_accept</em></p>
@@ -254,73 +266,67 @@ flowcb/work/rxpipe.py            flowcb/work/send_egc_les.py
 </div>
 <div class="output_area docutils container">
 <div class="highlight"><pre>
-2024-01-12 15:52:39,635 127558 [INFO] sarracenia.config finalize overriding batch for consistency with messageCountMax: {self.batch}
-.2024-01-12 15:52:40,036 [INFO] 127562 sarracenia.config finalize overriding batch for consistency with messageCountMax: {self.batch}
-2024-01-12 15:52:40,038 [INFO] 127562 sarracenia.config finalize overriding batch for consistency with messageCountMax: {self.batch}
-2024-01-12 15:52:40,038 [INFO] 127562 sarracenia.flow loadCallbacks flowCallback plugins to load: [&#39;sarracenia.flowcb.gather.message.Message&#39;, &#39;sarracenia.flowcb.retry.Retry&#39;, &#39;sarracenia.flowcb.housekeeping.resources.Resources&#39;, &#39;accept.posthourtree&#39;, &#39;log&#39;]
-2024-01-12 15:52:40,041 [INFO] 127562 sarracenia.flowcb.log __init__ subscribe initialized with: logEvents: {&#39;after_accept&#39;, &#39;on_housekeeping&#39;, &#39;after_work&#39;, &#39;after_post&#39;, &#39;post&#39;},  logMessageDump: False
-2024-01-12 15:52:40,042 [INFO] 127562 sarracenia.flow run callbacks loaded: [&#39;sarracenia.flowcb.gather.message.Message&#39;, &#39;sarracenia.flowcb.retry.Retry&#39;, &#39;sarracenia.flowcb.housekeeping.resources.Resources&#39;, &#39;accept.posthourtree&#39;, &#39;log&#39;]
-2024-01-12 15:52:40,042 [INFO] 127562 sarracenia.flow run pid: 127562 subscribe/hpfx_amis instance: 0
-2024-01-12 15:52:40,441 [INFO] 127562 sarracenia.moth.amqp _queueDeclare queue declared q_anonymous_subscribe.hpfx_amis.68942404.82515581 (as: amqps://anonymous@hpfx.collab.science.gc.ca/), (messages waiting: 0)
-2024-01-12 15:52:40,441 [INFO] 127562 sarracenia.moth.amqp getSetup binding q_anonymous_subscribe.hpfx_amis.68942404.82515581 with v02.post.*.WXO-DD.bulletins.alphanumeric.# to xpublic (as: amqps://anonymous@hpfx.collab.science.gc.ca/)
-2024-01-12 15:52:40,487 [INFO] 127562 sarracenia.flow run now active on vip [&#39;AnyAddressIsFine&#39;]
-2024-01-12 15:52:44,644 [INFO] 127562 sarracenia.flowcb.accept.posthourtree after_accept post_hour_tree: new_dir: /tmp/hpfx_amis/20
-2024-01-12 15:52:44,644 [INFO] 127562 sarracenia.flowcb.accept.posthourtree after_accept post_hour_tree: new_dir: /tmp/hpfx_amis/20
-2024-01-12 15:52:44,644 [INFO] 127562 sarracenia.flowcb.accept.posthourtree after_accept post_hour_tree: new_dir: /tmp/hpfx_amis/20
-2024-01-12 15:52:44,644 [INFO] 127562 sarracenia.flowcb.accept.posthourtree after_accept post_hour_tree: new_dir: /tmp/hpfx_amis/20
-2024-01-12 15:52:44,645 [INFO] 127562 sarracenia.flowcb.accept.posthourtree after_accept post_hour_tree: new_dir: /tmp/hpfx_amis/20
-2024-01-12 15:52:44,645 [INFO] 127562 sarracenia.flowcb.accept.posthourtree after_accept post_hour_tree: new_dir: /tmp/hpfx_amis/20
-2024-01-12 15:52:44,645 [INFO] 127562 sarracenia.flowcb.log after_accept accepted: (lag: 2.82 ) https://hpfx.collab.science.gc.ca /20240112/WXO-DD/bulletins/alphanumeric/20240112/SR/KWAL/20/SRCN40_KWAL_122052___32878
-2024-01-12 15:52:44,645 [INFO] 127562 sarracenia.flowcb.log after_accept accepted: (lag: 6.28 ) https://hpfx.collab.science.gc.ca /20240112/WXO-DD/bulletins/alphanumeric/20240112/SO/KWNB/20/SOVD83_KWNB_121900_RRX__26978
-2024-01-12 15:52:44,645 [INFO] 127562 sarracenia.flowcb.log after_accept accepted: (lag: 6.27 ) https://hpfx.collab.science.gc.ca /20240112/WXO-DD/bulletins/alphanumeric/20240112/SM/KWNB/20/SMVD20_KWNB_121800_RRX__52297
-2024-01-12 15:52:44,645 [INFO] 127562 sarracenia.flowcb.log after_accept accepted: (lag: 6.27 ) https://hpfx.collab.science.gc.ca /20240112/WXO-DD/bulletins/alphanumeric/20240112/SM/KWNB/20/SMVD20_KWNB_121800_RRX__48301
-2024-01-12 15:52:44,645 [INFO] 127562 sarracenia.flowcb.log after_accept accepted: (lag: 3.97 ) https://hpfx.collab.science.gc.ca /20240112/WXO-DD/bulletins/alphanumeric/20240112/SR/KWAL/20/SRCN40_KWAL_122052___22701
-2024-01-12 15:52:44,645 [INFO] 127562 sarracenia.flowcb.log after_accept accepted: (lag: 3.97 ) https://hpfx.collab.science.gc.ca /20240112/WXO-DD/bulletins/alphanumeric/20240112/SN/KWNB/20/SNVD20_KWNB_121900_RRX__17918
-2024-01-12 15:52:44,645 [INFO] 127562 sarracenia.flow do_download missing destination directories, makedirs: /tmp/hpfx_amis/20
-2024-01-12 15:52:45,153 [INFO] 127562 sarracenia.flowcb.log after_work downloaded ok: /tmp/hpfx_amis/20/SRCN40_KWAL_122052___32878
-2024-01-12 15:52:45,153 [INFO] 127562 sarracenia.flowcb.log after_work downloaded ok: /tmp/hpfx_amis/20/SOVD83_KWNB_121900_RRX__26978
-2024-01-12 15:52:45,153 [INFO] 127562 sarracenia.flowcb.log after_work downloaded ok: /tmp/hpfx_amis/20/SMVD20_KWNB_121800_RRX__52297
-2024-01-12 15:52:45,153 [INFO] 127562 sarracenia.flowcb.log after_work downloaded ok: /tmp/hpfx_amis/20/SMVD20_KWNB_121800_RRX__48301
-2024-01-12 15:52:45,153 [INFO] 127562 sarracenia.flowcb.log after_work downloaded ok: /tmp/hpfx_amis/20/SRCN40_KWAL_122052___22701
-2024-01-12 15:52:45,153 [INFO] 127562 sarracenia.flowcb.log after_work downloaded ok: /tmp/hpfx_amis/20/SNVD20_KWNB_121900_RRX__17918
-2024-01-12 15:52:45,263 [INFO] 127562 sarracenia.flowcb.accept.posthourtree after_accept post_hour_tree: new_dir: /tmp/hpfx_amis/20
-2024-01-12 15:52:45,263 [INFO] 127562 sarracenia.flowcb.accept.posthourtree after_accept post_hour_tree: new_dir: /tmp/hpfx_amis/20
-2024-01-12 15:52:45,263 [INFO] 127562 sarracenia.flowcb.accept.posthourtree after_accept post_hour_tree: new_dir: /tmp/hpfx_amis/20
-2024-01-12 15:52:45,263 [INFO] 127562 sarracenia.flowcb.accept.posthourtree after_accept post_hour_tree: new_dir: /tmp/hpfx_amis/20
-2024-01-12 15:52:45,263 [INFO] 127562 sarracenia.flowcb.accept.posthourtree after_accept post_hour_tree: new_dir: /tmp/hpfx_amis/20
-2024-01-12 15:52:45,263 [INFO] 127562 sarracenia.flowcb.accept.posthourtree after_accept post_hour_tree: new_dir: /tmp/hpfx_amis/20
-2024-01-12 15:52:45,263 [INFO] 127562 sarracenia.flowcb.log after_accept accepted: (lag: 1.53 ) https://hpfx.collab.science.gc.ca /20240112/WXO-DD/bulletins/alphanumeric/20240112/SR/KWAL/20/SRMN70_KWAL_122052___39567
-2024-01-12 15:52:45,263 [INFO] 127562 sarracenia.flowcb.log after_accept accepted: (lag: 1.53 ) https://hpfx.collab.science.gc.ca /20240112/WXO-DD/bulletins/alphanumeric/20240112/SR/KWAL/20/SRCN40_KWAL_122052___5395
-2024-01-12 15:52:45,263 [INFO] 127562 sarracenia.flowcb.log after_accept accepted: (lag: 0.52 ) https://hpfx.collab.science.gc.ca /20240112/WXO-DD/bulletins/alphanumeric/20240112/SR/KWAL/20/SRWA20_KWAL_122052___2278
-2024-01-12 15:52:45,263 [INFO] 127562 sarracenia.flowcb.log after_accept accepted: (lag: 2.14 ) https://hpfx.collab.science.gc.ca /20240112/WXO-DD/bulletins/alphanumeric/20240112/SX/KWAL/20/SXCN40_KWAL_122052___60928
-2024-01-12 15:52:45,263 [INFO] 127562 sarracenia.flowcb.log after_accept accepted: (lag: 2.14 ) https://hpfx.collab.science.gc.ca /20240112/WXO-DD/bulletins/alphanumeric/20240112/SR/KWAL/20/SRME20_KWAL_122052___58721
-2024-01-12 15:52:45,263 [INFO] 127562 sarracenia.flowcb.log after_accept accepted: (lag: 2.14 ) https://hpfx.collab.science.gc.ca /20240112/WXO-DD/bulletins/alphanumeric/20240112/SN/KWNB/20/SNVD22_KWNB_121900_RRX__60599
-2024-01-12 15:52:45,735 [INFO] 127562 sarracenia.flowcb.log after_work downloaded ok: /tmp/hpfx_amis/20/SRMN70_KWAL_122052___39567
-2024-01-12 15:52:45,735 [INFO] 127562 sarracenia.flowcb.log after_work downloaded ok: /tmp/hpfx_amis/20/SRCN40_KWAL_122052___5395
-2024-01-12 15:52:45,735 [INFO] 127562 sarracenia.flowcb.log after_work downloaded ok: /tmp/hpfx_amis/20/SRWA20_KWAL_122052___2278
-2024-01-12 15:52:45,735 [INFO] 127562 sarracenia.flowcb.log after_work downloaded ok: /tmp/hpfx_amis/20/SXCN40_KWAL_122052___60928
-2024-01-12 15:52:45,735 [INFO] 127562 sarracenia.flowcb.log after_work downloaded ok: /tmp/hpfx_amis/20/SRME20_KWAL_122052___58721
-2024-01-12 15:52:45,735 [INFO] 127562 sarracenia.flowcb.log after_work downloaded ok: /tmp/hpfx_amis/20/SNVD22_KWNB_121900_RRX__60599
-2024-01-12 15:52:45,735 [INFO] 127562 sarracenia.flow please_stop ok, telling 5 callbacks about it.
-2024-01-12 15:52:45,735 [INFO] 127562 sarracenia.flow run starting last pass (without gather) through loop for cleanup.
-2024-01-12 15:52:45,741 [INFO] 127562 sarracenia.flow please_stop ok, telling 5 callbacks about it.
-2024-01-12 15:52:45,741 [INFO] 127562 sarracenia.flow run on_housekeeping pid: 127562 subscribe/hpfx_amis instance: 0
-2024-01-12 15:52:45,741 [INFO] 127562 sarracenia.flowcb.gather.message on_housekeeping messages: good: 12 bad: 0 bytes: 1.6 KiB average: 140 Bytes
-2024-01-12 15:52:45,741 [INFO] 127562 sarracenia.flowcb.retry on_housekeeping on_housekeeping
-2024-01-12 15:52:45,741 [INFO] 127562 sarracenia.diskqueue on_housekeeping work_retry_00 on_housekeeping
-2024-01-12 15:52:45,741 [INFO] 127562 sarracenia.diskqueue on_housekeeping No retry in list
-2024-01-12 15:52:45,741 [INFO] 127562 sarracenia.diskqueue on_housekeeping on_housekeeping elapse 0.000168
-2024-01-12 15:52:45,741 [INFO] 127562 sarracenia.diskqueue on_housekeeping post_retry_000 on_housekeeping
-2024-01-12 15:52:45,741 [INFO] 127562 sarracenia.diskqueue on_housekeeping No retry in list
-2024-01-12 15:52:45,741 [INFO] 127562 sarracenia.diskqueue on_housekeeping on_housekeeping elapse 0.000106
-2024-01-12 15:52:45,742 [INFO] 127562 sarracenia.flowcb.housekeeping.resources on_housekeeping Current Memory cpu_times: user=0.44 system=0.07
-2024-01-12 15:52:45,742 [INFO] 127562 sarracenia.flowcb.housekeeping.resources on_housekeeping Current mem usage: 92.3 MiB, accumulating count (12 or 12/100 so far) before self-setting threshold
-2024-01-12 15:52:45,742 [INFO] 127562 sarracenia.flowcb.log stats version: 3.00.51rc5, started: 5 seconds ago, last_housekeeping:  5.7 seconds ago
-2024-01-12 15:52:45,742 [INFO] 127562 sarracenia.flowcb.log stats messages received: 12, accepted: 12, rejected: 0   rate accepted: 100.0% or 2.1 m/s
-2024-01-12 15:52:45,742 [INFO] 127562 sarracenia.flowcb.log stats files transferred: 12 bytes: 2.2 KiB rate: 386 Bytes/sec
-2024-01-12 15:52:45,742 [INFO] 127562 sarracenia.flowcb.log stats lag: average: 3.30, maximum: 6.28
-2024-01-12 15:52:45,742 [INFO] 127562 sarracenia.flowcb.log on_housekeeping housekeeping
-2024-01-12 15:52:45,742 [INFO] 127562 sarracenia.flow run clean stop from run loop
+2025-05-06 16:06:58,203 402866 [WARNING] sarracenia.config parse_line ./dual_amis.conf:20 broker needs to appear before *subtopic* unless you need different queues to have different settings
+2025-05-06 16:06:58,204 402866 [INFO] sarracenia.config finalize subscribe/dual_amis.conf overriding batch for consistency with messageCountMax: 10
+2025-05-06 16:06:58,204 402866 [ERROR] sarracenia.config.subscription write failed: /home/peter/.cache/sr3/subscribe/hpfx_amis/subscriptions.json: [Errno 2] No such file or directory: &#39;/home/peter/.cache/sr3/subscribe/hpfx_amis/subscriptions.json&#39;
+2025-05-06 16:06:58,205 402866 [INFO] sarracenia.config finalize subscribe/hpfx_amis.conf overriding batch for consistency with messageCountMax: 10
+.2025-05-06 16:06:58,578 [INFO] 402871 sarracenia.config finalize subscribe/hpfx_amis overriding batch for consistency with messageCountMax: 10
+2025-05-06 16:06:58,580 [INFO] 402871 sarracenia.config finalize subscribe/hpfx_amis overriding batch for consistency with messageCountMax: 10
+2025-05-06 16:06:58,827 [INFO] 402871 sarracenia.moth.amqp _queueDeclare queue declared q_anonymous.subscribe.hpfx_amis.peter_fractal_54055521 (as: amqps://anonymous@hpfx.collab.science.gc.ca/), (messages waiting: 0)
+2025-05-06 16:06:58,827 [INFO] 402871 sarracenia.moth.amqp getSetup binding q_anonymous.subscribe.hpfx_amis.peter_fractal_54055521 with v02.post.*.WXO-DD.bulletins.alphanumeric.# to xpublic (as: amqps://anonymous@hpfx.collab.science.gc.ca/)
+2025-05-06 16:06:59,466 [INFO] 402871 sarracenia.flowcb.accept.posthourtree after_accept post_hour_tree: new_dir: /tmp/hpfx_amis/20
+2025-05-06 16:06:59,466 [INFO] 402871 sarracenia.flowcb.accept.posthourtree after_accept post_hour_tree: new_dir: /tmp/hpfx_amis/20
+2025-05-06 16:06:59,466 [INFO] 402871 sarracenia.flowcb.accept.posthourtree after_accept post_hour_tree: new_dir: /tmp/hpfx_amis/20
+2025-05-06 16:06:59,466 [INFO] 402871 sarracenia.flowcb.accept.posthourtree after_accept post_hour_tree: new_dir: /tmp/hpfx_amis/20
+2025-05-06 16:06:59,466 [INFO] 402871 sarracenia.flowcb.accept.posthourtree after_accept post_hour_tree: new_dir: /tmp/hpfx_amis/20
+2025-05-06 16:06:59,466 [INFO] 402871 sarracenia.flowcb.accept.posthourtree after_accept post_hour_tree: new_dir: /tmp/hpfx_amis/20
+2025-05-06 16:06:59,466 [INFO] 402871 sarracenia.flowcb.accept.posthourtree after_accept post_hour_tree: new_dir: /tmp/hpfx_amis/20
+2025-05-06 16:06:59,466 [INFO] 402871 sarracenia.flowcb.accept.posthourtree after_accept post_hour_tree: new_dir: /tmp/hpfx_amis/20
+2025-05-06 16:06:59,466 [INFO] 402871 sarracenia.flowcb.accept.posthourtree after_accept post_hour_tree: new_dir: /tmp/hpfx_amis/20
+2025-05-06 16:06:59,466 [INFO] 402871 sarracenia.flowcb.accept.posthourtree after_accept post_hour_tree: new_dir: /tmp/hpfx_amis/20
+2025-05-06 16:06:59,466 [INFO] 402871 sarracenia.flowcb.log after_accept accepted: (lag: 5.79 )  exchange: xpublic subtopic: 20250506.WXO-DD.bulletins.alphanumeric.20250506.SR.KWAL.20 a file with baseUrl: https://hpfx.collab.science.gc.ca relPath: /20250506/WXO-DD/bulletins/alphanumeric/20250506/SR/KWAL/20/SRCN40_KWAL_062006___19352 sundew_extension: cvt_nws_bulletins-sr:KWAL:SR:3:Direct:20250506200652 id: W/hjsEQ size: 238
+2025-05-06 16:06:59,466 [INFO] 402871 sarracenia.flowcb.log after_accept accepted: (lag: 5.78 )  exchange: xpublic subtopic: 20250506.WXO-DD.bulletins.alphanumeric.20250506.SX.KWAL.20 a file with baseUrl: https://hpfx.collab.science.gc.ca relPath: /20250506/WXO-DD/bulletins/alphanumeric/20250506/SX/KWAL/20/SXCN40_KWAL_062005___3054 sundew_extension: cvt_nws_bulletins-sr:KWAL:SX:3:Direct:20250506200652 id: K/SczyV size: 195
+2025-05-06 16:06:59,467 [INFO] 402871 sarracenia.flowcb.log after_accept accepted: (lag: 5.78 )  exchange: xpublic subtopic: 20250506.WXO-DD.bulletins.alphanumeric.20250506.SR.KWAL.20 a file with baseUrl: https://hpfx.collab.science.gc.ca relPath: /20250506/WXO-DD/bulletins/alphanumeric/20250506/SR/KWAL/20/SRCN40_KWAL_062005___7476 sundew_extension: cvt_nws_bulletins-sr:KWAL:SR:3:Direct:20250506200652 id: PlV6kl2 size: 278
+2025-05-06 16:06:59,467 [INFO] 402871 sarracenia.flowcb.log after_accept accepted: (lag: 4.78 )  exchange: xpublic subtopic: 20250506.WXO-DD.bulletins.alphanumeric.20250506.SR.KWAL.20 a file with baseUrl: https://hpfx.collab.science.gc.ca relPath: /20250506/WXO-DD/bulletins/alphanumeric/20250506/SR/KWAL/20/SRCN40_KWAL_062006___54370 sundew_extension: cvt_nws_bulletins-sr:KWAL:SR:3:Direct:20250506200653 id: /+8SMjn size: 325
+2025-05-06 16:06:59,467 [INFO] 402871 sarracenia.flowcb.log after_accept accepted: (lag: 4.78 )  exchange: xpublic subtopic: 20250506.WXO-DD.bulletins.alphanumeric.20250506.SR.KWAL.20 a file with baseUrl: https://hpfx.collab.science.gc.ca relPath: /20250506/WXO-DD/bulletins/alphanumeric/20250506/SR/KWAL/20/SRME20_KWAL_062006___19563 sundew_extension: cvt_nws_bulletins-sr:KWAL:SR:3:Direct:20250506200653 id: eIOVZ35 size: 100
+2025-05-06 16:06:59,467 [INFO] 402871 sarracenia.flowcb.log after_accept accepted: (lag: 4.78 )  exchange: xpublic subtopic: 20250506.WXO-DD.bulletins.alphanumeric.20250506.SR.KWAL.20 a file with baseUrl: https://hpfx.collab.science.gc.ca relPath: /20250506/WXO-DD/bulletins/alphanumeric/20250506/SR/KWAL/20/SRMN20_KWAL_062006___8986 sundew_extension: cvt_nws_bulletins-sr:KWAL:SR:3:Direct:20250506200653 id: +HgK9Z6 size: 103
+2025-05-06 16:06:59,467 [INFO] 402871 sarracenia.flowcb.log after_accept accepted: (lag: 4.78 )  exchange: xpublic subtopic: 20250506.WXO-DD.bulletins.alphanumeric.20250506.SX.KWNB.20 a file with baseUrl: https://hpfx.collab.science.gc.ca relPath: /20250506/WXO-DD/bulletins/alphanumeric/20250506/SX/KWNB/20/SXVX49_KWNB_061900_RRX__32602 sundew_extension: cvt_nws_bulletins-sr:KWNB:SX:3:Direct:20250506200653 id: Uklc8jx size: 2613
+2025-05-06 16:06:59,467 [INFO] 402871 sarracenia.flowcb.log after_accept accepted: (lag: 3.78 )  exchange: xpublic subtopic: 20250506.WXO-DD.bulletins.alphanumeric.20250506.SX.KWAL.20 a file with baseUrl: https://hpfx.collab.science.gc.ca relPath: /20250506/WXO-DD/bulletins/alphanumeric/20250506/SX/KWAL/20/SXCN40_KWAL_062006___59916 sundew_extension: cvt_nws_bulletins-sr:KWAL:SX:3:Direct:20250506200654 id: tXWCIvZ size: 170
+2025-05-06 16:06:59,467 [INFO] 402871 sarracenia.flowcb.log after_accept accepted: (lag: 3.78 )  exchange: xpublic subtopic: 20250506.WXO-DD.bulletins.alphanumeric.20250506.SX.KWNB.20 a file with baseUrl: https://hpfx.collab.science.gc.ca relPath: /20250506/WXO-DD/bulletins/alphanumeric/20250506/SX/KWNB/20/SXVX69_KWNB_061800_RRX__7246 sundew_extension: cvt_nws_bulletins-sr:KWNB:SX:3:Direct:20250506200654 id: r91B6bR size: 371
+2025-05-06 16:06:59,467 [INFO] 402871 sarracenia.flowcb.log after_accept accepted: (lag: 3.78 )  exchange: xpublic subtopic: 20250506.WXO-DD.bulletins.alphanumeric.20250506.SX.KWAL.20 a file with baseUrl: https://hpfx.collab.science.gc.ca relPath: /20250506/WXO-DD/bulletins/alphanumeric/20250506/SX/KWAL/20/SXCN40_KWAL_062006___64006 sundew_extension: cvt_nws_bulletins-sr:KWAL:SX:3:Direct:20250506200654 id: D5sRlYG size: 200
+2025-05-06 16:07:00,310 [INFO] 402871 sarracenia.flowcb.log after_work downloaded ok: /tmp/hpfx_amis/20/SRCN40_KWAL_062006___19352
+2025-05-06 16:07:00,310 [INFO] 402871 sarracenia.flowcb.log after_work downloaded ok: /tmp/hpfx_amis/20/SXCN40_KWAL_062005___3054
+2025-05-06 16:07:00,310 [INFO] 402871 sarracenia.flowcb.log after_work downloaded ok: /tmp/hpfx_amis/20/SRCN40_KWAL_062005___7476
+2025-05-06 16:07:00,310 [INFO] 402871 sarracenia.flowcb.log after_work downloaded ok: /tmp/hpfx_amis/20/SRCN40_KWAL_062006___54370
+2025-05-06 16:07:00,310 [INFO] 402871 sarracenia.flowcb.log after_work downloaded ok: /tmp/hpfx_amis/20/SRME20_KWAL_062006___19563
+2025-05-06 16:07:00,310 [INFO] 402871 sarracenia.flowcb.log after_work downloaded ok: /tmp/hpfx_amis/20/SRMN20_KWAL_062006___8986
+2025-05-06 16:07:00,310 [INFO] 402871 sarracenia.flowcb.log after_work downloaded ok: /tmp/hpfx_amis/20/SXVX49_KWNB_061900_RRX__32602
+2025-05-06 16:07:00,310 [INFO] 402871 sarracenia.flowcb.log after_work downloaded ok: /tmp/hpfx_amis/20/SXCN40_KWAL_062006___59916
+2025-05-06 16:07:00,310 [INFO] 402871 sarracenia.flowcb.log after_work downloaded ok: /tmp/hpfx_amis/20/SXVX69_KWNB_061800_RRX__7246
+2025-05-06 16:07:00,310 [INFO] 402871 sarracenia.flowcb.log after_work downloaded ok: /tmp/hpfx_amis/20/SXCN40_KWAL_062006___64006
+2025-05-06 16:07:00,311 [INFO] 402871 sarracenia.flow run 11 messages processed &gt; messageCountMax 10
+2025-05-06 16:07:00,311 [INFO] 402871 sarracenia.flow please_stop asked to stop
+2025-05-06 16:07:00,311 [INFO] 402871 sarracenia.moth please_stop asked to stop
+2025-05-06 16:07:00,311 [INFO] 402871 sarracenia.flow _runHousekeeping on_housekeeping pid: 402871 subscribe/hpfx_amis instance: 0
+2025-05-06 16:07:00,311 [INFO] 402871 sarracenia.flowcb.gather.message on_housekeeping from amqps://anonymous@hpfx.collab.science.gc.ca/ messages: good: 10 bad: 0 bytes: 1.4KiB average: 139Bytes
+2025-05-06 16:07:00,311 [INFO] 402871 sarracenia.flowcb.housekeeping.resources on_housekeeping Current cpu_times: user=0.38 system=0.08
+2025-05-06 16:07:00,311 [INFO] 402871 sarracenia.flowcb.housekeeping.resources on_housekeeping Current mem usage: 124.2MiB, accumulating count (10 or 10/100 so far) before self-setting threshold
+2025-05-06 16:07:00,311 [INFO] 402871 sarracenia.flowcb.log stats version: 3.00.59rc1, started: a second ago, last_housekeeping:  1.7 seconds ago
+2025-05-06 16:07:00,311 [INFO] 402871 sarracenia.flowcb.log stats messages received: 10, accepted: 10, rejected: 0   rate accepted: 100.0% or 5.8 m/s
+2025-05-06 16:07:00,311 [INFO] 402871 sarracenia.flowcb.log stats files transferred: 10 bytes: 4.5KiB rate: 2.6KiB/sec
+2025-05-06 16:07:00,311 [INFO] 402871 sarracenia.flowcb.log stats lag: average: 4.78, maximum: 5.79
+2025-05-06 16:07:00,312 [INFO] 402871 sarracenia.flow run 11 messages processed &gt; messageCountMax 10
+2025-05-06 16:07:00,312 [INFO] 402871 sarracenia.flow please_stop asked to stop
+2025-05-06 16:07:00,312 [INFO] 402871 sarracenia.moth please_stop asked to stop
+2025-05-06 16:07:00,312 [INFO] 402871 sarracenia.flow _runHousekeeping on_housekeeping pid: 402871 subscribe/hpfx_amis instance: 0
+2025-05-06 16:07:00,312 [INFO] 402871 sarracenia.flowcb.gather.message on_housekeeping from amqps://anonymous@hpfx.collab.science.gc.ca/ messages: good: 0 bad: 0 bytes: 0Bytes average: 0Bytes
+2025-05-06 16:07:00,312 [INFO] 402871 sarracenia.flowcb.housekeeping.resources on_housekeeping Current cpu_times: user=0.38 system=0.08
+2025-05-06 16:07:00,312 [INFO] 402871 sarracenia.flowcb.housekeeping.resources on_housekeeping Current mem usage: 124.2MiB, accumulating count (10 or 10/100 so far) before self-setting threshold
+2025-05-06 16:07:00,312 [INFO] 402871 sarracenia.flowcb.log stats version: 3.00.59rc1, started: a second ago, last_housekeeping:  0.0 seconds ago
+2025-05-06 16:07:00,312 [INFO] 402871 sarracenia.flowcb.log stats messages received: 0, accepted: 0, rejected: 0   rate accepted: 0.0% or 0.0 m/s
+2025-05-06 16:07:00,312 [INFO] 402871 sarracenia.flowcb.log stats files transferred: 0 bytes: 0Bytes rate: 0Bytes/sec
+2025-05-06 16:07:00,350 [INFO] 402871 sarracenia.flow close flow/close completed cleanly pid: 402871 subscribe/hpfx_amis instance: 0
+
 2024-01-12 15:52:45,763 [INFO] 127562 sarracenia.flowcb.gather.message on_stop closing
 2024-01-12 15:52:45,764 [INFO] 127562 sarracenia.flow close flow/close completed cleanly pid: 127562 subscribe/hpfx_amis instance: 0
 
@@ -421,7 +427,7 @@ worklist.directories_ok --&gt; list of directories created during processing.
 <h2>Sample Flow Callback Class<a class="headerlink" href="#Sample-Flow-Callback-Class" title="Link to this heading"></a></h2>
 <p>With the above information about option handling, worklists, and logging, we are ready to understand the wistree module we just used. As a very simple example, here is the source code of the callback used above is given below:</p>
 <div class="nbinput nblast docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[ ]:
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[6]:
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="sd">&quot;&quot;&quot;</span>
@@ -458,7 +464,7 @@ worklist.directories_ok --&gt; list of directories created during processing.
 <h2>Sample Flowcb Sub-Class<a class="headerlink" href="#Sample-Flowcb-Sub-Class" title="Link to this heading"></a></h2>
 <p>This wistree.py class, shows more aspects of the callback API, with an <strong>init</strong>.py as well as bringing in an externam python module, as well as adding fields to the messages. The Wistree class accepts files whose names begin with AHL’s (World Meteorological Organization Abbreviated Header Lines for meteorological products), and renames the directory tree to a different standard, the evolving one for the WMO WIS 2.0 (for more information on that module: <a class="reference external" href="https://github.com/wmo-im/GTStoWIS2">https://github.com/wmo-im/GTStoWIS2</a>)</p>
 <div class="nbinput nblast docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[6]:
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[9]:
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span>  <span class="kn">from</span> <span class="nn">sarracenia.flowcb</span> <span class="kn">import</span> <span class="n">FlowCB</span>
@@ -472,12 +478,13 @@ worklist.directories_ok --&gt; list of directories created during processing.
 
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">options</span><span class="p">):</span>
 
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">options</span><span class="p">,</span><span class="n">logger</span><span class="p">)</span>
         <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">options</span><span class="p">,</span> <span class="s1">&#39;logLevel&#39;</span><span class="p">):</span>
             <span class="n">logger</span><span class="o">.</span><span class="n">setLevel</span><span class="p">(</span><span class="nb">getattr</span><span class="p">(</span><span class="n">logging</span><span class="p">,</span> <span class="n">options</span><span class="o">.</span><span class="n">logLevel</span><span class="o">.</span><span class="n">upper</span><span class="p">()))</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="n">logger</span><span class="o">.</span><span class="n">setLevel</span><span class="p">(</span><span class="n">logging</span><span class="o">.</span><span class="n">INFO</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">topic_builder</span><span class="o">=</span><span class="n">GTStoWIS2</span><span class="o">.</span><span class="n">GTStoWIS2</span><span class="p">()</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">o</span> <span class="o">=</span> <span class="n">options</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">date_pattern</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">compile</span><span class="p">(</span><span class="s2">&quot;^[0-9]</span><span class="si">{8}</span><span class="s2">$&quot;</span><span class="p">)</span>
 
 
     <span class="k">def</span> <span class="nf">after_accept</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">worklist</span><span class="p">):</span>
@@ -486,31 +493,55 @@ worklist.directories_ok --&gt; list of directories created during processing.
 
         <span class="k">for</span> <span class="n">msg</span> <span class="ow">in</span> <span class="n">worklist</span><span class="o">.</span><span class="n">incoming</span><span class="p">:</span>
 
-            <span class="c1"># fix file name suffix.</span>
-            <span class="n">type_suffix</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">topic_builder</span><span class="o">.</span><span class="n">mapAHLtoExtension</span><span class="p">(</span> <span class="n">msg</span><span class="p">[</span><span class="s1">&#39;new_file&#39;</span><span class="p">][</span><span class="mi">0</span><span class="p">:</span><span class="mi">2</span><span class="p">]</span> <span class="p">)</span>
-            <span class="n">tpfx</span><span class="o">=</span><span class="n">msg</span><span class="p">[</span><span class="s1">&#39;subtopic&#39;</span><span class="p">]</span>
-
-            <span class="c1"># input has relpath=/YYYYMMDDTHHMM/... + pubTime</span>
-            <span class="c1"># need to move the date from relPath to BaseDir, adding the T hour from pubTime.</span>
             <span class="k">try</span><span class="p">:</span>
-                <span class="n">new_baseSubDir</span><span class="o">=</span><span class="n">tpfx</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">+</span><span class="n">msg</span><span class="p">[</span><span class="s1">&#39;pubTime&#39;</span><span class="p">][</span><span class="mi">8</span><span class="p">:</span><span class="mi">11</span><span class="p">]</span>
-                <span class="n">t</span><span class="o">=</span><span class="s1">&#39;.&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">tpfx</span><span class="p">[</span><span class="mi">0</span><span class="p">:</span><span class="mi">2</span><span class="p">])</span><span class="o">+</span><span class="s1">&#39;.&#39;</span><span class="o">+</span><span class="n">new_baseSubDir</span>
+                <span class="c1"># fix file name suffix.</span>
+                <span class="n">type_suffix</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">topic_builder</span><span class="o">.</span><span class="n">mapAHLtoExtension</span><span class="p">(</span><span class="n">msg</span><span class="p">[</span><span class="s1">&#39;new_file&#39;</span><span class="p">][</span><span class="mi">0</span><span class="p">:</span><span class="mi">2</span><span class="p">])</span>
+
+                <span class="c1"># /20181218/UCAR-UNIDATA/WMO-BULLETINS/IX/21/IXTD99_KNES_182147_9d73fc80e12fca52a06bf41c716cd718.cap</span>
+                <span class="n">tpfx</span> <span class="o">=</span> <span class="n">msg</span><span class="p">[</span><span class="s1">&#39;subtopic&#39;</span><span class="p">]</span>
+
+                <span class="c1"># input has relpath=/YYYYMMDDTHHMM/... + pubTime</span>
+                <span class="c1"># need to move the date from relPath to BaseDir, adding the T hour from pubTime.</span>
+                <span class="n">msg</span><span class="p">[</span><span class="s1">&#39;id&#39;</span><span class="p">]</span><span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">uuid</span><span class="o">.</span><span class="n">uuid4</span><span class="p">())</span>
+
+                <span class="c1"># input has relpath=/YYYYMMDD/... + pubTime</span>
+                <span class="c1"># need to move the date from relPath to BaseDir, adding the T hour from pubTime.</span>
+                <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">date_pattern</span><span class="o">.</span><span class="n">match</span><span class="p">(</span><span class="n">tpfx</span><span class="p">[</span><span class="mi">0</span><span class="p">]):</span>
+                    <span class="n">new_baseSubDir</span> <span class="o">=</span> <span class="n">tpfx</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">+</span> <span class="n">msg</span><span class="p">[</span><span class="s1">&#39;pubTime&#39;</span><span class="p">][</span><span class="mi">8</span><span class="p">:</span><span class="mi">11</span><span class="p">]</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="c1"># or default to using pubTime...</span>
+                    <span class="n">new_baseSubDir</span> <span class="o">=</span> <span class="n">msg</span><span class="p">[</span><span class="s1">&#39;pubTime&#39;</span><span class="p">][</span><span class="mi">0</span><span class="p">:</span><span class="mi">11</span><span class="p">]</span>
+
+
                 <span class="n">new_baseDir</span> <span class="o">=</span> <span class="n">msg</span><span class="p">[</span><span class="s1">&#39;new_dir&#39;</span><span class="p">]</span> <span class="o">+</span> <span class="n">os</span><span class="o">.</span><span class="n">sep</span> <span class="o">+</span> <span class="n">new_baseSubDir</span>
-                <span class="n">new_relDir</span> <span class="o">=</span> <span class="s1">&#39;WIS&#39;</span> <span class="o">+</span> <span class="n">os</span><span class="o">.</span><span class="n">sep</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">topic_builder</span><span class="o">.</span><span class="n">mapAHLtoTopic</span><span class="p">(</span><span class="n">msg</span><span class="p">[</span><span class="s1">&#39;new_file&#39;</span><span class="p">])</span>
-                <span class="n">new_dir</span> <span class="o">=</span> <span class="n">new_baseDir</span> <span class="o">+</span> <span class="n">os</span><span class="o">.</span><span class="n">sep</span> <span class="o">+</span> <span class="n">new_relDir</span>
+                <span class="n">new_relDir</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">uuid</span><span class="o">.</span><span class="n">uuid4</span><span class="p">())</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s1">&#39;-&#39;</span><span class="p">,</span><span class="s1">&#39;/&#39;</span><span class="p">)</span>
+                <span class="n">msg</span><span class="p">[</span><span class="s1">&#39;topic&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;WIS&#39;</span> <span class="o">+</span> <span class="n">os</span><span class="o">.</span><span class="n">sep</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">topic_builder</span><span class="o">.</span><span class="n">mapAHLtoTopic</span><span class="p">(</span> <span class="n">msg</span><span class="p">[</span><span class="s1">&#39;new_file&#39;</span><span class="p">])</span>
+                <span class="n">msg</span><span class="p">[</span><span class="s1">&#39;new_file&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">uuid</span><span class="o">.</span><span class="n">uuid4</span><span class="p">())</span>
 
                 <span class="k">if</span> <span class="n">msg</span><span class="p">[</span><span class="s1">&#39;new_file&#39;</span><span class="p">][</span><span class="o">-</span><span class="nb">len</span><span class="p">(</span><span class="n">type_suffix</span><span class="p">):]</span> <span class="o">!=</span> <span class="n">type_suffix</span><span class="p">:</span>
-                    <span class="n">new_file</span> <span class="o">=</span> <span class="n">msg</span><span class="p">[</span><span class="s1">&#39;new_file&#39;</span><span class="p">]</span><span class="o">+</span><span class="n">type_suffix</span>
+                    <span class="n">new_file</span> <span class="o">=</span> <span class="n">msg</span><span class="p">[</span><span class="s1">&#39;new_file&#39;</span><span class="p">]</span> <span class="o">+</span> <span class="n">type_suffix</span>
                 <span class="k">else</span><span class="p">:</span>
                     <span class="n">new_file</span> <span class="o">=</span> <span class="n">msg</span><span class="p">[</span><span class="s1">&#39;new_file&#39;</span><span class="p">]</span>
 
-                <span class="n">msg</span><span class="o">.</span><span class="n">updatePaths</span><span class="p">(</span> <span class="bp">self</span><span class="o">.</span><span class="n">o</span><span class="p">,</span> <span class="n">new_baseDir</span> <span class="o">+</span> <span class="n">os</span><span class="o">.</span><span class="n">sep</span> <span class="o">+</span> <span class="n">new_relDir</span><span class="p">,</span> <span class="n">new_file</span> <span class="p">)</span>
+                <span class="k">if</span> <span class="n">type_suffix</span> <span class="o">==</span> <span class="s1">&#39;bufr&#39;</span> <span class="p">:</span>
+                    <span class="n">mtype</span><span class="o">=</span><span class="s1">&#39;application/x-bufr&#39;</span>
+                <span class="k">elif</span> <span class="n">type_suffix</span> <span class="o">==</span> <span class="s1">&#39;grib&#39;</span><span class="p">:</span>
+                    <span class="n">mtype</span><span class="o">=</span><span class="s1">&#39;application/x-grib&#39;</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="n">mtype</span><span class="o">=</span><span class="s1">&#39;unknown&#39;</span>
+
+                <span class="n">msg</span><span class="p">[</span><span class="s1">&#39;links&#39;</span><span class="p">]</span> <span class="o">=</span>  <span class="p">{</span> <span class="s2">&quot;href&quot;</span><span class="p">:</span> <span class="n">msg</span><span class="p">[</span><span class="s1">&#39;baseUrl&#39;</span><span class="p">]</span> <span class="o">+</span> <span class="s1">&#39;/&#39;</span> <span class="o">+</span> <span class="n">msg</span><span class="p">[</span><span class="s1">&#39;relPath&#39;</span><span class="p">],</span> <span class="s1">&#39;rel&#39;</span><span class="p">:</span><span class="s1">&#39;canonical&#39;</span><span class="p">,</span> <span class="s1">&#39;type&#39;</span><span class="p">:</span> <span class="n">mtype</span> <span class="p">}</span>
+                <span class="n">msg</span><span class="o">.</span><span class="n">updatePaths</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">o</span><span class="p">,</span> <span class="n">new_baseDir</span> <span class="o">+</span> <span class="n">os</span><span class="o">.</span><span class="n">sep</span> <span class="o">+</span> <span class="n">new_relDir</span><span class="p">,</span> <span class="n">new_file</span><span class="p">)</span>
+
             <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">ex</span><span class="p">:</span>
-                <span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span> <span class="s2">&quot;skipped&quot;</span> <span class="p">,</span> <span class="n">exc_info</span><span class="o">=</span><span class="kc">True</span> <span class="p">)</span>
+                <span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="s2">&quot;failed to map </span><span class="si">%s</span><span class="s2"> to a topic, skipped.&quot;</span> <span class="o">%</span>
+                             <span class="n">msg</span><span class="p">[</span><span class="s1">&#39;new_file&#39;</span><span class="p">],</span>
+                             <span class="n">exc_info</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
                 <span class="n">worklist</span><span class="o">.</span><span class="n">failed</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span>
                 <span class="k">continue</span>
 
-            <span class="n">msg</span><span class="p">[</span><span class="s1">&#39;_deleteOnPost&#39;</span><span class="p">]</span> <span class="o">|=</span> <span class="nb">set</span><span class="p">(</span> <span class="p">[</span> <span class="s1">&#39;from_cluster&#39;</span><span class="p">,</span> <span class="s1">&#39;sum&#39;</span><span class="p">,</span> <span class="s1">&#39;to_clusters&#39;</span> <span class="p">]</span> <span class="p">)</span>
+
+            <span class="n">msg</span><span class="p">[</span><span class="s1">&#39;_deleteOnPost&#39;</span><span class="p">]</span> <span class="o">|=</span> <span class="nb">set</span><span class="p">(</span> <span class="p">[</span> <span class="s1">&#39;filename&#39;</span><span class="p">,</span> <span class="s1">&#39;from_cluster&#39;</span><span class="p">,</span> <span class="s1">&#39;source&#39;</span><span class="p">,</span> <span class="s1">&#39;sum&#39;</span><span class="p">,</span> <span class="s1">&#39;to_clusters&#39;</span><span class="p">,</span>  <span class="p">]</span> <span class="p">)</span>
             <span class="n">new_incoming</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span>
 
         <span class="n">worklist</span><span class="o">.</span><span class="n">incoming</span><span class="o">=</span><span class="n">new_incoming</span>
@@ -532,7 +563,7 @@ worklist.directories_ok --&gt; list of directories created during processing.
 <h2>Plugins that Process a file after it is Downloaded<a class="headerlink" href="#Plugins-that-Process-a-file-after-it-is-Downloaded" title="Link to this heading"></a></h2>
 <p>A common use case is for plugins with an <em>after_work</em> entry point to read the file after it is downloaded and transform it into some derived product with a different name. So the new file is created as in the previous section. The message for the downloaded file still needs to be moved onto a list to ensure that it is acknowledged to the broker. Such an entry point would look like this:</p>
 <div class="nbinput nblast docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[9]:
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[10]:
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><br/><span></span>    <span class="k">def</span> <span class="nf">after_work</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">worklist</span><span class="p">):</span>
@@ -591,14 +622,6 @@ fake_stat.st_size = ... again will vary by context.
 <li><p><a class="reference external" href="https://github.com/MetPX/Sarracenia/blob/development/sarracenia/flowcb/post/message.py">sarracenia.flowcb.post.message</a> is a class that implements posting messages to Message queue protocol flows</p></li>
 <li><p><a class="reference external" href="https://github.com/MetPX/Sarracenia/blob/development/sarracenia/flowcb/retry.py">sarracenia.flowcb.retry</a> when the transfer of a file fails. Sarracenia needs to persist the relevant message to a state file for a later time when it can be tried again.</p></li>
 </ul>
-<div class="nbinput nblast docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[ ]:
-</pre></div>
-</div>
-<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span>
-</pre></div>
-</div>
-</div>
 </section>
 </section>
 

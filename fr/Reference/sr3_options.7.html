@@ -573,7 +573,8 @@ Voir <a class="reference external" href="sr3_cpump.1.html">sr3_cpump(1)</a> pour
 <section id="broker">
 <h4>broker<a class="headerlink" href="#broker" title="Link to this heading"></a></h4>
 <p><strong>broker [amqp|mqtt]{s}://&lt;utilisateur&gt;:&lt;mot-de-passe&gt;&#64;&lt;hoteDuCourtier&gt;[:port]/&lt;vhost&gt;</strong></p>
-<p>Un URI est utilisé pour configurer une connexion à une pompe de messages d’annonce, soit
+<p>L´option <em>broker</em> démarre la déclaration d´une abonnement à une source de données.
+L’URI fournit est utilisé pour configurer une connexion à une pompe de messages d’annonce, soit
 un courtier MQTT ou AMQP. Certains composants de Sarracenia fixent un défaut raisonnable pour
 cette option. Il faut fournir l’utilisateur normal, l’hôte, et le port de connexion.
 Dans la plupart des fichiers de configurations,
@@ -592,6 +593,9 @@ L’option broker indique à chaque composant quel courtier contacter.</p>
 aux échanges et aux thèmes pour déterminer le messages d’annonce en question.</p>
 <p>l´option <em>subtopic</em> devrait apparaître après le paramètre <em>broker</em> dans les fichiers
 pour que les liaisons de sujet s’appliquent à la file d’attente spécifié.</p>
+<p>Une fois qu’un sous-sujet est donné, on peut configurer des courtiers supplémentaires
+comme sources pour une seule configuration en cours d’exécution, terminée par un
+sous-sujet correspondant supplémentaire.</p>
 </section>
 <section id="bufsize-size-defaut-1m">
 <h4>bufSize &lt;size&gt; (défaut: 1m)<a class="headerlink" href="#bufsize-size-defaut-1m" title="Link to this heading"></a></h4>
@@ -1391,7 +1395,8 @@ mots de passe dans les URLs.</p>
 </section>
 <section id="post-broker-url">
 <h4>post_broker &lt;url&gt;<a class="headerlink" href="#post-broker-url" title="Link to this heading"></a></h4>
-<p>l’URL du courtier pour publier des messages d’annonce. Voir <a class="reference internal" href="#broker"><span class="std std-ref">broker</span></a> pour plus de détails.</p>
+<p>l’URL du courtier pour publier des messages d’annonce. Voir <a class="reference internal" href="#broker"><span class="std std-ref">broker</span></a> pour plus de détails.
+Si plusieurs courtiers post_brokers sont fournis, les messages seront envoyés vers plusieurs destinations.</p>
 </section>
 <section id="post-exchange-name-defaut-xpublic">
 <h4>post_exchange &lt;name&gt; (défaut: xpublic)<a class="headerlink" href="#post-exchange-name-defaut-xpublic" title="Link to this heading"></a></h4>
@@ -1812,6 +1817,7 @@ Il est préférable que le sonde utilise explicitement les paramètres <em>sched
 nœuds. Statehost ajoute le nom du nœud après le répertoire de cache pour le rendre
 unique à chaque nœud. Ainsi, chaque nœud a ses propres fichiers d’état et journaux.
 Par exemple, sur un nœud nommé goofy, ~/.cache/sarra/log/ devient ~/.cache/sarra/goofy/log/.</p>
+<p><strong>L’option *statehost* doit être placé au début du fichier de configuration</strong></p>
 </section>
 <section id="strip-count-regexp-defaut-0">
 <h4>strip &lt;count|regexp&gt; (défaut: 0)<a class="headerlink" href="#strip-count-regexp-defaut-0" title="Link to this heading"></a></h4>

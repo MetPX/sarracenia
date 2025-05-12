@@ -566,7 +566,8 @@ See <a class="reference external" href="sr3_cpump.1.html">sr3_cpump(1)</a> for d
 <section id="broker">
 <h4>broker<a class="headerlink" href="#broker" title="Link to this heading"></a></h4>
 <p><strong>broker [amqp|mqtt]{s}://&lt;user&gt;:&lt;password&gt;&#64;&lt;brokerhost&gt;[:port]/&lt;vhost&gt;</strong></p>
-<p>A URI is used to configure a connection to a notification message pump, either
+<p>The <em>broker</em> option is used to identify an upstream source of data.
+the URI argument is used to configure a connection to a notification message pump, either
 an MQTT or an AMQP broker. Some Sarracenia components set a reasonable default for
 that option.  provide the normal user,host,port of connections. In most configuration files,
 the password is missing. The password is normally only included in the
@@ -584,6 +585,9 @@ The broker option tell each component which broker to contact.</p>
 to exchanges and topics to determine the notification messages of interest.</p>
 <p>This <em>subtopic</em> option should appear after the <em>broker</em> setting in files
 for the setting to apply to a given queue.</p>
+<p>After a subtopic is given, one can configure additional brokers as sources
+for a single running configuration, terminated by an additional corresponding
+subtopic.</p>
 </section>
 <section id="bufsize-size-default-1mb">
 <h4>bufSize &lt;size&gt; (default: 1MB)<a class="headerlink" href="#bufsize-size-default-1mb" title="Link to this heading"></a></h4>
@@ -1407,7 +1411,8 @@ passwords in urls.</p>
 </section>
 <section id="post-broker-url">
 <h4>post_broker &lt;url&gt;<a class="headerlink" href="#post-broker-url" title="Link to this heading"></a></h4>
-<p>the broker url to post messages to see <a class="reference internal" href="#broker"><span class="std std-ref">broker</span></a> for details</p>
+<p>The broker url to post messages to after processing. See <a class="reference internal" href="#broker"><span class="std std-ref">broker</span></a> for details
+If multiple post_brokers are given, messages will be posted to multiple destinations.</p>
 </section>
 <section id="post-exchange-name-default-xpublic">
 <h4>post_exchange &lt;name&gt; (default: xpublic)<a class="headerlink" href="#post-exchange-name-default-xpublic" title="Link to this heading"></a></h4>
@@ -1828,6 +1833,7 @@ for compatibility reasons.  It is better for poll to use <em>scheduled</em> sett
 nodes. Statehost adds the node name after the cache directory to make it
 unique to each node. So each node has it’s own statefiles and logs.
 example, on a node named goofy,  ~/.cache/sarra/log/ becomes ~/.cache/sarra/goofy/log.</p>
+<p><strong>Because *statehost* modifies settings storage, it must be at the beginning of a configuration file</strong></p>
 </section>
 <section id="strip-count-regexp-default-0">
 <h4>strip &lt;count|regexp&gt; (default: 0)<a class="headerlink" href="#strip-count-regexp-default-0" title="Link to this heading"></a></h4>

@@ -87,6 +87,7 @@
 <span class="c1"># Copyright (C) Her Majesty The Queen in Right of Canada, Environment Canada, 2008-2020</span>
 <span class="c1">#</span>
 
+<span class="kn">import</span> <span class="nn">copy</span>
 <span class="kn">import</span> <span class="nn">logging</span>
 
 <span class="kn">import</span> <span class="nn">sarracenia.moth</span>
@@ -107,18 +108,23 @@
 
         <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">options</span><span class="p">,</span><span class="n">logger</span><span class="p">)</span>
 
-        <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">o</span><span class="p">,</span> <span class="s1">&#39;post_broker&#39;</span><span class="p">):</span>
-            <span class="n">props</span> <span class="o">=</span> <span class="n">sarracenia</span><span class="o">.</span><span class="n">moth</span><span class="o">.</span><span class="n">default_options</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">hasattr</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">o</span><span class="p">,</span> <span class="s1">&#39;post_broker&#39;</span><span class="p">):</span>
+            <span class="k">return</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">posters</span><span class="o">=</span><span class="p">[]</span>
+        <span class="n">i</span><span class="o">=</span><span class="mi">0</span>
+
+        <span class="k">for</span> <span class="n">p</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">o</span><span class="o">.</span><span class="n">publishers</span><span class="p">:</span>
+            <span class="n">props</span> <span class="o">=</span> <span class="n">copy</span><span class="o">.</span><span class="n">deepcopy</span><span class="p">(</span><span class="n">sarracenia</span><span class="o">.</span><span class="n">moth</span><span class="o">.</span><span class="n">default_options</span><span class="p">)</span>
             <span class="n">props</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">o</span><span class="o">.</span><span class="n">dictify</span><span class="p">())</span>
-
+            <span class="n">props</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">p</span><span class="p">)</span>
+            <span class="n">props</span><span class="p">[</span><span class="s1">&#39;publisher_index&#39;</span><span class="p">]</span><span class="o">=</span><span class="n">i</span>
             <span class="c1"># adjust settings post_xxx to be xxx, as Moth does not use post_ ones.</span>
-            <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="p">[</span> <span class="s1">&#39;broker&#39;</span><span class="p">,</span> <span class="s1">&#39;exchange&#39;</span><span class="p">,</span> <span class="s1">&#39;topicPrefix&#39;</span><span class="p">,</span> <span class="s1">&#39;exchangeSplit&#39;</span><span class="p">,</span> <span class="s1">&#39;topic&#39;</span><span class="p">,</span> <span class="s1">&#39;messageAgeMax&#39;</span> <span class="p">]:</span>
-                <span class="n">post_one</span><span class="o">=</span><span class="s1">&#39;post_&#39;</span><span class="o">+</span><span class="n">k</span>
-                <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span> <span class="bp">self</span><span class="o">.</span><span class="n">o</span><span class="p">,</span> <span class="n">post_one</span> <span class="p">):</span> 
-                    <span class="c1">#props.update({ k: getattr(self.o,post_one) } )</span>
-                    <span class="n">props</span><span class="p">[</span> <span class="n">k</span> <span class="p">]</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">o</span><span class="p">,</span><span class="n">post_one</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">posters</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">sarracenia</span><span class="o">.</span><span class="n">moth</span><span class="o">.</span><span class="n">Moth</span><span class="o">.</span><span class="n">pubFactory</span><span class="p">(</span><span class="n">props</span><span class="p">))</span>
+            <span class="n">i</span><span class="o">+=</span><span class="mi">1</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">critical</span><span class="p">(</span> <span class="sa">f</span><span class="s2">&quot;Missing publishers.&quot;</span><span class="p">)</span></div>
 
-            <span class="bp">self</span><span class="o">.</span><span class="n">poster</span> <span class="o">=</span> <span class="n">sarracenia</span><span class="o">.</span><span class="n">moth</span><span class="o">.</span><span class="n">Moth</span><span class="o">.</span><span class="n">pubFactory</span><span class="p">(</span><span class="n">props</span><span class="p">)</span></div>
 
 
     <span class="k">def</span> <span class="nf">post</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">worklist</span><span class="p">):</span>
@@ -126,42 +132,85 @@
         <span class="n">worklist</span><span class="o">.</span><span class="n">ok</span> <span class="o">=</span> <span class="p">[]</span>
         <span class="n">all_good</span><span class="o">=</span><span class="kc">True</span>
         <span class="k">for</span> <span class="n">m</span> <span class="ow">in</span> <span class="n">old_ok</span><span class="p">:</span>
-            <span class="k">try</span><span class="p">:</span>
-                <span class="k">if</span> <span class="n">all_good</span> <span class="ow">and</span> <span class="nb">hasattr</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">poster</span><span class="p">,</span><span class="s1">&#39;putNewMessage&#39;</span><span class="p">)</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">poster</span><span class="o">.</span><span class="n">putNewMessage</span><span class="p">(</span><span class="n">m</span><span class="p">):</span>
-                    <span class="n">worklist</span><span class="o">.</span><span class="n">ok</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">m</span><span class="p">)</span>
-                <span class="k">else</span><span class="p">:</span>
-                    <span class="n">all_good</span><span class="o">=</span><span class="kc">False</span>
-                    <span class="n">worklist</span><span class="o">.</span><span class="n">failed</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">m</span><span class="p">)</span>
-            <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
-                <span class="n">all_good</span> <span class="o">=</span> <span class="kc">False</span>
+            <span class="n">i</span><span class="o">=</span><span class="mi">0</span>
+            <span class="n">failures</span><span class="o">=</span><span class="p">[]</span>
+            <span class="k">if</span> <span class="s1">&#39;publisher_index&#39;</span> <span class="ow">in</span> <span class="n">m</span><span class="p">:</span>
+                <span class="n">i</span><span class="o">=</span><span class="n">m</span><span class="p">[</span><span class="s1">&#39;publisher_index&#39;</span><span class="p">]</span>
+                <span class="n">p</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">posters</span><span class="p">[</span><span class="n">i</span><span class="p">]</span>
+                <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">p</span><span class="p">,</span><span class="s1">&#39;putNewMessage&#39;</span><span class="p">):</span>
+                    <span class="k">try</span><span class="p">:</span>
+                        <span class="k">if</span> <span class="ow">not</span> <span class="n">p</span><span class="o">.</span><span class="n">putNewMessage</span><span class="p">(</span><span class="n">m</span><span class="p">):</span>
+                            <span class="n">failures</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">i</span><span class="p">)</span>
+                    <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+                        <span class="n">failures</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">i</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="k">for</span> <span class="n">p</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">posters</span><span class="p">:</span>
+                    <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">p</span><span class="p">,</span><span class="s1">&#39;putNewMessage&#39;</span><span class="p">):</span>
+                        <span class="k">try</span><span class="p">:</span>
+                            <span class="k">if</span> <span class="s1">&#39;post_failures&#39;</span> <span class="ow">in</span> <span class="n">m</span><span class="p">:</span> 
+                                <span class="k">if</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">m</span><span class="p">[</span><span class="s1">&#39;post_failures&#39;</span><span class="p">]:</span>
+                                    <span class="k">if</span> <span class="ow">not</span> <span class="n">p</span><span class="o">.</span><span class="n">putNewMessage</span><span class="p">(</span><span class="n">m</span><span class="p">):</span>
+                                        <span class="n">failures</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">i</span><span class="p">)</span>
+                            <span class="k">else</span><span class="p">:</span>
+                                <span class="k">if</span> <span class="ow">not</span> <span class="n">p</span><span class="o">.</span><span class="n">putNewMessage</span><span class="p">(</span><span class="n">m</span><span class="p">):</span>
+                                    <span class="n">failures</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">i</span><span class="p">)</span>
+     
+                        <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+                            <span class="k">if</span> <span class="n">i</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">failures</span><span class="p">:</span>
+                                <span class="n">failures</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">i</span><span class="p">)</span>
+                            <span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;crashed: </span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+                            <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;Exception details:&quot;</span><span class="p">,</span> <span class="n">exc_info</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+     
+                    <span class="k">else</span><span class="p">:</span>
+                        <span class="n">failures</span><span class="o">.</span><span class="n">append</span><span class="p">(</span> <span class="n">i</span> <span class="p">)</span>
+                    <span class="n">i</span><span class="o">+=</span><span class="mi">1</span>
+                   
+            <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">failures</span><span class="p">)</span><span class="o">&lt;</span><span class="mi">1</span><span class="p">:</span>
+                <span class="k">if</span> <span class="s1">&#39;post_failures&#39;</span> <span class="ow">in</span> <span class="n">m</span><span class="p">:</span>
+                   <span class="k">del</span> <span class="n">m</span><span class="p">[</span><span class="s1">&#39;post_failures&#39;</span><span class="p">]</span>
+                <span class="n">worklist</span><span class="o">.</span><span class="n">ok</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">m</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">m</span><span class="p">[</span><span class="s1">&#39;post_failures&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">failures</span>
+                <span class="n">m</span><span class="p">[</span><span class="s1">&#39;_deleteOnPost&#39;</span><span class="p">]</span> <span class="o">|=</span> <span class="nb">set</span><span class="p">([</span><span class="s1">&#39;post_failures&#39;</span><span class="p">])</span>
                 <span class="n">worklist</span><span class="o">.</span><span class="n">failed</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">m</span><span class="p">)</span>
-                <span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;crashed: </span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
-                <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;Exception details:&quot;</span><span class="p">,</span> <span class="n">exc_info</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
 
     <span class="k">def</span> <span class="nf">metricsReport</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">:</span>
-        <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="s1">&#39;poster&#39;</span><span class="p">)</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">poster</span><span class="p">:</span>
-            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">poster</span><span class="o">.</span><span class="n">metricsReport</span><span class="p">()</span>
-        <span class="k">else</span><span class="p">:</span>
-            <span class="k">return</span> <span class="p">{}</span>
+
+        <span class="n">reports</span><span class="o">=</span><span class="p">{}</span>
+        <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="s1">&#39;posters&#39;</span><span class="p">):</span>
+            <span class="n">i</span><span class="o">=</span><span class="mi">0</span>
+            <span class="k">for</span> <span class="n">p</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">posters</span><span class="p">:</span>
+                <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">p</span><span class="p">,</span><span class="s1">&#39;metricsReport&#39;</span><span class="p">):</span> 
+                    <span class="n">reports</span><span class="p">[</span><span class="nb">str</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">o</span><span class="o">.</span><span class="n">publishers</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="s1">&#39;broker&#39;</span><span class="p">])]</span> <span class="o">=</span> <span class="n">p</span><span class="o">.</span><span class="n">metricsReport</span><span class="p">()</span>
+                <span class="n">i</span><span class="o">+=</span><span class="mi">1</span>
+        <span class="k">return</span> <span class="n">reports</span> 
 
     <span class="k">def</span> <span class="nf">on_housekeeping</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="s1">&#39;poster&#39;</span><span class="p">)</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">poster</span><span class="p">:</span>
-            <span class="n">m</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">poster</span><span class="o">.</span><span class="n">metricsReport</span><span class="p">()</span>
-            <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span>
-                <span class="sa">f</span><span class="s2">&quot;messages: good: </span><span class="si">{</span><span class="n">m</span><span class="p">[</span><span class="s1">&#39;txGoodCount&#39;</span><span class="p">]</span><span class="si">}</span><span class="s2"> bad: </span><span class="si">{</span><span class="n">m</span><span class="p">[</span><span class="s1">&#39;txBadCount&#39;</span><span class="p">]</span><span class="si">}</span><span class="s2"> bytes: </span><span class="si">{</span><span class="n">m</span><span class="p">[</span><span class="s1">&#39;txByteCount&#39;</span><span class="p">]</span><span class="si">}</span><span class="s2">&quot;</span>
-            <span class="p">)</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">poster</span><span class="o">.</span><span class="n">metricsReset</span><span class="p">()</span>
+
+        <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="s1">&#39;publishers&#39;</span><span class="p">)</span> <span class="ow">and</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">publishers</span><span class="p">)</span><span class="o">&gt;</span><span class="mi">0</span><span class="p">:</span>
+            <span class="n">i</span><span class="o">=</span><span class="mi">0</span>
+            <span class="k">for</span> <span class="n">p</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">posters</span><span class="p">:</span>
+                <span class="n">m</span> <span class="o">=</span> <span class="n">p</span><span class="o">.</span><span class="n">metricsReport</span><span class="p">()</span>
+                <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span>
+                        <span class="sa">f</span><span class="s2">&quot;messages to </span><span class="si">{</span><span class="nb">str</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">o</span><span class="o">.</span><span class="n">publishers</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="s1">&#39;broker&#39;</span><span class="p">])</span><span class="si">}</span><span class="s2"> good: </span><span class="si">{</span><span class="n">m</span><span class="p">[</span><span class="s1">&#39;txGoodCount&#39;</span><span class="p">]</span><span class="si">}</span><span class="s2"> bad: </span><span class="si">{</span><span class="n">m</span><span class="p">[</span><span class="s1">&#39;txBadCount&#39;</span><span class="p">]</span><span class="si">}</span><span class="s2"> bytes: </span><span class="si">{</span><span class="n">m</span><span class="p">[</span><span class="s1">&#39;txByteCount&#39;</span><span class="p">]</span><span class="si">}</span><span class="s2">&quot;</span>
+                <span class="p">)</span>
+                <span class="n">p</span><span class="o">.</span><span class="n">metricsReset</span><span class="p">()</span>
+                <span class="n">i</span><span class="o">+=</span><span class="mi">1</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span> <span class="s2">&quot;no metrics available&quot;</span> <span class="p">)</span>
 
     <span class="k">def</span> <span class="nf">on_start</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="s1">&#39;poster&#39;</span><span class="p">)</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">poster</span><span class="p">:</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">poster</span><span class="o">.</span><span class="n">putSetup</span><span class="p">()</span>
+        <span class="k">for</span> <span class="n">p</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">posters</span><span class="p">:</span>
+            <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">p</span><span class="p">,</span><span class="s1">&#39;putSetup&#39;</span><span class="p">):</span>
+                <span class="n">p</span><span class="o">.</span><span class="n">putSetup</span><span class="p">()</span>
+
         <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s1">&#39;starting&#39;</span><span class="p">)</span>
 
     <span class="k">def</span> <span class="nf">on_stop</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="s1">&#39;poster&#39;</span><span class="p">)</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">poster</span><span class="p">:</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">poster</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+        <span class="k">for</span> <span class="n">p</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">posters</span><span class="p">:</span>
+            <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">p</span><span class="p">,</span><span class="s1">&#39;close&#39;</span><span class="p">):</span>
+                <span class="n">p</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
         <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s1">&#39;closing&#39;</span><span class="p">)</span>
     
 <div class="viewcode-block" id="Message.please_stop">
@@ -172,7 +221,9 @@
         <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">please_stop</span><span class="p">()</span>
         <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s1">&#39;poster&#39;</span><span class="p">)</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">poster</span><span class="p">:</span>
             <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;asking Moth publisher to please_stop&quot;</span><span class="p">)</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">poster</span><span class="o">.</span><span class="n">please_stop</span><span class="p">()</span></div>
+            <span class="k">for</span> <span class="n">p</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">posters</span><span class="p">:</span>
+                <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">p</span><span class="p">,</span><span class="s1">&#39;please_stop&#39;</span><span class="p">):</span>
+                    <span class="n">p</span><span class="o">.</span><span class="n">please_stop</span><span class="p">()</span></div>
 </div>
 
 </pre></div>

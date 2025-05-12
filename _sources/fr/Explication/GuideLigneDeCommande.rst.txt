@@ -707,12 +707,13 @@ Réglage de Broker
 
 **broker [amqp|mqtt]{s}://<user>:<password>@<brokerhost>[:port]/<vhost>**
 
-Un URI AMQP est utilisé pour configurer une connexion à une pompe à messages
-(AMQP broker). Certains composants de Sarracenia définissent une valeur par
-défaut raisonnable pour cette option. Vous fournissez l'utilisateur normal,
-l'hôte, le port des connexions. Dans la plupart des fichiers de configuration,
-le mot de passe est manquant. Le mot de passe n'est normalement inclus que dans
-le fichier credentials.conf.
+Une déclaration d'abonnement commence par un paramètre *broker*. L'argument URI donné 
+à *broker* permet de configurer une connexion à une pompe de messages de notification, 
+qu'il s'agisse d'un broker MQTT ou AMQP. Certains composants Sarracenia définissent 
+une valeur par défaut raisonnable pour cette option. Fournissez les paramètres utilisateur, 
+hôte et port habituels des connexions. Dans la plupart des fichiers de configuration, 
+le mot de passe est manquant. Il est généralement inclus uniquement dans le 
+fichier credentials.conf.
 
 L´application Sarracenia n'a pas utilisé vhosts, donc **vhost** devrait toujours être **/**.
 
@@ -720,7 +721,7 @@ pour plus d'informations sur le format URI de l'AMQP : ( https://www.rabbitmq.co
 
 
 soit dans le fichier default.conf, soit dans chaque fichier de configuration spécifique.
-L'option courtier indique à chaque composante quel courtier contacter.
+L'option *broker* indique à chaque composante quel courtier contacter.
 
 **broker [amqp|mqtt]{s}://<user>:<pw>@<brokerhost>[:port]/<vhost>**
 
@@ -729,6 +730,12 @@ L'option courtier indique à chaque composante quel courtier contacter.
 
 Une fois connecté à un courtier AMQP, l'utilisateur doit lier une fil d'attente.
 à l´*exchange* et aux thèmes (*topics*) pour déterminer les messages intérêsseants.
+
+Une fois l'option *broker* spécifiée, elle doit être suivie d'une entrée *subtopic* 
+pour finaliser l'abonnement. Entre ces deux options, vous pouvez utiliser *topicPrefix*, 
+*exchange*, *exchangeSuffix*, *expire*, *timeout*, *queueName*, etc. pour modifier 
+les paramètres d'abonnement.
+
 
 Configuration de fil d´attente
 ------------------------------
@@ -1038,7 +1045,7 @@ informations d’identification pour se connecter au courtier de sortie **AMQP**
 
 Une fois connecté au courtier de source AMQP, le programme génère des notifications après que
 le téléchargement d’un fichier a eu lieu. Pour générer la notification et l’envoyer au
-courtier au saut suivant, l’utilisateur définit ces options :
+prochain courtier, l’utilisateur définit ces options:
 
 * **post_baseDir     <path>    (facultatif)**
 * **post_topicPrefix <pfx> (par défaut: 'v03')**
@@ -1047,6 +1054,9 @@ courtier au saut suivant, l’utilisateur définit ces options :
 
 FIXME : Des exemples de ce à quoi ils servent, de ce qu’ils font...
 
+Si plusieurs options *post_broker* sont déclarés, ainsi que les options *post_exchange* 
+et *post_topicPrefix* correspondantes dans la configuration, ca entraînera l'envoi 
+des messages de notification vers des destinations supplémentaires.
 
 Convention d´appellation des EXCHANGES
 --------------------------------------

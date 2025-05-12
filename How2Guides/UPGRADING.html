@@ -153,8 +153,12 @@ may generate notification messages.</p>
 </section>
 <section id="id1">
 <h2>3.0.59<a class="headerlink" href="#id1" title="Link to this heading"></a></h2>
+<p><em>NOTICE</em>: can now subscribe to multiple brokers, and publish to multiple brokers with a single configuration.</p>
 <p><em>CHANGE</em>: python API <em>bindings</em> being replaced by <em>subscriptions.</em> API is quite different, see examples.
 <em>Subscriptions</em> enables multi-queue and multi-broker support for subscribing.</p>
+<p><em>CHANGE</em>: python API <a href="#id25"><span class="problematic" id="id26">post_</span></a> settings being replaced by <em>publishers.</em> need to build
+sarracenia.config.publisher.Publisher structure now to publish messages.  It enables publishing
+to multiple destinations.</p>
 </section>
 <section id="id2">
 <h2>3.0.58<a class="headerlink" href="#id2" title="Link to this heading"></a></h2>

@@ -125,24 +125,68 @@
 <p>The example below builds a call to an broker anyone can access, and just request 5 announcements.</p>
 <p>You can run it, and then we can discuss a few settings:</p>
 <div class="nbinput docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[4]:
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[1]:
 </pre></div>
 </div>
-<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">sarracenia.moth</span>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="sd">&quot;&quot;&quot;</span>
+
+<span class="sd">   An example of consuming data made available by a Sarracenia Data Pump.</span>
+
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="kn">import</span> <span class="nn">sarracenia.moth</span>
 <span class="kn">import</span> <span class="nn">sarracenia.moth.amqp</span>
-<span class="kn">import</span> <span class="nn">sarracenia.credentials</span>
+<span class="kn">import</span> <span class="nn">sarracenia.config.credentials</span>
+<span class="kn">import</span> <span class="nn">sarracenia.config.subscription</span>
 
 <span class="kn">import</span> <span class="nn">time</span>
 <span class="kn">import</span> <span class="nn">socket</span>
 
 <span class="n">options</span> <span class="o">=</span> <span class="n">sarracenia</span><span class="o">.</span><span class="n">moth</span><span class="o">.</span><span class="n">default_options</span>
-
 <span class="n">options</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">sarracenia</span><span class="o">.</span><span class="n">moth</span><span class="o">.</span><span class="n">amqp</span><span class="o">.</span><span class="n">default_options</span><span class="p">)</span>
 
-<span class="n">options</span><span class="p">[</span><span class="s1">&#39;broker&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">sarracenia</span><span class="o">.</span><span class="n">credentials</span><span class="o">.</span><span class="n">Credential</span><span class="p">(</span><span class="s1">&#39;amqps://anonymous:anonymous@hpfx.collab.science.gc.ca&#39;</span><span class="p">)</span>
-<span class="n">options</span><span class="p">[</span><span class="s1">&#39;topicPrefix&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="p">[</span> <span class="s1">&#39;v02&#39;</span><span class="p">,</span> <span class="s1">&#39;post&#39;</span> <span class="p">]</span>
-<span class="n">options</span><span class="p">[</span><span class="s1">&#39;bindings&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="p">[(</span><span class="s1">&#39;xpublic&#39;</span><span class="p">,</span> <span class="p">[</span><span class="s1">&#39;v02&#39;</span><span class="p">,</span> <span class="s1">&#39;post&#39;</span><span class="p">],</span> <span class="p">[</span><span class="s1">&#39;#&#39;</span><span class="p">])]</span>
-<span class="n">options</span><span class="p">[</span><span class="s1">&#39;queueName&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;q_anonymous_&#39;</span> <span class="o">+</span> <span class="n">socket</span><span class="o">.</span><span class="n">getfqdn</span><span class="p">()</span> <span class="o">+</span> <span class="s1">&#39;_SomethingHelpfulToYou&#39;</span>
+<span class="n">options</span><span class="p">[</span><span class="s1">&#39;broker&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">sarracenia</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">credentials</span><span class="o">.</span><span class="n">Credential</span><span class="p">(</span>
+    <span class="s1">&#39;amqps://anonymous:anonymous@hpfx.collab.science.gc.ca&#39;</span><span class="p">)</span>
+
+<span class="c1"># binding tuple:  consists of prefix, exchange, rest.</span>
+<span class="c1"># effect is to bind from queue using prefix/rest to exchange.</span>
+<span class="n">options</span><span class="p">[</span><span class="s1">&#39;queueShare&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;SomethingHelpfulToYou&#39;</span>
+
+
+<span class="c1"># Note: queue name must start with q_&lt;username&gt; because server is configured to deny anything else.</span>
+<span class="c1">#</span>
+<span class="n">options</span><span class="p">[</span><span class="s1">&#39;queueName&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;q_$</span><span class="si">{BROKER_USER}</span><span class="s1">_$</span><span class="si">{HOSTNAME}</span><span class="s1">_$</span><span class="si">{QUEUESHARE}</span><span class="s1">&#39;</span>
+
+<span class="n">queue</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;name&#39;</span><span class="p">:</span> <span class="s1">&#39;q_anonymous_&#39;</span> <span class="o">+</span> <span class="n">socket</span><span class="o">.</span><span class="n">getfqdn</span><span class="p">()</span> <span class="o">+</span> <span class="s1">&#39;_&#39;</span> <span class="o">+</span> <span class="n">options</span><span class="p">[</span><span class="s1">&#39;queueShare&#39;</span><span class="p">],</span>
+         <span class="s1">&#39;template&#39;</span><span class="p">:</span> <span class="n">options</span><span class="p">[</span><span class="s1">&#39;queueName&#39;</span><span class="p">],</span>
+         <span class="s1">&#39;auto_delete&#39;</span> <span class="p">:</span> <span class="kc">False</span><span class="p">,</span> <span class="c1"># AO == amqp only</span>
+         <span class="s1">&#39;clean_session&#39;</span><span class="p">:</span> <span class="kc">True</span><span class="p">,</span> <span class="c1"># MO == mqtt only.</span>
+         <span class="s1">&#39;durable&#39;</span><span class="p">:</span> <span class="kc">True</span><span class="p">,</span> <span class="c1"># AO: queue should survive broker reboots</span>
+         <span class="s1">&#39;expire&#39;</span><span class="p">:</span> <span class="mi">600</span> <span class="p">,</span>  <span class="c1"># MO: seconds until queue with no consumers disappears.</span>
+         <span class="s1">&#39;max_inflight_messages&#39;</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span> <span class="c1"># MO: flow control.</span>
+         <span class="s1">&#39;max_queued_messages&#39;</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span>
+         <span class="s1">&#39;prefetch&#39;</span><span class="p">:</span> <span class="mi">25</span><span class="p">,</span>
+         <span class="s1">&#39;qos&#39;</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span>
+         <span class="s1">&#39;receiveMaximum&#39;</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span>
+         <span class="s1">&#39;tlsRigour&#39;</span><span class="p">:</span> <span class="s1">&#39;normal&#39;</span><span class="p">,</span>
+         <span class="s1">&#39;bind&#39;</span><span class="p">:</span> <span class="kc">True</span><span class="p">,</span>  <span class="c1"># whether to bind queues/subscriptions</span>
+         <span class="s1">&#39;declare&#39;</span><span class="p">:</span> <span class="kc">True</span> <span class="c1"># whether to declare queues/subscriptions</span>
+       <span class="p">}</span>
+
+
+<span class="n">options</span><span class="p">[</span><span class="s1">&#39;subscriptions&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">sarracenia</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">subscription</span><span class="o">.</span><span class="n">Subscriptions</span><span class="p">(</span> <span class="p">[</span> <span class="p">{</span>
+   <span class="s1">&#39;broker&#39;</span><span class="p">:</span> <span class="n">options</span><span class="p">[</span><span class="s1">&#39;broker&#39;</span><span class="p">],</span>
+   <span class="s1">&#39;bindings&#39;</span><span class="p">:</span> <span class="p">[</span> <span class="p">{</span> <span class="s1">&#39;exchange&#39;</span><span class="p">:</span><span class="s1">&#39;xpublic&#39;</span><span class="p">,</span> <span class="s1">&#39;prefix&#39;</span><span class="p">:</span> <span class="p">[</span><span class="s1">&#39;v02&#39;</span><span class="p">,</span><span class="s1">&#39;post&#39;</span><span class="p">],</span> <span class="s1">&#39;sub&#39;</span><span class="p">:[</span><span class="s1">&#39;#&#39;</span><span class="p">]</span> <span class="p">}</span> <span class="p">],</span>
+   <span class="s1">&#39;queue&#39;</span> <span class="p">:</span> <span class="n">queue</span>
+      <span class="p">}</span> <span class="p">]</span> <span class="p">)</span>
+
+<span class="n">options</span><span class="p">[</span><span class="s1">&#39;subscription_index&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="mi">0</span>
+
+<span class="c1"># turn on debug output for these classes.</span>
+<span class="c1">#options[&#39;settings&#39;] = {}</span>
+<span class="c1">#options[&#39;settings&#39;][&#39;sarracenia.moth.mqtt.MQTT&#39;] = { &#39;logLevel&#39;:&#39;debug&#39; }</span>
+<span class="c1">#options[&#39;settings&#39;][&#39;sarracenia.moth.amqp.AMQP&#39;] = { &#39;logLevel&#39;:&#39;debug&#39; }</span>
+
+<span class="c1">#options[&#39;logLevel&#39;] = &#39;debug&#39;</span>
 
 <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;options: </span><span class="si">%s</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="n">options</span><span class="p">)</span>
 <br/><br/></pre></div>
@@ -153,7 +197,7 @@
 </div>
 <div class="output_area docutils container">
 <div class="highlight"><pre>
-options: {&#39;acceptUnmatched&#39;: True, &#39;batch&#39;: 25, &#39;bindings&#39;: [(&#39;xpublic&#39;, [&#39;v02&#39;, &#39;post&#39;], [&#39;#&#39;])], &#39;broker&#39;: &lt;sarracenia.credentials.Credential object at 0x7fd5fa4000a0&gt;, &#39;dry_run&#39;: False, &#39;exchange&#39;: None, &#39;expire&#39;: None, &#39;inline&#39;: False, &#39;inlineEncoding&#39;: &#39;guess&#39;, &#39;inlineByteMax&#39;: 4096, &#39;logFormat&#39;: &#39;%(asctime)s [%(levelname)s] %(name)s %(funcName)s %(message)s&#39;, &#39;logLevel&#39;: &#39;info&#39;, &#39;messageDebugDump&#39;: False, &#39;message_strategy&#39;: {&#39;reset&#39;: True, &#39;stubborn&#39;: True, &#39;failure_duration&#39;: &#39;5m&#39;}, &#39;message_ttl&#39;: 0, &#39;topicPrefix&#39;: [&#39;v02&#39;, &#39;post&#39;], &#39;tlsRigour&#39;: &#39;normal&#39;, &#39;auto_delete&#39;: False, &#39;durable&#39;: True, &#39;exchangeDeclare&#39;: True, &#39;prefetch&#39;: 25, &#39;queueName&#39;: &#39;q_anonymous_fractal_SomethingHelpfulToYou&#39;, &#39;queueBind&#39;: True, &#39;queueDeclare&#39;: True, &#39;reset&#39;: False, &#39;subtopic&#39;: [], &#39;vhost&#39;: &#39;/&#39;}
+options: {&#39;acceptUnmatched&#39;: True, &#39;batch&#39;: 25, &#39;broker&#39;: &lt;sarracenia.config.credentials.Credential object at 0x7168c4e9dd60&gt;, &#39;dry_run&#39;: False, &#39;exchange&#39;: None, &#39;expire&#39;: None, &#39;inline&#39;: False, &#39;inlineEncoding&#39;: &#39;guess&#39;, &#39;inlineByteMax&#39;: 4096, &#39;logFormat&#39;: &#39;%(asctime)s [%(levelname)s] %(name)s %(funcName)s %(message)s&#39;, &#39;logLevel&#39;: &#39;info&#39;, &#39;messageDebugDump&#39;: False, &#39;message_strategy&#39;: {&#39;reset&#39;: True, &#39;stubborn&#39;: True, &#39;failure_duration&#39;: &#39;5m&#39;}, &#39;messageAgeMax&#39;: 0, &#39;topicPrefix&#39;: [&#39;v03&#39;], &#39;tlsRigour&#39;: &#39;normal&#39;, &#39;auto_delete&#39;: False, &#39;durable&#39;: True, &#39;exchangeDeclare&#39;: True, &#39;persistent&#39;: True, &#39;prefetch&#39;: 25, &#39;queueBind&#39;: True, &#39;queueDeclare&#39;: True, &#39;reset&#39;: False, &#39;subtopic&#39;: [], &#39;vhost&#39;: &#39;/&#39;, &#39;queueShare&#39;: &#39;SomethingHelpfulToYou&#39;, &#39;queueName&#39;: &#39;q_${BROKER_USER}_${HOSTNAME}_${QUEUESHARE}&#39;, &#39;subscriptions&#39;: [{&#39;broker&#39;: &lt;sarracenia.config.credentials.Credential object at 0x7168c4e9dd60&gt;, &#39;bindings&#39;: [{&#39;exchange&#39;: &#39;xpublic&#39;, &#39;prefix&#39;: [&#39;v02&#39;, &#39;post&#39;], &#39;sub&#39;: [&#39;#&#39;]}], &#39;queue&#39;: {&#39;name&#39;: &#39;q_anonymous_fractal_SomethingHelpfulToYou&#39;, &#39;template&#39;: &#39;q_${BROKER_USER}_${HOSTNAME}_${QUEUESHARE}&#39;, &#39;auto_delete&#39;: False, &#39;clean_session&#39;: True, &#39;durable&#39;: True, &#39;expire&#39;: 600, &#39;max_inflight_messages&#39;: 0, &#39;max_queued_messages&#39;: 0, &#39;prefetch&#39;: 25, &#39;qos&#39;: 1, &#39;receiveMaximum&#39;: 0, &#39;tlsRigour&#39;: &#39;normal&#39;, &#39;bind&#39;: True, &#39;declare&#39;: True}}], &#39;subscription_index&#39;: 0}
 </pre></div></div>
 </div>
 <p>The <strong>broker</strong> setting is an object containing a conventional URL and other options, indicating the messaging protocol to be used to access the upstream server. When you connect to a broker, you need to tell it what messages you are interested in. In Moth, all the brokers we are accessing are expected to use topic hierarchies. You can see them if you successfully ran the example above, there should be in the message print outs a “topic” element in dictionaries. Here is an example of one:</p>
@@ -205,7 +249,7 @@ forwarding the message.</p>
 <h2>Ack<a class="headerlink" href="#Ack" title="Link to this heading"></a></h2>
 <p>Messages are marked in transit by the broker, and if you do not acknowledge them, the data pump will hold onto them, and eventually re-dispatch them. keeping pending messages in memory will also slow down processing of all messages. One should acknowledge receipt of messages as soon as practicable, but not so soon that you will lose data if the the program is interrupted. In the example, we acknowledge after we have done our work of printing the message.</p>
 <div class="nbinput docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[6]:
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[2]:
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">h</span> <span class="o">=</span> <span class="n">sarracenia</span><span class="o">.</span><span class="n">moth</span><span class="o">.</span><span class="n">Moth</span><span class="o">.</span><span class="n">subFactory</span><span class="p">(</span><span class="n">options</span><span class="p">)</span>
@@ -234,32 +278,10 @@ forwarding the message.</p>
 </div>
 <div class="output_area stderr docutils container">
 <div class="highlight"><pre>
-2023-05-27 10:55:22,559 [INFO] sarracenia.moth.amqp __getSetup queue declared q_anonymous_fractal_SomethingHelpfulToYou (as: amqps://anonymous@hpfx.collab.science.gc.ca)
-2023-05-27 10:55:22,560 [INFO] sarracenia.moth.amqp __getSetup binding q_anonymous_fractal_SomethingHelpfulToYou with v02.post.# to xpublic (as: amqps://anonymous@hpfx.collab.science.gc.ca)
-</pre></div></div>
-</div>
-<div class="nboutput docutils container">
-<div class="prompt empty docutils container">
-</div>
-<div class="output_area docutils container">
-<div class="highlight"><pre>
-message 0: {&#39;_format&#39;: &#39;v02&#39;, &#39;_deleteOnPost&#39;: {&#39;subtopic&#39;, &#39;exchange&#39;, &#39;ack_id&#39;, &#39;local_offset&#39;, &#39;_format&#39;}, &#39;sundew_extension&#39;: &#39;CMC:REGIONAL:GRIB2:BIN::20230527145518&#39;, &#39;from_cluster&#39;: &#39;DDSR.CMC&#39;, &#39;to_clusters&#39;: &#39;ALL&#39;, &#39;filename&#39;: &#39;msg_ddsr-WXO-DD_34df392aeffc9c678011f3fd30193bb6:CMC:REGIONAL:GRIB2:BIN::20230527145518&#39;, &#39;source&#39;: &#39;WXO-DD&#39;, &#39;mtime&#39;: &#39;20230527T145520.791&#39;, &#39;atime&#39;: &#39;20230527T145520.791&#39;, &#39;pubTime&#39;: &#39;20230527T145520.791&#39;, &#39;baseUrl&#39;: &#39;https://hpfx.collab.science.gc.ca&#39;, &#39;relPath&#39;: &#39;/20230527/WXO-DD/model_gem_regional/10km/grib2/12/037/CMC_reg_WIND_ISBL_30_ps10km_2023052712_P037.grib2&#39;, &#39;subtopic&#39;: [&#39;20230527&#39;, &#39;WXO-DD&#39;, &#39;model_gem_regional&#39;, &#39;10km&#39;, &#39;grib2&#39;, &#39;12&#39;, &#39;037&#39;], &#39;identity&#39;: {&#39;method&#39;: &#39;md5&#39;, &#39;value&#39;: &#39;U1vVZnatrCeK3bLrXshb2g==&#39;}, &#39;size&#39;: 554100, &#39;exchange&#39;: &#39;xpublic&#39;, &#39;ack_id&#39;: 1, &#39;local_offset&#39;: 0}
-first 50 bytes of corresponding file: b&#39;GRIB\x00\x00\x00\x02\x00\x00\x00\x00\x00\x08tt\x00\x00\x00\x15\x01\x006\x00\x00\x04\x00\x01\x07\xe7\x05\x1b\x0c\x00\x00\x00\x02\x00\x00\x00A\x03\x00\x00\x0b\xc1\x88\x00\x00\x00&#39;
-message 1: {&#39;_format&#39;: &#39;v02&#39;, &#39;_deleteOnPost&#39;: {&#39;subtopic&#39;, &#39;exchange&#39;, &#39;ack_id&#39;, &#39;local_offset&#39;, &#39;_format&#39;}, &#39;sundew_extension&#39;: &#39;CMC:REGIONAL:GRIB2:BIN::20230527145519&#39;, &#39;from_cluster&#39;: &#39;DDSR.CMC&#39;, &#39;to_clusters&#39;: &#39;ALL&#39;, &#39;filename&#39;: &#39;msg_ddsr-WXO-DD_752eb4e8803503704990563d84030e67:CMC:REGIONAL:GRIB2:BIN::20230527145519&#39;, &#39;source&#39;: &#39;WXO-DD&#39;, &#39;mtime&#39;: &#39;20230527T145520.292&#39;, &#39;atime&#39;: &#39;20230527T145520.292&#39;, &#39;pubTime&#39;: &#39;20230527T145520.292&#39;, &#39;baseUrl&#39;: &#39;https://hpfx.collab.science.gc.ca&#39;, &#39;relPath&#39;: &#39;/20230527/WXO-DD/model_gem_regional/10km/grib2/12/037/CMC_reg_HGT_ISBL_250_ps10km_2023052712_P037.grib2&#39;, &#39;subtopic&#39;: [&#39;20230527&#39;, &#39;WXO-DD&#39;, &#39;model_gem_regional&#39;, &#39;10km&#39;, &#39;grib2&#39;, &#39;12&#39;, &#39;037&#39;], &#39;identity&#39;: {&#39;method&#39;: &#39;md5&#39;, &#39;value&#39;: &#39;j6bh9dbE4QbJAXEOejw0Tw==&#39;}, &#39;size&#39;: 377005, &#39;exchange&#39;: &#39;xpublic&#39;, &#39;ack_id&#39;: 2, &#39;local_offset&#39;: 0}
-first 50 bytes of corresponding file: b&#39;GRIB\x00\x00\x00\x02\x00\x00\x00\x00\x00\x05\xc0\xad\x00\x00\x00\x15\x01\x006\x00\x00\x04\x00\x01\x07\xe7\x05\x1b\x0c\x00\x00\x00\x02\x00\x00\x00A\x03\x00\x00\x0b\xc1\x88\x00\x00\x00&#39;
-message 2: {&#39;_format&#39;: &#39;v02&#39;, &#39;_deleteOnPost&#39;: {&#39;subtopic&#39;, &#39;exchange&#39;, &#39;ack_id&#39;, &#39;local_offset&#39;, &#39;_format&#39;}, &#39;sundew_extension&#39;: &#39;CMC:REGIONAL:GRIB2:BIN::20230527145519&#39;, &#39;from_cluster&#39;: &#39;DDSR.CMC&#39;, &#39;to_clusters&#39;: &#39;ALL&#39;, &#39;filename&#39;: &#39;msg_ddsr-WXO-DD_55f121bb28e822cffb6e61196cd924eb:CMC:REGIONAL:GRIB2:BIN::20230527145519&#39;, &#39;source&#39;: &#39;WXO-DD&#39;, &#39;mtime&#39;: &#39;20230527T145521.260&#39;, &#39;atime&#39;: &#39;20230527T145521.260&#39;, &#39;pubTime&#39;: &#39;20230527T145521.260&#39;, &#39;baseUrl&#39;: &#39;https://hpfx.collab.science.gc.ca&#39;, &#39;relPath&#39;: &#39;/20230527/WXO-DD/model_gem_regional/10km/grib2/12/037/CMC_reg_RH_ISBL_700_ps10km_2023052712_P037.grib2&#39;, &#39;subtopic&#39;: [&#39;20230527&#39;, &#39;WXO-DD&#39;, &#39;model_gem_regional&#39;, &#39;10km&#39;, &#39;grib2&#39;, &#39;12&#39;, &#39;037&#39;], &#39;identity&#39;: {&#39;method&#39;: &#39;md5&#39;, &#39;value&#39;: &#39;V7goy/doL6Gle68s1zoVEA==&#39;}, &#39;size&#39;: 808438, &#39;exchange&#39;: &#39;xpublic&#39;, &#39;ack_id&#39;: 3, &#39;local_offset&#39;: 0}
-first 50 bytes of corresponding file: b&#39;GRIB\x00\x00\x00\x02\x00\x00\x00\x00\x00\x0cU\xf6\x00\x00\x00\x15\x01\x006\x00\x00\x04\x00\x01\x07\xe7\x05\x1b\x0c\x00\x00\x00\x02\x00\x00\x00A\x03\x00\x00\x0b\xc1\x88\x00\x00\x00&#39;
-message 3: {&#39;_format&#39;: &#39;v02&#39;, &#39;_deleteOnPost&#39;: {&#39;subtopic&#39;, &#39;exchange&#39;, &#39;ack_id&#39;, &#39;local_offset&#39;, &#39;_format&#39;}, &#39;sundew_extension&#39;: &#39;CMC:REGIONAL:GRIB2:BIN::20230527145518&#39;, &#39;from_cluster&#39;: &#39;DDSR.CMC&#39;, &#39;to_clusters&#39;: &#39;ALL&#39;, &#39;filename&#39;: &#39;msg_ddsr-WXO-DD_dac300cf33756ba816e030f99fc9dc22:CMC:REGIONAL:GRIB2:BIN::20230527145518&#39;, &#39;source&#39;: &#39;WXO-DD&#39;, &#39;mtime&#39;: &#39;20230527T145519.586&#39;, &#39;atime&#39;: &#39;20230527T145519.586&#39;, &#39;pubTime&#39;: &#39;20230527T145519.586&#39;, &#39;baseUrl&#39;: &#39;https://hpfx.collab.science.gc.ca&#39;, &#39;relPath&#39;: &#39;/20230527/WXO-DD/model_gem_regional/10km/grib2/12/037/CMC_reg_UGRD_ISBL_225_ps10km_2023052712_P037.grib2&#39;, &#39;subtopic&#39;: [&#39;20230527&#39;, &#39;WXO-DD&#39;, &#39;model_gem_regional&#39;, &#39;10km&#39;, &#39;grib2&#39;, &#39;12&#39;, &#39;037&#39;], &#39;identity&#39;: {&#39;method&#39;: &#39;md5&#39;, &#39;value&#39;: &#39;MI8XzT1uam5OUf7QlDZ4FA==&#39;}, &#39;size&#39;: 487411, &#39;exchange&#39;: &#39;xpublic&#39;, &#39;ack_id&#39;: 4, &#39;local_offset&#39;: 0}
-first 50 bytes of corresponding file: b&#39;GRIB\x00\x00\x00\x02\x00\x00\x00\x00\x00\x07o\xf3\x00\x00\x00\x15\x01\x006\x00\x00\x04\x00\x01\x07\xe7\x05\x1b\x0c\x00\x00\x00\x02\x00\x00\x00A\x03\x00\x00\x0b\xc1\x88\x00\x00\x00&#39;
-message 4: {&#39;_format&#39;: &#39;v02&#39;, &#39;_deleteOnPost&#39;: {&#39;subtopic&#39;, &#39;exchange&#39;, &#39;ack_id&#39;, &#39;local_offset&#39;, &#39;_format&#39;}, &#39;sundew_extension&#39;: &#39;CMC:REGIONAL:GRIB2:BIN::20230527145519&#39;, &#39;from_cluster&#39;: &#39;DDSR.CMC&#39;, &#39;to_clusters&#39;: &#39;ALL&#39;, &#39;filename&#39;: &#39;msg_ddsr-WXO-DD_c5e84748169e0a6dce8f3b884ffdf059:CMC:REGIONAL:GRIB2:BIN::20230527145519&#39;, &#39;source&#39;: &#39;WXO-DD&#39;, &#39;mtime&#39;: &#39;20230527T145520.651&#39;, &#39;atime&#39;: &#39;20230527T145520.651&#39;, &#39;pubTime&#39;: &#39;20230527T145520.651&#39;, &#39;baseUrl&#39;: &#39;https://hpfx.collab.science.gc.ca&#39;, &#39;relPath&#39;: &#39;/20230527/WXO-DD/model_gem_regional/10km/grib2/12/037/CMC_reg_RH_ISBL_550_ps10km_2023052712_P037.grib2&#39;, &#39;subtopic&#39;: [&#39;20230527&#39;, &#39;WXO-DD&#39;, &#39;model_gem_regional&#39;, &#39;10km&#39;, &#39;grib2&#39;, &#39;12&#39;, &#39;037&#39;], &#39;identity&#39;: {&#39;method&#39;: &#39;md5&#39;, &#39;value&#39;: &#39;zukdtksA5I0C5oq/ieiXbQ==&#39;}, &#39;size&#39;: 774394, &#39;exchange&#39;: &#39;xpublic&#39;, &#39;ack_id&#39;: 5, &#39;local_offset&#39;: 0}
-</pre></div></div>
-</div>
-<div class="nboutput docutils container">
-<div class="prompt empty docutils container">
-</div>
-<div class="output_area stderr docutils container">
-<div class="highlight"><pre>
-2023-05-27 10:55:24,022 [INFO] sarracenia.moth.amqp getCleanUp deleteing queue q_anonymous_fractal_SomethingHelpfulToYou
+2025-05-06 18:05:03,834 [INFO] sarracenia.moth.amqp _queueDeclare queue declared q_anonymous_fractal_SomethingHelpfulToYou (as: amqps://anonymous@hpfx.collab.science.gc.ca), (messages waiting: 0)
+2025-05-06 18:05:03,834 [INFO] sarracenia.moth.amqp getSetup binding q_anonymous_fractal_SomethingHelpfulToYou with v02.post.# to xpublic (as: amqps://anonymous@hpfx.collab.science.gc.ca)
+2025-05-06 18:05:04,320 [INFO] sarracenia getContent retrieving from: https://hpfx.collab.science.gc.ca//20250506/WXO-DD/bulletins/alphanumeric/20250506/SX/KWAL/22/SXCN40_KWAL_062204___40145
+2025-05-06 18:05:04,505 [INFO] sarracenia.moth.amqp getCleanUp deleting queue q_anonymous_fractal_SomethingHelpfulToYou
 </pre></div></div>
 </div>
 <div class="nboutput nblast docutils container">
@@ -267,8 +289,9 @@ message 4: {&#39;_format&#39;: &#39;v02&#39;, &#39;_deleteOnPost&#39;: {&#39;sub
 </div>
 <div class="output_area docutils container">
 <div class="highlight"><pre>
-first 50 bytes of corresponding file: b&#39;GRIB\x00\x00\x00\x02\x00\x00\x00\x00\x00\x0b\xd0\xfa\x00\x00\x00\x15\x01\x006\x00\x00\x04\x00\x01\x07\xe7\x05\x1b\x0c\x00\x00\x00\x02\x00\x00\x00A\x03\x00\x00\x0b\xc1\x88\x00\x00\x00&#39;
-obtained 5 product announcements
+message 4: {&#39;_format&#39;: &#39;v02&#39;, &#39;_deleteOnPost&#39;: {&#39;exchange&#39;, &#39;ack_id&#39;, &#39;topic&#39;, &#39;subtopic&#39;, &#39;local_offset&#39;, &#39;_format&#39;, &#39;subscription_index&#39;}, &#39;sundew_extension&#39;: &#39;cvt_nws_bulletins-sr:KWAL:SX:3:Direct:20250506220456&#39;, &#39;from_cluster&#39;: &#39;DDSR.CMC&#39;, &#39;to_clusters&#39;: &#39;ALL&#39;, &#39;filename&#39;: &#39;msg_ddsr-WXO-DD3_1568f6bc99ba7c443b2ad5b40267e000:cvt_nws_bulletins-sr:KWAL:SX:3:Direct:20250506220456&#39;, &#39;mtime&#39;: &#39;20250506T220457.623&#39;, &#39;atime&#39;: &#39;20250506T220457.623&#39;, &#39;pubTime&#39;: &#39;20250506T220457.623&#39;, &#39;baseUrl&#39;: &#39;https://hpfx.collab.science.gc.ca&#39;, &#39;relPath&#39;: &#39;/20250506/WXO-DD/bulletins/alphanumeric/20250506/SX/KWAL/22/SXCN40_KWAL_062204___40145&#39;, &#39;subtopic&#39;: [&#39;&#39;, &#39;20250506&#39;, &#39;WXO-DD&#39;, &#39;bulletins&#39;, &#39;alphanumeric&#39;, &#39;20250506&#39;, &#39;SX&#39;, &#39;KWAL&#39;, &#39;22&#39;, &#39;SXCN40_KWAL_062204___40145&#39;], &#39;identity&#39;: {&#39;method&#39;: &#39;md5&#39;, &#39;value&#39;: &#39;mOj5zr2414RTPyrsf5uiog==&#39;}, &#39;size&#39;: 121, &#39;exchange&#39;: &#39;xpublic&#39;, &#39;topic&#39;: &#39;v02.post.20250506.WXO-DD.bulletins.alphanumeric.20250506.SX.KWAL.22&#39;, &#39;ack_id&#39;: {&#39;delivery_tag&#39;: 1, &#39;channel_id&#39;: 2, &#39;connection_id&#39;: &#39;015deced-d58d-496a-8182-ab6521c5afac_sub&#39;, &#39;broker&#39;: &#39;hpfx.collab.science.gc.ca:5671//&#39;}, &#39;local_offset&#39;: 0, &#39;subscription_index&#39;: 0}
+first 50 bytes of corresponding file: b&#39;SXCN40 KWAL 062204\nCAB2C578 126220423\n14.4\n022\n014&#39;
+obtained 1 product announcements
 </pre></div></div>
 </div>
 <p>2nd example … combine baseURL + relPath (talk about retPath) and retrieve data… use newMessages() instead of getNewMessage to show alternate consumption ui. talk about http, and how retrieval will vary depending on the protocol listed in the baseUrl, and can get complicated.</p>
@@ -279,9 +302,15 @@ obtained 5 product announcements
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">urllib.request</span>
 <span class="kn">import</span> <span class="nn">xml.etree.ElementTree</span> <span class="k">as</span> <span class="nn">ET</span>
 
+<span class="c1">#create a separate quueue to avoid getting bulletins from the above subscription.</span>
+<span class="n">queue</span><span class="p">[</span><span class="s1">&#39;name&#39;</span><span class="p">]</span><span class="o">=</span> <span class="s1">&#39;q_anonymous_&#39;</span> <span class="o">+</span> <span class="n">socket</span><span class="o">.</span><span class="n">getfqdn</span><span class="p">()</span> <span class="o">+</span> <span class="s1">&#39;_xml_&#39;</span> <span class="o">+</span> <span class="n">options</span><span class="p">[</span><span class="s1">&#39;queueShare&#39;</span><span class="p">]</span>
 
-<span class="n">options</span><span class="p">[</span><span class="s1">&#39;bindings&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="p">[(</span><span class="s1">&#39;xpublic&#39;</span><span class="p">,</span> <span class="p">[</span> <span class="s1">&#39;v02&#39;</span><span class="p">,</span> <span class="s1">&#39;post&#39;</span><span class="p">],</span> \
-        <span class="p">[</span> <span class="s1">&#39;*&#39;</span><span class="p">,</span> <span class="s1">&#39;WXO-DD&#39;</span><span class="p">,</span> <span class="s1">&#39;observations&#39;</span><span class="p">,</span> <span class="s1">&#39;swob-ml&#39;</span><span class="p">,</span> <span class="s1">&#39;#&#39;</span><span class="p">]</span> <span class="p">)]</span>
+<span class="n">options</span><span class="p">[</span><span class="s1">&#39;subscriptions&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">sarracenia</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">subscription</span><span class="o">.</span><span class="n">Subscriptions</span><span class="p">(</span> <span class="p">[</span> <span class="p">{</span>
+   <span class="s1">&#39;broker&#39;</span><span class="p">:</span> <span class="n">options</span><span class="p">[</span><span class="s1">&#39;broker&#39;</span><span class="p">],</span>
+   <span class="s1">&#39;bindings&#39;</span><span class="p">:</span> <span class="p">[</span> <span class="p">{</span> <span class="s1">&#39;exchange&#39;</span><span class="p">:</span><span class="s1">&#39;xpublic&#39;</span><span class="p">,</span> <span class="s1">&#39;prefix&#39;</span><span class="p">:</span> <span class="p">[</span><span class="s1">&#39;v02&#39;</span><span class="p">,</span><span class="s1">&#39;post&#39;</span><span class="p">],</span> <span class="s1">&#39;sub&#39;</span><span class="p">:[</span> <span class="s1">&#39;*&#39;</span><span class="p">,</span> <span class="s1">&#39;WXO-DD&#39;</span><span class="p">,</span> <span class="s1">&#39;observations&#39;</span><span class="p">,</span> <span class="s1">&#39;swob-ml&#39;</span><span class="p">,</span> <span class="s1">&#39;#&#39;</span><span class="p">]</span> <span class="p">}</span> <span class="p">],</span>
+   <span class="s1">&#39;queue&#39;</span> <span class="p">:</span> <span class="n">queue</span>
+      <span class="p">}</span> <span class="p">]</span> <span class="p">)</span>
+
 
 <span class="n">h</span> <span class="o">=</span> <span class="n">sarracenia</span><span class="o">.</span><span class="n">moth</span><span class="o">.</span><span class="n">Moth</span><span class="o">.</span><span class="n">subFactory</span><span class="p">(</span><span class="n">options</span><span class="p">)</span>
 
@@ -339,8 +368,8 @@ obtained 5 product announcements
 </div>
 <div class="output_area stderr docutils container">
 <div class="highlight"><pre>
-2023-05-27 11:00:20,655 [INFO] sarracenia.moth.amqp __getSetup queue declared q_anonymous_fractal_SomethingHelpfulToYou (as: amqps://anonymous@hpfx.collab.science.gc.ca)
-2023-05-27 11:00:20,656 [INFO] sarracenia.moth.amqp __getSetup binding q_anonymous_fractal_SomethingHelpfulToYou with v02.post.*.WXO-DD.observations.swob-ml.# to xpublic (as: amqps://anonymous@hpfx.collab.science.gc.ca)
+2025-05-06 18:10:12,186 [INFO] sarracenia.moth.amqp _queueDeclare queue declared q_anonymous_fractal_xml_SomethingHelpfulToYou (as: amqps://anonymous@hpfx.collab.science.gc.ca), (messages waiting: 0)
+2025-05-06 18:10:12,187 [INFO] sarracenia.moth.amqp getSetup binding q_anonymous_fractal_xml_SomethingHelpfulToYou with v02.post.*.WXO-DD.observations.swob-ml.# to xpublic (as: amqps://anonymous@hpfx.collab.science.gc.ca)
 </pre></div></div>
 </div>
 <div class="nboutput docutils container">
@@ -348,28 +377,28 @@ obtained 5 product announcements
 </div>
 <div class="output_area docutils container">
 <div class="highlight"><pre>
-url 0: https://hpfx.collab.science.gc.ca/20230527/WXO-DD/observations/swob-ml/20230527/CMTH/2023-05-27-1459-CMTH-AUTO-minute-swob.xml
-station: THETFORD MINES RCS, tc_id: MTH, lat: 46.049134, long: -71.266448, air_temp: 17.3
-url 1: https://hpfx.collab.science.gc.ca/20230527/WXO-DD/observations/swob-ml/20230527/CWPZ/2023-05-27-1459-CWPZ-AUTO-minute-swob.xml
-station: BURNS LAKE DECKER LAKE, tc_id: WPZ, lat: 54.383092, long: -125.95879, air_temp: 7.2
-url 2: https://hpfx.collab.science.gc.ca/20230527/WXO-DD/observations/swob-ml/20230527/CWRK/2023-05-27-1459-CWRK-AUTO-minute-swob.xml
-station: BANCROFT AUTO, tc_id: WRK, lat: 45.071498, long: -77.879936, air_temp: 22.6
-url 3: https://hpfx.collab.science.gc.ca/20230527/WXO-DD/observations/swob-ml/20230527/CWSV/2023-05-27-1459-CWSV-AUTO-minute-swob.xml
-station: BLUE RIVER CS, tc_id: WSV, lat: 52.128917, long: -119.289848, air_temp: 14.7
-url 4: https://hpfx.collab.science.gc.ca/20230527/WXO-DD/observations/swob-ml/20230527/CWSL/2023-05-27-1459-CWSL-AUTO-minute-swob.xml
-station: SALMON ARM CS, tc_id: WSL, lat: 50.703, long: -119.290677, air_temp: 15.2
-url 5: https://hpfx.collab.science.gc.ca/20230527/WXO-DD/observations/swob-ml/20230527/CPRJ/2023-05-27-1459-CPRJ-AUTO-minute-swob.xml
-station: YORKTON RCS, tc_id: PRJ, lat: 51.260003, long: -102.461318, air_temp: 14.1
-url 6: https://hpfx.collab.science.gc.ca/20230527/WXO-DD/observations/swob-ml/20230527/CWFE/2023-05-27-1459-CWFE-AUTO-minute-swob.xml
-station: ELK ISLAND NAT PARK, tc_id: WFE, lat: 53.682619, long: -112.868105, air_temp: 15.6
-url 7: https://hpfx.collab.science.gc.ca/20230527/WXO-DD/observations/swob-ml/20230527/CWQC/2023-05-27-1459-CWQC-AUTO-minute-swob.xml
-station: PORT ALBERNI AIRPORT (AUT), tc_id: WQC, lat: 49.316698, long: -124.926912, air_temp: 15.1
-url 8: https://hpfx.collab.science.gc.ca/20230527/WXO-DD/observations/swob-ml/20230527/CVBB/2023-05-27-1459-CVBB-AUTO-minute-swob.xml
-station: DELTA BURNS BOG, tc_id: VBB, lat: 49.125992, long: -123.002436, air_temp: 14.9
-url 9: https://hpfx.collab.science.gc.ca/20230527/WXO-DD/observations/swob-ml/20230527/CWXA/2023-05-27-1459-CWXA-AUTO-minute-swob.xml
-station: BOW VALLEY, tc_id: WXA, lat: 51.0831, long: -115.066, air_temp: 13.3
-url 10: https://hpfx.collab.science.gc.ca/20230527/WXO-DD/observations/swob-ml/20230527/CWJL/2023-05-27-1459-CWJL-AUTO-minute-swob.xml
-station: FORT LIARD, tc_id: WJL, lat: 60.235775, long: -123.472672, air_temp: 14.1
+url 0: https://hpfx.collab.science.gc.ca/20250506/WXO-DD/observations/swob-ml/20250506/CXBO/2025-05-06-2209-CXBO-AUTO-minute-swob.xml
+station: BEAUPORT, tc_id: XBO, lat: 46.836997, long: -71.197339, air_temp: 15.6
+url 1: https://hpfx.collab.science.gc.ca/20250506/WXO-DD/observations/swob-ml/20250506/CXHI/2025-05-06-2208-CXHI-AUTO-minute-swob.xml
+station: ULUKHAKTOK, tc_id: XHI, lat: 70.761452, long: -117.799964, air_temp: -8.3
+url 2: https://hpfx.collab.science.gc.ca/20250506/WXO-DD/observations/swob-ml/20250506/CXWF/2025-05-06-2209-CXWF-AUTO-minute-swob.xml
+station: WARFIELD RCS, tc_id: XWF, lat: 49.112211, long: -117.738333, air_temp: 23.8
+url 3: https://hpfx.collab.science.gc.ca/20250506/WXO-DD/observations/swob-ml/partners/nt-forestry/20250506/aca3c7be/2025-05-06-2209-nwt-enr-aca3c7be-AUTO-swob.xml
+station: Nahanni Butte - TL, tc_id: , lat: 61.0288, long: -123.384, air_temp:
+url 4: https://hpfx.collab.science.gc.ca/20250506/WXO-DD/observations/swob-ml/20250506/CWGD/2025-05-06-2209-CWGD-AUTO-minute-swob.xml
+station: GODERICH, tc_id: WGD, lat: 43.764791, long: -81.712275, air_temp: 15.0
+url 5: https://hpfx.collab.science.gc.ca/20250506/WXO-DD/observations/swob-ml/partners/on-firewx/20250506/sou/2025-05-06-2209-on-mnrf-affes-sou-sou-AUTO-swob.xml
+station: South Bay Mine, tc_id: , lat: 51.1148, long: -92.6822, air_temp: 14.8
+url 6: https://hpfx.collab.science.gc.ca/20250506/WXO-DD/observations/swob-ml/partners/qc-pom/20250506/pom_quai_m3/2025-05-06-2205-pom-quai-quai_m3-AUTO-swob.xml
+station: Quai M-3, tc_id: , lat: 45.497011, long: -73.545, air_temp: 21.1
+url 7: https://hpfx.collab.science.gc.ca/20250506/WXO-DD/observations/swob-ml/20250506/CVYD/2025-05-06-2209-CVYD-AUTO-minute-swob.xml
+station: SMITHERS AIRPORT AUTO, tc_id: VYD, lat: 54.824275, long: -127.189264, air_temp: 12.3
+url 8: https://hpfx.collab.science.gc.ca/20250506/WXO-DD/observations/swob-ml/partners/qc-pom/20250506/pom_quai_55/2025-05-06-2205-pom-quai-quai_55-AUTO-swob.xml
+station: Quai 55, tc_id: , lat: 45.55865, long: -73.525269, air_temp: 22
+url 9: https://hpfx.collab.science.gc.ca/20250506/WXO-DD/observations/swob-ml/partners/yt-firewx/20250506/yt-dcs-wfm_tc/2025-05-06-2200-yt-dcs-wfm-tc-tc-AUTO-swob.xml
+station: Tom Creek, tc_id: , lat: 60.278084, long: -128.982302, air_temp: 9.8
+url 10: https://hpfx.collab.science.gc.ca/20250506/WXO-DD/observations/swob-ml/20250506/CWWP/2025-05-06-2209-CWWP-AUTO-minute-swob.xml
+station: WASAGAMING, tc_id: WWP, lat: 50.655184, long: -99.941732, air_temp: 11.2
 </pre></div></div>
 </div>
 <div class="nboutput docutils container">
@@ -377,7 +406,7 @@ station: FORT LIARD, tc_id: WJL, lat: 60.235775, long: -123.472672, air_temp: 14
 </div>
 <div class="output_area stderr docutils container">
 <div class="highlight"><pre>
-2023-05-27 11:00:23,960 [INFO] sarracenia.moth.amqp getCleanUp deleteing queue q_anonymous_fractal_SomethingHelpfulToYou
+2025-05-06 18:10:26,382 [INFO] sarracenia.moth.amqp getCleanUp deleting queue q_anonymous_fractal_xml_SomethingHelpfulToYou
 </pre></div></div>
 </div>
 <div class="nboutput nblast docutils container">

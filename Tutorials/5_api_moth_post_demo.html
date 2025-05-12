@@ -102,14 +102,15 @@
 <p>If you have some python code that is already creating files, and you have no wish to invoke a separate program to post the files, one can access message posting logic easily, given an existing file.</p>
 <p>This example is for programmatically creating posts for files. It requires write access to a broker, with a user that is allowed to post to an exchange.</p>
 <p>Need to establish a posting configuration, and then instantiate a posting_engine (an instance than can be used to post messages.)</p>
-<div class="nbinput docutils container">
+<div class="nbinput nblast docutils container">
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[1]:
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">sarracenia</span>
 <span class="kn">import</span> <span class="nn">sarracenia.moth</span>
-<span class="kn">import</span> <span class="nn">sarracenia.credentials</span>
+<span class="kn">import</span> <span class="nn">sarracenia.config.credentials</span>
 <span class="kn">from</span> <span class="nn">sarracenia.config</span> <span class="kn">import</span> <span class="n">default_config</span>
+<span class="kn">from</span> <span class="nn">sarracenia.config.publisher</span> <span class="kn">import</span> <span class="n">Publisher</span>
 
 <span class="kn">import</span> <span class="nn">os</span>
 <span class="kn">import</span> <span class="nn">time</span>
@@ -117,28 +118,21 @@
 
 <span class="n">cfg</span> <span class="o">=</span> <span class="n">default_config</span><span class="p">()</span>
 <span class="n">cfg</span><span class="o">.</span><span class="n">logLevel</span> <span class="o">=</span> <span class="s1">&#39;debug&#39;</span>
-<span class="n">cfg</span><span class="o">.</span><span class="n">broker</span> <span class="o">=</span> <span class="n">sarracenia</span><span class="o">.</span><span class="n">credentials</span><span class="o">.</span><span class="n">Credential</span><span class="p">(</span><span class="s1">&#39;amqp://tfeed:password@localhost&#39;</span><span class="p">)</span>
-<span class="n">cfg</span><span class="o">.</span><span class="n">exchange</span> <span class="o">=</span> <span class="s1">&#39;xpublic&#39;</span>
+<span class="c1">#cfg.post_broker = sarracenia.config.credentials.Credential(&#39;amqp://tfeed:password@localhost&#39;)</span>
+<span class="n">cfg</span><span class="o">.</span><span class="n">post_broker</span> <span class="o">=</span> <span class="n">sarracenia</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">credentials</span><span class="o">.</span><span class="n">Credential</span><span class="p">(</span><span class="s1">&#39;amqp://tfeed:HungryCat@localhost&#39;</span><span class="p">)</span>
+<span class="n">cfg</span><span class="o">.</span><span class="n">post_exchange</span> <span class="o">=</span> <span class="s1">&#39;xpublic&#39;</span>
 <span class="n">cfg</span><span class="o">.</span><span class="n">post_baseUrl</span> <span class="o">=</span> <span class="s1">&#39;http://host&#39;</span>
 <span class="n">cfg</span><span class="o">.</span><span class="n">post_baseDir</span> <span class="o">=</span> <span class="s1">&#39;/tmp&#39;</span>
+<span class="n">cfg</span><span class="o">.</span><span class="n">topicPrefix</span> <span class="o">=</span> <span class="p">[</span> <span class="s1">&#39;v03&#39;</span><span class="p">,</span> <span class="s1">&#39;post&#39;</span> <span class="p">]</span>
+<span class="n">cfg</span><span class="o">.</span><span class="n">logLevel</span> <span class="o">=</span> <span class="s1">&#39;debug&#39;</span>
+<span class="n">cfg</span><span class="o">.</span><span class="n">publishers</span><span class="o">=</span><span class="p">[</span> <span class="n">Publisher</span><span class="p">(</span><span class="n">cfg</span><span class="p">)</span> <span class="p">]</span>
+<span class="n">cfg</span><span class="o">.</span><span class="n">publisher_index</span><span class="o">=</span><span class="mi">0</span>
+
 
 <span class="c1"># moth wants a dict as options, rather than sarracenia.config.Config instance.</span>
 <span class="n">posting_engine</span> <span class="o">=</span> <span class="n">sarracenia</span><span class="o">.</span><span class="n">moth</span><span class="o">.</span><span class="n">Moth</span><span class="o">.</span><span class="n">pubFactory</span><span class="p">(</span> <span class="n">cfg</span><span class="o">.</span><span class="n">dictify</span><span class="p">()</span> <span class="p">)</span>
 </pre></div>
 </div>
-</div>
-<div class="nboutput nblast docutils container">
-<div class="prompt empty docutils container">
-</div>
-<div class="output_area stderr docutils container">
-<div class="highlight"><pre>
-2023-05-27 11:02:29,889 [DEBUG] amqp _on_start Start from server, version: 0.9, properties: {&#39;capabilities&#39;: {&#39;publisher_confirms&#39;: True, &#39;exchange_exchange_bindings&#39;: True, &#39;basic.nack&#39;: True, &#39;consumer_cancel_notify&#39;: True, &#39;connection.blocked&#39;: True, &#39;consumer_priorities&#39;: True, &#39;authentication_failure_close&#39;: True, &#39;per_consumer_qos&#39;: True, &#39;direct_reply_to&#39;: True}, &#39;cluster_name&#39;: &#39;rabbit@fractal&#39;, &#39;copyright&#39;: &#39;Copyright (c) 2007-2022 VMware, Inc. or its affiliates.&#39;, &#39;information&#39;: &#39;Licensed under the MPL 2.0. Website: https://rabbitmq.com&#39;, &#39;platform&#39;: &#39;Erlang/OTP 24.2.1&#39;, &#39;product&#39;: &#39;RabbitMQ&#39;, &#39;version&#39;: &#39;3.9.13&#39;}, mechanisms: [b&#39;PLAIN&#39;, b&#39;AMQPLAIN&#39;], locales: [&#39;en_US&#39;]
-2023-05-27 11:02:29,890 [DEBUG] amqp __init__ using channel_id: 1
-2023-05-27 11:02:29,890 [DEBUG] amqp _on_open_ok Channel open
-2023-05-27 11:02:29,891 [DEBUG] sarracenia.moth.amqp __putSetup putSetup ... 1. declaring xpublic
-2023-05-27 11:02:29,892 [INFO] sarracenia.moth.amqp __putSetup exchange declared: xpublic (as: amqp://tfeed@localhost)
-2023-05-27 11:02:29,892 [DEBUG] sarracenia.moth.amqp __putSetup putSetup ... Done!
-</pre></div></div>
 </div>
 <p>next we create a text file…</p>
 <div class="nbinput nblast docutils container">
@@ -183,9 +177,21 @@
 </div>
 <div class="output_area stderr docutils container">
 <div class="highlight"><pre>
-2023-05-27 11:02:41,866 [DEBUG] sarracenia __computeIdentity xattr sum too old
-2023-05-27 11:02:41,868 [DEBUG] sarracenia.moth.amqp putNewMessage published body: {&#34;pubTime&#34;: &#34;20230527T150241.865911961&#34;, &#34;relPath&#34;: &#34;sample.txt&#34;, &#34;baseUrl&#34;: &#34;http://host&#34;, &#34;mode&#34;: &#34;664&#34;, &#34;size&#34;: 335, &#34;mtime&#34;: &#34;20230527T150237.927556038&#34;, &#34;atime&#34;: &#34;20230525T031938.0635721684&#34;, &#34;identity&#34;: {&#34;method&#34;: &#34;sha512&#34;, &#34;value&#34;: &#34;w5ZwUT1IMAjnQT6TLR9NSLzG5RKijhxq46FjMx5UWtsHM/FNOaYNRmGwonIPfnhE5xUORf3z5dRyI6zdL6ygNw==&#34;}} headers: {} to xpublic under: v03
-2023-05-27 11:02:41,868 [DEBUG] amqp collect Closed channel #1
+2025-05-06 23:26:38,784 [DEBUG] sarracenia computeIdentity xattr sum too old
+2025-05-06 23:26:38,784 [DEBUG] sarracenia computeIdentity mtime persisted, calc_method: sha512
+2025-05-06 23:26:38,791 [DEBUG] amqp _on_start Start from server, version: 0.9, properties: {&#39;capabilities&#39;: {&#39;publisher_confirms&#39;: True, &#39;exchange_exchange_bindings&#39;: True, &#39;basic.nack&#39;: True, &#39;consumer_cancel_notify&#39;: True, &#39;connection.blocked&#39;: True, &#39;consumer_priorities&#39;: True, &#39;authentication_failure_close&#39;: True, &#39;per_consumer_qos&#39;: True, &#39;direct_reply_to&#39;: True}, &#39;cluster_name&#39;: &#39;rabbit@fractal&#39;, &#39;copyright&#39;: &#39;Copyright (c) 2007-2023 VMware, Inc. or its affiliates.&#39;, &#39;information&#39;: &#39;Licensed under the MPL 2.0. Website: https://rabbitmq.com&#39;, &#39;platform&#39;: &#39;Erlang/OTP 25.3.2.8&#39;, &#39;product&#39;: &#39;RabbitMQ&#39;, &#39;version&#39;: &#39;3.12.1&#39;}, mechanisms: [b&#39;PLAIN&#39;, b&#39;AMQPLAIN&#39;], locales: [&#39;en_US&#39;]
+2025-05-06 23:26:38,792 [DEBUG] amqp __init__ using channel_id: 1
+2025-05-06 23:26:38,793 [DEBUG] amqp _on_open_ok Channel open
+2025-05-06 23:26:38,793 [DEBUG] amqp __init__ using channel_id: 2
+2025-05-06 23:26:38,794 [DEBUG] amqp _on_open_ok Channel open
+2025-05-06 23:26:38,794 [DEBUG] sarracenia.moth.amqp putSetup putSetup ... 1. connected to amqp://tfeed@localhost
+2025-05-06 23:26:38,794 [DEBUG] sarracenia.moth.amqp putSetup putSetup ... 1. declaring [&#39;xpublic&#39;]
+2025-05-06 23:26:38,801 [INFO] sarracenia.moth.amqp putSetup exchange declared: xpublic (as: amqp://tfeed@localhost)
+2025-05-06 23:26:38,801 [DEBUG] sarracenia.moth.amqp putSetup putSetup ... Done!
+2025-05-06 23:26:38,802 [DEBUG] sarracenia.moth.amqp putNewMessage trying to publish body: {&#34;pubTime&#34;: &#34;20250507T032638.783895254&#34;, &#34;relPath&#34;: &#34;sample.txt&#34;, &#34;baseUrl&#34;: &#34;http://host&#34;, &#34;mode&#34;: &#34;664&#34;, &#34;size&#34;: 335, &#34;mtime&#34;: &#34;20250507T032633.59650135&#34;, &#34;atime&#34;: &#34;20250507T032516.539411545&#34;, &#34;identity&#34;: {&#34;method&#34;: &#34;sha512&#34;, &#34;value&#34;: &#34;w5ZwUT1IMAjnQT6TLR9NSLzG5RKijhxq46FjMx5UWtsHM/FNOaYNRmGwonIPfnhE5xUORf3z5dRyI6zdL6ygNw==&#34;}, &#34;contentType&#34;: &#34;text/plain&#34;} headers: {} to xpublic under: v03.post
+2025-05-06 23:26:38,803 [DEBUG] sarracenia.moth.amqp putNewMessage published body: {&#34;pubTime&#34;: &#34;20250507T032638.783895254&#34;, &#34;relPath&#34;: &#34;sample.txt&#34;, &#34;baseUrl&#34;: &#34;http://host&#34;, &#34;mode&#34;: &#34;664&#34;, &#34;size&#34;: 335, &#34;mtime&#34;: &#34;20250507T032633.59650135&#34;, &#34;atime&#34;: &#34;20250507T032516.539411545&#34;, &#34;identity&#34;: {&#34;method&#34;: &#34;sha512&#34;, &#34;value&#34;: &#34;w5ZwUT1IMAjnQT6TLR9NSLzG5RKijhxq46FjMx5UWtsHM/FNOaYNRmGwonIPfnhE5xUORf3z5dRyI6zdL6ygNw==&#34;}, &#34;contentType&#34;: &#34;text/plain&#34;} headers: {} to xpublic under: v03.post
+2025-05-06 23:26:38,804 [DEBUG] amqp collect Closed channel #1
+2025-05-06 23:26:38,804 [DEBUG] amqp collect Closed channel #2
 </pre></div></div>
 </div>
 <div class="nboutput nblast docutils container">
@@ -193,7 +199,7 @@
 </div>
 <div class="output_area docutils container">
 <div class="highlight"><pre>
-{&#39;_format&#39;: &#39;v03&#39;, &#39;_deleteOnPost&#39;: {&#39;local_offset&#39;, &#39;new_baseUrl&#39;, &#39;new_dir&#39;, &#39;new_subtopic&#39;, &#39;new_file&#39;, &#39;subtopic&#39;, &#39;_format&#39;, &#39;exchange&#39;, &#39;new_relPath&#39;, &#39;post_format&#39;}, &#39;exchange&#39;: &#39;xpublic&#39;, &#39;local_offset&#39;: 0, &#39;pubTime&#39;: &#39;20230527T150241.865911961&#39;, &#39;new_dir&#39;: &#39;/tmp&#39;, &#39;new_file&#39;: &#39;sample.txt&#39;, &#39;post_format&#39;: &#39;v03&#39;, &#39;new_baseUrl&#39;: &#39;http://host&#39;, &#39;new_relPath&#39;: &#39;sample.txt&#39;, &#39;new_subtopic&#39;: [], &#39;relPath&#39;: &#39;sample.txt&#39;, &#39;subtopic&#39;: [], &#39;baseUrl&#39;: &#39;http://host&#39;, &#39;mode&#39;: &#39;664&#39;, &#39;size&#39;: 335, &#39;mtime&#39;: &#39;20230527T150237.927556038&#39;, &#39;atime&#39;: &#39;20230525T031938.0635721684&#39;, &#39;identity&#39;: {&#39;method&#39;: &#39;sha512&#39;, &#39;value&#39;: &#39;w5ZwUT1IMAjnQT6TLR9NSLzG5RKijhxq46FjMx5UWtsHM/FNOaYNRmGwonIPfnhE5xUORf3z5dRyI6zdL6ygNw==&#39;}}
+{&#39;_format&#39;: &#39;v03&#39;, &#39;_deleteOnPost&#39;: {&#39;subtopic&#39;, &#39;_format&#39;, &#39;post_format&#39;, &#39;exchange&#39;, &#39;new_file&#39;, &#39;new_dir&#39;, &#39;local_offset&#39;, &#39;new_relPath&#39;, &#39;new_baseUrl&#39;, &#39;new_subtopic&#39;}, &#39;exchange&#39;: [&#39;xpublic&#39;], &#39;local_offset&#39;: 0, &#39;pubTime&#39;: &#39;20250507T032638.783895254&#39;, &#39;new_dir&#39;: &#39;/tmp&#39;, &#39;new_file&#39;: &#39;sample.txt&#39;, &#39;new_baseUrl&#39;: &#39;http://host&#39;, &#39;new_relPath&#39;: &#39;sample.txt&#39;, &#39;new_subtopic&#39;: [], &#39;relPath&#39;: &#39;sample.txt&#39;, &#39;subtopic&#39;: [], &#39;baseUrl&#39;: &#39;http://host&#39;, &#39;mode&#39;: &#39;664&#39;, &#39;size&#39;: 335, &#39;mtime&#39;: &#39;20250507T032633.59650135&#39;, &#39;atime&#39;: &#39;20250507T032516.539411545&#39;, &#39;identity&#39;: {&#39;method&#39;: &#39;sha512&#39;, &#39;value&#39;: &#39;w5ZwUT1IMAjnQT6TLR9NSLzG5RKijhxq46FjMx5UWtsHM/FNOaYNRmGwonIPfnhE5xUORf3z5dRyI6zdL6ygNw==&#39;}, &#39;contentType&#39;: &#39;text/plain&#39;}
 </pre></div></div>
 </div>
 <p>One can post as many messages as needed with putNewMessage, when finished with posting files, to shut down the connection with the broker cleanly, please close the posting_engine.</p>

@@ -658,7 +658,7 @@
         <span class="k">if</span> <span class="s1">&#39;mtime&#39;</span> <span class="ow">in</span> <span class="n">msg</span><span class="p">:</span>
             <span class="n">xattr</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="s1">&#39;mtime&#39;</span><span class="p">,</span> <span class="n">msg</span><span class="p">[</span><span class="s1">&#39;mtime&#39;</span><span class="p">])</span>
 
-        <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;mtime persisted, calc_method: </span><span class="si">{calc_method}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span> <span class="sa">f</span><span class="s2">&quot;mtime persisted, calc_method: </span><span class="si">{</span><span class="n">calc_method</span><span class="si">}</span><span class="s2">&quot;</span> <span class="p">)</span>
 
         <span class="k">if</span> <span class="n">calc_method</span><span class="p">[:</span><span class="mi">4</span><span class="p">]</span> <span class="o">==</span> <span class="s1">&#39;cod,&#39;</span> <span class="ow">and</span> <span class="nb">len</span><span class="p">(</span><span class="n">calc_method</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">2</span><span class="p">:</span>
             <span class="n">sumstr</span> <span class="o">=</span> <span class="n">calc_method</span>
@@ -886,16 +886,8 @@
         <span class="n">msg</span> <span class="o">=</span> <span class="n">Message</span><span class="p">()</span>
 
         <span class="c1">#FIXME no variable substitution... o.variableExpansion ?</span>
-        <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">o</span><span class="p">,</span><span class="s1">&#39;post_format&#39;</span><span class="p">)</span> <span class="p">:</span>
-            <span class="n">msg</span><span class="p">[</span><span class="s1">&#39;_format&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">o</span><span class="o">.</span><span class="n">post_format</span>
-        <span class="k">elif</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">o</span><span class="p">,</span><span class="s1">&#39;post_topicPrefix&#39;</span><span class="p">)</span> <span class="ow">and</span> <span class="n">o</span><span class="o">.</span><span class="n">post_topicPrefix</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="ow">in</span> <span class="p">[</span> <span class="s1">&#39;v02&#39;</span><span class="p">,</span> <span class="s1">&#39;v03&#39;</span> <span class="p">]:</span>
-            <span class="n">msg</span><span class="p">[</span><span class="s1">&#39;_format&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">o</span><span class="o">.</span><span class="n">post_topicPrefix</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
-        <span class="k">else</span><span class="p">:</span>
-            <span class="n">msg</span><span class="p">[</span><span class="s1">&#39;_format&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;v03&#39;</span>
 
-        <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">o</span><span class="p">,</span> <span class="s1">&#39;post_exchange&#39;</span><span class="p">):</span>
-            <span class="n">msg</span><span class="p">[</span><span class="s1">&#39;exchange&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">o</span><span class="o">.</span><span class="n">post_exchange</span>
-        <span class="k">elif</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">o</span><span class="p">,</span> <span class="s1">&#39;exchange&#39;</span><span class="p">):</span>
+        <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">o</span><span class="p">,</span> <span class="s1">&#39;exchange&#39;</span><span class="p">):</span>
             <span class="n">msg</span><span class="p">[</span><span class="s1">&#39;exchange&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">o</span><span class="o">.</span><span class="n">exchange</span>
 
         <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">o</span><span class="p">,</span> <span class="s1">&#39;blockSize&#39;</span><span class="p">)</span> <span class="ow">and</span> <span class="p">(</span><span class="n">o</span><span class="o">.</span><span class="n">blockSize</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">)</span> <span class="ow">and</span> <span class="n">lstat</span> <span class="ow">and</span> \
@@ -1078,7 +1070,7 @@
 
 <div class="viewcode-block" id="Message.updatePaths">
 <a class="viewcode-back" href="../api-documentation.html#sarracenia.Message.updatePaths">[docs]</a>
-    <span class="k">def</span> <span class="nf">updatePaths</span><span class="p">(</span><span class="n">msg</span><span class="p">,</span> <span class="n">options</span><span class="p">,</span> <span class="n">new_dir</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">new_file</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">updatePaths</span><span class="p">(</span><span class="n">msg</span><span class="p">,</span> <span class="n">options</span><span class="p">,</span> <span class="n">new_dir</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">new_file</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">publisher_index</span><span class="o">=</span><span class="mi">0</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        set the new_* fields in the message based on changed file placement.</span>
 <span class="sd">        if new_* options are ommitted updaste the rest of the fields in </span>
@@ -1121,11 +1113,18 @@
     
         <span class="n">newFullPath</span> <span class="o">=</span> <span class="n">new_dir</span> <span class="o">+</span> <span class="s1">&#39;/&#39;</span> <span class="o">+</span> <span class="n">new_file</span>
         
+        <span class="c1"># post_base settings.</span>
+        <span class="n">setting_post_baseUrl</span><span class="o">=</span><span class="kc">None</span>
+        <span class="n">setting_post_baseDir</span><span class="o">=</span><span class="kc">None</span>
+        <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">options</span><span class="p">,</span><span class="s1">&#39;publishers&#39;</span><span class="p">)</span> <span class="ow">and</span> <span class="nb">len</span><span class="p">(</span><span class="n">options</span><span class="o">.</span><span class="n">publishers</span><span class="p">)</span> <span class="o">&gt;</span> <span class="n">publisher_index</span><span class="p">:</span>
+             <span class="n">setting_post_baseUrl</span> <span class="o">=</span> <span class="n">options</span><span class="o">.</span><span class="n">publishers</span><span class="p">[</span><span class="n">publisher_index</span><span class="p">][</span><span class="s1">&#39;baseUrl&#39;</span><span class="p">]</span>
+             <span class="n">setting_post_baseDir</span> <span class="o">=</span> <span class="n">options</span><span class="o">.</span><span class="n">publishers</span><span class="p">[</span><span class="n">publisher_index</span><span class="p">][</span><span class="s1">&#39;baseDir&#39;</span><span class="p">]</span>
+
         <span class="c1"># post_baseUrl option set in msg overrides other possible options</span>
         <span class="k">if</span> <span class="s1">&#39;post_baseUrl&#39;</span> <span class="ow">in</span> <span class="n">msg</span><span class="p">:</span>
             <span class="n">baseUrl_str</span> <span class="o">=</span> <span class="n">msg</span><span class="p">[</span><span class="s1">&#39;post_baseUrl&#39;</span><span class="p">]</span>
-        <span class="k">elif</span> <span class="n">options</span><span class="o">.</span><span class="n">post_baseUrl</span><span class="p">:</span>
-            <span class="n">baseUrl_str</span> <span class="o">=</span> <span class="n">options</span><span class="o">.</span><span class="n">variableExpansion</span><span class="p">(</span><span class="n">options</span><span class="o">.</span><span class="n">post_baseUrl</span><span class="p">,</span> <span class="n">msg</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="n">setting_post_baseUrl</span><span class="p">:</span>
+            <span class="n">baseUrl_str</span> <span class="o">=</span> <span class="n">options</span><span class="o">.</span><span class="n">variableExpansion</span><span class="p">(</span> <span class="n">setting_post_baseUrl</span><span class="p">,</span> <span class="n">msg</span><span class="p">)</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="k">if</span> <span class="s1">&#39;baseUrl&#39;</span> <span class="ow">in</span> <span class="n">msg</span><span class="p">:</span>
                 <span class="n">baseUrl_str</span> <span class="o">=</span> <span class="n">msg</span><span class="p">[</span><span class="s1">&#39;baseUrl&#39;</span><span class="p">]</span>
@@ -1133,19 +1132,9 @@
                 <span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="s1">&#39;missing post_baseUrl setting&#39;</span><span class="p">)</span>
                 <span class="k">return</span>
 
-        <span class="k">if</span> <span class="n">options</span><span class="o">.</span><span class="n">post_format</span><span class="p">:</span>
-            <span class="n">msg</span><span class="p">[</span><span class="s1">&#39;post_format&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">options</span><span class="o">.</span><span class="n">post_format</span>
-        <span class="k">elif</span> <span class="n">options</span><span class="o">.</span><span class="n">post_topicPrefix</span><span class="p">:</span>
-            <span class="n">msg</span><span class="p">[</span><span class="s1">&#39;post_format&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">options</span><span class="o">.</span><span class="n">post_topicPrefix</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
-        <span class="k">elif</span> <span class="n">options</span><span class="o">.</span><span class="n">topicPrefix</span> <span class="o">!=</span> <span class="n">msg</span><span class="p">[</span><span class="s1">&#39;_format&#39;</span><span class="p">]:</span>
-            <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span> <span class="sa">f</span><span class="s2">&quot;received message in </span><span class="si">{</span><span class="n">msg</span><span class="p">[</span><span class="s1">&#39;_format&#39;</span><span class="p">]</span><span class="si">}</span><span class="s2"> format, expected </span><span class="si">{</span><span class="n">options</span><span class="o">.</span><span class="n">post_topicPrefix</span><span class="si">}</span><span class="s2"> &quot;</span> <span class="p">)</span>
-            <span class="n">msg</span><span class="p">[</span><span class="s1">&#39;post_format&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">options</span><span class="o">.</span><span class="n">topicPrefix</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
-        <span class="k">else</span><span class="p">:</span>
-            <span class="n">msg</span><span class="p">[</span><span class="s1">&#39;post_format&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">msg</span><span class="p">[</span><span class="s1">&#39;_format&#39;</span><span class="p">]</span>
-           
-        <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">options</span><span class="p">,</span> <span class="s1">&#39;post_baseDir&#39;</span><span class="p">)</span> <span class="ow">and</span> <span class="p">(</span> <span class="nb">type</span><span class="p">(</span><span class="n">options</span><span class="o">.</span><span class="n">post_baseDir</span><span class="p">)</span> <span class="ow">is</span> <span class="nb">str</span> <span class="p">)</span> \
-            <span class="ow">and</span> <span class="p">(</span> <span class="nb">len</span><span class="p">(</span><span class="n">options</span><span class="o">.</span><span class="n">post_baseDir</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">):</span>
-            <span class="n">pbd_str</span> <span class="o">=</span> <span class="n">options</span><span class="o">.</span><span class="n">variableExpansion</span><span class="p">(</span><span class="n">options</span><span class="o">.</span><span class="n">post_baseDir</span><span class="p">,</span> <span class="n">msg</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">setting_post_baseDir</span> <span class="ow">and</span> <span class="nb">len</span><span class="p">(</span><span class="n">setting_post_baseDir</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">:</span>
+
+            <span class="n">pbd_str</span> <span class="o">=</span> <span class="n">options</span><span class="o">.</span><span class="n">variableExpansion</span><span class="p">(</span> <span class="n">setting_post_baseDir</span><span class="p">,</span> <span class="n">msg</span><span class="p">)</span>
             <span class="n">parsed_baseUrl</span> <span class="o">=</span> <span class="n">sarracenia</span><span class="o">.</span><span class="n">baseUrlParse</span><span class="p">(</span><span class="n">baseUrl_str</span><span class="p">)</span>
 
             <span class="k">if</span> <span class="n">newFullPath</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="n">pbd_str</span><span class="p">):</span>
@@ -1155,8 +1144,8 @@
                     <span class="n">parsed_baseUrl</span><span class="o">.</span><span class="n">path</span><span class="p">):</span>
                 <span class="n">newFullPath</span> <span class="o">=</span> <span class="n">newFullPath</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="n">parsed_baseUrl</span><span class="o">.</span><span class="n">path</span><span class="p">,</span> <span class="s1">&#39;&#39;</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
 
-        <span class="k">if</span> <span class="p">(</span><span class="s1">&#39;new_dir&#39;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">msg</span><span class="p">)</span> <span class="ow">and</span> <span class="n">options</span><span class="o">.</span><span class="n">post_baseDir</span><span class="p">:</span>
-            <span class="n">msg</span><span class="p">[</span><span class="s1">&#39;new_dir&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">options</span><span class="o">.</span><span class="n">post_baseDir</span>
+        <span class="k">if</span> <span class="p">(</span><span class="s1">&#39;new_dir&#39;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">msg</span><span class="p">)</span> <span class="ow">and</span> <span class="n">setting_post_baseDir</span><span class="p">:</span>
+            <span class="n">msg</span><span class="p">[</span><span class="s1">&#39;new_dir&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">setting_post_baseDir</span>
             
         <span class="n">msg</span><span class="p">[</span><span class="s1">&#39;new_baseUrl&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">baseUrl_str</span>
 

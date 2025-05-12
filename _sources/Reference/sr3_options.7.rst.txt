@@ -524,7 +524,8 @@ broker
 
 **broker [amqp|mqtt]{s}://<user>:<password>@<brokerhost>[:port]/<vhost>**
 
-A URI is used to configure a connection to a notification message pump, either
+The *broker* option is used to identify an upstream source of data.
+the URI argument is used to configure a connection to a notification message pump, either
 an MQTT or an AMQP broker. Some Sarracenia components set a reasonable default for
 that option.  provide the normal user,host,port of connections. In most configuration files,
 the password is missing. The password is normally only included in the 
@@ -533,7 +534,6 @@ the password is missing. The password is normally only included in the
 Sarracenia work has not used vhosts, so **vhost** should almost always be **/**.
 
 for more info on the AMQP URI format: ( https://www.rabbitmq.com/uri-spec.html )
-
 
 either in the default.conf or each specific configuration file.
 The broker option tell each component which broker to contact.
@@ -549,6 +549,9 @@ to exchanges and topics to determine the notification messages of interest.
 This *subtopic* option should appear after the *broker* setting in files
 for the setting to apply to a given queue.
 
+After a subtopic is given, one can configure additional brokers as sources
+for a single running configuration, terminated by an additional corresponding
+subtopic.
 
 bufSize <size> (default: 1MB)
 -----------------------------
@@ -1498,7 +1501,9 @@ passwords in urls.
 post_broker <url>
 -----------------
 
-the broker url to post messages to see `broker <#broker>`_ for details
+The broker url to post messages to after processing. See `broker <#broker>`_ for details
+If multiple post_brokers are given, messages will be posted to multiple destinations.
+
 
 post_exchange <name> (default: xpublic)
 ---------------------------------------
@@ -2013,6 +2018,8 @@ In large data centres, the home directory can be shared among thousands of
 nodes. Statehost adds the node name after the cache directory to make it
 unique to each node. So each node has it's own statefiles and logs.
 example, on a node named goofy,  ~/.cache/sarra/log/ becomes ~/.cache/sarra/goofy/log.
+
+**Because *statehost* modifies settings storage, it must be at the beginning of a configuration file**
 
 strip <count|regexp> (default: 0)
 ---------------------------------

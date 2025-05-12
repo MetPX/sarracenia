@@ -101,7 +101,7 @@
 </li>
 <li class="toctree-l3"><a class="reference internal" href="#periodic-processing">PERIODIC PROCESSING</a><ul>
 <li class="toctree-l4"><a class="reference internal" href="#sanity-log-dead-interval-default-1-5-housekeeping">sanity_log_dead &lt;interval&gt; (default: 1.5*housekeeping)</a></li>
-<li class="toctree-l4"><a class="reference internal" href="#nodup-ttl-off-on-999-default-off">nodup_ttl &lt;off|on|999&gt; (default: off)</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#nodupe-ttl-off-on-999-default-off">nodupe_ttl &lt;off|on|999&gt; (default: off)</a></li>
 </ul>
 </li>
 <li class="toctree-l3"><a class="reference internal" href="#error-recovery">ERROR RECOVERY</a></li>
@@ -890,14 +890,16 @@ sarracenia programs.</p>
 <section id="setting-the-broker">
 <h3>Setting the Broker<a class="headerlink" href="#setting-the-broker" title="Link to this heading"></a></h3>
 <p><strong>broker [amqp|mqtt]{s}://&lt;user&gt;:&lt;password&gt;&#64;&lt;brokerhost&gt;[:port]/&lt;vhost&gt;</strong></p>
-<p>A URI is used to configure a connection to a notification message pump, either
-an MQTT or an AMQP broker. Some Sarracenia components set a reasonable default for
-that option.  provide the normal user,host,port of connections. In most configuration files,
-the password is missing. The password is normally only included in the credentials.conf file.</p>
+<p>A subscription declaration begins with a <em>broker</em> setting. The URI argument
+given to <em>broker</em> is used to configure a connection to a notification message pump,
+either an MQTT or an AMQP broker. Some Sarracenia components set a reasonable default
+for that option.  provide the normal user,host,port of connections.
+In most configuration files, the password is missing. The password is normally only included
+in the credentials.conf file.</p>
 <p>Sarracenia work has not used vhosts, so <strong>vhost</strong> should almost always be <strong>/</strong>.</p>
 <p>for more info on the AMQP URI format: ( <a class="reference external" href="https://www.rabbitmq.com/uri-spec.html">https://www.rabbitmq.com/uri-spec.html</a> )</p>
 <p>either in the default.conf or each specific configuration file.
-The broker option tell each component which broker to contact.</p>
+The <em>broker</em> option tell each component which broker to contact.</p>
 <p><strong>broker [amqp|mqtt]{s}://&lt;user&gt;:&lt;pw&gt;&#64;&lt;brokerhost&gt;[:port]/&lt;vhost&gt;</strong></p>
 <dl class="simple">
 <dt>::</dt><dd><p>(default: None and it is mandatory to set it )</p>
@@ -905,6 +907,10 @@ The broker option tell each component which broker to contact.</p>
 </dl>
 <p>Once connected to an AMQP broker, the user needs to bind a queue
 to exchanges and topics to determine the notification messages of interest.</p>
+<p>After the <em>broker</em> option is given, it needs to be followed by a <em>subtopic</em>
+entry to complete the subscription. Between the two options like:
+<em>topicPrefix</em>, <em>exchange</em>, <em>exchangeSuffix</em>, <em>expire</em>, <em>timeout</em>,
+<em>queueName</em>, etc…  can be used to modify subscription parameters.</p>
 </section>
 <section id="creating-the-queue">
 <h3>Creating the Queue<a class="headerlink" href="#creating-the-queue" title="Link to this heading"></a></h3>
@@ -1028,7 +1034,7 @@ high availability datamart configuration like so:</p>
 <span class="n">broker</span> <span class="n">amqps</span><span class="p">:</span><span class="o">//</span><span class="n">hpfx</span><span class="o">.</span><span class="n">collab</span><span class="o">.</span><span class="n">science</span><span class="o">.</span><span class="n">gc</span><span class="o">.</span><span class="n">ca</span><span class="o">/</span>
 <span class="n">subtopic</span> <span class="o">*.</span><span class="n">WXO</span><span class="o">-</span><span class="n">DD</span><span class="o">.</span><span class="n">bulletins</span><span class="o">.</span><span class="n">alphanumeric</span><span class="o">.</span><span class="c1">#</span>
 
-<span class="n">directory</span> <span class="o">/</span><span class="n">tmp</span><span class="o">/</span><span class="n">hpfx_amis</span><span class="o">/</span>
+<span class="n">directory</span> <span class="o">/</span><span class="n">tmp</span><span class="o">/</span><span class="n">dual_amis</span><span class="o">/</span>
 </pre></div>
 </div>
 <p>The above configuration will create queues on two brokers (dd and hpfx):</p>
@@ -1178,7 +1184,7 @@ credential information to connect to the output <strong>AMQP</strong> broker.</p
 <p><strong>post_broker [amqp|mqtt]{s}://&lt;user&gt;:&lt;pw&gt;&#64;&lt;brokerhost&gt;[:port]/&lt;vhost&gt;</strong></p>
 <p>Once connected to the source AMQP broker, the program builds notifications after
 the download of a file has occurred. To build the notification and send it to
-the next hop broker, the user sets these options :</p>
+the next hop broker, the user sets these options:</p>
 <ul class="simple">
 <li><p><strong>post_baseDir     &lt;path&gt;    (optional)</strong></p></li>
 <li><p><strong>post_topicPrefix &lt;pfx&gt; (default: ‘v03’)</strong></p></li>
@@ -1186,6 +1192,10 @@ the next hop broker, the user sets these options :</p>
 <li><p><strong>post_baseUrl     &lt;url&gt;     (MANDATORY)</strong></p></li>
 </ul>
 <p>FIXME: Examples of what these are for, what they do…</p>
+<p>Supplying additional <em>post_broker</em> options, as well as corresponding
+<em>post_exchange</em>, <em>post_topicPrefix</em>, in the configuration will
+cause the component to send the notification messages to an additional
+destination.</p>
 <section id="naming-exchanges">
 <h3>NAMING EXCHANGES<a class="headerlink" href="#naming-exchanges" title="Link to this heading"></a></h3>
 <ol class="arabic simple">
@@ -2149,8 +2159,8 @@ plugins to run with the <em>on_housekeeping</em> option.</p>
 <p>The <strong>sanity_log_dead</strong> option sets how long to consider too long before restarting
 a component.</p>
 </section>
-<section id="nodup-ttl-off-on-999-default-off">
-<h3>nodup_ttl &lt;off|on|999&gt; (default: off)<a class="headerlink" href="#nodup-ttl-off-on-999-default-off" title="Link to this heading"></a></h3>
+<section id="nodupe-ttl-off-on-999-default-off">
+<h3>nodupe_ttl &lt;off|on|999&gt; (default: off)<a class="headerlink" href="#nodupe-ttl-off-on-999-default-off" title="Link to this heading"></a></h3>
 <p>The cleanup of expired elements in the duplicate suppression store happens at
 each housekeeping.</p>
 </section>
