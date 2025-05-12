@@ -104,7 +104,7 @@ class Raw2bulletin(FlowCB):
                     # Data is not binary
                     data = data.decode(self.o.inputCharset)
             except Exception as e:
-                logger.error(f"Error encountered trying to fetch or decode data. Error message {e}")
+                logger.error(f"Error encountered trying to fetch or decode data. Error message: {e}")
                 worklist.rejected.append(msg)
                 continue
 
