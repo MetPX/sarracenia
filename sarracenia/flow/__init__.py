@@ -860,7 +860,6 @@ class Flow:
         d=None
        
         if 'subcription_index' in msg:
-            logger.critical( f" {msg['subscription_index']=} {self.o.subscriptions=}")
             old_baseDir = self.o.subscriptions[msg['subscription_index']]['baseDir']
         else:
             old_baseDir = self.o.baseDir
