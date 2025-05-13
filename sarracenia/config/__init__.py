@@ -1252,10 +1252,9 @@ class Config:
 
         term = shutil.get_terminal_size((80, 20))
 
-        # for python > 3.7
-        #c = copy.deepcopy(self.dictify())
-        # but older python needs:
-        c = copy.deepcopy(self.dictify())
+        d=copy.deepcopy(self)
+        c=d.dictify()
+
         d={}
         for k in c:
             if k == 'masks':
