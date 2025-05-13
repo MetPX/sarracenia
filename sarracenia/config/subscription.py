@@ -1,5 +1,8 @@
 
+import copy
 import json
+import os
+
 import logging
 
 logger = logging.getLogger(__name__)
@@ -7,48 +10,62 @@ logger = logging.getLogger(__name__)
 
 class Subscription(dict):
 
-    def __init__(self, options, queueName, subtopic):
+    def __init__(self, options, queueName_template, queueName, subtopic):
 
         self['broker'] = options.broker
         self['bindings'] = [ { 'exchange': options.exchange, 'prefix': options.topicPrefix, 'sub': subtopic } ]
 
-        self['queue']={ 'name': queueName, 'cleanup_needed': None }
-        for a in [ 'auto_delete', 'durable', 'expire', 'prefetch', 'qos', 'queueBind', 'queueDeclare' ]:
+        self['queue']={ 'name': queueName, 'template': queueName_template, 'cleanup_needed': None }
+        for a in [ 'queueBind', 'queueDeclare' ]:
             aa = a.replace('queue','').lower()
-            if hasattr(options, a) and getattr(options,a):
+            if hasattr(options, a):
                 self['queue'][aa] = getattr(options,a)
+
+        for a in [ 'auto_delete', 'clean_session', 'durable', 'expire', 'max_inflight_messages', \
+                'max_queued_messages',  'prefetch', 'qos', 'receiveMaximum', 'tlsRigour', 'topic' ]:
+            if hasattr(options, a):
+                self['queue'][a] = getattr(options,a)
+        self['baseDir'] = options.baseDir
+
 
 class Subscriptions(list):
     # list of subscription
 
     def read(self,options,fn):
+
+        if not os.path.exists(fn):
+            return []
+
         try:
             with open(fn,'r') as f:
                 #self=json.loads(f.readlines())
-                self=json.load(f)
+                self=copy.deepcopy(json.load(f))
 
             for s in self:
                 if type(s['broker']) is str:
                     ok, broker = options.credentials.validate_urlstr(s['broker'])
                     if ok:
                         s['broker'] = broker
+            if 'auto_delete' not in self:
+                s['auto_delete'] = options.auto_delete
             return self
+
         except Exception as Ex:
             logger.debug( f"failed {fn}: {Ex}" )
             logger.debug('Exception details: ', exc_info=True)
-            return None
+            return []
 
     def write(self,fn):
 
         jl=[]
         for s in self:
-            jd=s
+            jd=copy.deepcopy(s)
             jd['broker']=str(s['broker'])
             jl.append(jd)
 
         try:
             with open(fn,'w') as f:
-                f.write(json.dumps(jl))
+                f.write(json.dumps(jl,sort_keys=True, indent=4))
         except Exception as Ex:
             logger.error( f"failed: {fn}: {Ex}" )
             logger.debug('Exception details: ', exc_info=True)
@@ -57,7 +74,7 @@ class Subscriptions(list):
 
         found=False
         for s in self:
-            if ( s['broker'] == new_subscription['broker'] ) and \
+            if ( str(s['broker']) == str(new_subscription['broker']) ) and \
                ( s['queue']['name'] == new_subscription['queue']['name'] ):
                newb = new_subscription['bindings'][0]
                for b in s['bindings']:
@@ -74,6 +91,8 @@ class Subscriptions(list):
             
     def deltAnalyze(self, other):
         """
+           NOT IMPLEMENTED!
+
            given one list of subscriptions, and another set of subscriptions.
 
            return the list of subscriptions that are in other, but not in self.

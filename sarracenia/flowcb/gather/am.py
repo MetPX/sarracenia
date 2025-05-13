@@ -36,6 +36,9 @@ Description:
             Binary bulletins are characterised by having certain sets of characters on its second line.
             This option allows to customise which binary strings to look for to determine if a bulletin is binary or not.
 
+        AddSMHeader (bool):
+            When True, add `AAXX ddhhmm4` after the bulletin header.
+
         mapStations2AHL (list):
             Some bulletins need to get their header constructed based on a bulletin station mapping file. In sr3, this file would normally be included as stations.inc.
             The format of a station mapping is the following, and is in relation to what was found on Sundew
@@ -62,6 +65,7 @@ Author:
 """
 
 import logging, socket, struct, time, sys, os, signal, ipaddress, urllib.parse, getpass, psutil
+import re
 from base64 import b64encode
 from random import randint
 from typing import NoReturn
@@ -92,6 +96,7 @@ class Am(FlowCB):
         self.o.add_option('MissingAMHeaders', 'str', 'CN00 CWAO')
         self.o.add_option('mapStations2AHL', 'list', [])
         self.o.add_option('binaryInitialCharacters', 'list', [b'BUFR' , b'GRIB', b'\211PNG'])
+        self.o.add_option('AddSMHeader', 'flag' , True)
 
         self.host = self.url.netloc.split(':')[0]
         self.port = int(self.url.netloc.split(':')[1])
@@ -389,16 +394,22 @@ class Am(FlowCB):
                     break
 
         # From Sundew ->  https://github.com/MetPX/Sundew/blob/main/lib/bulletinAm.py#L114-L115
-        # AddSMHeader is set to True on all operational Sundew configs so no need to add an option
-        if bulletin_firstchars in ["SM", "SI"]:
+        if self.o.AddSMHeader and bulletin_firstchars in ["SM", "SI" ,"SN"]:
+             
+            # Check if a line with [A-Z]{2}XX already exists. 
+            # If it does, we don't want to append an extra line.
+            line2verify = lines[1].split(b' ')[0][0:4]
+            # i.e. line2verify = BBXX
 
-            logger.debug("Adding missing line in SI/SM bulletin")
+            if not re.search(b'[A-Z]{2}XX' , line2verify):
+                logger.debug("Adding missing line in SI/SM bulletin")
 
-            ddhh = lines[0].split(b' ')[2][0:4]
-            line2add = b"AAXX " + ddhh + b"4"
-            lines.insert(1, line2add)
+                ddhh = lines[0].split(b' ')[2][0:4]
+                line2add = b"AAXX " + ddhh + b"4"
+                # i.e. line2add = AAXX 27124
+                lines.insert(1, line2add)
 
-            reconstruct = 1
+                reconstruct = 1
 
         if reconstruct == 1:
            new_bulletin, lines = self.reconstruct_bulletin(lines, new_bulletin)

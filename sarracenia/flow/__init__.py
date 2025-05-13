@@ -858,7 +858,13 @@ class Flow:
             if self.o.post_baseDir:
                 new_dir = self.o.variableExpansion(self.o.post_baseDir, msg)
         d=None
-        if self.o.baseDir:
+       
+        if 'subcription_index' in msg:
+            old_baseDir = self.o.subscriptions[msg['subscription_index']]['baseDir']
+        else:
+            old_baseDir = self.o.baseDir
+
+        if old_baseDir:
             if new_dir:
                 d = new_dir
             elif self.o.post_baseDir:
@@ -928,9 +934,9 @@ class Flow:
                     if f in msg['fileOp']:
                         msg['fileOp'][f] = flatten.join(msg['fileOp'][f].split('/'))
                             
-        if self.o.baseDir:
+        if old_baseDir:
             # remove baseDir from relPath if present.
-            token_baseDir = self.o.baseDir.split('/')[1:]
+            token_baseDir = old_baseDir.split('/')[1:]
             remcnt=0
             if len(token) > len(token_baseDir):
                 for i in range(0,len(token_baseDir)):
@@ -942,11 +948,11 @@ class Flow:
                     token=token[remcnt:] 
 
             if d:
-                if 'fileOp' in msg and len(self.o.baseDir) > 1:
+                if 'fileOp' in msg and len(old_baseDir) > 1:
                     for f in ['link', 'hlink', 'rename']:
                         if (f in msg['fileOp']) :
-                            if msg['fileOp'][f].startswith(self.o.baseDir):
-                                msg['fileOp'][f] = msg['fileOp'][f].replace(self.o.baseDir, d, 1)
+                            if msg['fileOp'][f].startswith(old_baseDir):
+                                msg['fileOp'][f] = msg['fileOp'][f].replace(old_baseDir, d, 1)
 
         elif 'fileOp' in msg and new_dir:
             u = sarracenia.baseUrlParse(msg['baseUrl'])
@@ -1202,6 +1208,56 @@ class Flow:
 
         logger.debug('processing %d messages worked!' % len(self.worklist.ok))
 
+    def work_message_adjust(self,m):
+
+        if ('new_baseUrl' in m) and (m['baseUrl'] !=
+                                     m['new_baseUrl']):
+            m['old_baseUrl'] = m['baseUrl']
+            m['_deleteOnPost'] |= set(['old_baseUrl'])
+            m['baseUrl'] = m['new_baseUrl']
+        if ('new_retrievePath' in m) :
+            m['old_retrievePath'] = m['retrievePath']
+            m['retrievePath'] = m['new_retrievePath']
+            m['_deleteOnPost'] |= set(['old_retrievePath'])
+
+        # if new_file does not match relPath, then adjust relPath so it does.
+        if ( 'relPath' in m ) and ('new_file' in m) and \
+                m['new_file'] != m['relPath'].split('/')[-1]:
+            if not 'new_relPath' in m:
+                if len(m['relPath']) > 1:
+                    m['new_relPath'] = '/'.join( m['relPath'].split('/')[0:-1] + [ m['new_file'] ])
+                else:
+                    m['new_relPath'] = m['new_file']
+            else:
+                if len(m['new_relPath']) > 1:
+                    m['new_relPath'] = '/'.join( m['new_relPath'].split('/')[0:-1] + [ m['new_file'] ] )
+                else:
+                    m['new_relPath'] = m['new_file']
+
+        if ('new_relPath' in m) and ('relPath' in m) \
+                and (m['relPath'] != m['new_relPath']):
+            m['old_relPath'] = m['relPath']
+            m['_deleteOnPost'] |= set(['old_relPath'])
+
+        if 'new_relPath' in m:
+            m['relPath'] = m['new_relPath']
+            if 'subtopic' in m:
+                m['old_subtopic'] = m['subtopic']
+            m['_deleteOnPost'] |= set(['old_subtopic','subtopic'])
+            m['subtopic'] = m['new_subtopic']
+
+        if '_format' in m:
+            m['old_format'] = m['_format']
+            m['_deleteOnPost'] |= set(['old_format'])
+
+        # restore adjustment to fileOp
+        if 'post_fileOp' in m:
+            m['fileOp'] = m['post_fileOp']
+
+        if self.o.download and 'retrievePath' in m:
+            # retrieve paths do not propagate after download.
+            del m['retrievePath'] 
+
     def work(self) -> None:
 
         self.do()
@@ -1212,58 +1268,26 @@ class Flow:
         self.ack(self.worklist.failed)
 
         # adjust message after action is done, but before 'after_work' so adjustment is possible.
+        post_messages=[]
+
         for m in self.worklist.ok:
-            if ('new_baseUrl' in m) and (m['baseUrl'] !=
-                                         m['new_baseUrl']):
-                m['old_baseUrl'] = m['baseUrl']
-                m['_deleteOnPost'] |= set(['old_baseUrl'])
-                m['baseUrl'] = m['new_baseUrl']
-            if ('new_retrievePath' in m) :
-                m['old_retrievePath'] = m['retrievePath']
-                m['retrievePath'] = m['new_retrievePath']
-                m['_deleteOnPost'] |= set(['old_retrievePath'])
-
-            # if new_file does not match relPath, then adjust relPath so it does.
-            if ( 'relPath' in m ) and ('new_file' in m) and \
-                    m['new_file'] != m['relPath'].split('/')[-1]:
-                if not 'new_relPath' in m:
-                    if len(m['relPath']) > 1:
-                        m['new_relPath'] = '/'.join( m['relPath'].split('/')[0:-1] + [ m['new_file'] ])
-                    else:
-                        m['new_relPath'] = m['new_file']
-                else:
-                    if len(m['new_relPath']) > 1:
-                        m['new_relPath'] = '/'.join( m['new_relPath'].split('/')[0:-1] + [ m['new_file'] ] )
-                    else:
-                        m['new_relPath'] = m['new_file']
-
-            if ('new_relPath' in m) and ('relPath' in m) \
-                    and (m['relPath'] != m['new_relPath']):
-                m['old_relPath'] = m['relPath']
-                m['_deleteOnPost'] |= set(['old_relPath'])
-
-            if 'new_relPath' in m:
-                m['relPath'] = m['new_relPath']
-                if 'subtopic' in m:
-                    m['old_subtopic'] = m['subtopic']
-                m['_deleteOnPost'] |= set(['old_subtopic','subtopic'])
-                m['subtopic'] = m['new_subtopic']
-
-            if '_format' in m:
-                m['old_format'] = m['_format']
-                m['_deleteOnPost'] |= set(['old_format'])
-
-            if 'post_format' in m:
-                m['_format'] = m['post_format']
-
-            # restore adjustment to fileOp
-            if 'post_fileOp' in m:
-                m['fileOp'] = m['post_fileOp']
-
-            if self.o.download and 'retrievePath' in m:
-                # retrieve paths do not propagate after download.
-                del m['retrievePath'] 
-
+            if len(self.o.publishers) <= 1: # save creation of new messages (a lot of space & time savings.)
+                self.work_message_adjust(m)
+                m['publisher_index'] = 0
+            else: # replace output messages with 1 per publishing destination.
+                i=0
+                for p in self.o.publishers:
+                    new_m=sarracenia.Message()
+                    new_m.copyDict(m)
+                    new_m['publisher_index'] = i
+                    new_m.updatePaths( self.o, m['new_dir'], m['new_file'], i )
+                    self.work_message_adjust(new_m)
+                    post_messages.append(new_m) 
+                    i += 1
+                    
+        if len(self.o.publishers) > 1:
+            self.worklist.ok=post_messages
+    
         self._runCallbacksWorklist('after_work')
 
         self.ack(self.worklist.rejected)

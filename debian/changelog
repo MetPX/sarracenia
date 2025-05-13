@@ -1,4 +1,10 @@
-metpx-sr3 (3.00.58rc1) unstable; urgency=medium
+metpx-sr3 (3.01.00rc1) UNRELEASED; urgency=medium
+
+  * multiple subscriber and multiple publisher support.
+
+ -- peter <peter@bsqt.homeip.net>  Mon, 12 May 2025 12:11:34 -0400
+
+metpx-sr3 (3.00.58) unstable; urgency=medium
 
   * Azure transfer class improvements
   * Fix #1398. Try a close when EOFError is encountered. (FTP)
@@ -16,7 +22,7 @@ metpx-sr3 (3.00.58rc1) unstable; urgency=medium
   * New #1371: Sets the product name and version for AMQP connections
   * New #1369: add attachment support to email sender plugin
 
- -- Reid Sunderland <reid.sunderland@ssc-spc.gc.ca>  Mon, 17 Mar 2025 19:15:28 +0000
+ -- Reid Sunderland <reid.sunderland@ssc-spc.gc.ca>  Fri, 28 Mar 2025 19:33:15 +0000
 
 metpx-sr3 (3.00.57) unstable; urgency=medium
 
@@ -141,7 +147,7 @@ metpx-sr3 (3.00.54) unstable; urgency=medium
   * enable tests of block transfers #1112
   * fix for #1115: stop won't start, or foreground won't
   * fix redis unit tests broken by inclusion of _name var.
-  * NEW #1084 add metadata fetch to scheduled http.
+  * NEW #1084 add metadata fetch to scheduled http. 
   * NEW #1104 (EXPERIMENTAL) restored block partitioned transfers.
   * fix #1104 add message per cpu second and cpuS state.
   * only run after_post when actually posted #1101
@@ -170,7 +176,6 @@ metpx-sr3 (3.00.54) unstable; urgency=medium
   * search function restored on web-site documentation. ( #1062, #1072)
 
  -- SSC-5CD2310S60 <andre.leblanc@ssc-spc.gc.ca>  Fri, 12 Aug 2024 12:29:22 -0400
-
 
 metpx-sr3 (3.00.53) unstable; urgency=medium
 

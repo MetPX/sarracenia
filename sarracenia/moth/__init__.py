@@ -12,7 +12,6 @@ logger = logging.getLogger(__name__)
 default_options = {
     'acceptUnmatched': True,
     'batch': 100,
-    'bindings': [],
     'broker': None,
     'dry_run': False,
     'exchange': 'xpublic',
@@ -189,7 +188,7 @@ class Moth():
 
        *  'queueName'  : Mandatory, name of a queue. (only in AMQP... hmm...)
 
-       *  'bindings' : [ list of bindings ]
+       *  'subscriptions' : [ list of config.subscription.Subscription ]
 
        *  'loop'
 
@@ -206,15 +205,20 @@ class Moth():
     @staticmethod
     def subFactory(props) -> 'Moth':
 
-        if not props['broker'] :
+        if 'subscription_index' in props:
+            subIndex = props['subscription_index']
+            broker = props['subscriptions'][subIndex]['broker']
+        elif not props['broker'] :
             logger.error('no broker specified')
             return None
+        else:
+            broker = props['broker']
 
-        if not hasattr(props['broker'],'url'):
+        if not hasattr(broker,'url'):
             logger.error('invalid broker url')
             return None
 
-        if not ProtocolPresent(props['broker'].url.scheme):
+        if not ProtocolPresent(broker.url.scheme):
            logger.error('unknown broker scheme/protocol specified')
            return None
 
@@ -227,7 +231,7 @@ class Moth():
                 if driver == 'amqpconsumer':
                     # driver needs to be amqp to match with the broker URL's scheme
                     driver = 'amqp'
-            scheme=props['broker'].url.scheme
+            scheme=broker.url.scheme
             if (scheme == driver) or \
                ( (scheme[0:-1] == driver) and (scheme[-1] in [ 's', 'w' ])) or \
                ( (scheme[0:-2] == driver) and (scheme[-2] == 'ws')):
@@ -237,28 +241,36 @@ class Moth():
 
     @staticmethod
     def pubFactory(props) -> 'Moth':
-        if not props['broker']:
+        if 'publisher_index' in props:
+            pubIndex = props['publisher_index']
+            publisher = props['publishers'][pubIndex]
+            broker = publisher['broker']
+            props['broker'] = broker
+            props['exchange'] = publisher['exchange']
+        elif not props['broker']:
             logger.error('no broker specified')
             return None
+        else:
+            broker = props['broker']
 
-        if not hasattr(props['broker'],'url'):
-            logger.error('invalid broker url')
+        if not hasattr(broker,'url'):
+            logger.error( f"invalid broker url: {str(broker)} {type(broker)}")
             return None
 
-        if not ProtocolPresent(props['broker'].url.scheme):
-           logger.error('unknown broker scheme/protocol specified')
-           return None
+        if not ProtocolPresent(broker.url.scheme):
+            logger.error( f"unknown broker scheme/protocol specified: {broker.url.scheme}")
+            return None
 
+        scheme=broker.url.scheme
         for sc in Moth.__subclasses__():
             driver=sc.__name__.lower()
-            scheme=props['broker'].url.scheme
             if (scheme == driver) or \
                ( (scheme[0:-1] == driver) and (scheme[-1] in [ 's', 'w' ])) or \
                ( (scheme[0:-2] == driver) and (scheme[-2] == 'ws')):
                 return sc(props, False)
 
         # ProtocolPresent test should ensure that we never get here...
-        logger.error('broker intialization failure')
+        logger.error('broker {str(broker)} intialization failure')
         return None
     
     @staticmethod
@@ -302,6 +314,19 @@ class Moth():
             self.o.update(props)
 
         me = 'sarracenia.moth.Moth'
+
+        if is_subscriber:
+            if 'subscriber_index' in self.o:
+                subscription=self.o['subscriptions'][self.o['subscription_index']]
+                broker = subscription['broker']
+                self.o['broker'] = broker
+                self.o['exchange'] = subscription['exchange']
+        else:
+            if 'publisher_index' in self.o:
+                publisher=self.o['publishers'][self.o['publisher_index']]
+                self.o['broker'] = publisher['broker']
+                self.o['exchange'] = publisher['exchange']
+                self.o['topicPrefix'] = publisher['topicPrefix']
 
         # apply settings from props.
         if 'settings' in self.o:
@@ -434,7 +459,6 @@ class Moth():
         ebo = 2**self.next_connect_failures
         next_try = min(attempt_duration * ebo, 600)
         self.next_connect_time = now + next_try
-        logger.error( f"could not connect. next try in {next_try} seconds.")
 
     def splitPick(self,message) -> int:
         """

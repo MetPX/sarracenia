@@ -14,17 +14,27 @@ Packaged releases are always preferable to one off builds, because they are repr
 
 To publish a pre-release one needs to:
 
-- starting with the development branch (for sr3) or v2_dev (for v2.)
-  * git checkout development 
-  * git pull
-  * git checkout development_py36
-  * git pull
-  * git merge --strategy-option=theirs development
+- review debian/changelog and update it based on all merges to the branch since previous release::
+
+     git checkout development
+     git log | less
+     vi debian/changelog
+     git commit -a -m "last changes for release"
+     git push
+
+- starting with the development branch (for sr3) or v2_dev (for v2.) ::
+
+    git checkout development 
+    git pull
+    git checkout development_py36
+    git pull
+    git merge --strategy-option=theirs development
+    git push
 
 - validate that the correct version of C stack will be running when running flow tests.
   on each server::
 
-      * sr3_cpost -h | head -3
+      sr3_cpost -h | head -3
 
   Is that the version wanted?
   Consult C installation/release info to make sure you have the version you want
@@ -36,69 +46,92 @@ To publish a pre-release one needs to:
 
 - run QA process on all operating systems looking for regressions on older 3.6-based ones.
 
-  - github runs flow tests for ubuntu 20.04 and 22.04, review those results.
+  - github runs flow tests for ubuntu 22.04 and 24.04, review those results.
   - github runs unit tests (only work on newer python versions.), review those results.
-  - find ubuntu 18.04 server. build local package, run flow tests.
-         * git checkout development_py36
-         * python3 setup.py bdist_rpm*
-         * run flow tests:
+  - find ubuntu 18.04 server. build local package, run flow tests::
 
-           * cd ~/sr_insects;
-           * for flow_test in static_flow flakey_broker restart_server dyncamic_flow; do
+         git checkout development_py36
+         python3 setup.py bdist_wheel
+         pip3 install dist/metpx_sr3-${VERSION}-py3-none-any.whl
 
-             - cd $flow_test
-             - ./flow_setup.sh && ./flow_limit.sh && ./flow_check.sh
-             - # study results.
-             - ./flow_cleanup.sh
-             - cd ..
+         # check version, the output should match the version you're working on
+         sr3 --version
+         
+         # run flow tests:
+
+          cd ~/sr_insects;
+          for flow_test in static_flow flakey_broker restart_server dynamic_flow; do
+
+             cd $flow_test
+             ./flow_setup.sh && ./flow_limit.sh && ./flow_check.sh
+             # study results.
+             ./flow_cleanup.sh
+             cd ..
+
+  - find ubuntu 20.04 server. build local package, run flow tests::
+
+         git checkout development
+         pip3 install -e .
+         
+         # run flow tests:
+
+          cd ~/sr_insects;
+          for flow_test in static_flow flakey_broker restart_server dynamic_flow; do
+
+             cd $flow_test
+             ./flow_setup.sh && ./flow_limit.sh && ./flow_check.sh
+             # study results.
+             ./flow_cleanup.sh
+             cd ..
 
   - find redhat 8 server.  build package::
    
-         * git checkout development_py36
-         * git pull
-         * python3 setup.py bdist_rpm*
-         * run flow tests
+         git checkout development_py36
+         git pull
+         python3 setup.py bdist_rpm
+         rpm -i dist/metpx-sr3-${VERSION}-1.noarch.rpm
+
+         # check version, the output should match the version you're working on
+         sr3 --version
+
+         # run flow tests
 
   - find redhat 9 server,  build package::
 
-         * git checkout development_py36
-         * git pull
-         * python3 setup.py bdist_rpm*
-         * run flow tests
+         git checkout development_py36
+         git pull
+         python3 setup.py bdist_rpm
+         rpm -i dist/metpx-sr3-${VERSION}-1.noarch.rpm
 
+         # check version, the output should match the version you're working on
+         sr3 --version
 
-- review debian/changelog and update it based on all merges to the branch since previous release.
+         # run flow tests
 
-     * git checkout development
-     * git log | less
-     * vi debian/changelog
-     * git commit -a -m "last changes for release"
-     * git push
+- Set the pre-release tags::
 
-- Set the pre-release tags.
+     git pull
+     git checkout development_py36
+     git pull
+     git tag -a o3.xx.yyrcz -m "pre-release o3.xx.yy.rcz"
+     git pull 
+     git checkout pre_release_py36
+     git pull
+     git merge --strategy-option=theirs development_py36
+     git push
+     git push origin o3.xx.yyrcz
 
-     * git pull
-     * git checkout development_py36
-     * git pull
-     * git tag -a o3.xx.yyrcz -m "pre-release o3.xx.yy.rcz"
-     * git pull 
-     * git checkout pre_release_py36
-     * git pull
-     * git merge --strategy-option=theirs development_py36
-     * git push
-     * git push origin o3.xx.yyrcz
-
-     * git checkout development
-     * git tag -a v3.xx.yy.rcZ -m "pre-release v3.xx.yy.rcz"
-     * git checkout pre_release
-     * git pull
-     * git merge --strategy-option=theirs development
-     * git push
-     * git push origin v3.xx.yyrcz
+     git checkout development
+     git tag -a v3.xx.yy.rcZ -m "pre-release v3.xx.yy.rcz"
+     git checkout pre-release
+     git pull
+     git merge --strategy-option=theirs development
+     git push
+     git push origin v3.xx.yyrcz
 
 
 
-- pypi.org
+- Publish to pypi.org
 
   - to ensure compatiblity with python3.6, update a python3.6 branch (for redhat 8 and/or ubuntu 18.)
   - use the python3.6 branch to release to pypi (because upward compatibility works, but not downward.)
@@ -118,6 +151,7 @@ To publish a pre-release one needs to:
 
       * pre-release branch ready.
       * pre-release_py36 branch ready.
+
   * update git repository (Import now): https://code.launchpad.net/~ssc-hpc-chp-spc/metpx-sarracenia/+git/trunk
 
       * do: **Import Now**
@@ -138,12 +172,26 @@ To publish a pre-release one needs to:
         git pull
         python3 setup.py bdist_rpm 
 
+        # rename RPMs to add rh8, e.g. metpx-sr3-3.0.57-rh8-1.....rpm
     
   - find redhat 9 server, build package::
 
         git checkout pre-release_py36
         git pull
         python3 setup.py bdist_rpm 
+
+        # rename RPMs to add rh9, e.g. metpx-sr3-3.0.57-rh9-1.....rpm
+
+- build Windows installer:
+
+  - from an Ubuntu system::
+    
+      # if not already installed:
+      sudo apt install nsis
+      pip3 install pynsist wheel
+
+      git checkout pre-release
+      ./generate-win-installer.sh 3.10.11 2>&1 > log.txt
 
 - on github: Draft a release.
 

@@ -147,6 +147,8 @@ class Credential:
 
         return s
 
+    def to_json(self):
+        return f"\"{str(self)}\""
 
 class CredentialDB:
     """Parses, stores and manages Credential objects.

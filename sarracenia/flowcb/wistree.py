@@ -70,8 +70,7 @@ class Wistree(FlowCB):
                     mtype='unknown'
 
                 msg['links'] =  { "href": msg['baseUrl'] + '/' + msg['relPath'], 'rel':'canonical', 'type': mtype }
-                msg.updatePaths(self.o, new_baseDir + os.sep + new_relDir,
-                                new_file)
+                msg.updatePaths(self.o, new_baseDir + os.sep + new_relDir, new_file)
 
             except Exception as ex:
                 logger.error("failed to map %s to a topic, skipped." %

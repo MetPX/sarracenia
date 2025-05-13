@@ -38,6 +38,19 @@ Instructions d’installation
 git
 ---
 
+3.0.59
+------
+
+
+*CHANGEMENT* : les *bindings* de l'API Python sont remplacées par des *subscriptions*. L'API est très différente, voir les exemples.
+Les *subscriptions* permettent l'usage  de plusieurs files d'attente et de plusieurs courtiers pour les abonnements.
+
+
+3.0.58
+------
+
+*CHANGEMENT* : l'ancien ``nodupe_basis name`` a été renommé en ``nodupe_basis name_only``. Les fichiers de configuration devront être mis à jour pour changer **name** à **name_only**.
+
 3.0.56
 ------
 

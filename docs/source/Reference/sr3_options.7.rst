@@ -524,7 +524,8 @@ broker
 
 **broker [amqp|mqtt]{s}://<user>:<password>@<brokerhost>[:port]/<vhost>**
 
-A URI is used to configure a connection to a notification message pump, either
+The *broker* option is used to identify an upstream source of data.
+the URI argument is used to configure a connection to a notification message pump, either
 an MQTT or an AMQP broker. Some Sarracenia components set a reasonable default for
 that option.  provide the normal user,host,port of connections. In most configuration files,
 the password is missing. The password is normally only included in the 
@@ -533,7 +534,6 @@ the password is missing. The password is normally only included in the
 Sarracenia work has not used vhosts, so **vhost** should almost always be **/**.
 
 for more info on the AMQP URI format: ( https://www.rabbitmq.com/uri-spec.html )
-
 
 either in the default.conf or each specific configuration file.
 The broker option tell each component which broker to contact.
@@ -549,6 +549,9 @@ to exchanges and topics to determine the notification messages of interest.
 This *subtopic* option should appear after the *broker* setting in files
 for the setting to apply to a given queue.
 
+After a subtopic is given, one can configure additional brokers as sources
+for a single running configuration, terminated by an additional corresponding
+subtopic.
 
 bufSize <size> (default: 1MB)
 -----------------------------
@@ -1226,7 +1229,7 @@ be rejected when consuming. Messages older than Max value are discarded
 by the subscriber. (0 means no maximum age) 
 
 
-mirror <flag> (default: off)
+mirror <flag> (default: on (except subscribe))
 ----------------------------
 
 The  **mirror**  option can be used to mirror the dd.weather.gc.ca tree of the files.
@@ -1244,6 +1247,16 @@ For example retrieving the following url, with options::
 would result in the creation of the directories and the file
 /mylocaldirectory/radar/PRECIP/GIF/WGJ/201312141900_WGJ_PRECIP_SNOW.gif
 mirror settings can be changed between directory options.
+For a *mirror* setting to be effective, it needs to occur before the *accept*
+line in the configuration file.
+
+The *subscribe* component is usually used by end users for download, and
+*mirror off* means the *directory* setting will show exactly where the files
+are downloaded to.
+
+All the other components are used in data pumps, and usually preserving
+the entire tree is the desired behaviour. So for all other components
+*mirror on* is the default.
 
 no <count>
 ----------
@@ -1488,7 +1501,9 @@ passwords in urls.
 post_broker <url>
 -----------------
 
-the broker url to post messages to see `broker <#broker>`_ for details
+The broker url to post messages to after processing. See `broker <#broker>`_ for details
+If multiple post_brokers are given, messages will be posted to multiple destinations.
+
 
 post_exchange <name> (default: xpublic)
 ---------------------------------------
@@ -1617,26 +1632,26 @@ queueName|queue|queue_name|qn
 By default, components create a queue name that should be unique. The
 default queueName components create follows the following convention:
 
-   **q_<brokerUser>.<programName>.<configName>.<queueShare>**
+   **q_${BROKER_USER}.${COMPONENT}.${CONFIG}.${QUEUESHARE}**
 
 Where:
 
-* *brokerUser* is the username used to connect to the broker (often: *anonymous* )
+* *BROKER_USER* is the username used to connect to the broker (often: *anonymous* )
 
-* *programName* is the component using the queue (e.g. *subscribe* ),
+* *COMPONENT* is the progream using the queue (e.g. *subscribe* ),
 
-* *configName* is the configuration file used to tune component behaviour.
+* *CONFIG* is the configuration file used to tune component behaviour.
 
-* *queueShare* defaults to ${USER}_${HOSTNAME}_${RAND8} but should be overridden with the 
+* *QUEUESHARE* defaults to ${USER}_${HOSTNAME}_${RAND8} but should be overridden with the 
   *queueShare* configuration option.
 
 Users can override the default provided that it starts with **q_<brokerUser>**.
 
 When multiple instances are used, they will all use the same queue, for trivial
 multi-tasking. If multiple computers have a shared home file system, then the
-queueName is written to:
+queueName is among the settings written to:
 
- ~/.cache/sarra/<programName>/<configName>/<programName>_<configName>_<brokerUser>.qname
+ ~/.cache/sr3/${COMPONENT}/${CONFIG}/subscriptions.json
 
 Instances started on any node with access to the same shared file will use the
 same queue. Some may want use the *queueName* option as a more explicit method
@@ -2003,6 +2018,8 @@ In large data centres, the home directory can be shared among thousands of
 nodes. Statehost adds the node name after the cache directory to make it
 unique to each node. So each node has it's own statefiles and logs.
 example, on a node named goofy,  ~/.cache/sarra/log/ becomes ~/.cache/sarra/goofy/log.
+
+**Because *statehost* modifies settings storage, it must be at the beginning of a configuration file**
 
 strip <count|regexp> (default: 0)
 ---------------------------------
