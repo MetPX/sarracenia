@@ -12,7 +12,7 @@ import urllib.request
 import xml.etree.ElementTree as ET
 
 
-options = sarracenia.moth.default_options
+options = sarracenia.moth.default_options()
 options.update(sarracenia.moth.amqp.default_options)
 options['broker'] = sarracenia.config.credentials.Credential(
     'amqps://anonymous:anonymous@hpfx.collab.science.gc.ca')
