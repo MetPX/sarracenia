@@ -9,7 +9,7 @@ import sarracenia
 
 logger = logging.getLogger(__name__)
 
-default_options = {
+__default_options = {
     'acceptUnmatched': True,
     'batch': 100,
     'broker': None,
@@ -32,6 +32,23 @@ default_options = {
     'topicPrefix': ['v03'],
     'tlsRigour': 'normal'
 }
+
+def default_options() -> dict:
+        """
+        get default properties to override, used by client for validation. 
+
+        """
+        if (sys.version_info.major == 3) and (sys.version_info.minor < 7):
+            o = {}
+            for k in __default_options:
+                if k == 'masks':
+                    o[k] = __default_options[k]
+                else:
+                    o[k] = copy.deepcopy(__default_options[k])
+        else:
+            o = copy.deepcopy(__default_options)
+
+        return o
 
 def ProtocolPresent(p) -> bool:
     if ( p[0:4] in ['amqp'] ) and sarracenia.features['amqp']['present']:
@@ -95,7 +112,7 @@ class Moth():
            import sarracenia.config.credentials
 
 
-           props = sarracenia.moth.default_options
+           props = sarracenia.moth.default_options()
            props['broker'] = sarracenia.config.credentials.Credential('amqps://anonymous:anonymous@hpfx.collab.science.gc.ca')
            props['expire'] = 300
            props['batch'] = 1
@@ -300,15 +317,7 @@ class Moth():
         self.next_connect_time = now
         self.next_connect_failures = 0
 
-        if (sys.version_info.major == 3) and (sys.version_info.minor < 7):
-            self.o = {}
-            for k in default_options:
-                if k == 'masks':
-                    self.o[k] = default_options[k]
-                else:
-                    self.o[k] = copy.deepcopy(default_options[k])
-        else:
-            self.o = copy.deepcopy(default_options)
+        self.o = default_options()
 
         if props is not None:
             self.o.update(props)
@@ -345,14 +354,6 @@ class Moth():
           If there's no 'ack_id' in the message, you should return True.
         """
         logger.error("ack unimplemented")
-
-    @property
-    def default_options(self) -> dict:
-        """
-        get default properties to override, used by client for validation. 
-
-        """
-        return Moth.__default_options
 
     def getNewMessage(self) -> sarracenia.Message:
         """

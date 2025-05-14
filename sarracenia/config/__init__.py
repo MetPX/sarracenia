@@ -2830,7 +2830,7 @@ def default_config():
     cfg = Config()
     cfg.currentDir = None
     cfg.override(default_options)
-    cfg.override(sarracenia.moth.default_options)
+    cfg.override(sarracenia.moth.default_options())
     if features['amqp']['present']:
         cfg.override(sarracenia.moth.amqp.default_options)
     cfg.override(sarracenia.flow.default_options)
@@ -2851,7 +2851,7 @@ def no_file_config():
     cfg = Config()
     cfg.currentDir = None
     cfg.override(default_options)
-    cfg.override(sarracenia.moth.default_options)
+    cfg.override(sarracenia.moth.default_options())
     if features['amqp']['present']:
         cfg.override(sarracenia.moth.amqp.default_options)
     cfg.override(sarracenia.flow.default_options)

@@ -27,7 +27,7 @@ class Message(FlowCB):
         i=0
 
         for p in self.o.publishers:
-            props = copy.deepcopy(sarracenia.moth.default_options)
+            props = sarracenia.moth.default_options()
             props.update(self.o.dictify())
             props.update(p)
             props['publisher_index']=i
