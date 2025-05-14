@@ -20,7 +20,7 @@ import sys
 if len(sys.argv) > 1:
     broker = sys.argv[1]
 else:
-    broker = 'amqp://tfeed:HungryCat@localhost'
+    broker = 'amqp://tfeed:password_for_tfeed@localhost'
 
 cfg = default_config()
 #cfg.logLevel = 'debug'

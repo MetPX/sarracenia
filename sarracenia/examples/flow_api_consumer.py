@@ -13,7 +13,7 @@ cfg.broker = sarracenia.config.credentials.Credential(
 cfg.topicPrefix = ['v02', 'post']
 cfg.component = 'subscribe'
 cfg.config = 'flow_demo'
-cfg.action = 'hoho'
+cfg.action = 'foreground'
 bindings = [ {'exchange':'xpublic', 'prefix':['v02', 'post'],
                 'sub':['*.WXO-DD.observations.swob-ml.#']}]
 cfg.queueName = 'q_${BROKER_USER}_${HOSTNAME}_${QUEUESHARE}'
