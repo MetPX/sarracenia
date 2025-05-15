@@ -198,6 +198,7 @@ class AMQP(Moth):
         self.connection = None
         self.connection_id = None
         self.broker = None
+        self.next_message = 0
 
     def __connect(self, broker) -> bool:
         """
@@ -344,7 +345,9 @@ class AMQP(Moth):
 
         start = time.time()
         if start < self.next_connect_time:
-            logger.critical( f"too soon to connect again to {str(broker)} index={self.o['subscription_index']} will try in: {self.next_connect_time-start} seconds" )
+            if start > self.next_message:
+                logger.critical( f"too soon to connect again to {str(broker)} index={self.o['subscription_index']} will try in: {self.next_connect_time-start:.2f} seconds" )
+                self.next_message=start+5
             return
 
         # It does not really matter how it fails, the recovery approach is always the same:
@@ -418,8 +421,9 @@ class AMQP(Moth):
         start = time.time()
 
         if start < self.next_connect_time:
-
-            logger.critical( f"too soon to connect to {str(self.o['broker'])}. Will try again in: {self.next_connect_time-start} seconds" )
+            if start > self.next_message :
+                logger.critical( f"too soon to connect to {str(self.o['broker'])}. Will try again in: {self.next_connect_time-start:.2f} seconds" )
+                self.next_message=start+5
             return
 
         # It does not really matter how it fails, the recovery approach is always the same:
@@ -466,7 +470,7 @@ class AMQP(Moth):
 
         except Exception as err:
             logger.error(
-                "AMQP putSetup failed to connect or declare exchanges {}@{} on {}: {}"
+                "failed to connect or declare exchanges {}@{} on {}: {}"
                 .format(self.o['exchange'], self.o['broker'].url.username,
                         self.o['broker'].url.hostname, err))
             logger.debug('Exception details: ', exc_info=True)
@@ -655,6 +659,8 @@ class AMQP(Moth):
             try:
                 self.close()
                 self.putSetup()
+                if (not self.connection) or (not self.connection.connected) or (not self.channel.is_open):
+                    return False
             except Exception as err:
                 logger.warning(f"failed, connection was closed/broken and could not be re-opened {exchange}: {err}")
                 logger.debug('Exception details: ', exc_info=True)

@@ -49,6 +49,10 @@ def default_options() -> dict:
             o = copy.deepcopy(__default_options)
 
         return o
+          
+import random
+
+eboIntervalMaximum = 60 + random.random()*180
 
 def ProtocolPresent(p) -> bool:
     if ( p[0:4] in ['amqp'] ) and sarracenia.features['amqp']['present']:
@@ -345,6 +349,7 @@ class Moth():
 
         logging.basicConfig(format=self.o['logFormat'],
                             level=getattr(logging, self.o['logLevel'].upper()))
+        logger.debug( f" Maximum interval exponential back off of connecting to broker: {eboIntervalMaximum} " )
 
     def ack(self, message: sarracenia.Message ) -> bool:
         """
@@ -455,10 +460,18 @@ class Moth():
              it should eventually settle down to a long period though.
         """
         now=time.time()
-        attempt_duration = now - start
+        # if the attempt takes a long time, do not want to try again quickly.
+        # but if it fails immediately, then wait at least 1 second.
+        attempt_duration = max(now - start,1)
         self.next_connect_failures += 1
+
+        # wait twice as long after each failure. 
         ebo = 2**self.next_connect_failures
-        next_try = min(attempt_duration * ebo, 600)
+
+        # eboIntervalMaximum is something random between 1 and 4 minutes.
+        # it is the ceiling. Otherwise based on the number of failures to connect and 
+        # how long each attempt takes to fail.
+        next_try = min(max(attempt_duration * ebo,0.1), eboIntervalMaximum)
         self.next_connect_time = now + next_try
 
     def splitPick(self,message) -> int:
