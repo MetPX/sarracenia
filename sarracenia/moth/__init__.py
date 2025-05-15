@@ -464,8 +464,8 @@ class Moth():
         attempt_duration = max(now - start,1)
         self.next_connect_failures += 1
 
-        # wait twice as long after each failure. 
-        ebo = 2**self.next_connect_failures
+        # wait a little longer after each failure. 
+        ebo = 1.2**self.next_connect_failures
 
         # eboIntervalMaximum is something random between 1 and 4 minutes.
         # it is the ceiling. Otherwise based on the number of failures to connect and 
