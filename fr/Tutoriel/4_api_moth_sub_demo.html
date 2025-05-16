@@ -127,23 +127,63 @@
 <p>L’exemple ci-dessous construit un appel à un courtier auquel tout le monde peut accéder et demander 10 annonces.</p>
 <p>Vous pouvez l’exécuter, puis nous pourrons discuter de quelques paramètres :</p>
 <div class="nbinput docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[9]:
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[1]:
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">sarracenia.moth</span>
 <span class="kn">import</span> <span class="nn">sarracenia.moth.amqp</span>
-<span class="kn">import</span> <span class="nn">sarracenia.credentials</span>
+<span class="kn">import</span> <span class="nn">sarracenia.config.credentials</span>
+<span class="kn">import</span> <span class="nn">sarracenia.config.subscription</span>
 
 <span class="kn">import</span> <span class="nn">time</span>
 <span class="kn">import</span> <span class="nn">socket</span>
 
-
-<span class="n">options</span> <span class="o">=</span> <span class="n">sarracenia</span><span class="o">.</span><span class="n">moth</span><span class="o">.</span><span class="n">default_options</span>
+<span class="n">options</span> <span class="o">=</span> <span class="n">sarracenia</span><span class="o">.</span><span class="n">moth</span><span class="o">.</span><span class="n">default_options</span><span class="p">()</span>
 <span class="n">options</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">sarracenia</span><span class="o">.</span><span class="n">moth</span><span class="o">.</span><span class="n">amqp</span><span class="o">.</span><span class="n">default_options</span><span class="p">)</span>
-<span class="n">options</span><span class="p">[</span><span class="s1">&#39;broker&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">sarracenia</span><span class="o">.</span><span class="n">credentials</span><span class="o">.</span><span class="n">Credential</span><span class="p">(</span><span class="s1">&#39;amqps://anonymous:anonymous@hpfx.collab.science.gc.ca&#39;</span><span class="p">)</span>
-<span class="n">options</span><span class="p">[</span><span class="s1">&#39;topicPrefix&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="p">[</span> <span class="s1">&#39;v02&#39;</span><span class="p">,</span> <span class="s1">&#39;post&#39;</span> <span class="p">]</span>
-<span class="n">options</span><span class="p">[</span><span class="s1">&#39;bindings&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="p">[(</span><span class="s1">&#39;xpublic&#39;</span><span class="p">,</span> <span class="p">[</span><span class="s1">&#39;v02&#39;</span><span class="p">,</span> <span class="s1">&#39;post&#39;</span><span class="p">],</span> <span class="p">[</span><span class="s1">&#39;#&#39;</span><span class="p">])]</span>
-<span class="n">options</span><span class="p">[</span><span class="s1">&#39;queueName&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;q_anonymous_&#39;</span> <span class="o">+</span> <span class="n">socket</span><span class="o">.</span><span class="n">getfqdn</span><span class="p">()</span> <span class="o">+</span> <span class="s1">&#39;_QuelquechoseDUtile&#39;</span>
+
+<span class="n">options</span><span class="p">[</span><span class="s1">&#39;broker&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">sarracenia</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">credentials</span><span class="o">.</span><span class="n">Credential</span><span class="p">(</span>
+    <span class="s1">&#39;amqps://anonymous:anonymous@hpfx.collab.science.gc.ca&#39;</span><span class="p">)</span>
+
+<span class="c1"># binding tuple:  consists of prefix, exchange, rest.</span>
+<span class="c1"># effect is to bind from queue using prefix/rest to exchange.</span>
+<span class="n">options</span><span class="p">[</span><span class="s1">&#39;queueShare&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;SomethingHelpfulToYou&#39;</span>
+
+
+<span class="c1"># Note: queue name must start with q_&lt;username&gt; because server is configured to deny anything else.</span>
+<span class="c1">#</span>
+<span class="n">options</span><span class="p">[</span><span class="s1">&#39;queueName&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;q_$</span><span class="si">{BROKER_USER}</span><span class="s1">_$</span><span class="si">{HOSTNAME}</span><span class="s1">_$</span><span class="si">{QUEUESHARE}</span><span class="s1">&#39;</span>
+
+<span class="n">queue</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;name&#39;</span><span class="p">:</span> <span class="s1">&#39;q_anonymous_&#39;</span> <span class="o">+</span> <span class="n">socket</span><span class="o">.</span><span class="n">getfqdn</span><span class="p">()</span> <span class="o">+</span> <span class="s1">&#39;_&#39;</span> <span class="o">+</span> <span class="n">options</span><span class="p">[</span><span class="s1">&#39;queueShare&#39;</span><span class="p">],</span>
+         <span class="s1">&#39;template&#39;</span><span class="p">:</span> <span class="n">options</span><span class="p">[</span><span class="s1">&#39;queueName&#39;</span><span class="p">],</span>
+         <span class="s1">&#39;auto_delete&#39;</span> <span class="p">:</span> <span class="kc">False</span><span class="p">,</span> <span class="c1"># AO == amqp only</span>
+         <span class="s1">&#39;clean_session&#39;</span><span class="p">:</span> <span class="kc">True</span><span class="p">,</span> <span class="c1"># MO == mqtt only.</span>
+         <span class="s1">&#39;durable&#39;</span><span class="p">:</span> <span class="kc">True</span><span class="p">,</span> <span class="c1"># AO: queue should survive broker reboots</span>
+         <span class="s1">&#39;expire&#39;</span><span class="p">:</span> <span class="mi">600</span> <span class="p">,</span>  <span class="c1"># MO: seconds until queue with no consumers disappears.</span>
+         <span class="s1">&#39;max_inflight_messages&#39;</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span> <span class="c1"># MO: flow control.</span>
+         <span class="s1">&#39;max_queued_messages&#39;</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span>
+         <span class="s1">&#39;prefetch&#39;</span><span class="p">:</span> <span class="mi">25</span><span class="p">,</span>
+         <span class="s1">&#39;qos&#39;</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span>
+         <span class="s1">&#39;receiveMaximum&#39;</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span>
+         <span class="s1">&#39;tlsRigour&#39;</span><span class="p">:</span> <span class="s1">&#39;normal&#39;</span><span class="p">,</span>
+         <span class="s1">&#39;bind&#39;</span><span class="p">:</span> <span class="kc">True</span><span class="p">,</span>  <span class="c1"># whether to bind queues/subscriptions</span>
+         <span class="s1">&#39;declare&#39;</span><span class="p">:</span> <span class="kc">True</span> <span class="c1"># whether to declare queues/subscriptions</span>
+       <span class="p">}</span>
+
+
+<span class="n">options</span><span class="p">[</span><span class="s1">&#39;subscriptions&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">sarracenia</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">subscription</span><span class="o">.</span><span class="n">Subscriptions</span><span class="p">(</span> <span class="p">[</span> <span class="p">{</span>
+   <span class="s1">&#39;broker&#39;</span><span class="p">:</span> <span class="n">options</span><span class="p">[</span><span class="s1">&#39;broker&#39;</span><span class="p">],</span>
+   <span class="s1">&#39;bindings&#39;</span><span class="p">:</span> <span class="p">[</span> <span class="p">{</span> <span class="s1">&#39;exchange&#39;</span><span class="p">:</span><span class="s1">&#39;xpublic&#39;</span><span class="p">,</span> <span class="s1">&#39;prefix&#39;</span><span class="p">:</span> <span class="p">[</span><span class="s1">&#39;v02&#39;</span><span class="p">,</span><span class="s1">&#39;post&#39;</span><span class="p">],</span> <span class="s1">&#39;sub&#39;</span><span class="p">:[</span><span class="s1">&#39;*&#39;</span><span class="p">,</span><span class="s1">&#39;WXO-DD&#39;</span><span class="p">,</span><span class="s1">&#39;observations&#39;</span><span class="p">,</span><span class="s1">&#39;swob-ml&#39;</span><span class="p">,</span><span class="s1">&#39;#&#39;</span><span class="p">]</span> <span class="p">}</span> <span class="p">],</span>
+   <span class="s1">&#39;queue&#39;</span> <span class="p">:</span> <span class="n">queue</span>
+      <span class="p">}</span> <span class="p">]</span> <span class="p">)</span>
+
+<span class="n">options</span><span class="p">[</span><span class="s1">&#39;subscription_index&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="mi">0</span>
+
+<span class="c1"># turn on debug output for these classes.</span>
+<span class="c1">#options[&#39;settings&#39;] = {}</span>
+<span class="c1">#options[&#39;settings&#39;][&#39;sarracenia.moth.mqtt.MQTT&#39;] = { &#39;logLevel&#39;:&#39;debug&#39; }</span>
+<span class="c1">#options[&#39;settings&#39;][&#39;sarracenia.moth.amqp.AMQP&#39;] = { &#39;logLevel&#39;:&#39;debug&#39; }</span>
+
+<span class="c1">#options[&#39;logLevel&#39;] = &#39;debug&#39;</span>
 
 <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;options: </span><span class="si">%s</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="n">options</span><span class="p">)</span>
 <br/><br/></pre></div>
@@ -154,7 +194,7 @@
 </div>
 <div class="output_area docutils container">
 <div class="highlight"><pre>
-options: {&#39;acceptUnmatched&#39;: True, &#39;batch&#39;: 25, &#39;bindings&#39;: [(&#39;xpublic&#39;, [&#39;v02&#39;, &#39;post&#39;], [&#39;#&#39;])], &#39;broker&#39;: &lt;sarracenia.credentials.Credential object at 0x7f602ee7d780&gt;, &#39;dry_run&#39;: False, &#39;exchange&#39;: None, &#39;expire&#39;: None, &#39;inline&#39;: False, &#39;inlineEncoding&#39;: &#39;guess&#39;, &#39;inlineByteMax&#39;: 4096, &#39;logFormat&#39;: &#39;%(asctime)s [%(levelname)s] %(name)s %(funcName)s %(message)s&#39;, &#39;logLevel&#39;: &#39;info&#39;, &#39;messageDebugDump&#39;: False, &#39;message_strategy&#39;: {&#39;reset&#39;: True, &#39;stubborn&#39;: True, &#39;failure_duration&#39;: &#39;5m&#39;}, &#39;message_ttl&#39;: 0, &#39;topicPrefix&#39;: [&#39;v02&#39;, &#39;post&#39;], &#39;tlsRigour&#39;: &#39;normal&#39;, &#39;auto_delete&#39;: False, &#39;durable&#39;: True, &#39;exchangeDeclare&#39;: True, &#39;prefetch&#39;: 25, &#39;queueName&#39;: &#39;q_anonymous_fractal_QuelquechoseDUtile&#39;, &#39;queueBind&#39;: True, &#39;queueDeclare&#39;: True, &#39;reset&#39;: False, &#39;subtopic&#39;: [], &#39;vhost&#39;: &#39;/&#39;, &#39;queue_name&#39;: &#39;q_anonymous_fractal_QuelquechoseDUtile&#39;}
+options: {&#39;acceptUnmatched&#39;: True, &#39;batch&#39;: 25, &#39;broker&#39;: &lt;sarracenia.config.credentials.Credential object at 0x73589abe3410&gt;, &#39;dry_run&#39;: False, &#39;exchange&#39;: None, &#39;expire&#39;: None, &#39;inline&#39;: False, &#39;inlineEncoding&#39;: &#39;guess&#39;, &#39;inlineByteMax&#39;: 4096, &#39;logFormat&#39;: &#39;%(asctime)s [%(levelname)s] %(name)s %(funcName)s %(message)s&#39;, &#39;logLevel&#39;: &#39;info&#39;, &#39;messageDebugDump&#39;: False, &#39;message_strategy&#39;: {&#39;reset&#39;: True, &#39;stubborn&#39;: True, &#39;failure_duration&#39;: &#39;5m&#39;}, &#39;messageAgeMax&#39;: 0, &#39;topicPrefix&#39;: [&#39;v03&#39;], &#39;tlsRigour&#39;: &#39;normal&#39;, &#39;auto_delete&#39;: False, &#39;durable&#39;: True, &#39;exchangeDeclare&#39;: True, &#39;persistent&#39;: True, &#39;prefetch&#39;: 25, &#39;queueBind&#39;: True, &#39;queueDeclare&#39;: True, &#39;reset&#39;: False, &#39;subtopic&#39;: [], &#39;vhost&#39;: &#39;/&#39;, &#39;queueShare&#39;: &#39;SomethingHelpfulToYou&#39;, &#39;queueName&#39;: &#39;q_${BROKER_USER}_${HOSTNAME}_${QUEUESHARE}&#39;, &#39;subscriptions&#39;: [{&#39;broker&#39;: &lt;sarracenia.config.credentials.Credential object at 0x73589abe3410&gt;, &#39;bindings&#39;: [{&#39;exchange&#39;: &#39;xpublic&#39;, &#39;prefix&#39;: [&#39;v02&#39;, &#39;post&#39;], &#39;sub&#39;: [&#39;*&#39;, &#39;WXO-DD&#39;, &#39;observations&#39;, &#39;swob-ml&#39;, &#39;#&#39;]}], &#39;queue&#39;: {&#39;name&#39;: &#39;q_anonymous_idefix.local_SomethingHelpfulToYou&#39;, &#39;template&#39;: &#39;q_${BROKER_USER}_${HOSTNAME}_${QUEUESHARE}&#39;, &#39;auto_delete&#39;: False, &#39;clean_session&#39;: True, &#39;durable&#39;: True, &#39;expire&#39;: 600, &#39;max_inflight_messages&#39;: 0, &#39;max_queued_messages&#39;: 0, &#39;prefetch&#39;: 25, &#39;qos&#39;: 1, &#39;receiveMaximum&#39;: 0, &#39;tlsRigour&#39;: &#39;normal&#39;, &#39;bind&#39;: True, &#39;declare&#39;: True}}], &#39;subscription_index&#39;: 0}
 </pre></div></div>
 </div>
 <p>Le paramètre <strong>courtier</strong>(broker) est un objet contenant une URL conventionnelle et d’autres options, indiquant le protocole de messagerie à utiliser pour accéder au serveur en amont. Lorsque vous vous connectez à un courtier, vous devez lui indiquer les messages qui vous intéressent. Dans Moth, tous les courtiers auxquels nous accédons doivent utiliser des hiérarchies de sujets. Vous pouvez les voir si vous avez exécuté avec succès l’exemple ci-dessus, il devrait y avoir dans les impressions
@@ -207,7 +247,7 @@ spéciale ‘_deleteOnPost’, afin que l’élément du dictionnaire soit suppr
 <h2>Ack<a class="headerlink" href="#Ack" title="Link to this heading"></a></h2>
 <p>Les messages sont marqués en transit par le courtier, et si vous ne les reconnaissez pas, la pompe de données les conservera et les réexpédiera éventuellement. conserver les messages en attente en mémoire ralentira également le traitement de tous les messages. Il faut accuser réception des messages dès que possible, mais pas si tôt que vous perdrez des données si le programme est interrompu. Dans l’exemple, nous reconnaissons après avoir fait notre travail d’impression du message.</p>
 <div class="nbinput docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[10]:
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[2]:
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">h</span> <span class="o">=</span> <span class="n">sarracenia</span><span class="o">.</span><span class="n">moth</span><span class="o">.</span><span class="n">Moth</span><span class="o">.</span><span class="n">subFactory</span><span class="p">(</span><span class="n">options</span><span class="p">)</span>
@@ -237,8 +277,9 @@ spéciale ‘_deleteOnPost’, afin que l’élément du dictionnaire soit suppr
 </div>
 <div class="output_area stderr docutils container">
 <div class="highlight"><pre>
-2023-05-28 15:01:16,250 [INFO] sarracenia.moth.amqp __getSetup queue declared q_anonymous_fractal_QuelquechoseDUtile (as: amqps://anonymous@hpfx.collab.science.gc.ca)
-2023-05-28 15:01:16,251 [INFO] sarracenia.moth.amqp __getSetup binding q_anonymous_fractal_QuelquechoseDUtile with v02.post.# to xpublic (as: amqps://anonymous@hpfx.collab.science.gc.ca)
+2025-05-14 12:49:49,752 [INFO] sarracenia.moth.amqp _queueDeclare queue declared q_anonymous_idefix.local_SomethingHelpfulToYou (as: amqps://anonymous@hpfx.collab.science.gc.ca), (messages waiting: 0)
+2025-05-14 12:49:49,753 [INFO] sarracenia.moth.amqp getSetup binding q_anonymous_idefix.local_SomethingHelpfulToYou with v02.post.*.WXO-DD.observations.swob-ml.# to xpublic (as: amqps://anonymous@hpfx.collab.science.gc.ca)
+2025-05-14 12:49:49,798 [INFO] sarracenia getContent retrieving from: https://hpfx.collab.science.gc.ca//20250514/WXO-DD/observations/swob-ml/20250514/CWZE/2025-05-14-1648-CWZE-AUTO-minute-swob.xml
 </pre></div></div>
 </div>
 <div class="nboutput docutils container">
@@ -246,14 +287,7 @@ spéciale ‘_deleteOnPost’, afin que l’élément du dictionnaire soit suppr
 </div>
 <div class="output_area docutils container">
 <div class="highlight"><pre>
-message 0: {&#39;_format&#39;: &#39;v02&#39;, &#39;_deleteOnPost&#39;: {&#39;subtopic&#39;, &#39;ack_id&#39;, &#39;_format&#39;, &#39;local_offset&#39;, &#39;exchange&#39;}, &#39;sundew_extension&#39;: &#39;CMC:HRDPS:GRIB2:BIN::20230528190111&#39;, &#39;from_cluster&#39;: &#39;DDSR.CMC&#39;, &#39;to_clusters&#39;: &#39;ALL&#39;, &#39;filename&#39;: &#39;msg_ddsr-WXO-DD_5eebe93b78f7f20d6c58dff7079f17f8:CMC:HRDPS:GRIB2:BIN::20230528190111&#39;, &#39;source&#39;: &#39;WXO-DD&#39;, &#39;mtime&#39;: &#39;20230528T190113.733&#39;, &#39;atime&#39;: &#39;20230528T190113.733&#39;, &#39;pubTime&#39;: &#39;20230528T190113.733&#39;, &#39;baseUrl&#39;: &#39;https://hpfx.collab.science.gc.ca&#39;, &#39;relPath&#39;: &#39;/20230528/WXO-DD/model_hrdps/north/grib2/12/006/CMC_hrdps_north_HGT_ISBL_1000_ps2.5km_2023052812_P006-00.grib2&#39;, &#39;subtopic&#39;: [&#39;20230528&#39;, &#39;WXO-DD&#39;, &#39;model_hrdps&#39;, &#39;north&#39;, &#39;grib2&#39;, &#39;12&#39;, &#39;006&#39;], &#39;identity&#39;: {&#39;method&#39;: &#39;md5&#39;, &#39;value&#39;: &#39;DcEZ6+fx637myOUf83VyDQ==&#39;}, &#39;size&#39;: 236654, &#39;exchange&#39;: &#39;xpublic&#39;, &#39;ack_id&#39;: 1, &#39;local_offset&#39;: 0}
-le premier 50 octets du fichier annoncé: b&#39;GRIB\x00\x00\x00\x02\x00\x00\x00\x00\x00\x03\x9cn\x00\x00\x00\x15\x01\x006\x00\x00\x04\x00\x01\x07\xe7\x05\x1c\x0c\x00\x00\x01\x02\x00\x00\x00A\x03\x00\x00\x12q1\x00\x00\x00&#39;
-message 1: {&#39;_format&#39;: &#39;v02&#39;, &#39;_deleteOnPost&#39;: {&#39;subtopic&#39;, &#39;ack_id&#39;, &#39;_format&#39;, &#39;local_offset&#39;, &#39;exchange&#39;}, &#39;sundew_extension&#39;: &#39;CMC:HRDPS:GRIB2:BIN::20230528190111&#39;, &#39;from_cluster&#39;: &#39;DDSR.CMC&#39;, &#39;to_clusters&#39;: &#39;ALL&#39;, &#39;filename&#39;: &#39;msg_ddsr-WXO-DD_abed0a37b3c8b8511cc78b6f8c5c6a82:CMC:HRDPS:GRIB2:BIN::20230528190111&#39;, &#39;source&#39;: &#39;WXO-DD&#39;, &#39;mtime&#39;: &#39;20230528T190114.13&#39;, &#39;atime&#39;: &#39;20230528T190114.13&#39;, &#39;pubTime&#39;: &#39;20230528T190114.13&#39;, &#39;baseUrl&#39;: &#39;https://hpfx.collab.science.gc.ca&#39;, &#39;relPath&#39;: &#39;/20230528/WXO-DD/model_hrdps/north/grib2/12/006/CMC_hrdps_north_SPFH_ISBL_0150_ps2.5km_2023052812_P006-00.grib2&#39;, &#39;subtopic&#39;: [&#39;20230528&#39;, &#39;WXO-DD&#39;, &#39;model_hrdps&#39;, &#39;north&#39;, &#39;grib2&#39;, &#39;12&#39;, &#39;006&#39;], &#39;identity&#39;: {&#39;method&#39;: &#39;md5&#39;, &#39;value&#39;: &#39;oMQDWV/QlF9aLLGOu+Tumw==&#39;}, &#39;size&#39;: 330883, &#39;exchange&#39;: &#39;xpublic&#39;, &#39;ack_id&#39;: 2, &#39;local_offset&#39;: 0}
-le premier 50 octets du fichier annoncé: b&#39;GRIB\x00\x00\x00\x02\x00\x00\x00\x00\x00\x05\x0c\x83\x00\x00\x00\x15\x01\x006\x00\x00\x04\x00\x01\x07\xe7\x05\x1c\x0c\x00\x00\x01\x02\x00\x00\x00A\x03\x00\x00\x12q1\x00\x00\x00&#39;
-message 2: {&#39;_format&#39;: &#39;v02&#39;, &#39;_deleteOnPost&#39;: {&#39;subtopic&#39;, &#39;ack_id&#39;, &#39;_format&#39;, &#39;local_offset&#39;, &#39;exchange&#39;}, &#39;sundew_extension&#39;: &#39;CMC:HRDPS:GRIB2:BIN::20230528190111&#39;, &#39;from_cluster&#39;: &#39;DDSR.CMC&#39;, &#39;to_clusters&#39;: &#39;ALL&#39;, &#39;filename&#39;: &#39;msg_ddsr-WXO-DD_7af6caa9fd11fae11919525225783fad:CMC:HRDPS:GRIB2:BIN::20230528190111&#39;, &#39;source&#39;: &#39;WXO-DD&#39;, &#39;mtime&#39;: &#39;20230528T190113.823&#39;, &#39;atime&#39;: &#39;20230528T190113.823&#39;, &#39;pubTime&#39;: &#39;20230528T190113.823&#39;, &#39;baseUrl&#39;: &#39;https://hpfx.collab.science.gc.ca&#39;, &#39;relPath&#39;: &#39;/20230528/WXO-DD/model_hrdps/north/grib2/12/006/CMC_hrdps_north_DEPR_ISBL_0850_ps2.5km_2023052812_P006-00.grib2&#39;, &#39;subtopic&#39;: [&#39;20230528&#39;, &#39;WXO-DD&#39;, &#39;model_hrdps&#39;, &#39;north&#39;, &#39;grib2&#39;, &#39;12&#39;, &#39;006&#39;], &#39;identity&#39;: {&#39;method&#39;: &#39;md5&#39;, &#39;value&#39;: &#39;zSw+zw6P1XlQayy+CjoLAg==&#39;}, &#39;size&#39;: 194315, &#39;exchange&#39;: &#39;xpublic&#39;, &#39;ack_id&#39;: 3, &#39;local_offset&#39;: 0}
-le premier 50 octets du fichier annoncé: b&#39;GRIB\x00\x00\x00\x02\x00\x00\x00\x00\x00\x02\xf7\x0b\x00\x00\x00\x15\x01\x006\x00\x00\x04\x00\x01\x07\xe7\x05\x1c\x0c\x00\x00\x01\x02\x00\x00\x00A\x03\x00\x00\x12q1\x00\x00\x00&#39;
-message 3: {&#39;_format&#39;: &#39;v02&#39;, &#39;_deleteOnPost&#39;: {&#39;subtopic&#39;, &#39;ack_id&#39;, &#39;_format&#39;, &#39;local_offset&#39;, &#39;exchange&#39;}, &#39;sundew_extension&#39;: &#39;CMC:HRDPS:GRIB2:BIN::20230528190112&#39;, &#39;from_cluster&#39;: &#39;DDSR.CMC&#39;, &#39;to_clusters&#39;: &#39;ALL&#39;, &#39;filename&#39;: &#39;msg_ddsr-WXO-DD_e02209b0564eb4b19dd746af9eb5ee9c:CMC:HRDPS:GRIB2:BIN::20230528190112&#39;, &#39;source&#39;: &#39;WXO-DD&#39;, &#39;mtime&#39;: &#39;20230528T190114.89&#39;, &#39;atime&#39;: &#39;20230528T190114.89&#39;, &#39;pubTime&#39;: &#39;20230528T190114.89&#39;, &#39;baseUrl&#39;: &#39;https://hpfx.collab.science.gc.ca&#39;, &#39;relPath&#39;: &#39;/20230528/WXO-DD/model_hrdps/north/grib2/12/006/CMC_hrdps_north_WDIR_TGL_40_ps2.5km_2023052812_P006-00.grib2&#39;, &#39;subtopic&#39;: [&#39;20230528&#39;, &#39;WXO-DD&#39;, &#39;model_hrdps&#39;, &#39;north&#39;, &#39;grib2&#39;, &#39;12&#39;, &#39;006&#39;], &#39;identity&#39;: {&#39;method&#39;: &#39;md5&#39;, &#39;value&#39;: &#39;GpPL5qQEOn0ALfuOzQrIHw==&#39;}, &#39;size&#39;: 529466, &#39;exchange&#39;: &#39;xpublic&#39;, &#39;ack_id&#39;: 4, &#39;local_offset&#39;: 0}
-le premier 50 octets du fichier annoncé: b&#39;GRIB\x00\x00\x00\x02\x00\x00\x00\x00\x00\x08\x14:\x00\x00\x00\x15\x01\x006\x00\x00\x04\x00\x01\x07\xe7\x05\x1c\x0c\x00\x00\x01\x02\x00\x00\x00A\x03\x00\x00\x12q1\x00\x00\x00&#39;
+message 0: {&#39;_format&#39;: &#39;v02&#39;, &#39;_deleteOnPost&#39;: {&#39;_format&#39;, &#39;subscription_index&#39;, &#39;local_offset&#39;, &#39;ack_id&#39;, &#39;subtopic&#39;, &#39;exchange&#39;, &#39;topic&#39;}, &#39;sundew_extension&#39;: &#39;DMS:WXO_RENAMED_SWOB2:MSC:XML::20250514164922&#39;, &#39;from_cluster&#39;: &#39;DDSR.CMC&#39;, &#39;to_clusters&#39;: &#39;ALL&#39;, &#39;filename&#39;: &#39;msg_ddsr-WXO-DD_b52e217f2a58e6f0e05979adf9fd954f:DMS:WXO_RENAMED_SWOB2:MSC:XML::20250514164922&#39;, &#39;mtime&#39;: &#39;20250514T164924.165&#39;, &#39;atime&#39;: &#39;20250514T164924.165&#39;, &#39;pubTime&#39;: &#39;20250514T164924.165&#39;, &#39;baseUrl&#39;: &#39;https://hpfx.collab.science.gc.ca&#39;, &#39;relPath&#39;: &#39;/20250514/WXO-DD/observations/swob-ml/20250514/CWZE/2025-05-14-1648-CWZE-AUTO-minute-swob.xml&#39;, &#39;subtopic&#39;: [&#39;&#39;, &#39;20250514&#39;, &#39;WXO-DD&#39;, &#39;observations&#39;, &#39;swob-ml&#39;, &#39;20250514&#39;, &#39;CWZE&#39;, &#39;2025-05-14-1648-CWZE-AUTO-minute-swob.xml&#39;], &#39;identity&#39;: {&#39;method&#39;: &#39;md5&#39;, &#39;value&#39;: &#39;/ZpPHtpINmNMYH/Zj1jiqw==&#39;}, &#39;size&#39;: 10500, &#39;exchange&#39;: &#39;xpublic&#39;, &#39;topic&#39;: &#39;v02.post.20250514.WXO-DD.observations.swob-ml.20250514.CWZE&#39;, &#39;ack_id&#39;: {&#39;delivery_tag&#39;: 1, &#39;channel_id&#39;: 2, &#39;connection_id&#39;: &#39;9559125c-2ebb-46e6-9ae6-3953c683a253_sub&#39;, &#39;broker&#39;: &#39;hpfx.collab.science.gc.ca:5671//&#39;}, &#39;local_offset&#39;: 0, &#39;subscription_index&#39;: 0}
 </pre></div></div>
 </div>
 <div class="nboutput docutils container">
@@ -261,7 +295,75 @@ le premier 50 octets du fichier annoncé: b&#39;GRIB\x00\x00\x00\x02\x00\x00\x00
 </div>
 <div class="output_area stderr docutils container">
 <div class="highlight"><pre>
-2023-05-28 15:01:17,548 [INFO] sarracenia.moth.amqp getCleanUp deleteing queue q_anonymous_fractal_QuelquechoseDUtile
+2025-05-14 12:49:50,326 [INFO] sarracenia getContent retrieving from: https://hpfx.collab.science.gc.ca//20250514/WXO-DD/observations/swob-ml/20250514/CWVU/2025-05-14-1623-CWVU-AUTO-minute-swob.xml
+</pre></div></div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+le premier 50 octets du fichier annoncé: b&#39;&lt;?xml version=&#34;1.0&#34; encoding=&#34;UTF-8&#34; standalone=&#34;n&#39;
+message 1: {&#39;_format&#39;: &#39;v02&#39;, &#39;_deleteOnPost&#39;: {&#39;_format&#39;, &#39;subscription_index&#39;, &#39;local_offset&#39;, &#39;ack_id&#39;, &#39;subtopic&#39;, &#39;exchange&#39;, &#39;topic&#39;}, &#39;sundew_extension&#39;: &#39;DMS:WXO_RENAMED_SWOB2:MSC:XML::20250514164922&#39;, &#39;from_cluster&#39;: &#39;DDSR.CMC&#39;, &#39;to_clusters&#39;: &#39;ALL&#39;, &#39;filename&#39;: &#39;msg_ddsr-WXO-DD_a028bf3f18904855a2ab73bb504846a6:DMS:WXO_RENAMED_SWOB2:MSC:XML::20250514164922&#39;, &#39;mtime&#39;: &#39;20250514T164924.165&#39;, &#39;atime&#39;: &#39;20250514T164924.165&#39;, &#39;pubTime&#39;: &#39;20250514T164924.165&#39;, &#39;baseUrl&#39;: &#39;https://hpfx.collab.science.gc.ca&#39;, &#39;relPath&#39;: &#39;/20250514/WXO-DD/observations/swob-ml/20250514/CWVU/2025-05-14-1623-CWVU-AUTO-minute-swob.xml&#39;, &#39;subtopic&#39;: [&#39;&#39;, &#39;20250514&#39;, &#39;WXO-DD&#39;, &#39;observations&#39;, &#39;swob-ml&#39;, &#39;20250514&#39;, &#39;CWVU&#39;, &#39;2025-05-14-1623-CWVU-AUTO-minute-swob.xml&#39;], &#39;identity&#39;: {&#39;method&#39;: &#39;md5&#39;, &#39;value&#39;: &#39;obON514oZIaun0t3JycELQ==&#39;}, &#39;size&#39;: 9694, &#39;exchange&#39;: &#39;xpublic&#39;, &#39;topic&#39;: &#39;v02.post.20250514.WXO-DD.observations.swob-ml.20250514.CWVU&#39;, &#39;ack_id&#39;: {&#39;delivery_tag&#39;: 2, &#39;channel_id&#39;: 2, &#39;connection_id&#39;: &#39;9559125c-2ebb-46e6-9ae6-3953c683a253_sub&#39;, &#39;broker&#39;: &#39;hpfx.collab.science.gc.ca:5671//&#39;}, &#39;local_offset&#39;: 0, &#39;subscription_index&#39;: 0}
+</pre></div></div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area stderr docutils container">
+<div class="highlight"><pre>
+2025-05-14 12:49:51,187 [INFO] sarracenia getContent retrieving from: https://hpfx.collab.science.gc.ca//20250514/WXO-DD/observations/swob-ml/20250514/CWGX/2025-05-14-1649-CWGX-AUTO-minute-swob.xml
+</pre></div></div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+le premier 50 octets du fichier annoncé: b&#39;&lt;?xml version=&#34;1.0&#34; encoding=&#34;UTF-8&#34; standalone=&#34;n&#39;
+message 2: {&#39;_format&#39;: &#39;v02&#39;, &#39;_deleteOnPost&#39;: {&#39;_format&#39;, &#39;subscription_index&#39;, &#39;local_offset&#39;, &#39;ack_id&#39;, &#39;subtopic&#39;, &#39;exchange&#39;, &#39;topic&#39;}, &#39;sundew_extension&#39;: &#39;DMS:WXO_RENAMED_SWOB2:MSC:XML::20250514164936&#39;, &#39;from_cluster&#39;: &#39;DDSR.CMC&#39;, &#39;to_clusters&#39;: &#39;ALL&#39;, &#39;filename&#39;: &#39;msg_ddsr-WXO-DD_d8640d45868a8745a877ef233f09f21a:DMS:WXO_RENAMED_SWOB2:MSC:XML::20250514164936&#39;, &#39;mtime&#39;: &#39;20250514T164938.264&#39;, &#39;atime&#39;: &#39;20250514T164938.264&#39;, &#39;pubTime&#39;: &#39;20250514T164938.264&#39;, &#39;baseUrl&#39;: &#39;https://hpfx.collab.science.gc.ca&#39;, &#39;relPath&#39;: &#39;/20250514/WXO-DD/observations/swob-ml/20250514/CWGX/2025-05-14-1649-CWGX-AUTO-minute-swob.xml&#39;, &#39;subtopic&#39;: [&#39;&#39;, &#39;20250514&#39;, &#39;WXO-DD&#39;, &#39;observations&#39;, &#39;swob-ml&#39;, &#39;20250514&#39;, &#39;CWGX&#39;, &#39;2025-05-14-1649-CWGX-AUTO-minute-swob.xml&#39;], &#39;identity&#39;: {&#39;method&#39;: &#39;md5&#39;, &#39;value&#39;: &#39;4I6zdE2BnD6HT1pqxlnJUQ==&#39;}, &#39;size&#39;: 9409, &#39;exchange&#39;: &#39;xpublic&#39;, &#39;topic&#39;: &#39;v02.post.20250514.WXO-DD.observations.swob-ml.20250514.CWGX&#39;, &#39;ack_id&#39;: {&#39;delivery_tag&#39;: 3, &#39;channel_id&#39;: 2, &#39;connection_id&#39;: &#39;9559125c-2ebb-46e6-9ae6-3953c683a253_sub&#39;, &#39;broker&#39;: &#39;hpfx.collab.science.gc.ca:5671//&#39;}, &#39;local_offset&#39;: 0, &#39;subscription_index&#39;: 0}
+</pre></div></div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area stderr docutils container">
+<div class="highlight"><pre>
+2025-05-14 12:49:51,723 [INFO] sarracenia getContent retrieving from: https://hpfx.collab.science.gc.ca//20250514/WXO-DD/observations/swob-ml/20250514/CWWZ/2025-05-14-1649-CWWZ-AUTO-minute-swob.xml
+</pre></div></div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+le premier 50 octets du fichier annoncé: b&#39;&lt;?xml version=&#34;1.0&#34; encoding=&#34;UTF-8&#34; standalone=&#34;n&#39;
+message 3: {&#39;_format&#39;: &#39;v02&#39;, &#39;_deleteOnPost&#39;: {&#39;_format&#39;, &#39;subscription_index&#39;, &#39;local_offset&#39;, &#39;ack_id&#39;, &#39;subtopic&#39;, &#39;exchange&#39;, &#39;topic&#39;}, &#39;sundew_extension&#39;: &#39;DMS:WXO_RENAMED_SWOB2:MSC:XML::20250514164936&#39;, &#39;from_cluster&#39;: &#39;DDSR.CMC&#39;, &#39;to_clusters&#39;: &#39;ALL&#39;, &#39;filename&#39;: &#39;msg_ddsr-WXO-DD_dc47b87bb82a20428771c3da3052ae04:DMS:WXO_RENAMED_SWOB2:MSC:XML::20250514164936&#39;, &#39;mtime&#39;: &#39;20250514T164938.264&#39;, &#39;atime&#39;: &#39;20250514T164938.264&#39;, &#39;pubTime&#39;: &#39;20250514T164938.264&#39;, &#39;baseUrl&#39;: &#39;https://hpfx.collab.science.gc.ca&#39;, &#39;relPath&#39;: &#39;/20250514/WXO-DD/observations/swob-ml/20250514/CWWZ/2025-05-14-1649-CWWZ-AUTO-minute-swob.xml&#39;, &#39;subtopic&#39;: [&#39;&#39;, &#39;20250514&#39;, &#39;WXO-DD&#39;, &#39;observations&#39;, &#39;swob-ml&#39;, &#39;20250514&#39;, &#39;CWWZ&#39;, &#39;2025-05-14-1649-CWWZ-AUTO-minute-swob.xml&#39;], &#39;identity&#39;: {&#39;method&#39;: &#39;md5&#39;, &#39;value&#39;: &#39;7bTyPATk9dDCIHUVAW8rLQ==&#39;}, &#39;size&#39;: 10422, &#39;exchange&#39;: &#39;xpublic&#39;, &#39;topic&#39;: &#39;v02.post.20250514.WXO-DD.observations.swob-ml.20250514.CWWZ&#39;, &#39;ack_id&#39;: {&#39;delivery_tag&#39;: 4, &#39;channel_id&#39;: 2, &#39;connection_id&#39;: &#39;9559125c-2ebb-46e6-9ae6-3953c683a253_sub&#39;, &#39;broker&#39;: &#39;hpfx.collab.science.gc.ca:5671//&#39;}, &#39;local_offset&#39;: 0, &#39;subscription_index&#39;: 0}
+</pre></div></div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area stderr docutils container">
+<div class="highlight"><pre>
+2025-05-14 12:49:51,991 [INFO] sarracenia getContent retrieving from: https://hpfx.collab.science.gc.ca//20250514/WXO-DD/observations/swob-ml/20250514/CWSZ/2025-05-14-1646-CWSZ-AUTO-minute-swob.xml
+</pre></div></div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+le premier 50 octets du fichier annoncé: b&#39;&lt;?xml version=&#34;1.0&#34; encoding=&#34;UTF-8&#34; standalone=&#34;n&#39;
+message 4: {&#39;_format&#39;: &#39;v02&#39;, &#39;_deleteOnPost&#39;: {&#39;_format&#39;, &#39;subscription_index&#39;, &#39;local_offset&#39;, &#39;ack_id&#39;, &#39;subtopic&#39;, &#39;exchange&#39;, &#39;topic&#39;}, &#39;sundew_extension&#39;: &#39;DMS:WXO_RENAMED_SWOB2:MSC:XML::20250514164937&#39;, &#39;from_cluster&#39;: &#39;DDSR.CMC&#39;, &#39;to_clusters&#39;: &#39;ALL&#39;, &#39;filename&#39;: &#39;msg_ddsr-WXO-DD_050b3999a53cc7c0b4b3aa97c6814c23:DMS:WXO_RENAMED_SWOB2:MSC:XML::20250514164937&#39;, &#39;mtime&#39;: &#39;20250514T164939.268&#39;, &#39;atime&#39;: &#39;20250514T164939.268&#39;, &#39;pubTime&#39;: &#39;20250514T164939.268&#39;, &#39;baseUrl&#39;: &#39;https://hpfx.collab.science.gc.ca&#39;, &#39;relPath&#39;: &#39;/20250514/WXO-DD/observations/swob-ml/20250514/CWSZ/2025-05-14-1646-CWSZ-AUTO-minute-swob.xml&#39;, &#39;subtopic&#39;: [&#39;&#39;, &#39;20250514&#39;, &#39;WXO-DD&#39;, &#39;observations&#39;, &#39;swob-ml&#39;, &#39;20250514&#39;, &#39;CWSZ&#39;, &#39;2025-05-14-1646-CWSZ-AUTO-minute-swob.xml&#39;], &#39;identity&#39;: {&#39;method&#39;: &#39;md5&#39;, &#39;value&#39;: &#39;u9OOHp9YffDZ10rP6V0tvg==&#39;}, &#39;size&#39;: 9683, &#39;exchange&#39;: &#39;xpublic&#39;, &#39;topic&#39;: &#39;v02.post.20250514.WXO-DD.observations.swob-ml.20250514.CWSZ&#39;, &#39;ack_id&#39;: {&#39;delivery_tag&#39;: 5, &#39;channel_id&#39;: 2, &#39;connection_id&#39;: &#39;9559125c-2ebb-46e6-9ae6-3953c683a253_sub&#39;, &#39;broker&#39;: &#39;hpfx.collab.science.gc.ca:5671//&#39;}, &#39;local_offset&#39;: 0, &#39;subscription_index&#39;: 0}
+</pre></div></div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area stderr docutils container">
+<div class="highlight"><pre>
+2025-05-14 12:49:52,239 [INFO] sarracenia.moth.amqp getCleanUp deleting queue q_anonymous_idefix.local_SomethingHelpfulToYou
 </pre></div></div>
 </div>
 <div class="nboutput nblast docutils container">
@@ -269,22 +371,19 @@ le premier 50 octets du fichier annoncé: b&#39;GRIB\x00\x00\x00\x02\x00\x00\x00
 </div>
 <div class="output_area docutils container">
 <div class="highlight"><pre>
-message 4: {&#39;_format&#39;: &#39;v02&#39;, &#39;_deleteOnPost&#39;: {&#39;subtopic&#39;, &#39;ack_id&#39;, &#39;_format&#39;, &#39;local_offset&#39;, &#39;exchange&#39;}, &#39;sundew_extension&#39;: &#39;DMS:WXO_RENAMED_SWOB2:MSC:XML::20230528190109&#39;, &#39;from_cluster&#39;: &#39;DDSR.CMC&#39;, &#39;to_clusters&#39;: &#39;ALL&#39;, &#39;filename&#39;: &#39;msg_ddsr-WXO-DD_0926936c6c7b2968e12487b5e10b3bc9:DMS:WXO_RENAMED_SWOB2:MSC:XML::20230528190109&#39;, &#39;source&#39;: &#39;WXO-DD&#39;, &#39;mtime&#39;: &#39;20230528T190111.364&#39;, &#39;atime&#39;: &#39;20230528T190111.364&#39;, &#39;pubTime&#39;: &#39;20230528T190111.364&#39;, &#39;baseUrl&#39;: &#39;https://hpfx.collab.science.gc.ca&#39;, &#39;relPath&#39;: &#39;/20230528/WXO-DD/observations/swob-ml/20230528/CVKU/2023-05-28-1900-CVKU-AUTO-minute-swob.xml&#39;, &#39;subtopic&#39;: [&#39;20230528&#39;, &#39;WXO-DD&#39;, &#39;observations&#39;, &#39;swob-ml&#39;, &#39;20230528&#39;, &#39;CVKU&#39;], &#39;identity&#39;: {&#39;method&#39;: &#39;md5&#39;, &#39;value&#39;: &#39;WEEsvB9/BKQC1Pv9hgO3LA==&#39;}, &#39;size&#39;: 6426, &#39;exchange&#39;: &#39;xpublic&#39;, &#39;ack_id&#39;: 5, &#39;local_offset&#39;: 0}
 le premier 50 octets du fichier annoncé: b&#39;&lt;?xml version=&#34;1.0&#34; encoding=&#34;UTF-8&#34; standalone=&#34;n&#39;
 5 messages bien reçus
 </pre></div></div>
 </div>
 <p>2ème exemple … combinez baseURL + relPath (en parlant de retPath) et récupérez les données … utilisez newMessages() au lieu de getNewMessage pour afficher une autre interface utilisateur de consommation. Parler de http, et comment la récupération variera en fonction du protocole répertorié dans la baseUrl, et peut être compliqué.</p>
 <div class="nbinput docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[12]:
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[3]:
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">urllib.request</span>
 <span class="kn">import</span> <span class="nn">xml.etree.ElementTree</span> <span class="k">as</span> <span class="nn">ET</span>
 
 
-<span class="n">options</span><span class="p">[</span><span class="s1">&#39;bindings&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="p">[(</span><span class="s1">&#39;xpublic&#39;</span><span class="p">,</span> <span class="p">[</span> <span class="s1">&#39;v02&#39;</span><span class="p">,</span> <span class="s1">&#39;post&#39;</span><span class="p">],</span> \
-        <span class="p">[</span> <span class="s1">&#39;*&#39;</span><span class="p">,</span> <span class="s1">&#39;WXO-DD&#39;</span><span class="p">,</span> <span class="s1">&#39;observations&#39;</span><span class="p">,</span> <span class="s1">&#39;swob-ml&#39;</span><span class="p">,</span> <span class="s1">&#39;#&#39;</span><span class="p">]</span> <span class="p">)]</span>
 
 <span class="n">h</span> <span class="o">=</span> <span class="n">sarracenia</span><span class="o">.</span><span class="n">moth</span><span class="o">.</span><span class="n">Moth</span><span class="o">.</span><span class="n">subFactory</span><span class="p">(</span><span class="n">options</span><span class="p">)</span>
 
@@ -342,8 +441,8 @@ le premier 50 octets du fichier annoncé: b&#39;&lt;?xml version=&#34;1.0&#34; e
 </div>
 <div class="output_area stderr docutils container">
 <div class="highlight"><pre>
-2023-05-28 15:01:57,568 [INFO] sarracenia.moth.amqp __getSetup queue declared q_anonymous_fractal_QuelquechoseDUtile (as: amqps://anonymous@hpfx.collab.science.gc.ca)
-2023-05-28 15:01:57,568 [INFO] sarracenia.moth.amqp __getSetup binding q_anonymous_fractal_QuelquechoseDUtile with v02.post.*.WXO-DD.observations.swob-ml.# to xpublic (as: amqps://anonymous@hpfx.collab.science.gc.ca)
+2025-05-14 12:50:02,029 [INFO] sarracenia.moth.amqp _queueDeclare queue declared q_anonymous_idefix.local_SomethingHelpfulToYou (as: amqps://anonymous@hpfx.collab.science.gc.ca), (messages waiting: 0)
+2025-05-14 12:50:02,030 [INFO] sarracenia.moth.amqp getSetup binding q_anonymous_idefix.local_SomethingHelpfulToYou with v02.post.*.WXO-DD.observations.swob-ml.# to xpublic (as: amqps://anonymous@hpfx.collab.science.gc.ca)
 </pre></div></div>
 </div>
 <div class="nboutput docutils container">
@@ -351,28 +450,28 @@ le premier 50 octets du fichier annoncé: b&#39;&lt;?xml version=&#34;1.0&#34; e
 </div>
 <div class="output_area docutils container">
 <div class="highlight"><pre>
-url 0: https://hpfx.collab.science.gc.ca/20230528/WXO-DD/observations/swob-ml/20230528/CWZU/2023-05-28-1900-CWZU-AUTO-swob.xml
-station: SHEARWATER JETTY, tc_id: WZU, lat: 44.628055, long: -63.5225, air_temp: 23.3
-url 1: https://hpfx.collab.science.gc.ca/20230528/WXO-DD/observations/swob-ml/20230528/CYVR/2023-05-28-1900-CYVR-MAN-swob.xml
-station: Vancouver International, tc_id: , lat: 49.19470, long: -123.18400, air_temp: 18.2
-url 2: https://hpfx.collab.science.gc.ca/20230528/WXO-DD/observations/swob-ml/20230528/CAHK/2023-05-28-1900-CAHK-AUTO-swob.xml
-station: HALIFAX KOOTENAY, tc_id: AHK, lat: 44.5875, long: -63.55, air_temp: 25.2
-url 3: https://hpfx.collab.science.gc.ca/20230528/WXO-DD/observations/swob-ml/20230528/CPCN/2023-05-28-1900-CPCN-AUTO-swob.xml
-station: CAPPON, tc_id: PCN, lat: 51.066947, long: -110.796689, air_temp: 20.8
-url 4: https://hpfx.collab.science.gc.ca/20230528/WXO-DD/observations/swob-ml/20230528/CWMT/2023-05-28-1901-CWMT-AUTO-minute-swob.xml
-station: WHATI, tc_id: WMT, lat: 63.1343, long: -117.244497, air_temp: 11.3
-url 5: https://hpfx.collab.science.gc.ca/20230528/WXO-DD/observations/swob-ml/20230528/CWPO/2023-05-28-1901-CWPO-AUTO-minute-swob.xml
-station: PILOT MOUND (AUT), tc_id: WPO, lat: 49.187933, long: -98.9064, air_temp: 30.3
-url 6: https://hpfx.collab.science.gc.ca/20230528/WXO-DD/observations/swob-ml/20230528/CVOC/2023-05-28-1858-CVOC-AUTO-minute-swob.xml
-station: WHISTLER - NESTERS, tc_id: VOC, lat: 50.1289, long: -122.9546, air_temp: 18.1
-url 7: https://hpfx.collab.science.gc.ca/20230528/WXO-DD/observations/swob-ml/20230528/CXCP/2023-05-28-1900-CXCP-AUTO-swob.xml
-station: CHAMPION AGDM, tc_id: XCP, lat: 50.281945, long: -113.350278, air_temp: 23.7
-url 8: https://hpfx.collab.science.gc.ca/20230528/WXO-DD/observations/swob-ml/20230528/CYZG/2023-05-28-1900-CYZG-MAN-swob.xml
-station: Salluit, tc_id: , lat: 62.17940, long: -75.66720, air_temp: 2.4
-url 9: https://hpfx.collab.science.gc.ca/20230528/WXO-DD/observations/swob-ml/20230528/CVOC/2023-05-28-1900-CVOC-AUTO-swob.xml
-station: WHISTLER - NESTERS, tc_id: VOC, lat: 50.1289, long: -122.9546, air_temp: 18.1
-url 10: https://hpfx.collab.science.gc.ca/20230528/WXO-DD/observations/swob-ml/20230528/CNZS/2023-05-28-1900-CNZS-AUTO-swob.xml
-station: CORAL HARBOUR RCS, tc_id: NZS, lat: 64.187831, long: -83.347054, air_temp: -1.5
+url 0: https://hpfx.collab.science.gc.ca/20250514/WXO-DD/observations/swob-ml/20250514/CPIF/2025-05-14-1646-CPIF-AUTO-minute-swob.xml
+station: ISLAND FALLS (AUT), tc_id: PIF, lat: 55.528161, long: -102.345178, air_temp: 6.9
+url 1: https://hpfx.collab.science.gc.ca/20250514/WXO-DD/observations/swob-ml/20250514/CWGL/2025-05-14-1649-CWGL-AUTO-minute-swob.xml
+station: LAGOON CITY, tc_id: WGL, lat: 44.548, long: -79.221, air_temp: 17.6
+url 2: https://hpfx.collab.science.gc.ca/20250514/WXO-DD/observations/swob-ml/20250514/CWQP/2025-05-14-1649-CWQP-AUTO-minute-swob.xml
+station: POINT PETRE (AUT), tc_id: WQP, lat: 43.8395, long: -77.1515, air_temp: 13.0
+url 3: https://hpfx.collab.science.gc.ca/20250514/WXO-DD/observations/swob-ml/20250514/CVPX/2025-05-14-1649-CVPX-AUTO-minute-swob.xml
+station: PRINCE GEORGE MASSEY AUTO, tc_id: VPX, lat: 53.90001, long: -122.790803, air_temp: 10.2
+url 4: https://hpfx.collab.science.gc.ca/20250514/WXO-DD/observations/swob-ml/20250514/CXAT/2025-05-14-1649-CXAT-AUTO-minute-swob.xml
+station: ARCTIC BAY CS, tc_id: XAT, lat: 72.99275, long: -85.011575, air_temp: -10.5
+url 5: https://hpfx.collab.science.gc.ca/20250514/WXO-DD/observations/swob-ml/20250514/CWGY/2025-05-14-1649-CWGY-AUTO-minute-swob.xml
+station: ESTHER 1, tc_id: WGY, lat: 51.6697, long: -110.2061, air_temp: 17.2
+url 6: https://hpfx.collab.science.gc.ca/20250514/WXO-DD/observations/swob-ml/20250514/CWTG/2025-05-14-1639-CWTG-AUTO-minute-swob.xml
+station: POINTE-DES-MONTS, tc_id: WTG, lat: 49.316667, long: -67.381165, air_temp: 9.1
+url 7: https://hpfx.collab.science.gc.ca/20250514/WXO-DD/observations/swob-ml/20250514/CWTG/2025-05-14-1648-CWTG-AUTO-minute-swob.xml
+station: POINTE-DES-MONTS, tc_id: WTG, lat: 49.316667, long: -67.381165, air_temp: 9.2
+url 8: https://hpfx.collab.science.gc.ca/20250514/WXO-DD/observations/swob-ml/20250514/CWTG/2025-05-14-1649-CWTG-AUTO-minute-swob.xml
+station: POINTE-DES-MONTS, tc_id: WTG, lat: 49.316667, long: -67.381165, air_temp: 9.0
+url 9: https://hpfx.collab.science.gc.ca/20250514/WXO-DD/observations/swob-ml/20250514/CNZS/2025-05-14-1649-CNZS-AUTO-minute-swob.xml
+station: CORAL HARBOUR RCS, tc_id: NZS, lat: 64.187831, long: -83.347054, air_temp: -7.7
+url 10: https://hpfx.collab.science.gc.ca/20250514/WXO-DD/observations/swob-ml/20250514/CWIZ/2025-05-14-1649-CWIZ-AUTO-minute-swob.xml
+station: L&#39;ACADIE, tc_id: WIZ, lat: 45.293967, long: -73.349847, air_temp: 23.8
 </pre></div></div>
 </div>
 <div class="nboutput docutils container">
@@ -380,7 +479,7 @@ station: CORAL HARBOUR RCS, tc_id: NZS, lat: 64.187831, long: -83.347054, air_te
 </div>
 <div class="output_area stderr docutils container">
 <div class="highlight"><pre>
-2023-05-28 15:02:01,891 [INFO] sarracenia.moth.amqp getCleanUp deleteing queue q_anonymous_fractal_QuelquechoseDUtile
+2025-05-14 12:50:08,161 [INFO] sarracenia.moth.amqp getCleanUp deleting queue q_anonymous_idefix.local_SomethingHelpfulToYou
 </pre></div></div>
 </div>
 <div class="nboutput nblast docutils container">

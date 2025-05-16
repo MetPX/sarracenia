@@ -945,7 +945,7 @@ duration properties, from the root sarracenia/__init__.py, the broker argument f
 <span class="kn">import</span> <span class="nn">sarracenia.config.credentials</span>
 
 
-<span class="n">props</span> <span class="o">=</span> <span class="n">sarracenia</span><span class="o">.</span><span class="n">moth</span><span class="o">.</span><span class="n">default_options</span>
+<span class="n">props</span> <span class="o">=</span> <span class="n">sarracenia</span><span class="o">.</span><span class="n">moth</span><span class="o">.</span><span class="n">default_options</span><span class="p">()</span>
 <span class="n">props</span><span class="p">[</span><span class="s1">&#39;broker&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">sarracenia</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">credentials</span><span class="o">.</span><span class="n">Credential</span><span class="p">(</span><span class="s1">&#39;amqps://anonymous:anonymous@hpfx.collab.science.gc.ca&#39;</span><span class="p">)</span>
 <span class="n">props</span><span class="p">[</span><span class="s1">&#39;expire&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="mi">300</span>
 <span class="n">props</span><span class="p">[</span><span class="s1">&#39;batch&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="mi">1</span>
@@ -1062,12 +1062,6 @@ If there’s no ‘ack_id’ in the message, you should return True.</p>
 <dd><p>get rid of server-side resources associated with a client. (queues/id’s, etc…)</p>
 </dd></dl>
 
-<dl class="py property">
-<dt class="sig sig-object py">
-<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">default_options</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">dict</span></em></dt>
-<dd><p>get default properties to override, used by client for validation.</p>
-</dd></dl>
-
 <dl class="py method">
 <dt class="sig sig-object py">
 <em class="property"><span class="pre">static</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">findAllSubclasses</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">cls</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">set</span></span></span><a class="reference internal" href="_modules/sarracenia/moth.html#Moth.findAllSubclasses"><span class="viewcode-link"><span class="pre">[source]</span></span></a></dt>
@@ -1139,6 +1133,12 @@ it should eventually settle down to a long period though.</p>
 <dd><p>given a message and exchangeSplit, return the number to split to.</p>
 </dd></dl>
 
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py">
+<span class="sig-prename descclassname"><span class="pre">sarracenia.moth.</span></span><span class="sig-name descname"><span class="pre">default_options</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">dict</span></span></span><a class="reference internal" href="_modules/sarracenia/moth.html#default_options"><span class="viewcode-link"><span class="pre">[source]</span></span></a></dt>
+<dd><p>get default properties to override, used by client for validation.</p>
 </dd></dl>
 
 <dl class="py exception">

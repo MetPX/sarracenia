@@ -60,7 +60,7 @@
 <li class="toctree-l2 current"><a class="current reference internal" href="#">Release Notes (Advice on Upgrades)</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="#installation-instructions">Installation Instructions</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#git">git</a></li>
-<li class="toctree-l3"><a class="reference internal" href="#id1">3.0.59</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#id1">3.01.00</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#id2">3.0.58</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#id3">3.0.56</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#id4">3.0.54</a></li>
@@ -152,13 +152,15 @@ may generate notification messages.</p>
 <h2>git<a class="headerlink" href="#git" title="Link to this heading"></a></h2>
 </section>
 <section id="id1">
-<h2>3.0.59<a class="headerlink" href="#id1" title="Link to this heading"></a></h2>
-<p><em>NOTICE</em>: can now subscribe to multiple brokers, and publish to multiple brokers with a single configuration.</p>
+<h2>3.01.00<a class="headerlink" href="#id1" title="Link to this heading"></a></h2>
+<p><em>NOTICE</em>: can now subscribe to multiple brokers, and publish to multiple post_brokers with a single configuration.</p>
 <p><em>CHANGE</em>: python API <em>bindings</em> being replaced by <em>subscriptions.</em> API is quite different, see examples.
 <em>Subscriptions</em> enables multi-queue and multi-broker support for subscribing.</p>
 <p><em>CHANGE</em>: python API <a href="#id25"><span class="problematic" id="id26">post_</span></a> settings being replaced by <em>publishers.</em> need to build
 sarracenia.config.publisher.Publisher structure now to publish messages.  It enables publishing
 to multiple destinations.</p>
+<p><em>CHANGE</em>: python API <em>sarracenia.moth.default_options</em> is replaced by <em>sarracenia.moth.default_options()</em>
+which produces a modifiable copy of the default settings, rather than the original options.</p>
 </section>
 <section id="id2">
 <h2>3.0.58<a class="headerlink" href="#id2" title="Link to this heading"></a></h2>

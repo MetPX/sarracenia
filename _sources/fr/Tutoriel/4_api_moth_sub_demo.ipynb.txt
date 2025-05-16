@@ -38,7 +38,7 @@
   },
   {
    "cell_type": "code",
-   "execution_count": 9,
+   "execution_count": 1,
    "id": "romance-handy",
    "metadata": {
     "scrolled": true,
@@ -51,25 +51,65 @@
      "name": "stdout",
      "output_type": "stream",
      "text": [
-      "options: {'acceptUnmatched': True, 'batch': 25, 'bindings': [('xpublic', ['v02', 'post'], ['#'])], 'broker': <sarracenia.credentials.Credential object at 0x7f602ee7d780>, 'dry_run': False, 'exchange': None, 'expire': None, 'inline': False, 'inlineEncoding': 'guess', 'inlineByteMax': 4096, 'logFormat': '%(asctime)s [%(levelname)s] %(name)s %(funcName)s %(message)s', 'logLevel': 'info', 'messageDebugDump': False, 'message_strategy': {'reset': True, 'stubborn': True, 'failure_duration': '5m'}, 'message_ttl': 0, 'topicPrefix': ['v02', 'post'], 'tlsRigour': 'normal', 'auto_delete': False, 'durable': True, 'exchangeDeclare': True, 'prefetch': 25, 'queueName': 'q_anonymous_fractal_QuelquechoseDUtile', 'queueBind': True, 'queueDeclare': True, 'reset': False, 'subtopic': [], 'vhost': '/', 'queue_name': 'q_anonymous_fractal_QuelquechoseDUtile'}\n"
+      "options: {'acceptUnmatched': True, 'batch': 25, 'broker': <sarracenia.config.credentials.Credential object at 0x73589abe3410>, 'dry_run': False, 'exchange': None, 'expire': None, 'inline': False, 'inlineEncoding': 'guess', 'inlineByteMax': 4096, 'logFormat': '%(asctime)s [%(levelname)s] %(name)s %(funcName)s %(message)s', 'logLevel': 'info', 'messageDebugDump': False, 'message_strategy': {'reset': True, 'stubborn': True, 'failure_duration': '5m'}, 'messageAgeMax': 0, 'topicPrefix': ['v03'], 'tlsRigour': 'normal', 'auto_delete': False, 'durable': True, 'exchangeDeclare': True, 'persistent': True, 'prefetch': 25, 'queueBind': True, 'queueDeclare': True, 'reset': False, 'subtopic': [], 'vhost': '/', 'queueShare': 'SomethingHelpfulToYou', 'queueName': 'q_${BROKER_USER}_${HOSTNAME}_${QUEUESHARE}', 'subscriptions': [{'broker': <sarracenia.config.credentials.Credential object at 0x73589abe3410>, 'bindings': [{'exchange': 'xpublic', 'prefix': ['v02', 'post'], 'sub': ['*', 'WXO-DD', 'observations', 'swob-ml', '#']}], 'queue': {'name': 'q_anonymous_idefix.local_SomethingHelpfulToYou', 'template': 'q_${BROKER_USER}_${HOSTNAME}_${QUEUESHARE}', 'auto_delete': False, 'clean_session': True, 'durable': True, 'expire': 600, 'max_inflight_messages': 0, 'max_queued_messages': 0, 'prefetch': 25, 'qos': 1, 'receiveMaximum': 0, 'tlsRigour': 'normal', 'bind': True, 'declare': True}}], 'subscription_index': 0}\n"
      ]
     }
    ],
    "source": [
     "import sarracenia.moth\n",
     "import sarracenia.moth.amqp\n",
-    "import sarracenia.credentials\n",
+    "import sarracenia.config.credentials\n",
+    "import sarracenia.config.subscription\n",
     "\n",
     "import time\n",
     "import socket\n",
     "\n",
-    "\n",
-    "options = sarracenia.moth.default_options\n",
+    "options = sarracenia.moth.default_options()\n",
     "options.update(sarracenia.moth.amqp.default_options)\n",
-    "options['broker'] = sarracenia.credentials.Credential('amqps://anonymous:anonymous@hpfx.collab.science.gc.ca')\n",
-    "options['topicPrefix'] = [ 'v02', 'post' ]\n",
-    "options['bindings'] = [('xpublic', ['v02', 'post'], ['#'])]\n",
-    "options['queueName'] = 'q_anonymous_' + socket.getfqdn() + '_QuelquechoseDUtile'\n",
+    "\n",
+    "options['broker'] = sarracenia.config.credentials.Credential(\n",
+    "    'amqps://anonymous:anonymous@hpfx.collab.science.gc.ca')\n",
+    "\n",
+    "# binding tuple:  consists of prefix, exchange, rest.\n",
+    "# effect is to bind from queue using prefix/rest to exchange.\n",
+    "options['queueShare'] = 'SomethingHelpfulToYou'\n",
+    "\n",
+    "\n",
+    "# Note: queue name must start with q_<username> because server is configured to deny anything else.\n",
+    "#\n",
+    "options['queueName'] = 'q_${BROKER_USER}_${HOSTNAME}_${QUEUESHARE}'\n",
+    "\n",
+    "queue = {'name': 'q_anonymous_' + socket.getfqdn() + '_' + options['queueShare'],\n",
+    "         'template': options['queueName'],\n",
+    "         'auto_delete' : False, # AO == amqp only\n",
+    "         'clean_session': True, # MO == mqtt only.\n",
+    "         'durable': True, # AO: queue should survive broker reboots\n",
+    "         'expire': 600 ,  # MO: seconds until queue with no consumers disappears.\n",
+    "         'max_inflight_messages': 0, # MO: flow control.\n",
+    "         'max_queued_messages': 0,\n",
+    "         'prefetch': 25,\n",
+    "         'qos': 1,\n",
+    "         'receiveMaximum': 0,\n",
+    "         'tlsRigour': 'normal',\n",
+    "         'bind': True,  # whether to bind queues/subscriptions\n",
+    "         'declare': True # whether to declare queues/subscriptions\n",
+    "       }\n",
+    "\n",
+    "\n",
+    "options['subscriptions'] = sarracenia.config.subscription.Subscriptions( [ {\n",
+    "   'broker': options['broker'],\n",
+    "   'bindings': [ { 'exchange':'xpublic', 'prefix': ['v02','post'], 'sub':['*','WXO-DD','observations','swob-ml','#'] } ],\n",
+    "   'queue' : queue\n",
+    "      } ] )\n",
+    "\n",
+    "options['subscription_index'] = 0\n",
+    "\n",
+    "# turn on debug output for these classes.\n",
+    "#options['settings'] = {}\n",
+    "#options['settings']['sarracenia.moth.mqtt.MQTT'] = { 'logLevel':'debug' }\n",
+    "#options['settings']['sarracenia.moth.amqp.AMQP'] = { 'logLevel':'debug' }\n",
+    "\n",
+    "#options['logLevel'] = 'debug'\n",
     "\n",
     "print('options: %s' % options)\n",
     "\n"
@@ -148,7 +188,7 @@
   },
   {
    "cell_type": "code",
-   "execution_count": 10,
+   "execution_count": 2,
    "id": "little-louis",
    "metadata": {
     "scrolled": true
@@ -158,36 +198,89 @@
      "name": "stderr",
      "output_type": "stream",
      "text": [
-      "2023-05-28 15:01:16,250 [INFO] sarracenia.moth.amqp __getSetup queue declared q_anonymous_fractal_QuelquechoseDUtile (as: amqps://anonymous@hpfx.collab.science.gc.ca) \n",
-      "2023-05-28 15:01:16,251 [INFO] sarracenia.moth.amqp __getSetup binding q_anonymous_fractal_QuelquechoseDUtile with v02.post.# to xpublic (as: amqps://anonymous@hpfx.collab.science.gc.ca)\n"
+      "2025-05-14 12:49:49,752 [INFO] sarracenia.moth.amqp _queueDeclare queue declared q_anonymous_idefix.local_SomethingHelpfulToYou (as: amqps://anonymous@hpfx.collab.science.gc.ca), (messages waiting: 0)\n",
+      "2025-05-14 12:49:49,753 [INFO] sarracenia.moth.amqp getSetup binding q_anonymous_idefix.local_SomethingHelpfulToYou with v02.post.*.WXO-DD.observations.swob-ml.# to xpublic (as: amqps://anonymous@hpfx.collab.science.gc.ca)\n",
+      "2025-05-14 12:49:49,798 [INFO] sarracenia getContent retrieving from: https://hpfx.collab.science.gc.ca//20250514/WXO-DD/observations/swob-ml/20250514/CWZE/2025-05-14-1648-CWZE-AUTO-minute-swob.xml\n"
      ]
     },
     {
      "name": "stdout",
      "output_type": "stream",
      "text": [
-      "message 0: {'_format': 'v02', '_deleteOnPost': {'subtopic', 'ack_id', '_format', 'local_offset', 'exchange'}, 'sundew_extension': 'CMC:HRDPS:GRIB2:BIN::20230528190111', 'from_cluster': 'DDSR.CMC', 'to_clusters': 'ALL', 'filename': 'msg_ddsr-WXO-DD_5eebe93b78f7f20d6c58dff7079f17f8:CMC:HRDPS:GRIB2:BIN::20230528190111', 'source': 'WXO-DD', 'mtime': '20230528T190113.733', 'atime': '20230528T190113.733', 'pubTime': '20230528T190113.733', 'baseUrl': 'https://hpfx.collab.science.gc.ca', 'relPath': '/20230528/WXO-DD/model_hrdps/north/grib2/12/006/CMC_hrdps_north_HGT_ISBL_1000_ps2.5km_2023052812_P006-00.grib2', 'subtopic': ['20230528', 'WXO-DD', 'model_hrdps', 'north', 'grib2', '12', '006'], 'identity': {'method': 'md5', 'value': 'DcEZ6+fx637myOUf83VyDQ=='}, 'size': 236654, 'exchange': 'xpublic', 'ack_id': 1, 'local_offset': 0}\n",
-      "le premier 50 octets du fichier annoncé: b'GRIB\\x00\\x00\\x00\\x02\\x00\\x00\\x00\\x00\\x00\\x03\\x9cn\\x00\\x00\\x00\\x15\\x01\\x006\\x00\\x00\\x04\\x00\\x01\\x07\\xe7\\x05\\x1c\\x0c\\x00\\x00\\x01\\x02\\x00\\x00\\x00A\\x03\\x00\\x00\\x12q1\\x00\\x00\\x00'\n",
-      "message 1: {'_format': 'v02', '_deleteOnPost': {'subtopic', 'ack_id', '_format', 'local_offset', 'exchange'}, 'sundew_extension': 'CMC:HRDPS:GRIB2:BIN::20230528190111', 'from_cluster': 'DDSR.CMC', 'to_clusters': 'ALL', 'filename': 'msg_ddsr-WXO-DD_abed0a37b3c8b8511cc78b6f8c5c6a82:CMC:HRDPS:GRIB2:BIN::20230528190111', 'source': 'WXO-DD', 'mtime': '20230528T190114.13', 'atime': '20230528T190114.13', 'pubTime': '20230528T190114.13', 'baseUrl': 'https://hpfx.collab.science.gc.ca', 'relPath': '/20230528/WXO-DD/model_hrdps/north/grib2/12/006/CMC_hrdps_north_SPFH_ISBL_0150_ps2.5km_2023052812_P006-00.grib2', 'subtopic': ['20230528', 'WXO-DD', 'model_hrdps', 'north', 'grib2', '12', '006'], 'identity': {'method': 'md5', 'value': 'oMQDWV/QlF9aLLGOu+Tumw=='}, 'size': 330883, 'exchange': 'xpublic', 'ack_id': 2, 'local_offset': 0}\n",
-      "le premier 50 octets du fichier annoncé: b'GRIB\\x00\\x00\\x00\\x02\\x00\\x00\\x00\\x00\\x00\\x05\\x0c\\x83\\x00\\x00\\x00\\x15\\x01\\x006\\x00\\x00\\x04\\x00\\x01\\x07\\xe7\\x05\\x1c\\x0c\\x00\\x00\\x01\\x02\\x00\\x00\\x00A\\x03\\x00\\x00\\x12q1\\x00\\x00\\x00'\n",
-      "message 2: {'_format': 'v02', '_deleteOnPost': {'subtopic', 'ack_id', '_format', 'local_offset', 'exchange'}, 'sundew_extension': 'CMC:HRDPS:GRIB2:BIN::20230528190111', 'from_cluster': 'DDSR.CMC', 'to_clusters': 'ALL', 'filename': 'msg_ddsr-WXO-DD_7af6caa9fd11fae11919525225783fad:CMC:HRDPS:GRIB2:BIN::20230528190111', 'source': 'WXO-DD', 'mtime': '20230528T190113.823', 'atime': '20230528T190113.823', 'pubTime': '20230528T190113.823', 'baseUrl': 'https://hpfx.collab.science.gc.ca', 'relPath': '/20230528/WXO-DD/model_hrdps/north/grib2/12/006/CMC_hrdps_north_DEPR_ISBL_0850_ps2.5km_2023052812_P006-00.grib2', 'subtopic': ['20230528', 'WXO-DD', 'model_hrdps', 'north', 'grib2', '12', '006'], 'identity': {'method': 'md5', 'value': 'zSw+zw6P1XlQayy+CjoLAg=='}, 'size': 194315, 'exchange': 'xpublic', 'ack_id': 3, 'local_offset': 0}\n",
-      "le premier 50 octets du fichier annoncé: b'GRIB\\x00\\x00\\x00\\x02\\x00\\x00\\x00\\x00\\x00\\x02\\xf7\\x0b\\x00\\x00\\x00\\x15\\x01\\x006\\x00\\x00\\x04\\x00\\x01\\x07\\xe7\\x05\\x1c\\x0c\\x00\\x00\\x01\\x02\\x00\\x00\\x00A\\x03\\x00\\x00\\x12q1\\x00\\x00\\x00'\n",
-      "message 3: {'_format': 'v02', '_deleteOnPost': {'subtopic', 'ack_id', '_format', 'local_offset', 'exchange'}, 'sundew_extension': 'CMC:HRDPS:GRIB2:BIN::20230528190112', 'from_cluster': 'DDSR.CMC', 'to_clusters': 'ALL', 'filename': 'msg_ddsr-WXO-DD_e02209b0564eb4b19dd746af9eb5ee9c:CMC:HRDPS:GRIB2:BIN::20230528190112', 'source': 'WXO-DD', 'mtime': '20230528T190114.89', 'atime': '20230528T190114.89', 'pubTime': '20230528T190114.89', 'baseUrl': 'https://hpfx.collab.science.gc.ca', 'relPath': '/20230528/WXO-DD/model_hrdps/north/grib2/12/006/CMC_hrdps_north_WDIR_TGL_40_ps2.5km_2023052812_P006-00.grib2', 'subtopic': ['20230528', 'WXO-DD', 'model_hrdps', 'north', 'grib2', '12', '006'], 'identity': {'method': 'md5', 'value': 'GpPL5qQEOn0ALfuOzQrIHw=='}, 'size': 529466, 'exchange': 'xpublic', 'ack_id': 4, 'local_offset': 0}\n",
-      "le premier 50 octets du fichier annoncé: b'GRIB\\x00\\x00\\x00\\x02\\x00\\x00\\x00\\x00\\x00\\x08\\x14:\\x00\\x00\\x00\\x15\\x01\\x006\\x00\\x00\\x04\\x00\\x01\\x07\\xe7\\x05\\x1c\\x0c\\x00\\x00\\x01\\x02\\x00\\x00\\x00A\\x03\\x00\\x00\\x12q1\\x00\\x00\\x00'\n"
+      "message 0: {'_format': 'v02', '_deleteOnPost': {'_format', 'subscription_index', 'local_offset', 'ack_id', 'subtopic', 'exchange', 'topic'}, 'sundew_extension': 'DMS:WXO_RENAMED_SWOB2:MSC:XML::20250514164922', 'from_cluster': 'DDSR.CMC', 'to_clusters': 'ALL', 'filename': 'msg_ddsr-WXO-DD_b52e217f2a58e6f0e05979adf9fd954f:DMS:WXO_RENAMED_SWOB2:MSC:XML::20250514164922', 'mtime': '20250514T164924.165', 'atime': '20250514T164924.165', 'pubTime': '20250514T164924.165', 'baseUrl': 'https://hpfx.collab.science.gc.ca', 'relPath': '/20250514/WXO-DD/observations/swob-ml/20250514/CWZE/2025-05-14-1648-CWZE-AUTO-minute-swob.xml', 'subtopic': ['', '20250514', 'WXO-DD', 'observations', 'swob-ml', '20250514', 'CWZE', '2025-05-14-1648-CWZE-AUTO-minute-swob.xml'], 'identity': {'method': 'md5', 'value': '/ZpPHtpINmNMYH/Zj1jiqw=='}, 'size': 10500, 'exchange': 'xpublic', 'topic': 'v02.post.20250514.WXO-DD.observations.swob-ml.20250514.CWZE', 'ack_id': {'delivery_tag': 1, 'channel_id': 2, 'connection_id': '9559125c-2ebb-46e6-9ae6-3953c683a253_sub', 'broker': 'hpfx.collab.science.gc.ca:5671//'}, 'local_offset': 0, 'subscription_index': 0}\n"
      ]
     },
     {
      "name": "stderr",
      "output_type": "stream",
      "text": [
-      "2023-05-28 15:01:17,548 [INFO] sarracenia.moth.amqp getCleanUp deleteing queue q_anonymous_fractal_QuelquechoseDUtile\n"
+      "2025-05-14 12:49:50,326 [INFO] sarracenia getContent retrieving from: https://hpfx.collab.science.gc.ca//20250514/WXO-DD/observations/swob-ml/20250514/CWVU/2025-05-14-1623-CWVU-AUTO-minute-swob.xml\n"
      ]
     },
     {
      "name": "stdout",
      "output_type": "stream",
      "text": [
-      "message 4: {'_format': 'v02', '_deleteOnPost': {'subtopic', 'ack_id', '_format', 'local_offset', 'exchange'}, 'sundew_extension': 'DMS:WXO_RENAMED_SWOB2:MSC:XML::20230528190109', 'from_cluster': 'DDSR.CMC', 'to_clusters': 'ALL', 'filename': 'msg_ddsr-WXO-DD_0926936c6c7b2968e12487b5e10b3bc9:DMS:WXO_RENAMED_SWOB2:MSC:XML::20230528190109', 'source': 'WXO-DD', 'mtime': '20230528T190111.364', 'atime': '20230528T190111.364', 'pubTime': '20230528T190111.364', 'baseUrl': 'https://hpfx.collab.science.gc.ca', 'relPath': '/20230528/WXO-DD/observations/swob-ml/20230528/CVKU/2023-05-28-1900-CVKU-AUTO-minute-swob.xml', 'subtopic': ['20230528', 'WXO-DD', 'observations', 'swob-ml', '20230528', 'CVKU'], 'identity': {'method': 'md5', 'value': 'WEEsvB9/BKQC1Pv9hgO3LA=='}, 'size': 6426, 'exchange': 'xpublic', 'ack_id': 5, 'local_offset': 0}\n",
+      "le premier 50 octets du fichier annoncé: b'<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"n'\n",
+      "message 1: {'_format': 'v02', '_deleteOnPost': {'_format', 'subscription_index', 'local_offset', 'ack_id', 'subtopic', 'exchange', 'topic'}, 'sundew_extension': 'DMS:WXO_RENAMED_SWOB2:MSC:XML::20250514164922', 'from_cluster': 'DDSR.CMC', 'to_clusters': 'ALL', 'filename': 'msg_ddsr-WXO-DD_a028bf3f18904855a2ab73bb504846a6:DMS:WXO_RENAMED_SWOB2:MSC:XML::20250514164922', 'mtime': '20250514T164924.165', 'atime': '20250514T164924.165', 'pubTime': '20250514T164924.165', 'baseUrl': 'https://hpfx.collab.science.gc.ca', 'relPath': '/20250514/WXO-DD/observations/swob-ml/20250514/CWVU/2025-05-14-1623-CWVU-AUTO-minute-swob.xml', 'subtopic': ['', '20250514', 'WXO-DD', 'observations', 'swob-ml', '20250514', 'CWVU', '2025-05-14-1623-CWVU-AUTO-minute-swob.xml'], 'identity': {'method': 'md5', 'value': 'obON514oZIaun0t3JycELQ=='}, 'size': 9694, 'exchange': 'xpublic', 'topic': 'v02.post.20250514.WXO-DD.observations.swob-ml.20250514.CWVU', 'ack_id': {'delivery_tag': 2, 'channel_id': 2, 'connection_id': '9559125c-2ebb-46e6-9ae6-3953c683a253_sub', 'broker': 'hpfx.collab.science.gc.ca:5671//'}, 'local_offset': 0, 'subscription_index': 0}\n"
+     ]
+    },
+    {
+     "name": "stderr",
+     "output_type": "stream",
+     "text": [
+      "2025-05-14 12:49:51,187 [INFO] sarracenia getContent retrieving from: https://hpfx.collab.science.gc.ca//20250514/WXO-DD/observations/swob-ml/20250514/CWGX/2025-05-14-1649-CWGX-AUTO-minute-swob.xml\n"
+     ]
+    },
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      "le premier 50 octets du fichier annoncé: b'<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"n'\n",
+      "message 2: {'_format': 'v02', '_deleteOnPost': {'_format', 'subscription_index', 'local_offset', 'ack_id', 'subtopic', 'exchange', 'topic'}, 'sundew_extension': 'DMS:WXO_RENAMED_SWOB2:MSC:XML::20250514164936', 'from_cluster': 'DDSR.CMC', 'to_clusters': 'ALL', 'filename': 'msg_ddsr-WXO-DD_d8640d45868a8745a877ef233f09f21a:DMS:WXO_RENAMED_SWOB2:MSC:XML::20250514164936', 'mtime': '20250514T164938.264', 'atime': '20250514T164938.264', 'pubTime': '20250514T164938.264', 'baseUrl': 'https://hpfx.collab.science.gc.ca', 'relPath': '/20250514/WXO-DD/observations/swob-ml/20250514/CWGX/2025-05-14-1649-CWGX-AUTO-minute-swob.xml', 'subtopic': ['', '20250514', 'WXO-DD', 'observations', 'swob-ml', '20250514', 'CWGX', '2025-05-14-1649-CWGX-AUTO-minute-swob.xml'], 'identity': {'method': 'md5', 'value': '4I6zdE2BnD6HT1pqxlnJUQ=='}, 'size': 9409, 'exchange': 'xpublic', 'topic': 'v02.post.20250514.WXO-DD.observations.swob-ml.20250514.CWGX', 'ack_id': {'delivery_tag': 3, 'channel_id': 2, 'connection_id': '9559125c-2ebb-46e6-9ae6-3953c683a253_sub', 'broker': 'hpfx.collab.science.gc.ca:5671//'}, 'local_offset': 0, 'subscription_index': 0}\n"
+     ]
+    },
+    {
+     "name": "stderr",
+     "output_type": "stream",
+     "text": [
+      "2025-05-14 12:49:51,723 [INFO] sarracenia getContent retrieving from: https://hpfx.collab.science.gc.ca//20250514/WXO-DD/observations/swob-ml/20250514/CWWZ/2025-05-14-1649-CWWZ-AUTO-minute-swob.xml\n"
+     ]
+    },
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      "le premier 50 octets du fichier annoncé: b'<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"n'\n",
+      "message 3: {'_format': 'v02', '_deleteOnPost': {'_format', 'subscription_index', 'local_offset', 'ack_id', 'subtopic', 'exchange', 'topic'}, 'sundew_extension': 'DMS:WXO_RENAMED_SWOB2:MSC:XML::20250514164936', 'from_cluster': 'DDSR.CMC', 'to_clusters': 'ALL', 'filename': 'msg_ddsr-WXO-DD_dc47b87bb82a20428771c3da3052ae04:DMS:WXO_RENAMED_SWOB2:MSC:XML::20250514164936', 'mtime': '20250514T164938.264', 'atime': '20250514T164938.264', 'pubTime': '20250514T164938.264', 'baseUrl': 'https://hpfx.collab.science.gc.ca', 'relPath': '/20250514/WXO-DD/observations/swob-ml/20250514/CWWZ/2025-05-14-1649-CWWZ-AUTO-minute-swob.xml', 'subtopic': ['', '20250514', 'WXO-DD', 'observations', 'swob-ml', '20250514', 'CWWZ', '2025-05-14-1649-CWWZ-AUTO-minute-swob.xml'], 'identity': {'method': 'md5', 'value': '7bTyPATk9dDCIHUVAW8rLQ=='}, 'size': 10422, 'exchange': 'xpublic', 'topic': 'v02.post.20250514.WXO-DD.observations.swob-ml.20250514.CWWZ', 'ack_id': {'delivery_tag': 4, 'channel_id': 2, 'connection_id': '9559125c-2ebb-46e6-9ae6-3953c683a253_sub', 'broker': 'hpfx.collab.science.gc.ca:5671//'}, 'local_offset': 0, 'subscription_index': 0}\n"
+     ]
+    },
+    {
+     "name": "stderr",
+     "output_type": "stream",
+     "text": [
+      "2025-05-14 12:49:51,991 [INFO] sarracenia getContent retrieving from: https://hpfx.collab.science.gc.ca//20250514/WXO-DD/observations/swob-ml/20250514/CWSZ/2025-05-14-1646-CWSZ-AUTO-minute-swob.xml\n"
+     ]
+    },
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      "le premier 50 octets du fichier annoncé: b'<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"n'\n",
+      "message 4: {'_format': 'v02', '_deleteOnPost': {'_format', 'subscription_index', 'local_offset', 'ack_id', 'subtopic', 'exchange', 'topic'}, 'sundew_extension': 'DMS:WXO_RENAMED_SWOB2:MSC:XML::20250514164937', 'from_cluster': 'DDSR.CMC', 'to_clusters': 'ALL', 'filename': 'msg_ddsr-WXO-DD_050b3999a53cc7c0b4b3aa97c6814c23:DMS:WXO_RENAMED_SWOB2:MSC:XML::20250514164937', 'mtime': '20250514T164939.268', 'atime': '20250514T164939.268', 'pubTime': '20250514T164939.268', 'baseUrl': 'https://hpfx.collab.science.gc.ca', 'relPath': '/20250514/WXO-DD/observations/swob-ml/20250514/CWSZ/2025-05-14-1646-CWSZ-AUTO-minute-swob.xml', 'subtopic': ['', '20250514', 'WXO-DD', 'observations', 'swob-ml', '20250514', 'CWSZ', '2025-05-14-1646-CWSZ-AUTO-minute-swob.xml'], 'identity': {'method': 'md5', 'value': 'u9OOHp9YffDZ10rP6V0tvg=='}, 'size': 9683, 'exchange': 'xpublic', 'topic': 'v02.post.20250514.WXO-DD.observations.swob-ml.20250514.CWSZ', 'ack_id': {'delivery_tag': 5, 'channel_id': 2, 'connection_id': '9559125c-2ebb-46e6-9ae6-3953c683a253_sub', 'broker': 'hpfx.collab.science.gc.ca:5671//'}, 'local_offset': 0, 'subscription_index': 0}\n"
+     ]
+    },
+    {
+     "name": "stderr",
+     "output_type": "stream",
+     "text": [
+      "2025-05-14 12:49:52,239 [INFO] sarracenia.moth.amqp getCleanUp deleting queue q_anonymous_idefix.local_SomethingHelpfulToYou\n"
+     ]
+    },
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
       "le premier 50 octets du fichier annoncé: b'<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"n'\n",
       "5 messages bien reçus\n"
      ]
@@ -232,53 +325,53 @@
   },
   {
    "cell_type": "code",
-   "execution_count": 12,
+   "execution_count": 3,
    "id": "abroad-sense",
    "metadata": {
-    "scrolled": true
+    "scrolled": false
    },
    "outputs": [
     {
      "name": "stderr",
      "output_type": "stream",
      "text": [
-      "2023-05-28 15:01:57,568 [INFO] sarracenia.moth.amqp __getSetup queue declared q_anonymous_fractal_QuelquechoseDUtile (as: amqps://anonymous@hpfx.collab.science.gc.ca) \n",
-      "2023-05-28 15:01:57,568 [INFO] sarracenia.moth.amqp __getSetup binding q_anonymous_fractal_QuelquechoseDUtile with v02.post.*.WXO-DD.observations.swob-ml.# to xpublic (as: amqps://anonymous@hpfx.collab.science.gc.ca)\n"
+      "2025-05-14 12:50:02,029 [INFO] sarracenia.moth.amqp _queueDeclare queue declared q_anonymous_idefix.local_SomethingHelpfulToYou (as: amqps://anonymous@hpfx.collab.science.gc.ca), (messages waiting: 0)\n",
+      "2025-05-14 12:50:02,030 [INFO] sarracenia.moth.amqp getSetup binding q_anonymous_idefix.local_SomethingHelpfulToYou with v02.post.*.WXO-DD.observations.swob-ml.# to xpublic (as: amqps://anonymous@hpfx.collab.science.gc.ca)\n"
      ]
     },
     {
      "name": "stdout",
      "output_type": "stream",
      "text": [
-      "url 0: https://hpfx.collab.science.gc.ca/20230528/WXO-DD/observations/swob-ml/20230528/CWZU/2023-05-28-1900-CWZU-AUTO-swob.xml\n",
-      "station: SHEARWATER JETTY, tc_id: WZU, lat: 44.628055, long: -63.5225, air_temp: 23.3\n",
-      "url 1: https://hpfx.collab.science.gc.ca/20230528/WXO-DD/observations/swob-ml/20230528/CYVR/2023-05-28-1900-CYVR-MAN-swob.xml\n",
-      "station: Vancouver International, tc_id: , lat: 49.19470, long: -123.18400, air_temp: 18.2\n",
-      "url 2: https://hpfx.collab.science.gc.ca/20230528/WXO-DD/observations/swob-ml/20230528/CAHK/2023-05-28-1900-CAHK-AUTO-swob.xml\n",
-      "station: HALIFAX KOOTENAY, tc_id: AHK, lat: 44.5875, long: -63.55, air_temp: 25.2\n",
-      "url 3: https://hpfx.collab.science.gc.ca/20230528/WXO-DD/observations/swob-ml/20230528/CPCN/2023-05-28-1900-CPCN-AUTO-swob.xml\n",
-      "station: CAPPON, tc_id: PCN, lat: 51.066947, long: -110.796689, air_temp: 20.8\n",
-      "url 4: https://hpfx.collab.science.gc.ca/20230528/WXO-DD/observations/swob-ml/20230528/CWMT/2023-05-28-1901-CWMT-AUTO-minute-swob.xml\n",
-      "station: WHATI, tc_id: WMT, lat: 63.1343, long: -117.244497, air_temp: 11.3\n",
-      "url 5: https://hpfx.collab.science.gc.ca/20230528/WXO-DD/observations/swob-ml/20230528/CWPO/2023-05-28-1901-CWPO-AUTO-minute-swob.xml\n",
-      "station: PILOT MOUND (AUT), tc_id: WPO, lat: 49.187933, long: -98.9064, air_temp: 30.3\n",
-      "url 6: https://hpfx.collab.science.gc.ca/20230528/WXO-DD/observations/swob-ml/20230528/CVOC/2023-05-28-1858-CVOC-AUTO-minute-swob.xml\n",
-      "station: WHISTLER - NESTERS, tc_id: VOC, lat: 50.1289, long: -122.9546, air_temp: 18.1\n",
-      "url 7: https://hpfx.collab.science.gc.ca/20230528/WXO-DD/observations/swob-ml/20230528/CXCP/2023-05-28-1900-CXCP-AUTO-swob.xml\n",
-      "station: CHAMPION AGDM, tc_id: XCP, lat: 50.281945, long: -113.350278, air_temp: 23.7\n",
-      "url 8: https://hpfx.collab.science.gc.ca/20230528/WXO-DD/observations/swob-ml/20230528/CYZG/2023-05-28-1900-CYZG-MAN-swob.xml\n",
-      "station: Salluit, tc_id: , lat: 62.17940, long: -75.66720, air_temp: 2.4\n",
-      "url 9: https://hpfx.collab.science.gc.ca/20230528/WXO-DD/observations/swob-ml/20230528/CVOC/2023-05-28-1900-CVOC-AUTO-swob.xml\n",
-      "station: WHISTLER - NESTERS, tc_id: VOC, lat: 50.1289, long: -122.9546, air_temp: 18.1\n",
-      "url 10: https://hpfx.collab.science.gc.ca/20230528/WXO-DD/observations/swob-ml/20230528/CNZS/2023-05-28-1900-CNZS-AUTO-swob.xml\n",
-      "station: CORAL HARBOUR RCS, tc_id: NZS, lat: 64.187831, long: -83.347054, air_temp: -1.5\n"
+      "url 0: https://hpfx.collab.science.gc.ca/20250514/WXO-DD/observations/swob-ml/20250514/CPIF/2025-05-14-1646-CPIF-AUTO-minute-swob.xml\n",
+      "station: ISLAND FALLS (AUT), tc_id: PIF, lat: 55.528161, long: -102.345178, air_temp: 6.9\n",
+      "url 1: https://hpfx.collab.science.gc.ca/20250514/WXO-DD/observations/swob-ml/20250514/CWGL/2025-05-14-1649-CWGL-AUTO-minute-swob.xml\n",
+      "station: LAGOON CITY, tc_id: WGL, lat: 44.548, long: -79.221, air_temp: 17.6\n",
+      "url 2: https://hpfx.collab.science.gc.ca/20250514/WXO-DD/observations/swob-ml/20250514/CWQP/2025-05-14-1649-CWQP-AUTO-minute-swob.xml\n",
+      "station: POINT PETRE (AUT), tc_id: WQP, lat: 43.8395, long: -77.1515, air_temp: 13.0\n",
+      "url 3: https://hpfx.collab.science.gc.ca/20250514/WXO-DD/observations/swob-ml/20250514/CVPX/2025-05-14-1649-CVPX-AUTO-minute-swob.xml\n",
+      "station: PRINCE GEORGE MASSEY AUTO, tc_id: VPX, lat: 53.90001, long: -122.790803, air_temp: 10.2\n",
+      "url 4: https://hpfx.collab.science.gc.ca/20250514/WXO-DD/observations/swob-ml/20250514/CXAT/2025-05-14-1649-CXAT-AUTO-minute-swob.xml\n",
+      "station: ARCTIC BAY CS, tc_id: XAT, lat: 72.99275, long: -85.011575, air_temp: -10.5\n",
+      "url 5: https://hpfx.collab.science.gc.ca/20250514/WXO-DD/observations/swob-ml/20250514/CWGY/2025-05-14-1649-CWGY-AUTO-minute-swob.xml\n",
+      "station: ESTHER 1, tc_id: WGY, lat: 51.6697, long: -110.2061, air_temp: 17.2\n",
+      "url 6: https://hpfx.collab.science.gc.ca/20250514/WXO-DD/observations/swob-ml/20250514/CWTG/2025-05-14-1639-CWTG-AUTO-minute-swob.xml\n",
+      "station: POINTE-DES-MONTS, tc_id: WTG, lat: 49.316667, long: -67.381165, air_temp: 9.1\n",
+      "url 7: https://hpfx.collab.science.gc.ca/20250514/WXO-DD/observations/swob-ml/20250514/CWTG/2025-05-14-1648-CWTG-AUTO-minute-swob.xml\n",
+      "station: POINTE-DES-MONTS, tc_id: WTG, lat: 49.316667, long: -67.381165, air_temp: 9.2\n",
+      "url 8: https://hpfx.collab.science.gc.ca/20250514/WXO-DD/observations/swob-ml/20250514/CWTG/2025-05-14-1649-CWTG-AUTO-minute-swob.xml\n",
+      "station: POINTE-DES-MONTS, tc_id: WTG, lat: 49.316667, long: -67.381165, air_temp: 9.0\n",
+      "url 9: https://hpfx.collab.science.gc.ca/20250514/WXO-DD/observations/swob-ml/20250514/CNZS/2025-05-14-1649-CNZS-AUTO-minute-swob.xml\n",
+      "station: CORAL HARBOUR RCS, tc_id: NZS, lat: 64.187831, long: -83.347054, air_temp: -7.7\n",
+      "url 10: https://hpfx.collab.science.gc.ca/20250514/WXO-DD/observations/swob-ml/20250514/CWIZ/2025-05-14-1649-CWIZ-AUTO-minute-swob.xml\n",
+      "station: L'ACADIE, tc_id: WIZ, lat: 45.293967, long: -73.349847, air_temp: 23.8\n"
      ]
     },
     {
      "name": "stderr",
      "output_type": "stream",
      "text": [
-      "2023-05-28 15:02:01,891 [INFO] sarracenia.moth.amqp getCleanUp deleteing queue q_anonymous_fractal_QuelquechoseDUtile\n"
+      "2025-05-14 12:50:08,161 [INFO] sarracenia.moth.amqp getCleanUp deleting queue q_anonymous_idefix.local_SomethingHelpfulToYou\n"
      ]
     },
     {
@@ -294,8 +387,6 @@
     "import xml.etree.ElementTree as ET\n",
     "\n",
     "\n",
-    "options['bindings'] = [('xpublic', [ 'v02', 'post'], \\\n",
-    "        [ '*', 'WXO-DD', 'observations', 'swob-ml', '#'] )]\n",
     "\n",
     "h = sarracenia.moth.Moth.subFactory(options)\n",
     "\n",
@@ -410,7 +501,7 @@
    "name": "python",
    "nbconvert_exporter": "python",
    "pygments_lexer": "ipython3",
-   "version": "3.10.6"
+   "version": "3.12.3"
   }
  },
  "nbformat": 4,
