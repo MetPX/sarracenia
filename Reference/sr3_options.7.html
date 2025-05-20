@@ -113,7 +113,7 @@
 <dd class="field-odd"><p>7</p>
 </dd>
 <dt class="field-even">Date<span class="colon">:</span></dt>
-<dd class="field-even"><p>May 16, 2025</p>
+<dd class="field-even"><p>May 20, 2025</p>
 </dd>
 <dt class="field-odd">Version<span class="colon">:</span></dt>
 <dd class="field-odd"><p>3.01.00rc1</p>
@@ -755,9 +755,25 @@ for the setting to apply to a given queue.</p>
 <section id="fileevents-event-event">
 <h4>fileEvents &lt;event,event,…&gt;<a class="headerlink" href="#fileevents-event-event" title="Link to this heading"></a></h4>
 <p>A comma separated list of file event types to monitor.
-Available file events:  create, delete, link, modify, mkdir, rmdir
-to only add events to the current list start the event list with a plus sign (+).
-To remove them, prefix with a minus sign (-).</p>
+Available file events:  create, delete, link, modify, mkdir, rmdir</p>
+<p>There are three ways to use this option:</p>
+<blockquote>
+<div><ol class="arabic">
+<li><p>Add events to the current list. Start the event list with a plus sign (+).
+i.e. fileEvents +create,modify
+Resulting list: create, delete, link, modify, mkdir, rmdir</p></li>
+<li><p>Remove events from the current list. Prefix with a minus sign (-).
+i.e. fileEvents -create,modify
+Resulting list: delete, link, mkdir, rmdir</p></li>
+<li><p>Define your own list of events.
+i.e. fileEvents create,modify
+Resulting list: create, modify</p>
+<p>We can also add a single event.
+i.e. fileEvents create
+Resulting list: create</p>
+</li>
+</ol>
+</div></blockquote>
 <p>The <em>create</em>, <em>modify</em>, and <em>delete</em> events reflect what is expected: a file being created, modified, or deleted.
 If <em>link</em> is set, symbolic links will be posted as links so that consumers can choose
 how to process them. If it is not set, then no symbolic link events will ever be posted.</p>
