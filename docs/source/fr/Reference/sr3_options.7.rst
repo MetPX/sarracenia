@@ -749,9 +749,27 @@ pour que les liaisons de sujet s'appliquent à la file d'attente spécifié.
 fileEvents <évènement, évènement,...>
 -------------------------------------
 
-ensemble séparée par des virgules de d'événements de fichiers à surveiller.
+Ensemble séparée par des virgules de d'événements de fichiers à surveiller.
 Événements de fichiers disponibles : *create, delete, link, modify, mkdir, rmdir*
-Si on commence la liste avec plus (+) ca signifie un rajout à l´ensemble actuel
+
+Nous pouvons faire ceci 3 façons:
+
+        1. On commence la liste avec plus (+). Ça signifie un rajout à l´ensemble actuel
+           i.e. fileEvents +create,modify
+           Liste résultante : create, delete, link, modify, mkdir, rmdir
+
+        2. Enlève un/des évènements de la liste présente. On termine la liste avec moins (-)
+           i.e. fileEvents -create,modify
+           Liste résultante : delete, link, mkdir, rmdir
+
+        3. On défini notre propre liste d'évènements.
+           i.e. fileEvents create,modify
+           Liste résultante : create,modify
+
+           On peut également spécifié un seul évènement.
+           i.e. fileEvents create
+           Liste résultante: create
+
 Les événements *create*, *modify* et *delete* reflètent ce qui est attendu : un fichier en cours de création,
 de modification ou de suppression.
 Si *link* est défini, des liens symboliques seront publiés sous forme de liens afin que les consommateurs puissent choisir
