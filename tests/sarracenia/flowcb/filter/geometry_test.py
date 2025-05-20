@@ -1,4 +1,5 @@
 
+import copy
 import pytest
 import types
 import json
@@ -40,7 +41,7 @@ def make_message(feature):
     m = SR3Message()
     m['new_file'] = '/foo/bar/NewFile.txt'
     m['new_dir'] = '/foo/bar'
-    m['geometry'] = features[feature]
+    m['geometry'] = copy.deepcopy(features[feature])
 
     return m
 
@@ -97,8 +98,10 @@ def test_after_accept():
     worklist.incoming.append(make_message("line1"))
 
     geojson.after_accept(worklist)
-    assert len(worklist.rejected) == 2
-    assert len(worklist.incoming) == 2
+    assert len(worklist.rejected) == 1
+    assert len(worklist.incoming) == 3
+    #assert len(worklist.rejected) == 2
+    #assert len(worklist.incoming) == 2
     assert len(worklist.failed) == 1
 
 

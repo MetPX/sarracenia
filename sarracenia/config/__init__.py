@@ -1652,13 +1652,13 @@ class Config:
                 self.logEvents = self.logEvents | set(['nodupe'])
 
             if k in ['statehost' ]:
-                if self.subtopic_seen:
+                if hasattr(self,'subtopic_seen') and self.subtopic_seen:
                     logger.error( f"{','.join(self.files)}:{lineno} {k} statehost needs to be before subtopic." )
                 elif lineno > 5:
                     logger.warning( f"{','.join(self.files)}:{lineno} {k} needs to be near the start of the file." )
             return
 
-        if k in queue_options and self.subtopic_seen:
+        if k in queue_options and hasattr(self,'subtopic_seen') and self.subtopic_seen:
             logger.warning( f"{','.join(self.files)}:{lineno} {k} needs to appear before *subtopic*" \
                 " unless you need different queues to have different settings")
 
@@ -1804,7 +1804,7 @@ class Config:
             # probably need to remove this warning later... because people could use default queue with subtopic and
             # specify a second queue with different bindings... so this warning could be complaining about something 
             # that is correct.   but in every current case, the warning will be helpful.
-            if ( k == 'queueName' ) and self.subtopic_seen:
+            if ( k == 'queueName' ) and hasattr(self,'subtopic_seen') and self.subtopic_seen:
                     logger.warning( f"{','.join(self.files)}:{lineno} queueName usually should be before subtopic in configs: subtopic to default queue" )
             if ( k == 'directory' ) and not self.download:
                 logger.info( f"{','.join(self.files)}:{lineno} if download is false, directory has no effect" )
