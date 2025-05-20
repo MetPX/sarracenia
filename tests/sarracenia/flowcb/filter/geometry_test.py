@@ -91,8 +91,8 @@ def test_after_accept():
     #accepted
     worklist.incoming.append(make_message("poly2"))
     worklist.incoming.append(make_message("pointA"))
-    #rejected
     worklist.incoming.append(make_message("poly3"))
+    #rejected
     worklist.incoming.append(make_message("pointB"))
     #failed
     worklist.incoming.append(make_message("line1"))
@@ -100,6 +100,9 @@ def test_after_accept():
     geojson.after_accept(worklist)
     assert len(worklist.rejected) == 1
     assert len(worklist.incoming) == 3
+
+    # PS 2025/05/20 ... geometry started accepting poly3... 
+    # which seems right... no idea why it changed. why wasn't it always ok?
     #assert len(worklist.rejected) == 2
     #assert len(worklist.incoming) == 2
     assert len(worklist.failed) == 1
