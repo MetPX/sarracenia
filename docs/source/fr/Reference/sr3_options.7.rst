@@ -758,7 +758,7 @@ Nous pouvons faire ceci 3 façons:
            i.e. fileEvents +create,modify
            Liste résultante : create, delete, link, modify, mkdir, rmdir
 
-        2. Enlève un/des évènements de la liste présente. On termine la liste avec moins (-)
+        2. Enlève un/des évènements de la liste présente. On commence la liste avec moins (-)
            i.e. fileEvents -create,modify
            Liste résultante : delete, link, mkdir, rmdir
 
