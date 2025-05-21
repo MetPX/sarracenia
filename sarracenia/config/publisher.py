@@ -65,7 +65,7 @@ class Publisher(dict):
             if hasattr(options, aa):
                 self[a] = getattr(options,aa)
 
-        if not 'post_baseUrl' in a and hasattr(options,'pollUrl') and options.pollUrl:
+        if not 'baseUrl' in self and hasattr(options,'pollUrl') and options.pollUrl:
             self['baseUrl'] = options.pollUrl
 
         if not 'baseDir' in self and not self.baseDir:
