@@ -27,12 +27,20 @@ features['geometry'] = { 'modules_needed': ['geojson', 'turfpy'], 'present': Fal
         'lament': 'cannot filter messages based on geojson coordinates' ,
         'rejoice': 'able to filter messages based on geojson coordinates' }
 
+
 try:
     import json
     from turfpy.measurement import distance, boolean_point_in_polygon
     from turfpy.transformation import intersect
+    import turfpy
     from geojson import Point, Feature, Polygon, FeatureCollection
     features['geometry']['present'] = True
+
+    if turfpy.__version__ < '0.0.8':
+        empty_geometry = None
+    else:
+        empty_geometry = {"geometry": {"coordinates": [[]], "type": "Polygon"}, "properties": {}, "type": "Feature"}
+    
 except:
     features['geometry']['present'] = False
 
@@ -116,7 +124,8 @@ class Geometry(FlowCB):
                     poly1 = Feature(geometry=Polygon(self.geometry_geojson['coordinates']))
                     poly2 = Feature(geometry=Polygon(message_geometry['coordinates']))
 
-                    accept_message = bool(intersect(FeatureCollection([poly1, poly2])))
+                    accept_message = not intersect(FeatureCollection([poly1, poly2])) == empty_geometry
+
                 # catch cases for when neither the config or the message have points or poylgons (multipoint, line, etc..)
                 else:
                     logger.debug(f"Message or config aren't a Point or Polygon, failing; message={m}")
