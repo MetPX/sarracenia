@@ -65,10 +65,10 @@ class Publisher(dict):
             if hasattr(options, aa):
                 self[a] = getattr(options,aa)
 
-        if not 'baseUrl' in self and hasattr(options,'pollUrl') and options.pollUrl:
+        if (not 'baseUrl' in self or not self['baseUrl']) and hasattr(options,'pollUrl') and options.pollUrl:
             self['baseUrl'] = options.pollUrl
 
-        if not 'baseDir' in self and not self.baseDir:
+        if not 'baseDir' in self and not self['baseDir']:
             if self['baseUrl'] and ( self['baseUrl'][0:5] in [ 'file:' ] ):
                 self['baseDir'] = self['baseUrl'][5:]
             elif self['baseUrl'] and ( self['baseUrl'][0:5] in [ 'sftp:' ] ):
