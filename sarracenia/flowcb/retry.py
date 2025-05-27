@@ -55,8 +55,8 @@ class Retry(FlowCB):
 
         self.o.add_option( 'retry_driver', 'str', 'disk')
 
-        # retry_refilter False -- rety to send with existing processing.
-        # retry_refilter True -- re-ingest and re-apply processing (if it has changed.)
+        # retry_refilter False -- retry to send with existing processing.
+        # retry_refilter True  -- re-ingest and re-apply processing (if it has changed.)
         self.o.add_option( 'retry_refilter', 'flag', False)
 
         #queuedriver = os.getenv('SR3_QUEUEDRIVER', 'disk')
