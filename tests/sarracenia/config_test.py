@@ -403,3 +403,51 @@ def test_broker_finalize():
      assert( hasattr(options,'retry_path') )
      assert( hasattr(options,'novipFilename') )
      assert( hasattr(options,'publishers') )
+
+
+def test_multi():
+
+     options = copy.deepcopy(sarracenia.config.default_config())
+     options.component = 'subscribe'
+     options.config = 'multi1'
+     options.action = 'start'
+
+     options.credentials.add( 'amqp://tsource:passthepoi@localhost' )
+     options.credentials.add( 'amqp://tfeed:passthepoi@localhost' )
+
+     options.parse_line(  "subscribe", "multi1", "subscribe/multi1", 1, "broker amqps://dd.weather.gc.ca/")
+     options.parse_line(  "subscribe", "multi1", "subscribe/multi1", 1, "topicPrefix v02.post" )
+     options.parse_line(  "subscribe", "multi1", "subscribe/multi1", 1, "subtopic *.WXO-DD.bulletins.alphanumeric.#" )
+     options.parse_line(  "subscribe", "multi1", "subscribe/multi1", 1, "broker amqps://hpfx.collab.science.gc.ca/" )
+     options.parse_line(  "subscribe", "multi1", "subscribe/multi1", 1, "subtopic *.WXO-DD.bulletins.alphanumeric.#" )
+     options.parse_line(  "subscribe", "multi1", "subscribe/multi1", 1, "directory /tmp/dual_amis/" )
+
+     options.parse_line(  "subscribe", "multi1", "subscribe/multi1", 1, "post_broker amqp://tsource@localhost/" )
+     options.parse_line(  "subscribe", "multi1", "subscribe/multi1", 1, "post_baseUrl http://localhost/" )
+     options.parse_line(  "subscribe", "multi1", "subscribe/multi1", 1, "post_baseDir /tmp/dual_amis/" )
+     options.parse_line(  "subscribe", "multi1", "subscribe/multi1", 1, "post_topicPrefix v02.post" )
+     options.parse_line(  "subscribe", "multi1", "subscribe/multi1", 1, "post_format v02" )
+     options.parse_line(  "subscribe", "multi1", "subscribe/multi1", 1, "post_broker amqp://tsource@localhost/" )
+     options.parse_line(  "subscribe", "multi1", "subscribe/multi1", 1, "post_baseUrl http://localhost/" )
+     options.parse_line(  "subscribe", "multi1", "subscribe/multi1", 1, "post_baseDir /tmp/dual_amis/" )
+     options.parse_line(  "subscribe", "multi1", "subscribe/multi1", 1, "topicPrefix v03" )
+     options.parse_line(  "subscribe", "multi1", "subscribe/multi1", 1, "post_format v03" )
+     options.parse_line(  "subscribe", "multi1", "subscribe/multi1", 1, "post_broker amqp://tfeed@fractal/" )
+     options.parse_line(  "subscribe", "multi1", "subscribe/multi1", 1, "post_baseUrl file:" )
+     options.parse_line(  "subscribe", "multi1", "subscribe/multi1", 1, "post_baseDir /" )
+     options.parse_line(  "subscribe", "multi1", "subscribe/multi1", 1, "post_format v02" )
+     options.parse_line(  "subscribe", "multi1", "subscribe/multi1", 1, "post_exchangeSuffix hoho" )
+     options.parse_line(  "subscribe", "multi1", "subscribe/multi1", 1, "post_exchangeSplit 6" )
+     options.parse_line(  "subscribe", "multi1", "subscribe/multi1", 1, "" )
+     options.parse_line(  "subscribe", "multi1", "subscribe/multi1", 1, "" )
+
+     options.finalize()
+
+     options.dump()
+
+     assert( len(options.subscriptions) == 2 )
+
+     assert( len(options.publishers) == 3 )
+
+
+
