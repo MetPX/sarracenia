@@ -587,7 +587,7 @@ class AMQP(Moth):
         time.sleep(1)
         return None
 
-    def ack(self, m: sarracenia.Message) -> None:
+    def ack(self, m: sarracenia.Message) -> bool:
         """
            do what you need to acknowledge that processing of a message is done.
            NOTE: AMQP delivery tags (we call them ack_id) are scoped per channel. "Deliveries must be 
@@ -613,35 +613,27 @@ class AMQP(Moth):
             m['_deleteOnPost'].remove('ack_id')
             return False
         
-        ebo = 1
-        while True:
-            try:
-                if hasattr(self, 'channel'): 
-                    self.channel.basic_ack(m['ack_id']['delivery_tag'])
-                    del m['ack_id']
-                    m['_deleteOnPost'].remove('ack_id')
-                    return True
-                else:
-                    logger.warning(f"Can't ack {m['ack_id']}, don't have a channel")
-                    del m['ack_id']
-                    m['_deleteOnPost'].remove('ack_id')
-                    return False
-            
-            except Exception as err:
-                logger.warning("failed for tag: %s: %s" % (m['ack_id'], err))
-                logger.debug('Exception details: ', exc_info=True)
-                # No point in trying to ack again if the connection is broken
+        try:
+            if hasattr(self, 'channel'): 
+                self.channel.basic_ack(m['ack_id']['delivery_tag'])
                 del m['ack_id']
                 m['_deleteOnPost'].remove('ack_id')
-                self.close()
-                return False
+                return True
+            else:
+                logger.warning(f"Can't ack {m['ack_id']}, don't have a channel")
+                del m['ack_id']
+                m['_deleteOnPost'].remove('ack_id')
             
-            if ebo < 60:
-                ebo *= 2
-            logger.info("Sleeping {} seconds before re-trying ack...".format(ebo))
-            interruptible_sleep(ebo, obj=self)
-            # TODO maybe implement message strategy stubborn here and give up after retrying?
+        except Exception as err:
+            logger.warning("failed for tag: %s: %s" % (m['ack_id'], err))
+            logger.debug('Exception details: ', exc_info=True)
+            # No point in trying to ack again if the connection is broken
+            del m['ack_id']
+            m['_deleteOnPost'].remove('ack_id')
+            self.close()
 
+        return False
+            
     def putNewMessage(self,
                       message: sarracenia.Message,
                       content_type: str = 'application/json',

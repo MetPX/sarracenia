@@ -710,7 +710,7 @@ class MQTT(Moth):
         else:
             return None
 
-    def ack(self, m: sarracenia.Message ) -> None:
+    def ack(self, m: sarracenia.Message ) -> bool:
 
         if 'ack_id' in m:
             logger.info( f"mid={m['ack_id']}")
