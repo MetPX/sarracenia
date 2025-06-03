@@ -52,7 +52,7 @@ def default_options() -> dict:
           
 import random
 
-eboIntervalMaximum = 60 + random.random()*180
+eboIntervalMaximum = 60 + random.random()*60
 
 def ProtocolPresent(p) -> bool:
     if ( p[0:4] in ['amqp'] ) and sarracenia.features['amqp']['present']:
