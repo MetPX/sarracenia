@@ -1314,28 +1314,6 @@ class Config:
         return cd
 
     
-    def get_source_from_exchange(self,exchange):
-        #self.logger.debug("%s get_source_from_exchange %s" % (self.program_name,exchange))
-
-        source = None
-        if len(exchange) < 4 or not exchange.startswith('xs_') : return source
-
-        # check if source is a valid declared source user
-
-        len_u   = 0
-        try:
-                # look for user with role source
-                for u in self.declared_users :
-                    if self.declared_users[u] != 'source' : continue
-                    if exchange[3:].startswith(u) and len(u) > len_u :
-                       source = u
-                       len_u  = len(u)
-        except: pass
-
-        return source
-
- 
-
     def _merge_field(self, key, value):
         if key == 'masks':
             self.masks += value
