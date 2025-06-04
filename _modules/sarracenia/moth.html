@@ -135,6 +135,10 @@
 
         <span class="k">return</span> <span class="n">o</span></div>
 
+          
+<span class="kn">import</span> <span class="nn">random</span>
+
+<span class="n">eboIntervalMaximum</span> <span class="o">=</span> <span class="mi">60</span> <span class="o">+</span> <span class="n">random</span><span class="o">.</span><span class="n">random</span><span class="p">()</span><span class="o">*</span><span class="mi">60</span>
 
 <span class="k">def</span> <span class="nf">ProtocolPresent</span><span class="p">(</span><span class="n">p</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
     <span class="k">if</span> <span class="p">(</span> <span class="n">p</span><span class="p">[</span><span class="mi">0</span><span class="p">:</span><span class="mi">4</span><span class="p">]</span> <span class="ow">in</span> <span class="p">[</span><span class="s1">&#39;amqp&#39;</span><span class="p">]</span> <span class="p">)</span> <span class="ow">and</span> <span class="n">sarracenia</span><span class="o">.</span><span class="n">features</span><span class="p">[</span><span class="s1">&#39;amqp&#39;</span><span class="p">][</span><span class="s1">&#39;present&#39;</span><span class="p">]:</span>
@@ -437,7 +441,8 @@
                     <span class="bp">self</span><span class="o">.</span><span class="n">o</span><span class="p">[</span><span class="n">s</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">o</span><span class="p">[</span><span class="s1">&#39;settings&#39;</span><span class="p">][</span><span class="n">me</span><span class="p">][</span><span class="n">s</span><span class="p">]</span>
 
         <span class="n">logging</span><span class="o">.</span><span class="n">basicConfig</span><span class="p">(</span><span class="nb">format</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">o</span><span class="p">[</span><span class="s1">&#39;logFormat&#39;</span><span class="p">],</span>
-                            <span class="n">level</span><span class="o">=</span><span class="nb">getattr</span><span class="p">(</span><span class="n">logging</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">o</span><span class="p">[</span><span class="s1">&#39;logLevel&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">upper</span><span class="p">()))</span></div>
+                            <span class="n">level</span><span class="o">=</span><span class="nb">getattr</span><span class="p">(</span><span class="n">logging</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">o</span><span class="p">[</span><span class="s1">&#39;logLevel&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">upper</span><span class="p">()))</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span> <span class="sa">f</span><span class="s2">&quot; Maximum interval exponential back off of connecting to broker: </span><span class="si">{</span><span class="n">eboIntervalMaximum</span><span class="si">}</span><span class="s2"> &quot;</span> <span class="p">)</span></div>
 
 
 <div class="viewcode-block" id="Moth.ack">
@@ -572,10 +577,18 @@
 <span class="sd">             it should eventually settle down to a long period though.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">now</span><span class="o">=</span><span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span>
-        <span class="n">attempt_duration</span> <span class="o">=</span> <span class="n">now</span> <span class="o">-</span> <span class="n">start</span>
+        <span class="c1"># if the attempt takes a long time, do not want to try again quickly.</span>
+        <span class="c1"># but if it fails immediately, then wait at least 1 second.</span>
+        <span class="n">attempt_duration</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="n">now</span> <span class="o">-</span> <span class="n">start</span><span class="p">,</span><span class="mi">1</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">next_connect_failures</span> <span class="o">+=</span> <span class="mi">1</span>
-        <span class="n">ebo</span> <span class="o">=</span> <span class="mi">2</span><span class="o">**</span><span class="bp">self</span><span class="o">.</span><span class="n">next_connect_failures</span>
-        <span class="n">next_try</span> <span class="o">=</span> <span class="nb">min</span><span class="p">(</span><span class="n">attempt_duration</span> <span class="o">*</span> <span class="n">ebo</span><span class="p">,</span> <span class="mi">600</span><span class="p">)</span>
+
+        <span class="c1"># wait a little longer after each failure. </span>
+        <span class="n">ebo</span> <span class="o">=</span> <span class="mf">1.2</span><span class="o">**</span><span class="bp">self</span><span class="o">.</span><span class="n">next_connect_failures</span>
+
+        <span class="c1"># eboIntervalMaximum is something random between 1 and 4 minutes.</span>
+        <span class="c1"># it is the ceiling. Otherwise based on the number of failures to connect and </span>
+        <span class="c1"># how long each attempt takes to fail.</span>
+        <span class="n">next_try</span> <span class="o">=</span> <span class="nb">min</span><span class="p">(</span><span class="nb">max</span><span class="p">(</span><span class="n">attempt_duration</span> <span class="o">*</span> <span class="n">ebo</span><span class="p">,</span><span class="mf">0.1</span><span class="p">),</span> <span class="n">eboIntervalMaximum</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">next_connect_time</span> <span class="o">=</span> <span class="n">now</span> <span class="o">+</span> <span class="n">next_try</span></div>
 
 
