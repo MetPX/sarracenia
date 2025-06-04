@@ -401,6 +401,7 @@ def test_multi():
      options.credentials.add( 'amqp://tfeed:passthepoi@localhost' )
 
      options.parse_line(  "subscribe", "multi1", "subscribe/multi1", 1, "broker amqps://dd.weather.gc.ca/")
+     options.parse_line(  "subscribe", "multi1", "subscribe/multi1", 1, "queueName q_${BROKER_USER}.${COMPONENT}.${CONFIG}")
      options.parse_line(  "subscribe", "multi1", "subscribe/multi1", 1, "topicPrefix v02.post" )
      options.parse_line(  "subscribe", "multi1", "subscribe/multi1", 1, "subtopic *.WXO-DD.bulletins.alphanumeric.#" )
      options.parse_line(  "subscribe", "multi1", "subscribe/multi1", 1, "broker amqps://hpfx.collab.science.gc.ca/" )
@@ -438,5 +439,19 @@ def test_multi():
      assert( options.publishers[1]['exchange'] == [ 'xs_tsource' ] )
      assert( options.publishers[2]['exchange'] == [ 'xs_tsource_hoho00', 'xs_tsource_hoho01', 'xs_tsource_hoho02','xs_tsource_hoho03','xs_tsource_hoho04','xs_tsource_hoho05' ] )
 
+     assert( options.publishers[0] == { \
+                 'auto_delete': False,
+                 'baseDir': '/tmp/dual_amis/',
+                 'baseUrl': 'http://localhost/',
+                 'broker': 'amqp://tsource@localhost/',
+                 'durable': True,
+                 'exchange': ['xs_tsource'],
+                 'exchangeDeclare': True,
+                 'format': 'v02',
+                 'messageAgeMax': 0,
+                 'messageDebugDump': True,
+                 'persistent': True,
+                 'timeout': 300,
+                 'topicPrefix': ['v02', 'post']} )
 
 
