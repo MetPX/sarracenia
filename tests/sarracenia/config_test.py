@@ -297,22 +297,6 @@ def test_read_line_add_option():
      logger.info( f" {options.flag_one=} " )
      assert( options.flag_one == True  )
 
-def test_source_from_exchange():
-
-     options = copy.deepcopy(sarracenia.config.default_config())
-
-     # crasher input:
-     options.parse_line( "subscribe", "ex1", "subscribe/ex1", 1, "declare source tsource" )
-     assert( 'tsource' in options.declared_users )
-     assert( options.declared_users['tsource'] == 'source' )
-
-     options.parse_line( "subscribe", "ex1", "subscribe/ex1", 1, "exchange xs_tsource_favourite" )
-     
-     assert( options.exchange == 'xs_tsource_favourite' )
-
-     source = options.get_source_from_exchange(options.exchange)
-     assert( source == 'tsource' )
-
 def test_subscription():
 
      o = copy.deepcopy(sarracenia.config.default_config())
@@ -395,7 +379,8 @@ def test_broker_finalize():
      assert( options.queueName.startswith('q_${BROKER_USER}.${COMPONENT}')  )
      assert( options.directory == os.path.expanduser( '~/ex1' ) )
      assert( len(options.subscriptions) == 1 )
-     assert( options.exchange == 'xs_bunnypeer' )
+     assert( len(options.subscriptions[0]['bindings']) == 1 )
+     assert( options.subscriptions[0]['bindings'][0]['exchange'] == 'xs_bunnypeer' )
      assert( options.post_exchange == 'xs_bunnypeer' )
      assert( hasattr(options,'nodupe_ttl') )
      assert( hasattr(options,'metricsFilename') )
@@ -448,6 +433,10 @@ def test_multi():
      assert( len(options.subscriptions) == 2 )
 
      assert( len(options.publishers) == 3 )
+
+     assert( options.publishers[0]['exchange'] == [ 'xs_tsource' ] )
+     assert( options.publishers[1]['exchange'] == [ 'xs_tsource' ] )
+     assert( options.publishers[2]['exchange'] == [ 'xs_tsource_hoho00', 'xs_tsource_hoho01', 'xs_tsource_hoho02','xs_tsource_hoho03','xs_tsource_hoho04','xs_tsource_hoho05' ] )
 
 
 
