@@ -439,6 +439,7 @@ def test_multi():
      assert( options.publishers[1]['exchange'] == [ 'xs_tsource' ] )
      assert( options.publishers[2]['exchange'] == [ 'xs_tsource_hoho00', 'xs_tsource_hoho01', 'xs_tsource_hoho02','xs_tsource_hoho03','xs_tsource_hoho04','xs_tsource_hoho05' ] )
 
+     #assert( 1 == 0 )
      assert( options.publishers[0] == { \
                  'auto_delete': False,
                  'baseDir': '/tmp/dual_amis/',
@@ -454,4 +455,46 @@ def test_multi():
                  'timeout': 300,
                  'topicPrefix': ['v02', 'post']} )
 
+     assert( options.subscriptions[0]['bindings']  == [{'exchange': 'xpublic', \
+                                  'prefix': ['v02', 'post'],
+                                  'sub': ['*.WXO-DD.bulletins.alphanumeric.#']}] )
 
+     assert( options.subscriptions[0]['queue']  == {'auto_delete': False, \
+                              'bind': True,
+                              'cleanup_needed': None,
+                              'declare': True,
+                              'durable': True,
+                              'expire': 25200.0,
+                              'name': 'q_anonymous.subscribe.multi1',
+                              'prefetch': 25,
+                              'template': 'q_${BROKER_USER}.${COMPONENT}.${CONFIG}',
+                              'tlsRigour': 'normal'} )
+
+     assert( options.subscriptions[0]['bindings']  == [{'exchange': 'xpublic',
+                                  'prefix': ['v02', 'post'],
+                                  'sub': ['*.WXO-DD.bulletins.alphanumeric.#']}] )
+
+
+     """
+
+                    {'baseDir': None, 
+                    'bindings': [{'exchange': 'xpublic',
+                                  'prefix': ['v02', 'post'],
+                                  'sub': ['*.WXO-DD.bulletins.alphanumeric.#']}],
+                    'broker': 'amqps://anonymous@dd.weather.gc.ca/',
+                   {'baseDir': None,
+                    'bindings': [{'exchange': 'xpublic',
+                                  'prefix': ['v02', 'post'],
+                                  'sub': ['*.WXO-DD.bulletins.alphanumeric.#']}],
+                    'broker': 'amqps://anonymous@hpfx.collab.science.gc.ca/',
+                    'queue': {'auto_delete': False,
+                              'bind': True,
+                              'cleanup_needed': None,
+                              'declare': True,
+                              'durable': True,
+                              'expire': 25200.0,
+                              'name': 'q_anonymous.subscribe.multi1',
+                              'prefetch': 25,
+                              'template': 'q_${BROKER_USER}.${COMPONENT}.${CONFIG}',
+                              'tlsRigour': 'normal'}}] )
+     """
