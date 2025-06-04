@@ -1383,27 +1383,6 @@ class Config:
             for k in oth.__dict__.keys():
                 self._override_field(k, self._varsub(getattr(oth, k)))
 
-    def _resolve_exchange(self):
-        """
-           based on the given configuration, fill in with defaults or guesses.
-           sets self.exchange.
-        """
-        if not hasattr(self, 'exchange') or self.exchange is None:
-            #if hasattr(self, 'post_broker') and self.post_broker is not None and self.post_broker.url is not None:
-            #    self.exchange = 'xs_%s' % self.post_broker.url.username
-            #else:
-            if not hasattr(self.broker.url,'username') or ( self.broker.url.username == 'anonymous' ):
-                self.exchange = 'xpublic'
-            else:
-                self.exchange = 'xs_%s' % self.broker.url.username
-
-            if hasattr(self, 'exchangeSuffix'):
-                self.exchange += '_%s' % self.exchangeSuffix
-
-            if hasattr(self, 'exchangeSplit') and hasattr(
-                    self, 'no') and (self.no > 0):
-                self.exchange += "%02d" % self.no
-
     def _parse_binding(self, subtopic_string):
         """
          FIXME: see original parse, with substitions for url encoding.
@@ -1414,7 +1393,6 @@ class Config:
             logger.error( f"{','.join(self.files)}:{self.lineno} broker needed before subtopic" )
             return
 
-        self._resolve_exchange()
         resolved_queueName = self._resolveQueueName(self.component,self.config)
 
         if type(subtopic_string) is str:
@@ -2098,7 +2076,6 @@ class Config:
                self.source = self.broker.url.username
 
         if self.broker and self.broker.url and self.broker.url.username:
-            self._resolve_exchange()
             resolved_queueName = self._resolveQueueName(component,cfg)
 
         valid_inlineEncodings = [ 'guess', 'text', 'binary' ]
@@ -2547,15 +2524,10 @@ class Config:
             if values == 'None':
                 namespace.subscriptions = []
 
-            namespace._resolve_exchange()
             resolved_qn = namespace._resolveQueueName(namespace.component,namespace.config)
 
             if not hasattr(namespace, 'broker'):
                 raise Exception('broker needed before subtopic')
-                return
-
-            if not hasattr(namespace, 'exchange'):
-                raise Exception('exchange needed before subtopic')
                 return
 
             if not hasattr(namespace, 'topicPrefix'):
