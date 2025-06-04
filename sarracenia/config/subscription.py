@@ -12,8 +12,23 @@ class Subscription(dict):
 
     def __init__(self, options, queueName_template, queueName, subtopic):
 
+        exchange=None
+        if hasattr(options,'exchange') and options.exchange:
+            exchange=options.exchange
+        else:
+            if not hasattr(options.broker.url,'username') or ( options.broker.url.username == 'anonymous' ):
+                exchange = 'xpublic'
+            else:
+                exchange = 'xs_%s' % options.broker.url.username
+
+            if hasattr(options, 'exchangeSuffix'):
+                exchange += '_%s' % options.exchangeSuffix
+
+            if hasattr(options, 'exchangeSplit') and hasattr( options, 'no') and (options.no > 0):
+                exchange += "%02d" % options.no
+
         self['broker'] = options.broker
-        self['bindings'] = [ { 'exchange': options.exchange, 'prefix': options.topicPrefix, 'sub': subtopic } ]
+        self['bindings'] = [ { 'exchange': exchange, 'prefix': options.topicPrefix, 'sub': subtopic } ]
 
         self['queue']={ 'name': queueName, 'template': queueName_template, 'cleanup_needed': None }
         for a in [ 'queueBind', 'queueDeclare' ]:
