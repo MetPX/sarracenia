@@ -2432,7 +2432,10 @@ class Flow:
         # older versions don't include the contentType, so patch it here.
         if features['filetypes']['present'] and \
            ('contentType' not in msg) and (not 'fileOp' in msg):
-            msg['contentType'] = magic.from_file(local_path,mime=True)
+            try:
+                msg['contentType'] = magic.from_file(local_path,mime=True)
+            except Exception as e:
+                logger.error(f"could not set contentType because {e}")
 
         local_dir = os.path.dirname(local_path).replace('\\', '/')
         local_file = os.path.basename(local_path).replace('\\', '/')
@@ -2639,9 +2642,8 @@ class Flow:
 
             # the file does not exist... warn, sleep and return false for the next attempt
             if not os.path.exists(local_file):
-                logger.warning(
-                    "product collision or base_dir not set, file %s does not exist"
-                    % local_file)
+                logger.error(
+                    f"file {local_file} does not exist in local dir {local_dir}, can't send (baseDir not set?)")
                 time.sleep(0.01)
                 return 0
             elif 'size' not in msg:
