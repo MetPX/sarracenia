@@ -1321,6 +1321,20 @@ permanent failures (or files not to be downloaded) in worklist.rejected</p>
 </dd></dl>
 
 <dl class="py method">
+<dt class="sig sig-object py" id="sarracenia.flow.Flow.do_fileOp">
+<span class="sig-name descname"><span class="pre">do_fileOp</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">msg</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">new_path</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">bool</span></span></span><a class="reference internal" href="../_modules/sarracenia/flow.html#Flow.do_fileOp"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#sarracenia.flow.Flow.do_fileOp" title="Link to this definition"></a></dt>
+<dd><p>for a message with a fileOp, do whatever action is specified by the fileOp field.
+This code used to be in do_download, but that method was really long so it was moved here.
+Returns: bool - True when the message has been fully processed and there’s nothing left to do.</p>
+<blockquote>
+<div><dl class="simple">
+<dt>False when there’s still processing left to do with the message (i.e. need to</dt><dd><p>execute the rest of the do_download code.)</p>
+</dd>
+</dl>
+</div></blockquote>
+</dd></dl>
+
+<dl class="py method">
 <dt class="sig sig-object py" id="sarracenia.flow.Flow.do_send">
 <span class="sig-name descname"><span class="pre">do_send</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/sarracenia/flow.html#Flow.do_send"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#sarracenia.flow.Flow.do_send" title="Link to this definition"></a></dt>
 <dd></dd></dl>

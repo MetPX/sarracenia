@@ -143,8 +143,8 @@
 
         <span class="bp">self</span><span class="o">.</span><span class="n">o</span><span class="o">.</span><span class="n">add_option</span><span class="p">(</span> <span class="s1">&#39;retry_driver&#39;</span><span class="p">,</span> <span class="s1">&#39;str&#39;</span><span class="p">,</span> <span class="s1">&#39;disk&#39;</span><span class="p">)</span>
 
-        <span class="c1"># retry_refilter False -- rety to send with existing processing.</span>
-        <span class="c1"># retry_refilter True -- re-ingest and re-apply processing (if it has changed.)</span>
+        <span class="c1"># retry_refilter False -- retry to send with existing processing.</span>
+        <span class="c1"># retry_refilter True  -- re-ingest and re-apply processing (if it has changed.)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">o</span><span class="o">.</span><span class="n">add_option</span><span class="p">(</span> <span class="s1">&#39;retry_refilter&#39;</span><span class="p">,</span> <span class="s1">&#39;flag&#39;</span><span class="p">,</span> <span class="kc">False</span><span class="p">)</span>
 
         <span class="c1">#queuedriver = os.getenv(&#39;SR3_QUEUEDRIVER&#39;, &#39;disk&#39;)</span>
