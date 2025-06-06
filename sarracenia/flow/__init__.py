@@ -2459,7 +2459,7 @@ class Flow:
             try:
                 msg['contentType'] = magic.from_file(local_path,mime=True)
             except Exception as e:
-                logger.error(f"could not set contentType because {e}")
+                logger.warning(f"could not set contentType from local file {local_path} because {e}")
 
         local_dir = os.path.dirname(local_path).replace('\\', '/')
         local_file = os.path.basename(local_path).replace('\\', '/')
