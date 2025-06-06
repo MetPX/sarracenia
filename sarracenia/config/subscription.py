@@ -21,11 +21,18 @@ class Subscription(dict):
             else:
                 exchange = 'xs_%s' % options.broker.url.username
 
-            if hasattr(options, 'exchangeSuffix'):
-                exchange += '_%s' % options.exchangeSuffix
+            if options.component in [ 'poll', 'post', 'watch' ]:
+                if hasattr(options,'post_exchangeSuffix') and options.post_exchangeSuffix:
+                    exchange += '_%s' % options.post_exchangeSuffix
 
-            if hasattr(options, 'exchangeSplit') and hasattr( options, 'no') and (options.no > 0):
-                exchange += "%02d" % options.no
+                if hasattr(options, 'post_exchangeSplit') and hasattr( options, 'no') and (options.no > 0):
+                    exchange += "%02d" % (options.no % options.post_exchangeSplit)
+            else:
+                if hasattr(options, 'exchangeSuffix'):
+                    exchange += '_%s' % options.exchangeSuffix
+
+                if hasattr(options, 'exchangeSplit') and hasattr( options, 'no') and (options.no > 0):
+                    exchange += "%02d" % (options.no % options.exchangeSplit)
 
         self['broker'] = options.broker
         self['bindings'] = [ { 'exchange': exchange, 'prefix': options.topicPrefix, 'sub': subtopic } ]
