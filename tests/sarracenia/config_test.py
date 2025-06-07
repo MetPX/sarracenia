@@ -408,17 +408,17 @@ def test_multi():
      options.parse_line(  "subscribe", "multi1", "subscribe/multi1", 1, "subtopic *.WXO-DD.bulletins.alphanumeric.#" )
      options.parse_line(  "subscribe", "multi1", "subscribe/multi1", 1, "directory /tmp/dual_amis/" )
 
-     options.parse_line(  "subscribe", "multi1", "subscribe/multi1", 1, "post_broker amqp://tsource@localhost/" )
+     options.parse_line(  "subscribe", "multi1", "subscribe/multi1", 1, "post_broker amqp://tsource@localhost" )
      options.parse_line(  "subscribe", "multi1", "subscribe/multi1", 1, "post_baseUrl http://localhost/" )
      options.parse_line(  "subscribe", "multi1", "subscribe/multi1", 1, "post_baseDir /tmp/dual_amis/" )
      options.parse_line(  "subscribe", "multi1", "subscribe/multi1", 1, "post_topicPrefix v02.post" )
      options.parse_line(  "subscribe", "multi1", "subscribe/multi1", 1, "post_format v02" )
-     options.parse_line(  "subscribe", "multi1", "subscribe/multi1", 1, "post_broker amqp://tsource@localhost/" )
+     options.parse_line(  "subscribe", "multi1", "subscribe/multi1", 1, "post_broker amqp://tsource@localhost" )
      options.parse_line(  "subscribe", "multi1", "subscribe/multi1", 1, "post_baseUrl http://localhost/" )
      options.parse_line(  "subscribe", "multi1", "subscribe/multi1", 1, "post_baseDir /tmp/dual_amis/" )
      options.parse_line(  "subscribe", "multi1", "subscribe/multi1", 1, "topicPrefix v03" )
      options.parse_line(  "subscribe", "multi1", "subscribe/multi1", 1, "post_format v03" )
-     options.parse_line(  "subscribe", "multi1", "subscribe/multi1", 1, "post_broker amqp://tfeed@fractal/" )
+     options.parse_line(  "subscribe", "multi1", "subscribe/multi1", 1, "post_broker amqp://tfeed@fractal" )
      options.parse_line(  "subscribe", "multi1", "subscribe/multi1", 1, "post_baseUrl file:" )
      options.parse_line(  "subscribe", "multi1", "subscribe/multi1", 1, "post_baseDir /" )
      options.parse_line(  "subscribe", "multi1", "subscribe/multi1", 1, "post_format v02" )
@@ -445,7 +445,7 @@ def test_multi():
                  'auto_delete': False,
                  'baseDir': '/tmp/dual_amis/',
                  'baseUrl': 'http://localhost/',
-                 'broker': 'amqp://tsource@localhost/',
+                 'broker': 'amqp://tsource@localhost',
                  'durable': True,
                  'exchange': ['xs_tsource'],
                  'exchangeDeclare': True,
