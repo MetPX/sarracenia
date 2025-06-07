@@ -439,7 +439,8 @@ def test_multi():
      assert( options.publishers[1]['exchange'] == [ 'xs_tsource' ] )
      assert( options.publishers[2]['exchange'] == [ 'xs_tsource_hoho00', 'xs_tsource_hoho01', 'xs_tsource_hoho02','xs_tsource_hoho03','xs_tsource_hoho04','xs_tsource_hoho05' ] )
 
-     #assert( 1 == 0 )
+     options.publishers[0]['broker'] = str(options.publishers[0]['broker'])
+
      assert( options.publishers[0] == { \
                  'auto_delete': False,
                  'baseDir': '/tmp/dual_amis/',
@@ -450,7 +451,7 @@ def test_multi():
                  'exchangeDeclare': True,
                  'format': 'v02',
                  'messageAgeMax': 0,
-                 'messageDebugDump': True,
+                 'messageDebugDump': False,
                  'persistent': True,
                  'timeout': 300,
                  'topicPrefix': ['v02', 'post']} )
