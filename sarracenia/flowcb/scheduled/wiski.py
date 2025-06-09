@@ -101,6 +101,7 @@ class Wiski(Scheduled):
         self.o.add_option( 'wiski_ts_name', 'list', [] )
         self.o.add_option( 'wiski_reject_parameterTypeName', 'list', [] )
         self.o.add_option( 'wiski_return_fields', 'list' , ['Timestamp','Value'])
+        self.o.add_option( 'wiski_json', 'flag' , False)
         
         self.ts_length = datetime.timedelta( seconds=self.o.wiski_ts_length )
         
@@ -213,22 +214,28 @@ class Wiski(Scheduled):
                     logger.debug(f"Timeseries name rejected due to not being specified in list : {self.o.wiski_ts_name}. Skipping.")
                 else:
 
-                    parameter_type = parameter_type.replace(' ', '_').replace(')','_').replace('(','_').replace('/','_')
+                    # Have '-' between variables in filename for easier identification of fields
+                    parameter_type = parameter_type.replace(' ', '-').replace(')','-').replace('(','-').replace('/','-')
+                    station_no = station_no.replace('_', '-')
+                    ts_name = ts_name.replace('_', '-')
+
+                    suffix = 'json' if self.o.wiski_json else 'csv'
 
                     # writing files on windows is quite painful, so many illegal characters.
                     if sys.platform.startswith( "win" ):
-                        fname = f"{directory}{os.sep}ts_{ts_name}_{station_no}__{parameter_type}.csv"
+                        fname = f"{directory}{os.sep}ts_{ts_name}_{station_no}__{parameter_type}.{suffix}"
                         fname = fname[0:3]+fname[3:].replace(':','_').replace('.','_',1).replace('+','_').replace('-','_')
                     else:
-                        fname = f"{directory}{os.sep}ts_{ts_name}_{station_no}__{parameter_type}.csv"
+                        fname = f"{directory}{os.sep}ts_{ts_name}_{station_no}__{parameter_type}.{suffix}"
 
                     logger.info( f"Timeseries {ts_name} for station_id {station_no} to be written to: {fname}" )
     
                     #ts=k.get_timeseries_values(ts_id = ts_id, to = date(2023,1,31), **{'from': date(2023,1,1)})
                     ts=k.get_timeseries_values(ts_id = ts_id, to = now, **{'from': then}, return_fields=self.o.wiski_return_fields)
                     if len(ts) > 0:
+
                         f=open(fname,'w')
-                        ts.to_csv(f)
+                        ts.to_json(f, date_format='iso') if self.o.wiski_json else ts.to_csv(f)
                         f.close()
                     else:
                         logger.info( f"No data to write to {fname}. Continuing.")
