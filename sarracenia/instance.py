@@ -133,6 +133,8 @@ class instance:
             hostdir = None
 
         pidfilename = sarracenia.config.get_pid_filename( hostdir, component, config, cfg_preparse.no)
+        # leave some time between checks during instance startup.
+        instance_gap=0.10
 
         if not hasattr(cfg_preparse,
                        'no') and not (cfg_preparse.action == 'foreground'):
@@ -142,13 +144,13 @@ class instance:
             # worker instances need give lead instance time to write subscriptions/queueNames/bindings
             # FIXME: might be better to loop here until lead instance .pid file exists?
             leadpidfilename = sarracenia.config.get_pid_filename( hostdir, component, config, 1)
-            time.sleep(cfg_preparse.no)
+            time.sleep(1+cfg_preparse.no*instance_gap)
             while not os.path.isdir(os.path.dirname(leadpidfilename)):
                 logger.debug("waiting for lead instance to create state directory")
-                time.sleep(cfg_preparse.no)
+                time.sleep(cfg_preparse.no*instance_gap)
             while not os.path.isfile(leadpidfilename):
                 logger.debug("waiting for lead instance to create pid file: {leadpidfilename}")
-                time.sleep(cfg_preparse.no)
+                time.sleep(cfg_preparse.no*instance_gap)
 
 
         if (len(cfg_preparse.configurations) > 1 ) and \
