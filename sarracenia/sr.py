@@ -2590,11 +2590,19 @@ class sr_GlobalState:
                 if not (c in self.states and cfg in self.states[c]):
                     continue
 
-                #find missing instances for this config.
-                missing_instances = sum(map(lambda x: c in x and cfg in x, self.missing))
+                #find running and missing instances for this config.
+                instance_pids=self.states[c][cfg]['instance_pids'].values()
+                missing_instances=[]
+                running_instances=[]
+                for p in instance_pids:
+                    if p in self.procs.keys():
+                        running_instances.append(p)
+                    else:
+                        missing_instances.append(p)
+
                 if self.configs[c][cfg]['status'] != 'stopped':
                     expected = self.configs[c][cfg]['instances']
-                    running = expected - missing_instances
+                    running = len(running_instances)
                     if running > 0:
                         configs_running += 1
                 else:
