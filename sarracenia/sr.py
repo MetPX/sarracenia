@@ -2591,14 +2591,16 @@ class sr_GlobalState:
                     continue
 
                 #find running and missing instances for this config.
-                instance_pids=self.states[c][cfg]['instance_pids'].values()
                 missing_instances=[]
                 running_instances=[]
-                for p in instance_pids:
-                    if p in self.procs.keys():
-                        running_instances.append(p)
-                    else:
-                        missing_instances.append(p)
+                if 'instance_pids' in self.states[c][cfg]:
+                    instance_pids=self.states[c][cfg]['instance_pids'].values()
+
+                    for p in instance_pids:
+                        if p in self.procs.keys():
+                            running_instances.append(p)
+                        else:
+                            missing_instances.append(p)
 
                 if self.configs[c][cfg]['status'] != 'stopped':
                     expected = self.configs[c][cfg]['instances']
