@@ -590,12 +590,14 @@ class sr_GlobalState:
                         if os.path.exists("disabled"): # double check, if disabled should ignore state.
                             continue
 
+                        i_found=[]
                         for filename in os.listdir():
                             # look at pid files, find ones where process is missing.
                             if filename[-4:] == '.pid':
                                 i = self._instance_num_from_pidfile(filename, c, cfg)
                                 if i < 0:
                                     continue
+                                i_found.append(i)
                                 if i != 0:
                                     p = pathlib.Path(filename)
                                     if sys.version_info[0] > 3 or sys.version_info[
@@ -610,6 +612,12 @@ class sr_GlobalState:
                                             missing.append([c, cfg, i])
                                     else:
                                         missing.append([c, cfg, i])
+
+                        # find instances missing that don't have pid files.
+                        for i in range(1,self.configs[c][cfg]['instances']+1):
+                            if i not in i_found:
+                               missing.append([c, cfg, i])
+
                     os.chdir(c_dir) # back to component dir containing configs
                 os.chdir(dir) # back to dir containing components
 
