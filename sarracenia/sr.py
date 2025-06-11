@@ -455,6 +455,9 @@ class sr_GlobalState:
             return
         os.chdir(dir1)
 
+        # some operating is pending, unwise to make changes.
+        self.flux={}
+
         for c in self.components:
             if c not in self.configs:
                 continue
@@ -481,6 +484,13 @@ class sr_GlobalState:
                             s = Subscriptions()
                             self.states[c][cfg]['subscriptions'] = s.read( \
                                 self.configs[c][cfg]['options'], 'subscriptions.json')
+
+                        if os.path.exists('starting'):
+                            self.states[c][cfg]['status'] = 'starting'
+                            self.flux[ f"{c}/{cfg}" ] = 'starting'
+                        elif os.path.exists('shutdown'):
+                            self.states[c][cfg]['status'] = 'shutdown'
+                            self.flux[ f"{c}/{cfg}" ] = 'shutdown'
 
                         for pathname in os.listdir():
                             p = pathlib.Path(pathname)
@@ -853,6 +863,10 @@ class sr_GlobalState:
                     continue
                 if os.path.exists(self.user_cache_dir + os.sep + c + os.sep + cfg + os.sep + 'disabled'):
                     self.configs[c][cfg]['status'] = 'disabled'
+                if os.path.exists(self.user_cache_dir + os.sep + c + os.sep + cfg + os.sep + 'starting'):
+                    self.configs[c][cfg]['status'] = 'starting'
+                if os.path.exists(self.user_cache_dir + os.sep + c + os.sep + cfg + os.sep + 'shutdown'):
+                    self.configs[c][cfg]['status'] = 'shutdown'
                 if 'instance_metrics' in self.states[c][cfg]:
                     if 'housekeeping' in self.configs[c][cfg]:
                         expiry = now - self.configs[c][cfg]['housekeeping']*1.5
@@ -1020,7 +1034,11 @@ class sr_GlobalState:
                                 hung_instances += 1
                                 self.states[c][cfg]['hung_instances'].append(i)
 
-                    flow_status = 'unknown' if self.configs[c][cfg]['status'] != 'disabled' else 'disabled'
+                    if self.configs[c][cfg]['status'] in [ 'disabled', 'starting', 'shutdown' ]:
+                        flow_status = self.configs[c][cfg]['status']
+                    else:
+                        flow_status = 'unknown'
+ 
                     if hasattr(self.configs[c][cfg]['options'],'download') and self.configs[c][cfg]['options'].download and \
                          (self.states[c][cfg]['metrics']['retry']+self.states[c][cfg]['metrics']['messagesQueued'] > 0 ) :
                         if not self.states[c][cfg]['metrics']['transferConnected']:
@@ -1039,7 +1057,8 @@ class sr_GlobalState:
                             if self.configs[c][cfg]['status'] != 'disabled':
                                 flow_status = 'stopped'
                         else:
-                            if observed_instances > 0:
+                            if observed_instances > 0 and flow_status not in ['starting','shutdown']:
+                                logger.critical( f" {flow_status=} " )
                                 flow_status = 'partial'
                                 for i in range(1, int(self.configs[c][cfg]['instances'])+1 ):
                                     if not i in self.states[c][cfg]['instance_pids']:
@@ -1049,7 +1068,8 @@ class sr_GlobalState:
                                     if len(self.states[c][cfg]['instance_pids']) == 0 :
                                         flow_status = 'stopped' 
                                     else:
-                                        flow_status = 'missing' 
+                                        if flow_status not in [ 'starting', 'shutdown' ]:
+                                            flow_status = 'missing' 
                                         if not i in self.states[c][cfg]['instance_pids']:
                                              self.states[c][cfg]['missing_instances'].append(i)
                     elif observed_instances == 0:
@@ -1260,7 +1280,7 @@ class sr_GlobalState:
             'sender', 'shovel', 'subscribe', 'watch', 'winnow'
         ]
         # active means >= 1 process exists on the node.
-        self.status_active =  ['cpuSlow', 'disconnected', 'down', 'hung', 'idle', 'lagging', 'partial', 'reject', 'retry', 'running', 'slow', 'standby', 'waitVip' ]
+        self.status_active =  ['cpuSlow', 'disconnected', 'down', 'hung', 'idle', 'lagging', 'partial', 'reject', 'retry', 'running', 'slow', 'standby', 'starting', 'shutdown', 'waitVip' ]
         self.status_values = self.status_active + [ 'disabled', 'include', 'missing', 'stopped', 'unknown' ]
 
         self.bin_dir = os.path.dirname(os.path.realpath(__file__))
@@ -1290,6 +1310,7 @@ class sr_GlobalState:
         os.chdir(self.invoking_directory)
 
     def _start_missing(self):
+        max_instance=0
         for instance in self.missing:
             if self.please_stop:
                 break
@@ -1299,7 +1320,11 @@ class sr_GlobalState:
             component_path = self._find_component_path(c)
             if component_path == '':
                 continue
+            if max_instance < i:
+                max_instance=i 
             self._launch_instance(component_path, c, cfg, i)
+        time.sleep(0.2+max_instance*0.1)
+        
 
     def _stop_signal(self, signum, stack):
         logging.info('signal %d received' % signum)
@@ -1563,24 +1588,7 @@ class sr_GlobalState:
                 logging.error("cannot disable %s while it is running! " % f)
                 continue
 
-            if self.configs[c][cfg]['options'].statehost:
-                state_file_dir = self.user_cache_dir + os.sep + self.hostdir + os.sep + f.replace('/', os.sep)
-            else:
-                state_file_dir = self.user_cache_dir + os.sep + f.replace('/', os.sep)
-
-            if not os.path.isdir(state_file_dir):
-                os.makedirs(state_file_dir, exist_ok=True)
-
-            state_file_disabled = state_file_dir + os.sep + 'disabled'
-            
-            if os.path.exists(state_file_disabled):
-                logging.error("%s is already disabled! " % f)
-                continue
-
-            with open(state_file_disabled, 'w') as f:
-                f.write('')
-            logging.info(c + '/' + cfg)
-
+            self._tag_progress( c, cfg, "disabled", ending=False )
 
     def edit(self):
 
@@ -2133,6 +2141,13 @@ class sr_GlobalState:
             logging.error( f"{self.leftovers} configuration not found" )
             return
 
+        if self.flux:
+            if len(self.flux) > 10:
+                logging.warning( f"Not interfering with more than 10 operations in progress" )
+            else:
+                logging.warning( f"Not interfering with operations in progress: {self.flux}" )
+            return
+
         pcount = 0
         kill_hung=[]
         for f in self.filtered_configurations:
@@ -2177,6 +2192,7 @@ class sr_GlobalState:
         else:
             print('no missing processes found')
 
+ 
         if len(self.strays) > 0:
             print('killing strays...')
             for pid in self.strays:
@@ -2248,12 +2264,31 @@ class sr_GlobalState:
             if component_path == '':
                 continue
 
+            max_instances=0
             if self.configs[c][cfg]['status'] in [ 'missing', 'stopped']:
                 numi = self.configs[c][cfg]['instances']
+                if numi > max_instances:
+                    max_instances=numi
+                self._tag_progress( c, cfg, "starting", ending=False )
                 for i in range(1, numi + 1):
                     if pcount % 10 == 0: print('.', end='', flush=True)
                     pcount += 1
                     self._launch_instance(component_path, c, cfg, i)
+ 
+        instance_gap=0.10
+        time.sleep(0.2+max_instances*instance_gap) 
+
+        for f in self.filtered_configurations:
+            (c, cfg) = f.split(os.sep)
+
+            # skip posts that cannot run as daemons
+            if c in ['post', 'cpost'] and not self._post_can_be_daemon(c, cfg): continue
+
+            component_path = self._find_component_path(c)
+            if component_path == '':
+                continue
+
+            self._tag_progress( c, cfg, "starting", ending=True )
 
         print('( %d ) Done' % pcount)
 
@@ -2312,6 +2347,10 @@ class sr_GlobalState:
                 continue
 
             if self.configs[c][cfg]['status'] in self.status_active:
+
+                if not self.options.dry_run:
+                    self._tag_progress( c, cfg, "shutdown", ending=False )
+
                 for i in self.states[c][cfg]['instance_pids']:
                     #print( "for %s/%s - %s signal_pid( %s, SIGTERM )" % \
                     #    ( c, cfg, i, self.states[c][cfg]['instance_pids'][i] ) )
@@ -2363,6 +2402,7 @@ class sr_GlobalState:
                 running_pids += len(self.states[c][cfg]['instance_pids'])
 
             if (running_pids == 0) and len(self.strays)==0:
+                self._tag_progress( c, cfg, "shutdown", ending=True )
                 print('All stopped after try %d' % attempts)
                 if len(fg_instances) > 0:
                     print(f"Foreground instances {fg_instances} are running and were not stopped.")
@@ -2407,10 +2447,13 @@ class sr_GlobalState:
             if (not self.options.dangerWillRobinson) and self._cfg_running_foreground(c, cfg):
                 fg_instances.add(f"{c}/{cfg}")
                 continue
+
             if self.configs[c][cfg]['status'] in self.status_active:
                 for i in self.states[c][cfg]['instance_pids']:
                     print("failed to kill: %s/%s instance: %s, pid: %s )" %
                           (c, cfg, i, self.states[c][cfg]['instance_pids'][i]))
+
+            self._tag_progress( c, cfg, "shutdown", ending=True )
 
         if len(self.procs) == 0:
             print('All stopped after KILL')
@@ -3098,6 +3141,38 @@ class sr_GlobalState:
             logger.error(f"Failed to determine instance # for {component}/{cfg} {pathname}")
             i = -1
         return i
+
+    def _tag_progress( self, c: str, cfg: str, what_is_in_progress: str, ending: bool ):
+        """ mark a configuration as being in flux, to disable sr3 sanity.
+            Do that by creating a file in the state directory. 
+
+            sample call: _tag_progress( "subscribe", "amis", "shutdown", False ) ...
+ 
+            results in a file named: *~/.cache/sr3/subscribe/amis/shutdown* being created.
+
+            if the *ending* argument is true, then the corresponding state file is removed
+            to indicate that the operation completed.
+        """
+        if 'options' in self.configs[c][cfg] and self.configs[c][cfg]['options'].statehost:
+            state_dir=self.user_cache_dir + os.sep + self.hostdir + os.sep + c + os.sep + cfg
+        else:
+            state_dir=self.user_cache_dir + os.sep + c + os.sep + cfg
+
+        fname =  f"{state_dir}{os.sep}{what_is_in_progress}"
+        if ending:
+            if os.path.exists(fname):
+                os.unlink( fname )
+        else:
+            if not os.path.exists(state_dir):
+                 os.makedirs(state_dir, exist_ok=True)
+
+            if os.path.exists( fname ):
+                 logger.error( f" {c}/{cfg} already tagged: {what_is_in_progress}" )
+                 return
+
+            with open(fname, "w") as f:
+                f.write(nowstr())
+
 
 
 def main():

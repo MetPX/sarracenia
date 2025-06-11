@@ -627,7 +627,9 @@ will be:
 * reje:  all processes running, but too high percent of messages being rejected (runStateThreshold_reject )
 * rtry:  all processes running, but too large number of transfers failed and retrying (runStateThreshold_retry )
 * run:   all processes are running (and transferring, and not behind, and not slow... normal state.)
+* shut:  in the process of shutting down (stop or restart in progress.)
 * slow:  transfering less than minimum bytes/second ( runStateThreshold_slow )
+* star:  in the process of starting up (start or restart in progress.)
 * stop:  no processes are running. 
 * stby:  Standby mode: all processes running, but messages are being stored in the local download_retry queue.
 * wVip:  process doesn't have the vip (only applies when the vip option is specified in the config)

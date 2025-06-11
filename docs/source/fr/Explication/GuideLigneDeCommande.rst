@@ -626,7 +626,9 @@ sera :
 * reje : tous les processus en cours d'exécution, mais un pourcentage trop élevé de messages rejetés (runStateThreshold_reject )
 * rtry : tous les processus en cours d'exécution, mais un grand nombre de transferts échouent, causant d'autres tentatives (runStateThreshold_retry )
 * run : tous les processus sont en cours d'exécution (et en transfert, et pas en retard, et pas lents... état normal.)
+* shut : en cours d'arrêt (stop ou restart en cours.)
 * slow : transfert de moins que le minimum d'octets/seconde ( runStateThreshold_slow )
+* star : en cours de démarrage (start ou restart en cours.)
 * stby : Mode veille (Standby): tous les processus sont en cours d'exécution, mais les messages sont stockés dans la file d'attente download_retry locale.
 * stop : aucun processus n'est en cours d'exécution.
 Les colonnes à droite donnent plus d’informations, détaillant le nombre de processus en cours d’exécution à partir du nombre attendu.
