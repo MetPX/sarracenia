@@ -2407,7 +2407,13 @@ class sr_GlobalState:
                 running_pids += len(self.states[c][cfg]['instance_pids'])
 
             if (running_pids == 0) and len(self.strays)==0:
-                self._tag_progress( c, cfg, "shutdown", ending=True )
+                for f in self.filtered_configurations:
+                    (c, cfg) = f.split(os.sep)
+                    # exclude foreground instances unless --dangerWillRobinson specified
+                    if (not self.options.dangerWillRobinson) and self._cfg_running_foreground(c, cfg):
+                        fg_instances.add(f"{c}/{cfg}")
+                        continue
+                    self._tag_progress( c, cfg, "shutdown", ending=True )
                 print('All stopped after try %d' % attempts)
                 if len(fg_instances) > 0:
                     print(f"Foreground instances {fg_instances} are running and were not stopped.")

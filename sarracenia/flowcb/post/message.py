@@ -35,7 +35,7 @@ class Message(FlowCB):
             self.posters.append(sarracenia.moth.Moth.pubFactory(props))
             i+=1
         else:
-            logger.critical( f"Missing publishers.")
+            logger.error( f"no publishers for {self.o.component}/{self.o.config}")
 
 
     def post(self, worklist):
