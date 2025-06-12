@@ -600,6 +600,12 @@ class sr_GlobalState:
                         if os.path.exists("disabled"): # double check, if disabled should ignore state.
                             continue
 
+                        if not 'status' in self.configs[c][cfg]:
+                            continue
+
+                        if self.configs[c][cfg]['status'] in [ 'stopped', 'disabled', 'stopping', 'starting' ]:
+                            continue
+
                         i_found=[]
                         for filename in os.listdir():
                             # look at pid files, find ones where process is missing.
@@ -1058,7 +1064,6 @@ class sr_GlobalState:
                                 flow_status = 'stopped'
                         else:
                             if observed_instances > 0 and flow_status not in ['starting','shutdown']:
-                                logger.critical( f" {flow_status=} " )
                                 flow_status = 'partial'
                                 for i in range(1, int(self.configs[c][cfg]['instances'])+1 ):
                                     if not i in self.states[c][cfg]['instance_pids']:
