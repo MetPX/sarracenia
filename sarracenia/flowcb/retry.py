@@ -159,6 +159,12 @@ class Retry(FlowCB):
         if not features['retry']['present'] :
             return
 
+        for m in worklist.failed:
+             m['_isRetry'] = True
+             if '_deleteOnPost' not in m:
+                 m['_deleteOnPost'] = set()
+             m['_deleteOnPost'].add('_isRetry')
+
         self.post_retry.put(worklist.failed)
         worklist.failed=[]
 
