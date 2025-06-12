@@ -2411,7 +2411,6 @@ class sr_GlobalState:
                     (c, cfg) = f.split(os.sep)
                     # exclude foreground instances unless --dangerWillRobinson specified
                     if (not self.options.dangerWillRobinson) and self._cfg_running_foreground(c, cfg):
-                        fg_instances.add(f"{c}/{cfg}")
                         continue
                     self._tag_progress( c, cfg, "shutdown", ending=True )
                 print('All stopped after try %d' % attempts)
