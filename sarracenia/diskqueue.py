@@ -256,6 +256,7 @@ class DiskQueue():
                 break
 
             if self.is_expired(message):
+                self.msg_count -= 1
                 #logger.error("MG invalid %s" % message)
                 continue
 
@@ -265,8 +266,7 @@ class DiskQueue():
 
             ml.append(message)
             count += 1
-
-        self.msg_count -= count
+            self.msg_count -= 1
 
         # after getting the last message from the file, close it
         if self.msg_count == 0:
