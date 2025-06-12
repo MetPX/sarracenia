@@ -191,7 +191,7 @@ str_options = [
     'exchangeSuffix', 'feeder', 'filename', 'flatten', 'flowMain', 'header', 
     'hostname', 'httpsSafeQuote', 'identity', 'inlineEncoding', 'logFormat', 'logLevel',
     'pollUrl', 'post_baseUrl', 'post_baseDir', 'post_broker', 'post_exchange',
-    'post_exchangeSuffix', 'post_format', 'post_topic', 'queueName', 'queueShare', 'sendTo', 'rename',
+    'post_exchangeSuffix', 'post_format', 'post_topic', 'queueName', 'queueShare', 'queueType', 'sendTo', 'rename',
     'report_exchange', 'source', 'strip', 'timezone', 'nodupe_ttl', 'nodupe_driver', 
     'nodupe_basis', 'tlsRigour', 'topic'
 ]
@@ -922,6 +922,7 @@ class Config:
         self.pstrip = False
         self.queueShare = "${USER}_${HOSTNAME}_${RAND8}"
         self.queueName = "q_${BROKER_USER}.${COMPONENT}.${CONFIG}.${QUEUESHARE}"
+        self.queueType = "classic"
         self.randomize = False
         self.rename = None
         self.randid = "%04x" % randint(0, 65536)
