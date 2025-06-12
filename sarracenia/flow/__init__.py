@@ -600,15 +600,17 @@ class Flow:
 
                 self.work()
 
-                # in a poll, for duplicate cache synchronization, only post messages that were acquired by polling;
-                # messages from the queue(s) should not be posted. We should never have messages gathered from the
+                # In a poll: for duplicate cache synchronization, only post messages that were acquired by polling;
+                # messages from brokers(s) should not be posted. We should never have messages gathered from the
                 # queue in worklist.incoming at the same time as messages gathered by polling.
+                # Issues #1447, #1132
                 # For non-polls: post when we have the VIP
                 if self.o.component != 'poll' or (self.o.component == 'poll' and self.last_poll_gather_len > 0):
                     self.post(now)
                 # special case: in poll, need to post messages that previously failed to post and were added to
                 #               worklist.ok by retry.py, even when last_poll_gather_len is 0
                 elif self.o.component == 'poll':
+                    # get rid of non-retry messages from worklist.ok, we only want to post retries
                     new_ok = [ msg for msg in self.worklist.ok if ('_isRetry' in msg and msg['_isRetry']) ]
                     self.worklist.ok = new_ok
                     self.post(now)
