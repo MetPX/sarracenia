@@ -317,7 +317,7 @@ class sr_GlobalState:
                     numi = 0
                     if cfg[-5:] == '.conf':
                         cbase = cfg[0:-5]
-                        state = 'stopped'
+                        state = 'new'
                     elif cfg[-4:] == '.inc':
                         cbase = cfg[0:-5]
                         state = 'include'
@@ -476,11 +476,14 @@ class sr_GlobalState:
                         if c in self.configs and cfg in self.configs[c]:
                             if c in ['post', 'cpost'] and not self._post_can_be_daemon(c, cfg): 
                                  self.configs[c][cfg]['status'] = 'interactive'
+                            else:
+                                 self.configs[c][cfg]['status'] = 'new'
                     else:
                         os.chdir(state_dir)
                         self.states[c][cfg] = {}
                         self.states[c][cfg]['instance_pids'] = {}
                         self.states[c][cfg]['queueName'] = None
+                        self.configs[c][cfg]['status'] = 'new'
                         if c in self.configs:
                             if cfg not in self.configs[c]:
                                 self.states[c][cfg]['status'] = 'removed'
@@ -615,7 +618,7 @@ class sr_GlobalState:
                         if not 'status' in self.configs[c][cfg]:
                             continue
 
-                        if self.configs[c][cfg]['status'] in [ 'stopped', 'disabled', 'interactive', 'stopping', 'starting' ]:
+                        if self.configs[c][cfg]['status'] in [ 'disabled', 'interactive', 'new', 'stopped', 'stopping', 'starting' ]:
                             continue
 
                         if hasattr(self.configs[c][cfg]['options'],'statehost') and (statehost != self.configs[c][cfg]['options'].statehost):
@@ -879,7 +882,7 @@ class sr_GlobalState:
                     self.states[c][cfg] = {}
                     self.states[c][cfg]['instance_pids'] = {}
                     self.states[c][cfg]['queueName'] = None
-                    self.states[c][cfg]['status'] = 'stopped'
+                    self.states[c][cfg]['status'] = 'new'
                     self.states[c][cfg]['has_state'] = False
                     continue
 
@@ -1060,7 +1063,7 @@ class sr_GlobalState:
                                 hung_instances += 1
                                 self.states[c][cfg]['hung_instances'].append(i)
 
-                    if self.configs[c][cfg]['status'] in [ 'disabled', 'interactive', 'starting', 'shutdown', 'running' ]:
+                    if self.configs[c][cfg]['status'] in [ 'disabled', 'interactive', 'new', 'starting', 'shutdown', 'running' ]:
                         flow_status = self.configs[c][cfg]['status']
                     else:
                         flow_status = 'unknown'
@@ -1080,7 +1083,7 @@ class sr_GlobalState:
                          flow_status = 'hung'
                     elif observed_instances < int(self.configs[c][cfg]['instances']):
                         if (c == 'post') and (('sleep' not in self.states[c][cfg]) or self.states[c][cfg]['sleep'] <= 0):
-                            if self.configs[c][cfg]['status'] not in [ 'disabled', 'interactive' ]:
+                            if self.configs[c][cfg]['status'] not in [ 'disabled', 'new', 'interactive' ]:
                                 flow_status = 'stopped'
                         else:
                             if observed_instances > 0 and flow_status not in ['starting','shutdown']:
@@ -1090,17 +1093,17 @@ class sr_GlobalState:
                                          self.states[c][cfg]['missing_instances'].append(i)
                             else:
                                 if self.configs[c][cfg]['status'] != 'disabled':
-                                    if flow_status not in [ 'running', 'interactive'] and len(self.states[c][cfg]['instance_pids']) == 0 :
+                                    if flow_status not in [ 'interactive', 'new', 'running'] and len(self.states[c][cfg]['instance_pids']) == 0 :
                                         flow_status = 'stopped' 
                                     else:
-                                        if flow_status not in [ 'starting', 'shutdown', 'interactive' ]:
+                                        if flow_status not in [ 'interactive', 'new', 'shutdown', 'starting' ]:
                                             flow_status = 'missing' 
                                         for i in range(1, int(self.configs[c][cfg]['instances'])+1 ):
                                             if not i in self.states[c][cfg]['instance_pids']:
                                                  self.states[c][cfg]['missing_instances'].append(i)
                     elif observed_instances == 0:
-                        if flow_status not in ['interactive']:
-                            flow_status = "stopped" if len(self.states[c][cfg]['instance_pids']) == 0 else "missing"
+                        if flow_status not in ['interactive','new']:
+                            flow_status = 'stopped' if len(self.states[c][cfg]['instance_pids']) == 0 else "missing"
                     elif self.states[c][cfg]['noVip']:
                         flow_status = 'waitVip'
                     elif self.states[c][cfg]['metrics']['byteRate'] < self.configs[c][cfg]['options'].runStateThreshold_slow:
@@ -1308,7 +1311,7 @@ class sr_GlobalState:
         ]
         # active means >= 1 process exists on the node.
         self.status_active =  ['cpuSlow', 'disconnected', 'down', 'hung', 'idle', 'lagging', 'partial', 'reject', 'retry', 'running', 'slow', 'standby', 'starting', 'shutdown', 'waitVip' ]
-        self.status_values = self.status_active + [ 'disabled', 'include', 'interactive', 'missing', 'stopped', 'unknown' ]
+        self.status_values = self.status_active + [ 'disabled', 'include', 'interactive', 'missing', 'new', 'stopped', 'unknown' ]
 
         self.bin_dir = os.path.dirname(os.path.realpath(__file__))
 
@@ -1735,7 +1738,7 @@ class sr_GlobalState:
             if component_path == '':
                 continue
 
-            if self.configs[c][cfg]['status'] in ['stopped','interactive','missing']:
+            if self.configs[c][cfg]['status'] in ['stopped','new','interactive','missing']:
                 numi = self.configs[c][cfg]['instances']
                 for i in range(1, numi + 1):
                     if pcount % 10 == 0: print('.', end='', flush=True)
@@ -2319,7 +2322,7 @@ class sr_GlobalState:
                 continue
 
             max_instances=0
-            if self.configs[c][cfg]['status'] in [ 'missing', 'interactive','stopped']:
+            if self.configs[c][cfg]['status'] in [ 'missing', 'interactive','new','stopped']:
                 numi = self.configs[c][cfg]['instances']
                 if numi > max_instances:
                     max_instances=numi
@@ -2742,7 +2745,7 @@ class sr_GlobalState:
                         else:
                             missing_instances.append(p)
 
-                if self.configs[c][cfg]['status'] != 'stopped':
+                if self.configs[c][cfg]['status'] not in [ 'stopped', 'new' ]:
                     expected = self.configs[c][cfg]['instances']
                     running = len(running_instances)
                     if running > 0:
@@ -3117,7 +3120,7 @@ class sr_GlobalState:
                 if not (c in self.states and cfg in self.states[c]):
                     continue
 
-                if self.configs[c][cfg]['status'] != 'stopped':
+                if self.configs[c][cfg]['status'] not in [ 'stopped', 'new' ]:
                     m = sum(map(
                         lambda x: c in x and cfg in x,
                         self.missing))  #perhaps expensive, but I am lazy FIXME
