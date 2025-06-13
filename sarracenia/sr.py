@@ -2226,7 +2226,7 @@ class sr_GlobalState:
             if not self.options.dry_run:
                 self._start_missing()
         else:
-            print('no missing processes found')
+            logger.info('no missing processes found')
 
  
         if len(self.strays) > 0:
@@ -2236,7 +2236,7 @@ class sr_GlobalState:
                 if not self.options.dry_run:
                     signal_pid(pid, signal.SIGTERM)
         else:
-            print('no stray processes found')
+            logger.info('no stray processes found')
 
         #It is enough to have it *features* not needed in sanity.
         #for l in sarracenia.features.keys():
@@ -3420,6 +3420,7 @@ def main():
     elif action == 'sanity':
         print('sanity: ', end='', flush=True)
         gs.sanity()
+        print('')
 
     if action == 'show':
         gs.config_show()
