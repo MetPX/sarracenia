@@ -512,7 +512,6 @@ class sr_GlobalState:
 
                         for pathname in state_files:
                             p = pathlib.Path(pathname)
-                            pathcount += 1
                             if p.suffix in ['.pid', '.qname', '.state', '.noVip']:
                                 if sys.version_info[0] > 3 or sys.version_info[
                                         1] > 4:
