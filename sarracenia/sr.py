@@ -250,7 +250,7 @@ class sr_GlobalState:
             # on windows, it seems to fork .exe and then there is a -script.py which is the right pid
             # .e.g sr_subscribe.exe -> sr_subscribe-script.py ... If you kill the -script, the .exe goes away.
             return
-
+ 
         if p['name'].startswith('sr3_'):
             #print( f"starts with sr3_ cmdline={p['cmdline']}" )
             p['memory'] = p['memory_full_info']._asdict()
@@ -2320,7 +2320,14 @@ class sr_GlobalState:
 
             pid_count = self._pid_file_count(c,cfg)
             partial=False
+            if c in ['post', 'cpost'] and not self._post_can_be_daemon(c, cfg): 
+                 continue
+
             while pid_count < self.configs[c][cfg]['options'].instances :
+
+                 if self.please_stop:
+                     return
+
                  partial=True
                  logger.debug( f"{pid_count}/{self.configs[c][cfg]['options'].instances} instances started." )
                  time.sleep(5)
