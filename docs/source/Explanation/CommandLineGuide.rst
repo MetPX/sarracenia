@@ -622,10 +622,12 @@ will be:
 * down:  cannot connect or exchange data with remote data source or sink.
 * hung:  processes appear hung, not writing anything to logs.
 * idle:  all processes running, but no data or message transfers for too long (runStateThreshold_idle)
+* inte:  Interactive configuration, calls from CLI or scripts (not a daemon.)
 * lag:   all processes running, but messages being processed are too old ( runStateThreshold_lag )
 * part:  some processes are running, others are missing.
 * reje:  all processes running, but too high percent of messages being rejected (runStateThreshold_reject )
 * rtry:  all processes running, but too large number of transfers failed and retrying (runStateThreshold_retry )
+* new:   no state files exist for this configuration (fresh after *add* or *cleanup* )
 * run:   all processes are running (and transferring, and not behind, and not slow... normal state.)
 * shut:  in the process of shutting down (stop or restart in progress.)
 * slow:  transfering less than minimum bytes/second ( runStateThreshold_slow )

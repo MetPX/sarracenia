@@ -483,7 +483,7 @@ class sr_GlobalState:
                         self.states[c][cfg] = {}
                         self.states[c][cfg]['instance_pids'] = {}
                         self.states[c][cfg]['queueName'] = None
-                        self.configs[c][cfg]['status'] = 'new'
+                        self.configs[c][cfg]['status'] = 'stopped'
                         if c in self.configs:
                             if cfg not in self.configs[c]:
                                 self.states[c][cfg]['status'] = 'removed'
@@ -505,8 +505,14 @@ class sr_GlobalState:
                             self.states[c][cfg]['status'] = 'shutdown'
                             self.flux[ f"{c}/{cfg}" ] = 'shutdown'
 
-                        for pathname in os.listdir():
+                        state_files = os.listdir() 
+                        if len(state_files) == 0:
+                            self.configs[c][cfg]['status'] = 'new'
+                            continue
+
+                        for pathname in state_files:
                             p = pathlib.Path(pathname)
+                            pathcount += 1
                             if p.suffix in ['.pid', '.qname', '.state', '.noVip']:
                                 if sys.version_info[0] > 3 or sys.version_info[
                                         1] > 4:
@@ -538,7 +544,6 @@ class sr_GlobalState:
                                         self.states[c][cfg]['instance_metrics'][i]['status'] = { 'mtime':os.stat(p).st_mtime }
                                     except:
                                         logger.error( f"corrupt metrics file {pathname}: {t}" )
-
 
     def _read_metrics_dir(self,metrics_parent_dir):
         # read in metrics files
