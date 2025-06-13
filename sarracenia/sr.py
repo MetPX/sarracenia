@@ -2346,6 +2346,7 @@ class sr_GlobalState:
                 continue
 
             self._tag_progress( c, cfg, "starting", ending=True )
+            self._tag_progress( c, cfg, "running", ending=False )
 
         print('( %d ) Done' % pcount)
 
@@ -2418,6 +2419,7 @@ class sr_GlobalState:
             if self.configs[c][cfg]['status'] in self.status_active:
 
                 if not self.options.dry_run:
+                    self._tag_progress( c, cfg, "running", ending=True )
                     self._tag_progress( c, cfg, "shutdown", ending=False )
 
                 for i in self.states[c][cfg]['instance_pids']:
