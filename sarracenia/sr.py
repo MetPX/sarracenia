@@ -2158,6 +2158,8 @@ class sr_GlobalState:
                 logging.warning( f"Not interfering with operations in progress: {self.flux}" )
             return
 
+        self._tag_sanity(ending=False)
+
         pcount = 0
         kill_hung=[]
         for f in self.filtered_configurations:
@@ -2182,8 +2184,8 @@ class sr_GlobalState:
             for pid in kill_hung:
                 signal_pid(pid, signal.SIGKILL)
             time.sleep(5)
-            self._read_procs()
             # next step should identify the missing instances and start them up.
+            self._read_procs()
 
         if pcount != 0:
             self._find_missing_instances()
@@ -2236,7 +2238,20 @@ class sr_GlobalState:
                 flow.runCallbacksTime('on_sanity')
                 del flow
                 flow=None
+
+        self._tag_sanity(ending=True)
         
+    def _pid_file_count(self,c,cfg) -> int:
+        d = self.user_cache_dir 
+        if self.configs[c][cfg]['options'].statehost:
+            d += os.sep + self.hostdir
+        d += os.sep + c + os.sep + cfg
+        if os.path.exists(d):
+            return sum( [ i[-4:] == '.pid' for i in os.listdir(d) ] )
+        else:
+            return 0
+
+
     def start(self):
         """ Starting all components
 
@@ -2247,6 +2262,18 @@ class sr_GlobalState:
             logging.error( f"{self.leftovers} configuration not found" )
             return
         
+        count=0
+        while self._check_sanitizing():
+            if self.please_stop:
+                return
+            if count % 10 == 0:
+                logger.info( "sanitizing in progress, please wait." )
+            count += 1
+            time.sleep(1)
+ 
+        if count > 0:
+            logger.info( "sanitize complete, proceeding with start" )
+
         has_disabled_config = False
 
         # if any configs are disabled, don't start any
@@ -2286,11 +2313,20 @@ class sr_GlobalState:
                     self._launch_instance(component_path, c, cfg, i)
  
         instance_gap=0.10
-        time.sleep(0.2+max_instances*instance_gap) 
+        time.sleep(1+max_instances*instance_gap) 
 
         for f in self.filtered_configurations:
             (c, cfg) = f.split(os.sep)
 
+            pid_count = self._pid_file_count(c,cfg)
+            partial=False
+            while pid_count < self.configs[c][cfg]['options'].instances :
+                 partial=True
+                 logger.debug( f"{pid_count}/{self.configs[c][cfg]['options'].instances} instances started." )
+                 time.sleep(5)
+                 pid_count = self._pid_file_count(c,cfg)
+
+            logger.debug( f"{c}/{cfg}: {pid_count}/{self.configs[c][cfg]['options'].instances} instances started." )
             # skip posts that cannot run as daemons
             if c in ['post', 'cpost'] and not self._post_can_be_daemon(c, cfg): continue
 
@@ -2330,6 +2366,18 @@ class sr_GlobalState:
         if len(self.leftovers) > 0 and not self._action_all_configs:
             logging.error( f"{self.leftovers} configuration not found" )
             return
+
+        count=0
+        while self._check_sanitizing():
+            if self.please_stop:
+                return
+            if count % 10 == 0:
+                logger.info( "sanitizing in progress, please wait.." )
+            count += 1
+            time.sleep(1)
+
+        if count > 0:
+            logger.info( "sanitize complete, proceeding with stop" )
 
         self._clean_missing_proc_state()
 
@@ -3157,6 +3205,40 @@ class sr_GlobalState:
             i = -1
         return i
 
+    def _check_sanitizing(self) -> bool:
+        """
+           return true if sr3 sanity is running somewhere... 
+        """
+
+        d1 = self.user_cache_dir
+
+        d2 = d1 + os.sep + self.hostdir
+
+        sanitizing=False
+        for d in [ d1, d2 ]:
+            f = d + os.sep + "sanitizing"
+            if os.path.exists(f):
+                sanitizing=True
+        return sanitizing
+
+    def _tag_sanity( self, ending: bool ):
+
+        dir_list = [ self.user_cache_dir + os.sep + self.hostdir, self.user_cache_dir ]
+
+        for d in dir_list:
+            if not os.path.exists( d ):
+                 os.makedirs(d, exist_ok=True)
+            
+            fname = d + os.sep + "sanitizing"
+
+            if ending:
+                if os.path.exists(fname):
+                    os.unlink( fname )
+            else:
+                with open(fname, "w") as f:
+                    f.write(nowstr())
+                    
+            
     def _tag_progress( self, c: str, cfg: str, what_is_in_progress: str, ending: bool ):
         """ mark a configuration as being in flux, to disable sr3 sanity.
             Do that by creating a file in the state directory. 
