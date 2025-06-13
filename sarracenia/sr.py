@@ -472,7 +472,11 @@ class sr_GlobalState:
                     else:
                         state_dir=self.user_cache_dir + os.sep + c + os.sep + cfg
 
-                    if os.path.isdir(state_dir):
+                    if not os.path.isdir(state_dir):
+                        if c in self.configs and cfg in self.configs[c]:
+                            if c in ['post', 'cpost'] and not self._post_can_be_daemon(c, cfg): 
+                                 self.configs[c][cfg]['status'] = 'interactive'
+                    else:
                         os.chdir(state_dir)
                         self.states[c][cfg] = {}
                         self.states[c][cfg]['instance_pids'] = {}
@@ -489,6 +493,8 @@ class sr_GlobalState:
                             self.states[c][cfg]['subscriptions'] = s.read( \
                                 self.configs[c][cfg]['options'], 'subscriptions.json')
 
+                        if c in ['post', 'cpost'] and not self._post_can_be_daemon(c, cfg): 
+                            self.configs[c][cfg]['status'] = 'interactive'
                         if os.path.exists('starting'):
                             self.states[c][cfg]['status'] = 'starting'
                             self.flux[ f"{c}/{cfg}" ] = 'starting'
@@ -609,7 +615,7 @@ class sr_GlobalState:
                         if not 'status' in self.configs[c][cfg]:
                             continue
 
-                        if self.configs[c][cfg]['status'] in [ 'stopped', 'disabled', 'stopping', 'starting' ]:
+                        if self.configs[c][cfg]['status'] in [ 'stopped', 'disabled', 'interactive', 'stopping', 'starting' ]:
                             continue
 
                         if hasattr(self.configs[c][cfg]['options'],'statehost') and (statehost != self.configs[c][cfg]['options'].statehost):
@@ -876,8 +882,11 @@ class sr_GlobalState:
                     self.states[c][cfg]['status'] = 'stopped'
                     self.states[c][cfg]['has_state'] = False
                     continue
+
                 if os.path.exists(self.user_cache_dir + os.sep + c + os.sep + cfg + os.sep + 'disabled'):
                     self.configs[c][cfg]['status'] = 'disabled'
+                if c in ['post', 'cpost'] and not self._post_can_be_daemon(c, cfg): 
+                    self.configs[c][cfg]['status'] = 'interactive'
                 if os.path.exists(self.user_cache_dir + os.sep + c + os.sep + cfg + os.sep + 'starting'):
                     self.configs[c][cfg]['status'] = 'starting'
                 if os.path.exists(self.user_cache_dir + os.sep + c + os.sep + cfg + os.sep + 'shutdown'):
@@ -1051,7 +1060,7 @@ class sr_GlobalState:
                                 hung_instances += 1
                                 self.states[c][cfg]['hung_instances'].append(i)
 
-                    if self.configs[c][cfg]['status'] in [ 'disabled', 'starting', 'shutdown', 'running' ]:
+                    if self.configs[c][cfg]['status'] in [ 'disabled', 'interactive', 'starting', 'shutdown', 'running' ]:
                         flow_status = self.configs[c][cfg]['status']
                     else:
                         flow_status = 'unknown'
@@ -1071,7 +1080,7 @@ class sr_GlobalState:
                          flow_status = 'hung'
                     elif observed_instances < int(self.configs[c][cfg]['instances']):
                         if (c == 'post') and (('sleep' not in self.states[c][cfg]) or self.states[c][cfg]['sleep'] <= 0):
-                            if self.configs[c][cfg]['status'] != 'disabled':
+                            if self.configs[c][cfg]['status'] not in [ 'disabled', 'interactive' ]:
                                 flow_status = 'stopped'
                         else:
                             if observed_instances > 0 and flow_status not in ['starting','shutdown']:
@@ -1081,15 +1090,17 @@ class sr_GlobalState:
                                          self.states[c][cfg]['missing_instances'].append(i)
                             else:
                                 if self.configs[c][cfg]['status'] != 'disabled':
-                                    if flow_status != 'running' and len(self.states[c][cfg]['instance_pids']) == 0 :
+                                    if flow_status not in [ 'running', 'interactive'] and len(self.states[c][cfg]['instance_pids']) == 0 :
                                         flow_status = 'stopped' 
                                     else:
-                                        if flow_status not in [ 'starting', 'shutdown' ]:
+                                        if flow_status not in [ 'starting', 'shutdown', 'interactive' ]:
                                             flow_status = 'missing' 
-                                        if not i in self.states[c][cfg]['instance_pids']:
-                                             self.states[c][cfg]['missing_instances'].append(i)
+                                        for i in range(1, int(self.configs[c][cfg]['instances'])+1 ):
+                                            if not i in self.states[c][cfg]['instance_pids']:
+                                                 self.states[c][cfg]['missing_instances'].append(i)
                     elif observed_instances == 0:
-                        flow_status = "stopped" if len(self.states[c][cfg]['instance_pids']) == 0 else "missing"
+                        if flow_status not in ['interactive']:
+                            flow_status = "stopped" if len(self.states[c][cfg]['instance_pids']) == 0 else "missing"
                     elif self.states[c][cfg]['noVip']:
                         flow_status = 'waitVip'
                     elif self.states[c][cfg]['metrics']['byteRate'] < self.configs[c][cfg]['options'].runStateThreshold_slow:
@@ -1297,7 +1308,7 @@ class sr_GlobalState:
         ]
         # active means >= 1 process exists on the node.
         self.status_active =  ['cpuSlow', 'disconnected', 'down', 'hung', 'idle', 'lagging', 'partial', 'reject', 'retry', 'running', 'slow', 'standby', 'starting', 'shutdown', 'waitVip' ]
-        self.status_values = self.status_active + [ 'disabled', 'include', 'missing', 'stopped', 'unknown' ]
+        self.status_values = self.status_active + [ 'disabled', 'include', 'interactive', 'missing', 'stopped', 'unknown' ]
 
         self.bin_dir = os.path.dirname(os.path.realpath(__file__))
 
@@ -1724,7 +1735,7 @@ class sr_GlobalState:
             if component_path == '':
                 continue
 
-            if self.configs[c][cfg]['status'] in ['stopped','missing']:
+            if self.configs[c][cfg]['status'] in ['stopped','interactive','missing']:
                 numi = self.configs[c][cfg]['instances']
                 for i in range(1, numi + 1):
                     if pcount % 10 == 0: print('.', end='', flush=True)
@@ -2308,7 +2319,7 @@ class sr_GlobalState:
                 continue
 
             max_instances=0
-            if self.configs[c][cfg]['status'] in [ 'missing', 'stopped']:
+            if self.configs[c][cfg]['status'] in [ 'missing', 'interactive','stopped']:
                 numi = self.configs[c][cfg]['instances']
                 if numi > max_instances:
                     max_instances=numi
