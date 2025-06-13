@@ -576,8 +576,10 @@ class sr_GlobalState:
         self._read_metrics_dir(self.user_cache_dir)
         self._read_metrics_dir(self.user_cache_dir + os.sep + self.hostdir)
 
-    def _find_missing_instances_dir(self, dir):
+    def _find_missing_instances_dir(self, dir, statehost=False):
         """ find processes which are no longer running, based on pidfiles in state, and procs.
+
+            check each configurations statehost setting, compare it to given parameter.
         """
         missing = []
         if not os.path.isdir(dir):
@@ -604,6 +606,9 @@ class sr_GlobalState:
                             continue
 
                         if self.configs[c][cfg]['status'] in [ 'stopped', 'disabled', 'stopping', 'starting' ]:
+                            continue
+
+                        if hasattr(self.configs[c][cfg]['options'],'statehost') and (statehost != self.configs[c][cfg]['options'].statehost):
                             continue
 
                         i_found=[]
@@ -641,9 +646,9 @@ class sr_GlobalState:
 
     def _find_missing_instances(self):
         self.missing = []
-        self._find_missing_instances_dir(self.user_cache_dir)
+        self._find_missing_instances_dir(self.user_cache_dir, False)
         self._find_missing_instances_dir(self.user_cache_dir + os.sep +
-                                         self.hostdir)
+                                         self.hostdir, True)
 
     def _clean_missing_proc_state_dir(self, dir):
         """ remove state pid files for process which are not running
