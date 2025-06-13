@@ -258,9 +258,8 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">worklist</span><span class="o">.</span><span class="n">failed</span> <span class="o">=</span> <span class="p">[]</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">worklist</span><span class="o">.</span><span class="n">directories_ok</span> <span class="o">=</span> <span class="p">[]</span>
 
-        <span class="c1"># for poll only, mark if we are catching up on posted messages</span>
-        <span class="c1">#</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">worklist</span><span class="o">.</span><span class="n">poll_catching_up</span> <span class="o">=</span> <span class="kc">False</span>
+        <span class="c1"># keep track of messages gathered from polling</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">last_poll_gather_len</span> <span class="o">=</span> <span class="mi">0</span>
 
         <span class="c1"># Witness the creation of this list</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">plugins</span><span class="p">[</span><span class="s1">&#39;load&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">o</span><span class="o">.</span><span class="n">plugins_early</span> <span class="o">+</span> <span class="p">[</span>
@@ -704,13 +703,21 @@
 
                 <span class="bp">self</span><span class="o">.</span><span class="n">filter</span><span class="p">()</span>
 
-                <span class="c1"># this for duplicate cache synchronization.</span>
-                <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">worklist</span><span class="o">.</span><span class="n">poll_catching_up</span><span class="p">:</span>
-                    <span class="bp">self</span><span class="o">.</span><span class="n">ack</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">worklist</span><span class="o">.</span><span class="n">incoming</span><span class="p">)</span>
-                    <span class="bp">self</span><span class="o">.</span><span class="n">worklist</span><span class="o">.</span><span class="n">incoming</span> <span class="o">=</span> <span class="p">[]</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">work</span><span class="p">()</span>
 
-                <span class="k">else</span><span class="p">:</span> <span class="c1"># normal processing, when you are active.</span>
-                    <span class="bp">self</span><span class="o">.</span><span class="n">work</span><span class="p">()</span>
+                <span class="c1"># In a poll: for duplicate cache synchronization, only post messages that were acquired by polling;</span>
+                <span class="c1"># messages from brokers(s) should not be posted. We should never have messages gathered from the</span>
+                <span class="c1"># queue in worklist.incoming at the same time as messages gathered by polling.</span>
+                <span class="c1"># Issues #1447, #1132</span>
+                <span class="c1"># For non-polls: post when we have the VIP</span>
+                <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">o</span><span class="o">.</span><span class="n">component</span> <span class="o">!=</span> <span class="s1">&#39;poll&#39;</span> <span class="ow">or</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">o</span><span class="o">.</span><span class="n">component</span> <span class="o">==</span> <span class="s1">&#39;poll&#39;</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">last_poll_gather_len</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">):</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">post</span><span class="p">(</span><span class="n">now</span><span class="p">)</span>
+                <span class="c1"># special case: in poll, need to post messages that previously failed to post and were added to</span>
+                <span class="c1">#               worklist.ok by retry.py, even when last_poll_gather_len is 0</span>
+                <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">o</span><span class="o">.</span><span class="n">component</span> <span class="o">==</span> <span class="s1">&#39;poll&#39;</span><span class="p">:</span>
+                    <span class="c1"># get rid of non-retry messages from worklist.ok, we only want to post retries</span>
+                    <span class="n">new_ok</span> <span class="o">=</span> <span class="p">[</span> <span class="n">msg</span> <span class="k">for</span> <span class="n">msg</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">worklist</span><span class="o">.</span><span class="n">ok</span> <span class="k">if</span> <span class="p">(</span><span class="s1">&#39;_isRetry&#39;</span> <span class="ow">in</span> <span class="n">msg</span> <span class="ow">and</span> <span class="n">msg</span><span class="p">[</span><span class="s1">&#39;_isRetry&#39;</span><span class="p">])</span> <span class="p">]</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">worklist</span><span class="o">.</span><span class="n">ok</span> <span class="o">=</span> <span class="n">new_ok</span>
                     <span class="bp">self</span><span class="o">.</span><span class="n">post</span><span class="p">(</span><span class="n">now</span><span class="p">)</span>
 
             <span class="n">now</span> <span class="o">=</span> <span class="n">nowflt</span><span class="p">()</span>
@@ -1270,6 +1277,7 @@
 
 
     <span class="k">def</span> <span class="nf">gather</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">last_poll_gather_len</span> <span class="o">=</span> <span class="mi">0</span>
         <span class="n">so_far</span><span class="o">=</span><span class="mi">0</span>
         <span class="n">keep_going</span><span class="o">=</span><span class="kc">True</span>
         <span class="k">for</span> <span class="n">p</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">plugins</span><span class="p">[</span><span class="s2">&quot;gather&quot;</span><span class="p">]:</span>
@@ -1290,30 +1298,31 @@
 
             <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">new_incoming</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">worklist</span><span class="o">.</span><span class="n">incoming</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="n">new_incoming</span><span class="p">)</span>
-                <span class="n">so_far</span> <span class="o">+=</span> <span class="nb">len</span><span class="p">(</span><span class="n">new_incoming</span><span class="p">)</span> 
+                <span class="n">so_far</span> <span class="o">+=</span> <span class="nb">len</span><span class="p">(</span><span class="n">new_incoming</span><span class="p">)</span>
 
             <span class="bp">self</span><span class="o">.</span><span class="n">_runCallbacksWorklist</span><span class="p">(</span><span class="s1">&#39;after_gather&#39;</span><span class="p">)</span>
 
             <span class="c1"># if we gathered enough with a subset of plugins then return.</span>
             <span class="k">if</span> <span class="ow">not</span> <span class="n">keep_going</span> <span class="ow">or</span> <span class="p">(</span><span class="n">so_far</span> <span class="o">&gt;=</span> <span class="bp">self</span><span class="o">.</span><span class="n">o</span><span class="o">.</span><span class="n">batch</span><span class="p">):</span>
-                <span class="k">if</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">o</span><span class="o">.</span><span class="n">component</span> <span class="o">==</span> <span class="s1">&#39;poll&#39;</span> <span class="p">):</span>
-                    <span class="bp">self</span><span class="o">.</span><span class="n">worklist</span><span class="o">.</span><span class="n">poll_catching_up</span><span class="o">=</span><span class="kc">True</span>
-
                 <span class="k">return</span>
 
         <span class="c1"># gather is an extended version of poll.</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">o</span><span class="o">.</span><span class="n">component</span> <span class="o">!=</span> <span class="s1">&#39;poll&#39;</span><span class="p">:</span>
             <span class="k">return</span>
 
-        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">worklist</span><span class="o">.</span><span class="n">incoming</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
-            <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s1">&#39;ingesting </span><span class="si">%d</span><span class="s1"> postings into duplicate suppression cache&#39;</span> <span class="o">%</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">worklist</span><span class="o">.</span><span class="n">incoming</span><span class="p">)</span> <span class="p">)</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">worklist</span><span class="o">.</span><span class="n">poll_catching_up</span> <span class="o">=</span> <span class="kc">True</span>
+        <span class="c1"># For duplicate cache synchronization:</span>
+        <span class="c1">#   If we have ingested any messages from the queue, return and process them before we attempt polling.</span>
+        <span class="c1">#   We don&#39;t want to have any messages gathered from the queue in the worklist</span>
+        <span class="c1">#   at the same time as messages gathered from polling</span>
+        <span class="c1">#   i.e. only poll when the incoming queue is empty</span>
+        <span class="n">num_gathered_from_q</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">worklist</span><span class="o">.</span><span class="n">incoming</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">num_gathered_from_q</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;ingesting </span><span class="si">{</span><span class="n">num_gathered_from_q</span><span class="si">}</span><span class="s1"> postings into duplicate suppression cache before polling&#39;</span><span class="p">)</span>
             <span class="k">return</span>
-        <span class="k">else</span><span class="p">:</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">worklist</span><span class="o">.</span><span class="n">poll_catching_up</span> <span class="o">=</span> <span class="kc">False</span>
 
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">have_vip</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">_runCallbackPoll</span><span class="p">()</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">last_poll_gather_len</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">worklist</span><span class="o">.</span><span class="n">incoming</span><span class="p">)</span>
 
     <span class="k">def</span> <span class="nf">do</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
 

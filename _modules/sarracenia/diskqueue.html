@@ -361,6 +361,7 @@
                 <span class="k">break</span>
 
             <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">is_expired</span><span class="p">(</span><span class="n">message</span><span class="p">):</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">msg_count</span> <span class="o">-=</span> <span class="mi">1</span>
                 <span class="c1">#logger.error(&quot;MG invalid %s&quot; % message)</span>
                 <span class="k">continue</span>
 
@@ -370,8 +371,7 @@
 
             <span class="n">ml</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">message</span><span class="p">)</span>
             <span class="n">count</span> <span class="o">+=</span> <span class="mi">1</span>
-
-        <span class="bp">self</span><span class="o">.</span><span class="n">msg_count</span> <span class="o">-=</span> <span class="n">count</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">msg_count</span> <span class="o">-=</span> <span class="mi">1</span>
 
         <span class="c1"># after getting the last message from the file, close it</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">msg_count</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
