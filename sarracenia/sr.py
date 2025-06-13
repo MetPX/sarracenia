@@ -882,6 +882,8 @@ class sr_GlobalState:
                     self.configs[c][cfg]['status'] = 'starting'
                 if os.path.exists(self.user_cache_dir + os.sep + c + os.sep + cfg + os.sep + 'shutdown'):
                     self.configs[c][cfg]['status'] = 'shutdown'
+                if os.path.exists(self.user_cache_dir + os.sep + c + os.sep + cfg + os.sep + 'running'):
+                    self.configs[c][cfg]['status'] = 'running'
                 if 'instance_metrics' in self.states[c][cfg]:
                     if 'housekeeping' in self.configs[c][cfg]:
                         expiry = now - self.configs[c][cfg]['housekeeping']*1.5
@@ -1049,7 +1051,7 @@ class sr_GlobalState:
                                 hung_instances += 1
                                 self.states[c][cfg]['hung_instances'].append(i)
 
-                    if self.configs[c][cfg]['status'] in [ 'disabled', 'starting', 'shutdown' ]:
+                    if self.configs[c][cfg]['status'] in [ 'disabled', 'starting', 'shutdown', 'running' ]:
                         flow_status = self.configs[c][cfg]['status']
                     else:
                         flow_status = 'unknown'
@@ -1079,7 +1081,7 @@ class sr_GlobalState:
                                          self.states[c][cfg]['missing_instances'].append(i)
                             else:
                                 if self.configs[c][cfg]['status'] != 'disabled':
-                                    if len(self.states[c][cfg]['instance_pids']) == 0 :
+                                    if flow_status != 'running' and len(self.states[c][cfg]['instance_pids']) == 0 :
                                         flow_status = 'stopped' 
                                     else:
                                         if flow_status not in [ 'starting', 'shutdown' ]:
