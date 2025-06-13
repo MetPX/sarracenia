@@ -1698,6 +1698,23 @@ will use the queue name thus defined.
 This *subtopic* option should appear after the queueShare setting in files
 for the topic bindings to apply to the given queue.
 
+queueType <str> (default: None)
+-------------------------------
+
+Define the *queue type* to be used within a broker.
+
+RabbitMQ offers 3 options (defined by the `x-queue-type` argument). Options
+specified on https://www.rabbitmq.com/docs/vhosts#default-queue-type.
+
+        Stream
+
+        Quorum queue
+
+        Classic queue (no HA)
+
+As of RabbitMQ 4.0, classic queues will lose their High Availability feature (mirrored queues). 
+
+NOTE: When the option is not specified in sarracenia, the default option will be extracted from the broker.
 
 randomize <flag>
 ----------------

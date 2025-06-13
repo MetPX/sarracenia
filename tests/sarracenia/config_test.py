@@ -402,6 +402,7 @@ def test_multi():
 
      options.parse_line(  "subscribe", "multi1", "subscribe/multi1", 1, "broker amqps://dd.weather.gc.ca/")
      options.parse_line(  "subscribe", "multi1", "subscribe/multi1", 1, "queueName q_${BROKER_USER}.${COMPONENT}.${CONFIG}")
+     options.parse_line(  "subscribe", "multi1", "subscribe/multi1", 1, "queueType quorum" )
      options.parse_line(  "subscribe", "multi1", "subscribe/multi1", 1, "topicPrefix v02.post" )
      options.parse_line(  "subscribe", "multi1", "subscribe/multi1", 1, "subtopic *.WXO-DD.bulletins.alphanumeric.#" )
      options.parse_line(  "subscribe", "multi1", "subscribe/multi1", 1, "broker amqps://hpfx.collab.science.gc.ca/" )
@@ -469,7 +470,8 @@ def test_multi():
                               'name': 'q_anonymous.subscribe.multi1',
                               'prefetch': 25,
                               'template': 'q_${BROKER_USER}.${COMPONENT}.${CONFIG}',
-                              'tlsRigour': 'normal'} )
+                              'tlsRigour': 'normal',
+                              'type': 'quorum'})
 
      assert( options.subscriptions[0]['bindings']  == [{'exchange': 'xpublic',
                                   'prefix': ['v02', 'post'],

@@ -922,7 +922,6 @@ class Config:
         self.pstrip = False
         self.queueShare = "${USER}_${HOSTNAME}_${RAND8}"
         self.queueName = "q_${BROKER_USER}.${COMPONENT}.${CONFIG}.${QUEUESHARE}"
-        self.queueType = "classic"
         self.randomize = False
         self.rename = None
         self.randid = "%04x" % randint(0, 65536)
