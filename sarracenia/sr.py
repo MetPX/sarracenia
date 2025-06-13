@@ -229,6 +229,10 @@ class sr_GlobalState:
         if self.me != p['username'] :
             return
 
+        # defunct children waiting reap have no command line.
+        if not p['cmdline']:
+            return
+
         # process name 'python3' is not helpful, so overwrite...
         if 'python' in p['name']:
             if len(p['cmdline']) < 2:
