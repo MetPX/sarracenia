@@ -21,10 +21,9 @@ After=network.target
 
 [Service]
 Type=forking
-ExecStart=/usr/bin/sr3 start
+ExecStart=/usr/bin/sr3_systemd_wrapper.sh start
 
-ExecReload=/usr/bin/sr3 reload
-ExecStop=/usr/bin/sr3 stop
+ExecStop=/usr/bin/sr3_systemd_wrapper.sh stop
 
 [Install]
 WantedBy=default.target

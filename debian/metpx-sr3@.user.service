@@ -1,0 +1,12 @@
+Description=Sarracenia %I
+After=network-online.target local-fs.target remote-fs.target
+Requires=network-online.target
+
+[Service]
+Type=forking
+ExecStart=/usr/bin/sr3 start %I
+ExecReload=/usr/bin/sr3 reload %I
+ExecStop=/usr/bin/sr3 stop %I
+
+[Install]
+WantedBy=multi-user.target
