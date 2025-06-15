@@ -231,7 +231,7 @@ Le package est installé dans l'état *disabled* (désactivé.) Utilisez *system
 
 .. NOTE::
    debian/metpx-sr3.service -- pour systemd et déploiment système
-   tools/metpx-sr3_user.service -- pour systemd individuel par usager.
+   debian/metpx-sr3.user.service -- pour systemd individuel par usager.
 
 
 Si vous l'installez des packages Python (wheel ou pip), l'intégration du système est moindre 
@@ -241,7 +241,7 @@ copier les fichiers de l'arborescence source vers les emplacements système appr
    groupadd sarra
    useradd sarra
    cp debian/metpx-sr3.service /etc/systemd/system   
-   cp tools/metpx-sr3_user.service /etc/systemd/user/metpx-sr3.service 
+   cp debian/metpx-sr3.user.service /etc/systemd/user/metpx-sr3.service 
    systemctl daemon-reload
    
 L'utilisateur *sarra* est le compte par défaut pour la configuration sarra orientée démon (ou à l'échelle du système).
