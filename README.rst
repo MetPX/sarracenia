@@ -25,7 +25,7 @@
     :target: https://github.com/MetPX/sarracenia/actions/workflows/ghcr.yml
 
 .. image:: https://github.com/MetPX/sarracenia/actions/workflows/flow.yml/badge.svg?branch=development
-    :alt: Run Static Flow
+    :alt: Run AMQP Flow (Integration) tests
     :target: https://github.com/MetPX/sarracenia/actions/workflows/flow.yml
 
 +----------------------------------------------------------------------------------------+-------------------------------------------------------------------------------------------+
