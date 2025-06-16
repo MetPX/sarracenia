@@ -55,7 +55,8 @@ class Poll(Flow):
 
         super().__init__(options)
 
-        if hasattr(self.o,'publishers') and hasattr(self.o,'subscriptions'):
+        if hasattr(self.o,'publishers') and hasattr(self.o,'subscriptions') and \
+            len(self.o.subscriptions) > 0 and len(self.o.publishers) > 0:
             px = self.o.publishers[0]['exchange'][0]
             sx = self.o.subscriptions[0]['bindings'][0]['exchange'] 
             if px != sx:
