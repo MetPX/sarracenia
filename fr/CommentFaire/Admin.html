@@ -311,7 +311,7 @@ Le package est installé dans l’état <em>disabled</em> (désactivé.) Utilise
 <div class="admonition note">
 <p class="admonition-title">Note</p>
 <p>debian/metpx-sr3.service – pour systemd et déploiment système
-tools/metpx-sr3_user.service – pour systemd individuel par usager.</p>
+debian/metpx-sr3.user.service – pour systemd individuel par usager.</p>
 </div>
 <p>Si vous l’installez des packages Python (wheel ou pip), l’intégration du système est moindre
 et il peut être nécessaire de créer manuellement les groupes appropriés et de
@@ -319,7 +319,7 @@ copier les fichiers de l’arborescence source vers les emplacements système ap
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">groupadd</span> <span class="n">sarra</span>
 <span class="n">useradd</span> <span class="n">sarra</span>
 <span class="n">cp</span> <span class="n">debian</span><span class="o">/</span><span class="n">metpx</span><span class="o">-</span><span class="n">sr3</span><span class="o">.</span><span class="n">service</span> <span class="o">/</span><span class="n">etc</span><span class="o">/</span><span class="n">systemd</span><span class="o">/</span><span class="n">system</span>
-<span class="n">cp</span> <span class="n">tools</span><span class="o">/</span><span class="n">metpx</span><span class="o">-</span><span class="n">sr3_user</span><span class="o">.</span><span class="n">service</span> <span class="o">/</span><span class="n">etc</span><span class="o">/</span><span class="n">systemd</span><span class="o">/</span><span class="n">user</span><span class="o">/</span><span class="n">metpx</span><span class="o">-</span><span class="n">sr3</span><span class="o">.</span><span class="n">service</span>
+<span class="n">cp</span> <span class="n">debian</span><span class="o">/</span><span class="n">metpx</span><span class="o">-</span><span class="n">sr3</span><span class="o">.</span><span class="n">user</span><span class="o">.</span><span class="n">service</span> <span class="o">/</span><span class="n">etc</span><span class="o">/</span><span class="n">systemd</span><span class="o">/</span><span class="n">user</span><span class="o">/</span><span class="n">metpx</span><span class="o">-</span><span class="n">sr3</span><span class="o">.</span><span class="n">service</span>
 <span class="n">systemctl</span> <span class="n">daemon</span><span class="o">-</span><span class="n">reload</span>
 </pre></div>
 </div>

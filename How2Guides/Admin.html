@@ -303,7 +303,7 @@ The package installed in <em>disabled</em> state.  use <em>systemctl</em> in the
 <div class="admonition note">
 <p class="admonition-title">Note</p>
 <p>debian/metpx-sr3.service – for systemd base systems for a ‘daemon’ style deployment.
-tools/metpx-sr3_user.service – for systemd as a per user service.</p>
+debian/metpx-sr3.user.service – for systemd as a per user service.</p>
 </div>
 <p>If installed using python packages, there is less system integration, and one may need to
 manually create appropriate groups and copy files from the source tree into the right
@@ -312,7 +312,7 @@ system places:</p>
 <div><p>groupadd sarra
 useradd sarra
 cp debian/metpx-sr3.service /etc/systemd/system  (if a package installs it, it should go in /usr/lib/systemd/system )
-cp tools/metpx-sr3_user.service /etc/systemd/user/metpx-sr3.service (or /usr/lib/systemd/user, if installed by a package )
+cp debian/metpx-sr3.user.service /etc/systemd/user/metpx-sr3.service (or /usr/lib/systemd/user, if installed by a package )
 systemctl daemon-reload</p>
 </div></blockquote>
 <p>The <em>sarra</em> user is the default account assumed to store the daemon oriented (or system-wide) sarra configuration.
