@@ -2354,6 +2354,7 @@ class sr_GlobalState:
                 return
 
         pcount = 0
+        max_instances=0
         for f in self.filtered_configurations:
 
             (c, cfg) = f.split(os.sep)
@@ -2365,7 +2366,6 @@ class sr_GlobalState:
             if component_path == '':
                 continue
 
-            max_instances=0
             if self.configs[c][cfg]['status'] in [ 'missing', 'interactive','new','stopped']:
                 numi = self.configs[c][cfg]['instances']
                 if numi > max_instances:
