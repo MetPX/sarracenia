@@ -2322,11 +2322,14 @@ class sr_GlobalState:
             # skip posts that cannot run as daemons
             if c in ['post', 'cpost'] and not self._post_can_be_daemon(c, cfg): continue
 
+            # Skip disabled configurations
+            if self.configs[c][cfg]['status'] in ['disabled']: continue
+
             component_path = self._find_component_path(c)
             if component_path == '':
                 continue
 
-            if self.configs[c][cfg]['status'] in [ 'missing', 'interactive','new','stopped']:
+            if self.configs[c][cfg]['status'] in [ 'missing', 'interactive', 'new', 'stopped']:
                 numi = self.configs[c][cfg]['instances']
                 if numi > max_instances:
                     max_instances=numi
@@ -2347,7 +2350,9 @@ class sr_GlobalState:
             if c in ['post', 'cpost'] and not self._post_can_be_daemon(c, cfg): 
                  continue
 
-            while pid_count < self.configs[c][cfg]['options'].instances :
+            if self.configs[c][cfg]['status'] in ['disabled']: continue
+
+            while pid_count < self.configs[c][cfg]['options'].instances:
 
                  if self.please_stop:
                      return
@@ -2358,6 +2363,7 @@ class sr_GlobalState:
                  pid_count = self._pid_file_count(c,cfg)
 
             logger.debug( f"{c}/{cfg}: {pid_count}/{self.configs[c][cfg]['options'].instances} instances started." )
+
             # skip posts that cannot run as daemons
             if c in ['post', 'cpost'] and not self._post_can_be_daemon(c, cfg): continue
 
