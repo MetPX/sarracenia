@@ -121,10 +121,10 @@
             <span class="n">props</span><span class="p">[</span><span class="s1">&#39;publisher_index&#39;</span><span class="p">]</span><span class="o">=</span><span class="n">i</span>
             <span class="c1"># adjust settings post_xxx to be xxx, as Moth does not use post_ ones.</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">posters</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">sarracenia</span><span class="o">.</span><span class="n">moth</span><span class="o">.</span><span class="n">Moth</span><span class="o">.</span><span class="n">pubFactory</span><span class="p">(</span><span class="n">props</span><span class="p">))</span>
-            <span class="n">i</span><span class="o">+=</span><span class="mi">1</span>
-        <span class="k">else</span><span class="p">:</span>
-            <span class="n">logger</span><span class="o">.</span><span class="n">critical</span><span class="p">(</span> <span class="sa">f</span><span class="s2">&quot;Missing publishers.&quot;</span><span class="p">)</span></div>
+            <span class="n">i</span><span class="o">+=</span><span class="mi">1</span></div>
 
+        <span class="c1">#else:</span>
+        <span class="c1">#    logger.error( f&quot;no publishers for {self.o.component}/{self.o.config}&quot;)</span>
 
 
     <span class="k">def</span> <span class="nf">post</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">worklist</span><span class="p">):</span>

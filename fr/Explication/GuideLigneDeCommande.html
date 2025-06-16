@@ -699,12 +699,16 @@ sera :</p>
 <li><p>down : impossible de se connecter ou d’échanger des données avec une source ou un récepteur de données distant.</p></li>
 <li><p>hung : les processus semblent bloqués et n’écrivent rien dans les journaux.</p></li>
 <li><p>idle : tous les processus en cours d’exécution, mais ne transfert pas depuis trop longtemps (runStateThreshold_idle.)</p></li>
+<li><p>inte : configuration à usage intéractif, n’éxecute pas comme un daëmon (processus de service en arrière plan.)</p></li>
 <li><p>lag : tous les processus en cours d’exécution, mais les messages en cours de traitement sont trop anciens ( runStateThreshold_lag )</p></li>
 <li><p>part: certains processus sont en cours d’exécution, d’autres manquent à l’appel.</p></li>
 <li><p>reje : tous les processus en cours d’exécution, mais un pourcentage trop élevé de messages rejetés (runStateThreshold_reject )</p></li>
 <li><p>rtry : tous les processus en cours d’exécution, mais un grand nombre de transferts échouent, causant d’autres tentatives (runStateThreshold_retry )</p></li>
+<li><p>new : une configuration neuve (nouvellement installéé/créé, ou après un opeations <em>clean</em> )</p></li>
 <li><p>run : tous les processus sont en cours d’exécution (et en transfert, et pas en retard, et pas lents… état normal.)</p></li>
+<li><p>shut : en cours d’arrêt (stop ou restart en cours.)</p></li>
 <li><p>slow : transfert de moins que le minimum d’octets/seconde ( runStateThreshold_slow )</p></li>
+<li><p>star : en cours de démarrage (start ou restart en cours.)</p></li>
 <li><p>stby : Mode veille (Standby): tous les processus sont en cours d’exécution, mais les messages sont stockés dans la file d’attente download_retry locale.</p></li>
 <li><p>stop : aucun processus n’est en cours d’exécution.</p></li>
 </ul>
