@@ -24,7 +24,7 @@
     :alt: Docker Image Build Status
     :target: https://github.com/MetPX/sarracenia/actions/workflows/ghcr.yml
 
-.. image:: https://github.com/MetPX/sarracenia/actions/workflows/flow.yml/badge.svg?branch=v03_wip
+.. image:: https://github.com/MetPX/sarracenia/actions/workflows/flow.yml/badge.svg?branch=development
     :alt: Run Static Flow
     :target: https://github.com/MetPX/sarracenia/actions/workflows/flow.yml
 
