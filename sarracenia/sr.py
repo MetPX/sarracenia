@@ -1622,7 +1622,7 @@ class sr_GlobalState:
                 logging.error("cannot disable %s while it is running! " % f)
                 continue
 
-            self._tag_progress( c, cfg, "disabled", ending=False )
+            self._tag_progress( c, cfg, 'disabled', ending=False )
 
     def edit(self):
 
@@ -1655,7 +1655,7 @@ class sr_GlobalState:
             if not 'options' in self.configs[c][cfg]:
                 continue
 
-            lfn = self.log_dir + os.sep + c + "_" + cfg + "_01" + '.log'
+            lfn = self.log_dir + os.sep + c + '_' + cfg + '_01' + '.log'
 
             if sys.platform == 'win32':
                 self.run_command(['sr_tailf', lfn])
@@ -2333,7 +2333,7 @@ class sr_GlobalState:
                 numi = self.configs[c][cfg]['instances']
                 if numi > max_instances:
                     max_instances=numi
-                self._tag_progress( c, cfg, "starting", ending=False )
+                self._tag_progress( c, cfg, 'starting', ending=False )
                 for i in range(1, numi + 1):
                     if pcount % 10 == 0: print('.', end='', flush=True)
                     pcount += 1
@@ -2371,8 +2371,8 @@ class sr_GlobalState:
             if component_path == '':
                 continue
 
-            self._tag_progress( c, cfg, "starting", ending=True )
-            self._tag_progress( c, cfg, "running", ending=False )
+            self._tag_progress( c, cfg, 'starting', ending=True )
+            self._tag_progress( c, cfg, 'running', ending=False )
 
         print('( %d ) Done' % pcount)
 
@@ -2445,8 +2445,8 @@ class sr_GlobalState:
             if self.configs[c][cfg]['status'] in self.status_active:
 
                 if not self.options.dry_run:
-                    self._tag_progress( c, cfg, "running", ending=True )
-                    self._tag_progress( c, cfg, "shutdown", ending=False )
+                    self._tag_progress( c, cfg, 'running', ending=True )
+                    self._tag_progress( c, cfg, 'shutdown', ending=False )
 
                 for i in self.states[c][cfg]['instance_pids']:
                     #print( "for %s/%s - %s signal_pid( %s, SIGTERM )" % \
@@ -2504,7 +2504,7 @@ class sr_GlobalState:
                     # exclude foreground instances unless --dangerWillRobinson specified
                     if (not self.options.dangerWillRobinson) and self._cfg_running_foreground(c, cfg):
                         continue
-                    self._tag_progress( c, cfg, "shutdown", ending=True )
+                    self._tag_progress( c, cfg, 'shutdown', ending=True )
                 print('All stopped after try %d' % attempts)
                 if len(fg_instances) > 0:
                     print(f"Foreground instances {fg_instances} are running and were not stopped.")
@@ -2555,7 +2555,7 @@ class sr_GlobalState:
                     print("failed to kill: %s/%s instance: %s, pid: %s )" %
                           (c, cfg, i, self.states[c][cfg]['instance_pids'][i]))
 
-            self._tag_progress( c, cfg, "shutdown", ending=True )
+            self._tag_progress( c, cfg, 'shutdown', ending=True )
 
         if len(self.procs) == 0:
             print('All stopped after KILL')
@@ -3282,7 +3282,13 @@ class sr_GlobalState:
         """ mark a configuration as being in flux, to disable sr3 sanity.
             Do that by creating a file in the state directory. 
 
-            sample call: _tag_progress( "subscribe", "amis", "shutdown", False ) ...
+            sample call: 
+                 self._tag_progress( \
+                     c='subscribe', 
+                     cfg='amis', 
+                     what_is_in_progress='shutdown', 
+                     ending=False 
+                 ) ...
  
             results in a file named: *~/.cache/sr3/subscribe/amis/shutdown* being created.
 
