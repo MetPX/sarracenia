@@ -192,17 +192,41 @@ class sr_GlobalState:
 
         try:
             if self.configs[c][cfg]['options'].logStdout:
-                subprocess.Popen(cmd)
+                instance_proc=subprocess.Popen(cmd)
             else:
                 with open(lfn, "a") as lf:
-                    subprocess.Popen(cmd,
+                    instance_proc=subprocess.Popen(cmd,
                                  stdin=subprocess.DEVNULL,
                                  stdout=lf,
                                  stderr=subprocess.STDOUT)
+           
             #print( f"launched: {cmd}" )
+                     
         except Exception as ex:
             print("failed to launch: %s >%s >2&1 (reason: %s) " %
                   (' '.join(cmd), lfn, ex))
+            return
+
+        try:
+            cgroup=None
+            if hasattr(self.configs[c][cfg]['options'], 'cgroupOverride'):
+                cgroup=self.configs[c][cfg]['options'].cgroupOverride
+            elif 'cgroupDirectory' in self.states[c][cfg] and len(self.states[c][cfg]['cgroupDirectory']) > 0:
+                cgroup=list(self.states[c][cfg]['cgroupDirectory'])[0]
+
+            if cgroup:
+                if not os.path.exists(cgroup):
+                   os.makedirs(cgroup)
+                   logger.critical( f"created group: {cgroup}")
+
+                logger.critical( f"join cgroup: {cgroup}")
+                with open(cgroup+os.sep+"cgroup.procs", "a" ) as cgpf:
+                      cgpf.write( f"{instance_proc.pid}")
+            else:
+                logger.critical(" No cgroup to join" )
+
+        except Exception as ex:
+            logger.critical( f"unable to join cgroup: {ex}" )
 
     def save_procs(self, File="procs.json"):
         """
@@ -291,11 +315,23 @@ class sr_GlobalState:
             return
         for proc in psutil.process_iter():
             try:
-                self._filter_sr_proc(
-                    proc.as_dict(
-                        ['pid', 'cmdline', 'name', 'username', 'create_time', 'memory_full_info', 'cpu_times']))
+                pd = proc.as_dict( ['pid', 'cmdline', 'name', 'username', 'create_time', 'memory_full_info', 'cpu_times'])
+                if 'MEMORY_PRESSURE_WATCH' in proc.environ():
+                    pd['MEMORY_PRESSURE_WATCH']= proc.environ()['MEMORY_PRESSURE_WATCH']
+                    pd['cgroupDirectory'] = pd['MEMORY_PRESSURE_WATCH'].replace('/memory.pressure','')
+                self._filter_sr_proc( pd )
+
             except:
                 pass # the process went away while iterating. avoid spurious message.
+        
+        cgroupDirectories=set([])
+        for p in self.procs:
+            if 'cgroupDirectory' in self.procs[p]:
+               cgroupDirectories |= set([ self.procs[p]['cgroupDirectory'] ])
+
+        if len(cgroupDirectories) > 1:
+            logger.debug( f"inconsistent linux cgroups for running flows: {cgroupDirectories}" )
+
 
     def _read_configs(self):
         # read in configurations.
@@ -1040,6 +1076,7 @@ class sr_GlobalState:
                 if ('instance_pids' in self.states[c][cfg]) and (len(self.states[c][cfg]['instance_pids']) >= 0):
                     self.states[c][cfg]['missing_instances'] = []
                     self.states[c][cfg]['hung_instances'] = []
+                    self.states[c][cfg]['cgroupDirectory'] = set([])
                     observed_instances = 0
                     hung_instances=0
                     resource_usage={ 'uss': 0, 'rss': 0, 'vms':0, 'user_cpu': 0.0, 'system_cpu':0.0 }
@@ -1061,6 +1098,9 @@ class sr_GlobalState:
                             self.resources[ 'user_cpu' ] += self.procs[pid]['cpu']['user'] 
                             resource_usage[ 'system_cpu' ] += self.procs[pid]['cpu']['system'] 
                             self.resources[ 'system_cpu' ] += self.procs[pid]['cpu']['system'] 
+
+                            if 'cgroupDirectory' in self.procs[pid]:
+                                self.states[c][cfg]['cgroupDirectory'] |= set( [self.procs[pid]['cgroupDirectory']] )
 
                             if ('logAge' in self.states[c][cfg]) and (i in self.states[c][cfg]['logAge'] ) and \
                                     ( self.states[c][cfg]['logAge'][i] > self.configs[c][cfg]['options'].runStateThreshold_hung ):

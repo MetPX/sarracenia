@@ -193,7 +193,7 @@ str_options = [
     'pollUrl', 'post_baseUrl', 'post_baseDir', 'post_broker', 'post_exchange',
     'post_exchangeSuffix', 'post_format', 'post_topic', 'queueName', 'queueShare', 'sendTo', 'rename',
     'report_exchange', 'source', 'strip', 'timezone', 'nodupe_ttl', 'nodupe_driver', 
-    'nodupe_basis', 'tlsRigour', 'topic'
+    'nodupe_basis', 'tlsRigour', 'topic', 'cgroupOverride'
 ]
 
 r"""
