@@ -2146,7 +2146,10 @@ class Config:
             sys.exit(1)
 
         if hasattr(self, 'broker') and self.broker is None and hasattr(self, 'post_broker') and self.post_broker is None:
-            logger.warning("Both broker and post_broker are set to None")
+            logger.warning(f"{component}/{config} Both broker and post_broker are set to None")
+
+        if hasattr(self, 'queueType') and self.queueType not in ['classic', 'quorum', 'stream']:
+            logger.warning(f"{component}/{config} invalid queueType used : {self.queueType}")
 
     def check_undeclared_options(self):
 
