@@ -474,7 +474,7 @@ def test_multi():
                               'prefetch': 25,
                               'template': 'q_${BROKER_USER}.${COMPONENT}.${CONFIG}',
                               'tlsRigour': 'normal',
-                              'type': 'quorum'})
+                              'type': 'quorum'}
 
      assert( options.subscriptions[0]['queue']  == subscriber_queue )
 
