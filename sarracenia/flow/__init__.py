@@ -171,9 +171,8 @@ class Flow:
         self.worklist.failed = []
         self.worklist.directories_ok = []
 
-        # for poll only, mark if we are catching up on posted messages
-        #
-        self.worklist.poll_catching_up = False
+        # keep track of messages gathered from polling
+        self.last_poll_gather_len = 0
 
         # Witness the creation of this list
         self.plugins['load'] = self.o.plugins_early + [
@@ -599,13 +598,21 @@ class Flow:
 
                 self.filter()
 
-                # this for duplicate cache synchronization.
-                if self.worklist.poll_catching_up:
-                    self.ack(self.worklist.incoming)
-                    self.worklist.incoming = []
+                self.work()
 
-                else: # normal processing, when you are active.
-                    self.work()
+                # In a poll: for duplicate cache synchronization, only post messages that were acquired by polling;
+                # messages from brokers(s) should not be posted. We should never have messages gathered from the
+                # queue in worklist.incoming at the same time as messages gathered by polling.
+                # Issues #1447, #1132
+                # For non-polls: post when we have the VIP
+                if self.o.component != 'poll' or (self.o.component == 'poll' and self.last_poll_gather_len > 0):
+                    self.post(now)
+                # special case: in poll, need to post messages that previously failed to post and were added to
+                #               worklist.ok by retry.py, even when last_poll_gather_len is 0
+                elif self.o.component == 'poll':
+                    # get rid of non-retry messages from worklist.ok, we only want to post retries
+                    new_ok = [ msg for msg in self.worklist.ok if ('_isRetry' in msg and msg['_isRetry']) ]
+                    self.worklist.ok = new_ok
                     self.post(now)
 
             now = nowflt()
@@ -1158,6 +1165,7 @@ class Flow:
 
 
     def gather(self) -> None:
+        self.last_poll_gather_len = 0
         so_far=0
         keep_going=True
         for p in self.plugins["gather"]:
@@ -1178,30 +1186,31 @@ class Flow:
 
             if len(new_incoming) > 0:
                 self.worklist.incoming.extend(new_incoming)
-                so_far += len(new_incoming) 
+                so_far += len(new_incoming)
 
             self._runCallbacksWorklist('after_gather')
 
             # if we gathered enough with a subset of plugins then return.
             if not keep_going or (so_far >= self.o.batch):
-                if (self.o.component == 'poll' ):
-                    self.worklist.poll_catching_up=True
-
                 return
 
         # gather is an extended version of poll.
         if self.o.component != 'poll':
             return
 
-        if len(self.worklist.incoming) > 0:
-            logger.debug('ingesting %d postings into duplicate suppression cache' % len(self.worklist.incoming) )
-            self.worklist.poll_catching_up = True
+        # For duplicate cache synchronization:
+        #   If we have ingested any messages from the queue, return and process them before we attempt polling.
+        #   We don't want to have any messages gathered from the queue in the worklist
+        #   at the same time as messages gathered from polling
+        #   i.e. only poll when the incoming queue is empty
+        num_gathered_from_q = len(self.worklist.incoming)
+        if num_gathered_from_q > 0:
+            logger.debug(f'ingesting {num_gathered_from_q} postings into duplicate suppression cache before polling')
             return
-        else:
-            self.worklist.poll_catching_up = False
 
         if self.have_vip:
             self._runCallbackPoll()
+            self.last_poll_gather_len = len(self.worklist.incoming)
 
     def do(self) -> None:
 

@@ -621,12 +621,16 @@ sera :
 * down : impossible de se connecter ou d'échanger des données avec une source ou un récepteur de données distant.
 * hung : les processus semblent bloqués et n'écrivent rien dans les journaux.
 * idle : tous les processus en cours d'exécution, mais ne transfert pas depuis trop longtemps (runStateThreshold_idle.)
+* inte : configuration à usage intéractif, n'éxecute pas comme un daëmon (processus de service en arrière plan.)
 * lag : tous les processus en cours d'exécution, mais les messages en cours de traitement sont trop anciens ( runStateThreshold_lag )
 * part: certains processus sont en cours d'exécution, d'autres manquent à l'appel.
 * reje : tous les processus en cours d'exécution, mais un pourcentage trop élevé de messages rejetés (runStateThreshold_reject )
 * rtry : tous les processus en cours d'exécution, mais un grand nombre de transferts échouent, causant d'autres tentatives (runStateThreshold_retry )
+* new : une configuration neuve (nouvellement installéé/créé, ou après un opeations *clean* )
 * run : tous les processus sont en cours d'exécution (et en transfert, et pas en retard, et pas lents... état normal.)
+* shut : en cours d'arrêt (stop ou restart en cours.)
 * slow : transfert de moins que le minimum d'octets/seconde ( runStateThreshold_slow )
+* star : en cours de démarrage (start ou restart en cours.)
 * stby : Mode veille (Standby): tous les processus sont en cours d'exécution, mais les messages sont stockés dans la file d'attente download_retry locale.
 * stop : aucun processus n'est en cours d'exécution.
 Les colonnes à droite donnent plus d’informations, détaillant le nombre de processus en cours d’exécution à partir du nombre attendu.

@@ -442,6 +442,7 @@ def test_multi():
 
      options.publishers[0]['broker'] = str(options.publishers[0]['broker'])
 
+
      assert( options.publishers[0] == { \
                  'auto_delete': False,
                  'baseDir': '/tmp/dual_amis/',
@@ -461,17 +462,21 @@ def test_multi():
                                   'prefix': ['v02', 'post'],
                                   'sub': ['*.WXO-DD.bulletins.alphanumeric.#']}] )
 
-     assert( options.subscriptions[0]['queue']  == {'auto_delete': False, \
+     default_options = sarracenia.config.default_config()
+
+     subscriber_queue = {'auto_delete': False, \
                               'bind': True,
                               'cleanup_needed': None,
                               'declare': True,
                               'durable': True,
-                              'expire': 25200.0,
+                              'expire': default_options.expire,
                               'name': 'q_anonymous.subscribe.multi1',
                               'prefetch': 25,
                               'template': 'q_${BROKER_USER}.${COMPONENT}.${CONFIG}',
                               'tlsRigour': 'normal',
                               'type': 'quorum'})
+
+     assert( options.subscriptions[0]['queue']  == subscriber_queue )
 
      assert( options.subscriptions[0]['bindings']  == [{'exchange': 'xpublic',
                                   'prefix': ['v02', 'post'],
