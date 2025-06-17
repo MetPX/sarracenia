@@ -1299,6 +1299,7 @@ class Flow:
                     self.work_message_adjust(new_m)
                     post_messages.append(new_m) 
                     i += 1
+            m['_deleteOnPost'] |= set(['publisher_index'])
                     
         if len(self.o.publishers) > 1:
             self.worklist.ok=post_messages
