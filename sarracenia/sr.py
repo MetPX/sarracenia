@@ -2305,9 +2305,9 @@ class sr_GlobalState:
             for f in self.filtered_configurations:
                 (c, cfg) = f.split(os.sep)
             
-                if self.configs[c][cfg]['status'] == 'disabled':
+                if self.configs[c][cfg]['status'] not in [ 'new', 'stopped', 'interactive' ]:
                     has_disabled_config = True
-                    logger.error(f"Config {c}/{cfg} is disabled. It must be enabled before starting.")
+                    logger.error(f"Config {c}/{cfg} is {self.configs[c][cfg]['status']}. Cannot start now.")
 
             if has_disabled_config:
                 logger.error("No configs have been started due to disabled configurations.")
@@ -2323,7 +2323,7 @@ class sr_GlobalState:
             if c in ['post', 'cpost'] and not self._post_can_be_daemon(c, cfg): continue
 
             # Skip disabled configurations
-            if self.configs[c][cfg]['status'] in ['disabled']: continue
+            if self.configs[c][cfg]['status'] not in  ['new', 'stopped']: continue
 
             component_path = self._find_component_path(c)
             if component_path == '':
@@ -2345,12 +2345,17 @@ class sr_GlobalState:
         for f in self.filtered_configurations:
             (c, cfg) = f.split(os.sep)
 
-            pid_count = self._pid_file_count(c,cfg)
             partial=False
             if c in ['post', 'cpost'] and not self._post_can_be_daemon(c, cfg): 
                  continue
 
-            if self.configs[c][cfg]['status'] in ['disabled']: continue
+            if self.configs[c][cfg]['status'] not in  ['starting']: continue
+
+            component_path = self._find_component_path(c)
+            if component_path == '':
+                continue
+
+            pid_count = self._pid_file_count(c,cfg)
 
             while pid_count < self.configs[c][cfg]['options'].instances:
 
@@ -2358,18 +2363,11 @@ class sr_GlobalState:
                      return
 
                  partial=True
-                 logger.debug( f"{pid_count}/{self.configs[c][cfg]['options'].instances} instances started." )
+                 logger.debug( f"waiting... {pid_count}/{self.configs[c][cfg]['options'].instances} instances started." )
                  time.sleep(5)
                  pid_count = self._pid_file_count(c,cfg)
 
-            logger.debug( f"{c}/{cfg}: {pid_count}/{self.configs[c][cfg]['options'].instances} instances started." )
-
-            # skip posts that cannot run as daemons
-            if c in ['post', 'cpost'] and not self._post_can_be_daemon(c, cfg): continue
-
-            component_path = self._find_component_path(c)
-            if component_path == '':
-                continue
+            logger.info( f"{c}/{cfg}: {pid_count}/{self.configs[c][cfg]['options'].instances} instances started." )
 
             self._tag_progress( c, cfg, 'starting', ending=True )
             self._tag_progress( c, cfg, 'running', ending=False )
@@ -2446,6 +2444,7 @@ class sr_GlobalState:
 
                 if not self.options.dry_run:
                     self._tag_progress( c, cfg, 'running', ending=True )
+                    self._tag_progress( c, cfg, 'starting', ending=True ) # clean out for sanity reasons.
                     self._tag_progress( c, cfg, 'shutdown', ending=False )
 
                 for i in self.states[c][cfg]['instance_pids']:
