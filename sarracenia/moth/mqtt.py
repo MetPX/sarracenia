@@ -739,7 +739,10 @@ class MQTT(Moth):
         # The caller probably doesn't expect the message to get modified by this method, so use a copy of the message
         body = copy.deepcopy(message)
 
-        postFormat = body['_format']
+        if 'format' in self.o:
+            postFormat=self.o['format']
+        else:
+            postFormat = body['_format']
 
         if '_deleteOnPost' in body:
             # FIXME: need to delete because building entire JSON object at once.
