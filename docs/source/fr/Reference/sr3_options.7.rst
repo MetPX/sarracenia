@@ -1678,6 +1678,24 @@ utilisera le nom de file d'attente ainsi défini.
 l´option *subtopic* devrait apparaître après le paramètre queueShare dans les fichiers
 pour que les liaisons de sujet s'appliquent à la file d'attente spécifié.
 
+queueType <str> (default: None)
+-------------------------------
+
+Définit le *queue type* qui sera utilisé sur un broker.
+
+RabbitMQ offre 3 options (définit par `x-queue-type`). Les options sont spécifiés
+chez https://www.rabbitmq.com/docs/vhosts#default-queue-type.
+
+        Stream
+
+        Quorum queue
+
+        Classic queue (no HA)
+
+À partir de RabbitMQ 4.0, les queues classic n'auront pu l'option High Availability (nommé mirrored queues).
+
+NOTE: Lorsque l'option est omis de sarracenia, le paramètre défaut sera tiré du broker.
+
 randomize <flag>
 ----------------
 

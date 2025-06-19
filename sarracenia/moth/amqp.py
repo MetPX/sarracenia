@@ -290,6 +290,9 @@ class AMQP(Moth):
                 if 'messageAgeMax' in self.o and self.o['messageAgeMax']:
                     x = int(self.o['messageAgeMax'] * 1000)
                     if x > 0: args['x-message-ttl'] = x
+                if 'type' in queue and queue['type'] is not None:
+                    x = queue['type']
+                    if x in ['classic', 'quorum', 'stream']: args['x-queue-type'] = x
 
                 #FIXME: convert expire, message_ttl to proper units.
                 if self.o['dry_run']:

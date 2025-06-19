@@ -191,7 +191,7 @@ str_options = [
     'exchangeSuffix', 'feeder', 'filename', 'flatten', 'flowMain', 'header', 
     'hostname', 'httpsSafeQuote', 'identity', 'inlineEncoding', 'logFormat', 'logLevel',
     'pollUrl', 'post_baseUrl', 'post_baseDir', 'post_broker', 'post_exchange',
-    'post_exchangeSuffix', 'post_format', 'post_topic', 'queueName', 'queueShare', 'sendTo', 'rename',
+    'post_exchangeSuffix', 'post_format', 'post_topic', 'queueName', 'queueShare', 'queueType', 'sendTo', 'rename',
     'report_exchange', 'source', 'strip', 'timezone', 'nodupe_ttl', 'nodupe_driver', 
     'nodupe_basis', 'tlsRigour', 'topic'
 ]
@@ -2146,7 +2146,10 @@ class Config:
             sys.exit(1)
 
         if hasattr(self, 'broker') and self.broker is None and hasattr(self, 'post_broker') and self.post_broker is None:
-            logger.warning("Both broker and post_broker are set to None")
+            logger.warning(f"{component}/{config} Both broker and post_broker are set to None")
+
+        if hasattr(self, 'queueType') and self.queueType not in ['classic', 'quorum', 'stream']:
+            logger.warning(f"{component}/{config} invalid queueType used : {self.queueType}")
 
     def check_undeclared_options(self):
 

@@ -38,7 +38,7 @@ class Subscription(dict):
         self['bindings'] = [ { 'exchange': exchange, 'prefix': options.topicPrefix, 'sub': subtopic } ]
 
         self['queue']={ 'name': queueName, 'template': queueName_template, 'cleanup_needed': None }
-        for a in [ 'queueBind', 'queueDeclare' ]:
+        for a in [ 'queueBind', 'queueDeclare' , 'queueType' ]:
             aa = a.replace('queue','').lower()
             if hasattr(options, a):
                 self['queue'][aa] = getattr(options,a)
