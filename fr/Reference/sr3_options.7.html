@@ -112,7 +112,7 @@
 <dd class="field-odd"><p>7</p>
 </dd>
 <dt class="field-even">Date<span class="colon">:</span></dt>
-<dd class="field-even"><p>Jun 17, 2025</p>
+<dd class="field-even"><p>Jun 19, 2025</p>
 </dd>
 <dt class="field-odd">Version<span class="colon">:</span></dt>
 <dd class="field-odd"><p>3.01.00rc1</p>
@@ -1554,6 +1554,19 @@ Toutes les instances de la configuration ayant accès au même répertoire d’�
 utilisera le nom de file d’attente ainsi défini.</p>
 <p>l´option <em>subtopic</em> devrait apparaître après le paramètre queueShare dans les fichiers
 pour que les liaisons de sujet s’appliquent à la file d’attente spécifié.</p>
+</section>
+<section id="queuetype-str-default-none">
+<h4>queueType &lt;str&gt; (default: None)<a class="headerlink" href="#queuetype-str-default-none" title="Link to this heading"></a></h4>
+<p>Définit le <em>queue type</em> qui sera utilisé sur un broker.</p>
+<p>RabbitMQ offre 3 options (définit par <cite>x-queue-type</cite>). Les options sont spécifiés
+chez <a class="reference external" href="https://www.rabbitmq.com/docs/vhosts#default-queue-type">https://www.rabbitmq.com/docs/vhosts#default-queue-type</a>.</p>
+<blockquote>
+<div><p>Stream</p>
+<p>Quorum queue</p>
+<p>Classic queue (no HA)</p>
+</div></blockquote>
+<p>À partir de RabbitMQ 4.0, les queues classic n’auront pu l’option High Availability (nommé mirrored queues).</p>
+<p>NOTE: Lorsque l’option est omis de sarracenia, le paramètre défaut sera tiré du broker.</p>
 </section>
 <section id="randomize-flag">
 <h4>randomize &lt;flag&gt;<a class="headerlink" href="#randomize-flag" title="Link to this heading"></a></h4>
