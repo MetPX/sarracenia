@@ -756,8 +756,25 @@ fileEvents <event,event,...>
 
 A comma separated list of file event types to monitor.
 Available file events:  create, delete, link, modify, mkdir, rmdir
-to only add events to the current list start the event list with a plus sign (+).
-To remove them, prefix with a minus sign (-).
+
+There are three ways to use this option:
+
+        1. Add events to the current list. Start the event list with a plus sign (+).
+           i.e. fileEvents +create,modify
+           Resulting list: create, delete, link, modify, mkdir, rmdir
+
+        2. Remove events from the current list. Prefix with a minus sign (-).
+           i.e. fileEvents -create,modify
+           Resulting list: delete, link, mkdir, rmdir
+
+        3. Define your own list of events.
+           i.e. fileEvents create,modify
+           Resulting list: create, modify
+
+           We can also add a single event.
+           i.e. fileEvents create
+           Resulting list: create
+
 
 The *create*, *modify*, and *delete* events reflect what is expected: a file being created, modified, or deleted.
 If *link* is set, symbolic links will be posted as links so that consumers can choose
@@ -1681,6 +1698,23 @@ will use the queue name thus defined.
 This *subtopic* option should appear after the queueShare setting in files
 for the topic bindings to apply to the given queue.
 
+queueType <str> (default: None)
+-------------------------------
+
+Define the *queue type* to be used within a broker.
+
+RabbitMQ offers 3 options (defined by the `x-queue-type` argument). Options
+specified on https://www.rabbitmq.com/docs/vhosts#default-queue-type.
+
+        Stream
+
+        Quorum queue
+
+        Classic queue (no HA)
+
+As of RabbitMQ 4.0, classic queues will lose their High Availability feature (mirrored queues). 
+
+NOTE: When the option is not specified in sarracenia, the default option will be extracted from the broker.
 
 randomize <flag>
 ----------------

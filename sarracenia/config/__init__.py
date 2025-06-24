@@ -191,7 +191,7 @@ str_options = [
     'exchangeSuffix', 'feeder', 'filename', 'flatten', 'flowMain', 'header', 
     'hostname', 'httpsSafeQuote', 'identity', 'inlineEncoding', 'logFormat', 'logLevel',
     'pollUrl', 'post_baseUrl', 'post_baseDir', 'post_broker', 'post_exchange',
-    'post_exchangeSuffix', 'post_format', 'post_topic', 'queueName', 'queueShare', 'sendTo', 'rename',
+    'post_exchangeSuffix', 'post_format', 'post_topic', 'queueName', 'queueShare', 'queueType', 'sendTo', 'rename',
     'report_exchange', 'source', 'strip', 'timezone', 'nodupe_ttl', 'nodupe_driver', 
     'nodupe_basis', 'tlsRigour', 'topic'
 ]
@@ -1314,28 +1314,6 @@ class Config:
         return cd
 
     
-    def get_source_from_exchange(self,exchange):
-        #self.logger.debug("%s get_source_from_exchange %s" % (self.program_name,exchange))
-
-        source = None
-        if len(exchange) < 4 or not exchange.startswith('xs_') : return source
-
-        # check if source is a valid declared source user
-
-        len_u   = 0
-        try:
-                # look for user with role source
-                for u in self.declared_users :
-                    if self.declared_users[u] != 'source' : continue
-                    if exchange[3:].startswith(u) and len(u) > len_u :
-                       source = u
-                       len_u  = len(u)
-        except: pass
-
-        return source
-
- 
-
     def _merge_field(self, key, value):
         if key == 'masks':
             self.masks += value
@@ -1383,27 +1361,6 @@ class Config:
             for k in oth.__dict__.keys():
                 self._override_field(k, self._varsub(getattr(oth, k)))
 
-    def _resolve_exchange(self):
-        """
-           based on the given configuration, fill in with defaults or guesses.
-           sets self.exchange.
-        """
-        if not hasattr(self, 'exchange') or self.exchange is None:
-            #if hasattr(self, 'post_broker') and self.post_broker is not None and self.post_broker.url is not None:
-            #    self.exchange = 'xs_%s' % self.post_broker.url.username
-            #else:
-            if not hasattr(self.broker.url,'username') or ( self.broker.url.username == 'anonymous' ):
-                self.exchange = 'xpublic'
-            else:
-                self.exchange = 'xs_%s' % self.broker.url.username
-
-            if hasattr(self, 'exchangeSuffix'):
-                self.exchange += '_%s' % self.exchangeSuffix
-
-            if hasattr(self, 'exchangeSplit') and hasattr(
-                    self, 'no') and (self.no > 0):
-                self.exchange += "%02d" % self.no
-
     def _parse_binding(self, subtopic_string):
         """
          FIXME: see original parse, with substitions for url encoding.
@@ -1414,7 +1371,6 @@ class Config:
             logger.error( f"{','.join(self.files)}:{self.lineno} broker needed before subtopic" )
             return
 
-        self._resolve_exchange()
         resolved_queueName = self._resolveQueueName(self.component,self.config)
 
         if type(subtopic_string) is str:
@@ -1652,13 +1608,13 @@ class Config:
                 self.logEvents = self.logEvents | set(['nodupe'])
 
             if k in ['statehost' ]:
-                if self.subtopic_seen:
+                if hasattr(self,'subtopic_seen') and self.subtopic_seen:
                     logger.error( f"{','.join(self.files)}:{lineno} {k} statehost needs to be before subtopic." )
                 elif lineno > 5:
                     logger.warning( f"{','.join(self.files)}:{lineno} {k} needs to be near the start of the file." )
             return
 
-        if k in queue_options and self.subtopic_seen:
+        if k in queue_options and hasattr(self,'subtopic_seen') and self.subtopic_seen:
             logger.warning( f"{','.join(self.files)}:{lineno} {k} needs to appear before *subtopic*" \
                 " unless you need different queues to have different settings")
 
@@ -1804,7 +1760,7 @@ class Config:
             # probably need to remove this warning later... because people could use default queue with subtopic and
             # specify a second queue with different bindings... so this warning could be complaining about something 
             # that is correct.   but in every current case, the warning will be helpful.
-            if ( k == 'queueName' ) and self.subtopic_seen:
+            if ( k == 'queueName' ) and hasattr(self,'subtopic_seen') and self.subtopic_seen:
                     logger.warning( f"{','.join(self.files)}:{lineno} queueName usually should be before subtopic in configs: subtopic to default queue" )
             if ( k == 'directory' ) and not self.download:
                 logger.info( f"{','.join(self.files)}:{lineno} if download is false, directory has no effect" )
@@ -2098,7 +2054,6 @@ class Config:
                self.source = self.broker.url.username
 
         if self.broker and self.broker.url and self.broker.url.username:
-            self._resolve_exchange()
             resolved_queueName = self._resolveQueueName(component,cfg)
 
         valid_inlineEncodings = [ 'guess', 'text', 'binary' ]
@@ -2191,7 +2146,10 @@ class Config:
             sys.exit(1)
 
         if hasattr(self, 'broker') and self.broker is None and hasattr(self, 'post_broker') and self.post_broker is None:
-            logger.warning("Both broker and post_broker are set to None")
+            logger.warning(f"{component}/{config} Both broker and post_broker are set to None")
+
+        if hasattr(self, 'queueType') and self.queueType not in ['classic', 'quorum', 'stream']:
+            logger.warning(f"{component}/{config} invalid queueType used : {self.queueType}")
 
     def check_undeclared_options(self):
 
@@ -2547,15 +2505,10 @@ class Config:
             if values == 'None':
                 namespace.subscriptions = []
 
-            namespace._resolve_exchange()
             resolved_qn = namespace._resolveQueueName(namespace.component,namespace.config)
 
             if not hasattr(namespace, 'broker'):
                 raise Exception('broker needed before subtopic')
-                return
-
-            if not hasattr(namespace, 'exchange'):
-                raise Exception('exchange needed before subtopic')
                 return
 
             if not hasattr(namespace, 'topicPrefix'):
@@ -2830,7 +2783,7 @@ def default_config():
     cfg = Config()
     cfg.currentDir = None
     cfg.override(default_options)
-    cfg.override(sarracenia.moth.default_options)
+    cfg.override(sarracenia.moth.default_options())
     if features['amqp']['present']:
         cfg.override(sarracenia.moth.amqp.default_options)
     cfg.override(sarracenia.flow.default_options)
@@ -2851,7 +2804,7 @@ def no_file_config():
     cfg = Config()
     cfg.currentDir = None
     cfg.override(default_options)
-    cfg.override(sarracenia.moth.default_options)
+    cfg.override(sarracenia.moth.default_options())
     if features['amqp']['present']:
         cfg.override(sarracenia.moth.amqp.default_options)
     cfg.override(sarracenia.flow.default_options)

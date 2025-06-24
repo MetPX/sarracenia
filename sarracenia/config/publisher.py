@@ -60,23 +60,28 @@ class Publisher(dict):
         else:
             self['format'] = 'v03'
 
+        if hasattr(options,'post_topicPrefix') and options.post_topicPrefix:
+            self['topicPrefix'] = options.post_topicPrefix
+        elif hasattr(options, 'topicPrefix') and options.topicPrefix:
+            self['topicPrefix'] = options.topicPrefix
+        else:
+            self['topicPrefix'] = None
+
         for a in [ 'baseDir', 'baseUrl', 'exchangeSplit', 'topicPrefix' ]:
             aa = "post_"+a
             if hasattr(options, aa):
                 self[a] = getattr(options,aa)
 
-        if not 'post_baseUrl' in a and hasattr(options,'pollUrl') and options.pollUrl:
+        if (not 'baseUrl' in self or not self['baseUrl']) and hasattr(options,'pollUrl') and options.pollUrl:
             self['baseUrl'] = options.pollUrl
 
-        if not 'baseDir' in self and not self.baseDir:
+        if not 'baseDir' in self and not self['baseDir']:
             if self['baseUrl'] and ( self['baseUrl'][0:5] in [ 'file:' ] ):
                 self['baseDir'] = self['baseUrl'][5:]
             elif self['baseUrl'] and ( self['baseUrl'][0:5] in [ 'sftp:' ] ):
                 u =  sarracenia.baseUrlParse(self['baseUrl'])
                 self['baseDir'] = u.path
 
-        if not hasattr(options, 'post_topicPrefix') and hasattr(options, 'topicPrefix'):
-            self['topicPrefix'] = options.topicPrefix
 
         for a in [ 'auto_delete', 'durable', 'exchangeDeclare', 'messageAgeMax', 
                   'messageDebugDump', 'persistent', 'timeout' ]:
@@ -84,6 +89,33 @@ class Publisher(dict):
                 self[a] = getattr(options,a)
         #logger.debug( f" {self} " )
 
+    def __eq__(self,other):
+
+        if 'broker' in self and 'broker' in other :
+            if ( str(self['broker']) != str(other['broker']) ):
+                return False
+        elif ('broker' in self) or ('broker' in other):
+            return False
+         
+        if 'exchange' in self and 'exchange' in other:
+            if ( self['exchange'] != other['exchange'] ):
+                return False
+        elif ('exchange' in self) or ('exchange' in other):
+                return False
+
+        if 'topicPrefix' in self and 'topicPrefix' in other:
+            if ( self['topicPrefix'] != other['topicPrefix'] ):
+                return False
+        elif ('topicPrefix' in self) or ('topicPrefix' in other):
+            return False
+
+        if 'format' in self and 'format' in other:
+            if ( self['format'] != other['format'] ):
+                return False
+        elif ('format' in self) or ('format' in other):
+            return False
+
+        return True
 
 class Publishers(list):
     # list of publishers
@@ -95,11 +127,7 @@ class Publishers(list):
             return
 
         for s in self:
-            if s == {} or not 'broker' in s or not 'exchange' in s:
-                continue
-
-            if ( str(s['broker']) == str(new_publisher['broker']) ) and \
-               ( s['exchange'] == new_publisher['exchange'] ):
+            if ( s == new_publisher ):
                 found=True
 
         if not found:

@@ -24,8 +24,8 @@
     :alt: Docker Image Build Status
     :target: https://github.com/MetPX/sarracenia/actions/workflows/ghcr.yml
 
-.. image:: https://github.com/MetPX/sarracenia/actions/workflows/flow.yml/badge.svg?branch=v03_wip
-    :alt: Run Static Flow
+.. image:: https://github.com/MetPX/sarracenia/actions/workflows/flow.yml/badge.svg?branch=development
+    :alt: Run AMQP Flow (Integration) tests
     :target: https://github.com/MetPX/sarracenia/actions/workflows/flow.yml
 
 +----------------------------------------------------------------------------------------+-------------------------------------------------------------------------------------------+

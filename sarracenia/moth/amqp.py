@@ -198,6 +198,7 @@ class AMQP(Moth):
         self.connection = None
         self.connection_id = None
         self.broker = None
+        self.next_message = 0
 
     def __connect(self, broker) -> bool:
         """
@@ -289,6 +290,9 @@ class AMQP(Moth):
                 if 'messageAgeMax' in self.o and self.o['messageAgeMax']:
                     x = int(self.o['messageAgeMax'] * 1000)
                     if x > 0: args['x-message-ttl'] = x
+                if 'type' in queue and queue['type'] is not None:
+                    x = queue['type']
+                    if x in ['classic', 'quorum', 'stream']: args['x-queue-type'] = x
 
                 #FIXME: convert expire, message_ttl to proper units.
                 if self.o['dry_run']:
@@ -344,7 +348,9 @@ class AMQP(Moth):
 
         start = time.time()
         if start < self.next_connect_time:
-            logger.critical( f"too soon to connect again to {str(broker)} index={self.o['subscription_index']} will try in: {self.next_connect_time-start} seconds" )
+            if start > self.next_message:
+                logger.critical( f"too soon to connect again to {str(broker)} index={self.o['subscription_index']} will try in: {self.next_connect_time-start:.2f} seconds" )
+                self.next_message=start+5
             return
 
         # It does not really matter how it fails, the recovery approach is always the same:
@@ -418,8 +424,9 @@ class AMQP(Moth):
         start = time.time()
 
         if start < self.next_connect_time:
-
-            logger.critical( f"too soon to connect to {str(self.o['broker'])}. Will try again in: {self.next_connect_time-start} seconds" )
+            if start > self.next_message :
+                logger.critical( f"too soon to connect to {str(self.o['broker'])}. Will try again in: {self.next_connect_time-start:.2f} seconds" )
+                self.next_message=start+5
             return
 
         # It does not really matter how it fails, the recovery approach is always the same:
@@ -466,7 +473,7 @@ class AMQP(Moth):
 
         except Exception as err:
             logger.error(
-                "AMQP putSetup failed to connect or declare exchanges {}@{} on {}: {}"
+                "failed to connect or declare exchanges {}@{} on {}: {}"
                 .format(self.o['exchange'], self.o['broker'].url.username,
                         self.o['broker'].url.hostname, err))
             logger.debug('Exception details: ', exc_info=True)
@@ -583,7 +590,7 @@ class AMQP(Moth):
         time.sleep(1)
         return None
 
-    def ack(self, m: sarracenia.Message) -> None:
+    def ack(self, m: sarracenia.Message) -> bool:
         """
            do what you need to acknowledge that processing of a message is done.
            NOTE: AMQP delivery tags (we call them ack_id) are scoped per channel. "Deliveries must be 
@@ -609,35 +616,27 @@ class AMQP(Moth):
             m['_deleteOnPost'].remove('ack_id')
             return False
         
-        ebo = 1
-        while True:
-            try:
-                if hasattr(self, 'channel'): 
-                    self.channel.basic_ack(m['ack_id']['delivery_tag'])
-                    del m['ack_id']
-                    m['_deleteOnPost'].remove('ack_id')
-                    return True
-                else:
-                    logger.warning(f"Can't ack {m['ack_id']}, don't have a channel")
-                    del m['ack_id']
-                    m['_deleteOnPost'].remove('ack_id')
-                    return False
-            
-            except Exception as err:
-                logger.warning("failed for tag: %s: %s" % (m['ack_id'], err))
-                logger.debug('Exception details: ', exc_info=True)
-                # No point in trying to ack again if the connection is broken
+        try:
+            if hasattr(self, 'channel'): 
+                self.channel.basic_ack(m['ack_id']['delivery_tag'])
                 del m['ack_id']
                 m['_deleteOnPost'].remove('ack_id')
-                self.close()
-                return False
+                return True
+            else:
+                logger.warning(f"Can't ack {m['ack_id']}, don't have a channel")
+                del m['ack_id']
+                m['_deleteOnPost'].remove('ack_id')
             
-            if ebo < 60:
-                ebo *= 2
-            logger.info("Sleeping {} seconds before re-trying ack...".format(ebo))
-            interruptible_sleep(ebo, obj=self)
-            # TODO maybe implement message strategy stubborn here and give up after retrying?
+        except Exception as err:
+            logger.warning("failed for tag: %s: %s" % (m['ack_id'], err))
+            logger.debug('Exception details: ', exc_info=True)
+            # No point in trying to ack again if the connection is broken
+            del m['ack_id']
+            m['_deleteOnPost'].remove('ack_id')
+            self.close()
 
+        return False
+            
     def putNewMessage(self,
                       message: sarracenia.Message,
                       content_type: str = 'application/json',
@@ -655,6 +654,8 @@ class AMQP(Moth):
             try:
                 self.close()
                 self.putSetup()
+                if (not self.connection) or (not self.connection.connected) or (not self.channel.is_open):
+                    return False
             except Exception as err:
                 logger.warning(f"failed, connection was closed/broken and could not be re-opened {exchange}: {err}")
                 logger.debug('Exception details: ', exc_info=True)

@@ -55,8 +55,8 @@ class Retry(FlowCB):
 
         self.o.add_option( 'retry_driver', 'str', 'disk')
 
-        # retry_refilter False -- rety to send with existing processing.
-        # retry_refilter True -- re-ingest and re-apply processing (if it has changed.)
+        # retry_refilter False -- retry to send with existing processing.
+        # retry_refilter True  -- re-ingest and re-apply processing (if it has changed.)
         self.o.add_option( 'retry_refilter', 'flag', False)
 
         #queuedriver = os.getenv('SR3_QUEUEDRIVER', 'disk')
@@ -158,6 +158,12 @@ class Retry(FlowCB):
         """
         if not features['retry']['present'] :
             return
+
+        for m in worklist.failed:
+             m['_isRetry'] = True
+             if '_deleteOnPost' not in m:
+                 m['_deleteOnPost'] = set()
+             m['_deleteOnPost'].add('_isRetry')
 
         self.post_retry.put(worklist.failed)
         worklist.failed=[]

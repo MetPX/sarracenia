@@ -297,22 +297,6 @@ def test_read_line_add_option():
      logger.info( f" {options.flag_one=} " )
      assert( options.flag_one == True  )
 
-def test_source_from_exchange():
-
-     options = copy.deepcopy(sarracenia.config.default_config())
-
-     # crasher input:
-     options.parse_line( "subscribe", "ex1", "subscribe/ex1", 1, "declare source tsource" )
-     assert( 'tsource' in options.declared_users )
-     assert( options.declared_users['tsource'] == 'source' )
-
-     options.parse_line( "subscribe", "ex1", "subscribe/ex1", 1, "exchange xs_tsource_favourite" )
-     
-     assert( options.exchange == 'xs_tsource_favourite' )
-
-     source = options.get_source_from_exchange(options.exchange)
-     assert( source == 'tsource' )
-
 def test_subscription():
 
      o = copy.deepcopy(sarracenia.config.default_config())
@@ -395,7 +379,8 @@ def test_broker_finalize():
      assert( options.queueName.startswith('q_${BROKER_USER}.${COMPONENT}')  )
      assert( options.directory == os.path.expanduser( '~/ex1' ) )
      assert( len(options.subscriptions) == 1 )
-     assert( options.exchange == 'xs_bunnypeer' )
+     assert( len(options.subscriptions[0]['bindings']) == 1 )
+     assert( options.subscriptions[0]['bindings'][0]['exchange'] == 'xs_bunnypeer' )
      assert( options.post_exchange == 'xs_bunnypeer' )
      assert( hasattr(options,'nodupe_ttl') )
      assert( hasattr(options,'metricsFilename') )
@@ -403,3 +388,121 @@ def test_broker_finalize():
      assert( hasattr(options,'retry_path') )
      assert( hasattr(options,'novipFilename') )
      assert( hasattr(options,'publishers') )
+
+
+def test_multi():
+
+     options = copy.deepcopy(sarracenia.config.default_config())
+     options.component = 'subscribe'
+     options.config = 'multi1'
+     options.action = 'start'
+
+     options.credentials.add( 'amqp://tsource:passthepoi@localhost' )
+     options.credentials.add( 'amqp://tfeed:passthepoi@localhost' )
+
+     options.parse_line(  "subscribe", "multi1", "subscribe/multi1", 1, "broker amqps://dd.weather.gc.ca/")
+     options.parse_line(  "subscribe", "multi1", "subscribe/multi1", 1, "queueName q_${BROKER_USER}.${COMPONENT}.${CONFIG}")
+     options.parse_line(  "subscribe", "multi1", "subscribe/multi1", 1, "queueType quorum" )
+     options.parse_line(  "subscribe", "multi1", "subscribe/multi1", 1, "topicPrefix v02.post" )
+     options.parse_line(  "subscribe", "multi1", "subscribe/multi1", 1, "subtopic *.WXO-DD.bulletins.alphanumeric.#" )
+     options.parse_line(  "subscribe", "multi1", "subscribe/multi1", 1, "broker amqps://hpfx.collab.science.gc.ca/" )
+     options.parse_line(  "subscribe", "multi1", "subscribe/multi1", 1, "subtopic *.WXO-DD.bulletins.alphanumeric.#" )
+     options.parse_line(  "subscribe", "multi1", "subscribe/multi1", 1, "directory /tmp/dual_amis/" )
+
+     options.parse_line(  "subscribe", "multi1", "subscribe/multi1", 1, "post_broker amqp://tsource@localhost" )
+     options.parse_line(  "subscribe", "multi1", "subscribe/multi1", 1, "post_baseUrl http://localhost/" )
+     options.parse_line(  "subscribe", "multi1", "subscribe/multi1", 1, "post_baseDir /tmp/dual_amis/" )
+     options.parse_line(  "subscribe", "multi1", "subscribe/multi1", 1, "post_topicPrefix v02.post" )
+     options.parse_line(  "subscribe", "multi1", "subscribe/multi1", 1, "post_format v02" )
+     options.parse_line(  "subscribe", "multi1", "subscribe/multi1", 1, "post_broker amqp://tsource@localhost" )
+     options.parse_line(  "subscribe", "multi1", "subscribe/multi1", 1, "post_baseUrl http://localhost/" )
+     options.parse_line(  "subscribe", "multi1", "subscribe/multi1", 1, "post_baseDir /tmp/dual_amis/" )
+     options.parse_line(  "subscribe", "multi1", "subscribe/multi1", 1, "topicPrefix v03" )
+     options.parse_line(  "subscribe", "multi1", "subscribe/multi1", 1, "post_format v03" )
+     options.parse_line(  "subscribe", "multi1", "subscribe/multi1", 1, "post_broker amqp://tfeed@fractal" )
+     options.parse_line(  "subscribe", "multi1", "subscribe/multi1", 1, "post_baseUrl file:" )
+     options.parse_line(  "subscribe", "multi1", "subscribe/multi1", 1, "post_baseDir /" )
+     options.parse_line(  "subscribe", "multi1", "subscribe/multi1", 1, "post_format v02" )
+     options.parse_line(  "subscribe", "multi1", "subscribe/multi1", 1, "post_exchangeSuffix hoho" )
+     options.parse_line(  "subscribe", "multi1", "subscribe/multi1", 1, "post_exchangeSplit 6" )
+     options.parse_line(  "subscribe", "multi1", "subscribe/multi1", 1, "" )
+     options.parse_line(  "subscribe", "multi1", "subscribe/multi1", 1, "" )
+
+     options.finalize()
+
+     options.dump()
+
+     assert( len(options.subscriptions) == 2 )
+
+     assert( len(options.publishers) == 3 )
+
+     assert( options.publishers[0]['exchange'] == [ 'xs_tsource' ] )
+     assert( options.publishers[1]['exchange'] == [ 'xs_tsource' ] )
+     assert( options.publishers[2]['exchange'] == [ 'xs_tsource_hoho00', 'xs_tsource_hoho01', 'xs_tsource_hoho02','xs_tsource_hoho03','xs_tsource_hoho04','xs_tsource_hoho05' ] )
+
+     options.publishers[0]['broker'] = str(options.publishers[0]['broker'])
+
+
+     assert( options.publishers[0] == { \
+                 'auto_delete': False,
+                 'baseDir': '/tmp/dual_amis/',
+                 'baseUrl': 'http://localhost/',
+                 'broker': 'amqp://tsource@localhost',
+                 'durable': True,
+                 'exchange': ['xs_tsource'],
+                 'exchangeDeclare': True,
+                 'format': 'v02',
+                 'messageAgeMax': 0,
+                 'messageDebugDump': False,
+                 'persistent': True,
+                 'timeout': 300,
+                 'topicPrefix': ['v02', 'post']} )
+
+     assert( options.subscriptions[0]['bindings']  == [{'exchange': 'xpublic', \
+                                  'prefix': ['v02', 'post'],
+                                  'sub': ['*.WXO-DD.bulletins.alphanumeric.#']}] )
+
+     default_options = sarracenia.config.default_config()
+
+     subscriber_queue = {'auto_delete': False, \
+                              'bind': True,
+                              'cleanup_needed': None,
+                              'declare': True,
+                              'durable': True,
+                              'expire': default_options.expire,
+                              'name': 'q_anonymous.subscribe.multi1',
+                              'prefetch': 25,
+                              'template': 'q_${BROKER_USER}.${COMPONENT}.${CONFIG}',
+                              'tlsRigour': 'normal',
+                              'type': 'quorum'}
+
+     assert( options.subscriptions[0]['queue']  == subscriber_queue )
+
+     assert( options.subscriptions[0]['bindings']  == [{'exchange': 'xpublic',
+                                  'prefix': ['v02', 'post'],
+                                  'sub': ['*.WXO-DD.bulletins.alphanumeric.#']}] )
+
+
+     """
+
+                    {'baseDir': None, 
+                    'bindings': [{'exchange': 'xpublic',
+                                  'prefix': ['v02', 'post'],
+                                  'sub': ['*.WXO-DD.bulletins.alphanumeric.#']}],
+                    'broker': 'amqps://anonymous@dd.weather.gc.ca/',
+                   {'baseDir': None,
+                    'bindings': [{'exchange': 'xpublic',
+                                  'prefix': ['v02', 'post'],
+                                  'sub': ['*.WXO-DD.bulletins.alphanumeric.#']}],
+                    'broker': 'amqps://anonymous@hpfx.collab.science.gc.ca/',
+                    'queue': {'auto_delete': False,
+                              'bind': True,
+                              'cleanup_needed': None,
+                              'declare': True,
+                              'durable': True,
+                              'expire': 25200.0,
+                              'name': 'q_anonymous.subscribe.multi1',
+                              'prefetch': 25,
+                              'template': 'q_${BROKER_USER}.${COMPONENT}.${CONFIG}',
+                              'tlsRigour': 'normal'}}] )
+     """

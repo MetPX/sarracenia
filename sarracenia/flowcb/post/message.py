@@ -27,15 +27,15 @@ class Message(FlowCB):
         i=0
 
         for p in self.o.publishers:
-            props = copy.deepcopy(sarracenia.moth.default_options)
+            props = sarracenia.moth.default_options()
             props.update(self.o.dictify())
             props.update(p)
             props['publisher_index']=i
             # adjust settings post_xxx to be xxx, as Moth does not use post_ ones.
             self.posters.append(sarracenia.moth.Moth.pubFactory(props))
             i+=1
-        else:
-            logger.critical( f"Missing publishers.")
+        #else:
+        #    logger.error( f"no publishers for {self.o.component}/{self.o.config}")
 
 
     def post(self, worklist):

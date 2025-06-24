@@ -11,7 +11,7 @@ import sarracenia.config.subscription
 import time
 import socket
 
-options = sarracenia.moth.default_options
+options = sarracenia.moth.default_options()
 options.update(sarracenia.moth.amqp.default_options)
 
 options['broker'] = sarracenia.config.credentials.Credential(

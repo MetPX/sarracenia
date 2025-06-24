@@ -211,8 +211,11 @@ care of manually::
     groupadd sarra
     useradd -g sarra sarra
     wget  https://github.com/MetPX/sarracenia/blob/development/debian/metpx-sr3.service
+    wget  https://github.com/MetPX/sarracenia/blob/development/debian/metpx-sr3.user.service
     cp metpx-sr3.service /lib/systemd/system
     cp metpx-sr3.service /etc/systemd/system
+    cp metpx-sr3.user.service /lib/systemd/user/metpx-sr3.service
+    cp metpx-sr3.user.service /etc/systemd/user/metpx-sr3.service
 
 After this it can be enabled as per any other systemd unit. 
 

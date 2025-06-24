@@ -131,6 +131,7 @@ class MQTT(Moth):
 
         now = time.time()
         self.next_connect_time = now
+        self.next_message=0
         self.next_connect_failures = 0
 
         if 'qos' not in self.o:
@@ -402,7 +403,9 @@ class MQTT(Moth):
 
         start = time.time()
         if start < self.next_connect_time:
-            logger.critical( f"too soon to connect again to {str(broker)} index={self.o['subscription_index']} will try in: {self.next_connect_time-start} seconds" )
+            if start > self.next_message :
+                logger.critical( f"too soon to connect again to {str(broker)} index={self.o['subscription_index']} will try in: {self.next_connect_time-start:.2f} seconds" )
+                self.next_message=start+5
             return
 
         try:
@@ -481,7 +484,9 @@ class MQTT(Moth):
 
         start = time.time()
         if start < self.next_connect_time:
-            logger.critical( f"too soon to connect for publishing to {str(self.o['broker'])} will try in: {self.next_connect_time-start} seconds" )
+            if start > self.next_message: 
+                logger.critical( f"too soon to connect for publishing to {str(self.o['broker'])} will try in: {self.next_connect_time-start:.2f} seconds" )
+                self.next_message=start+5
             return
 
         try:
@@ -705,7 +710,7 @@ class MQTT(Moth):
         else:
             return None
 
-    def ack(self, m: sarracenia.Message ) -> None:
+    def ack(self, m: sarracenia.Message ) -> bool:
 
         if 'ack_id' in m:
             logger.info( f"mid={m['ack_id']}")
@@ -728,11 +733,16 @@ class MQTT(Moth):
 
         if not self.connected:
             self.putSetup()
+            if not self.connected:
+                return False
 
         # The caller probably doesn't expect the message to get modified by this method, so use a copy of the message
         body = copy.deepcopy(message)
 
-        postFormat = body['_format']
+        if 'format' in self.o:
+            postFormat=self.o['format']
+        else:
+            postFormat = body['_format']
 
         if '_deleteOnPost' in body:
             # FIXME: need to delete because building entire JSON object at once.

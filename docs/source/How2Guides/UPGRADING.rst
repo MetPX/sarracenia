@@ -39,10 +39,10 @@ Installation Instructions
 git
 ---
 
-3.0.59
-------
+3.01.00
+-------
 
-*NOTICE*: can now subscribe to multiple brokers, and publish to multiple brokers with a single configuration.
+*NOTICE*: can now subscribe to multiple brokers, and publish to multiple post_brokers with a single configuration.
 
 *CHANGE*: python API *bindings* being replaced by *subscriptions.* API is quite different, see examples.
 *Subscriptions* enables multi-queue and multi-broker support for subscribing. 
@@ -50,6 +50,9 @@ git
 *CHANGE*: python API post_ settings being replaced by *publishers.* need to build 
 sarracenia.config.publisher.Publisher structure now to publish messages.  It enables publishing
 to multiple destinations.
+
+*CHANGE*: python API *sarracenia.moth.default_options* is replaced by *sarracenia.moth.default_options()*
+which produces a modifiable copy of the default settings, rather than the original options.
 
 
 3.0.58

@@ -25,7 +25,7 @@ class Message(FlowCB):
         if hasattr(self.o, 'subscriptions') and len(self.o.subscriptions) > 0:
             i=0
             for s in self.o.subscriptions:
-                od = sarracenia.moth.default_options
+                od = sarracenia.moth.default_options()
                 od.update(self.o.dictify())
                 od['subscription_index']=i
                 consumer = sarracenia.moth.Moth.subFactory(od)
@@ -52,7 +52,7 @@ class Message(FlowCB):
                 messages.extend(c.newMessages())
             else:
                 logger.warning( f'not connected. Trying to connect to {self.o.broker}')
-                od = sarracenia.moth.default_options
+                od = sarracenia.moth.default_options()
                 od.update(self.o.dictify())
                 od['subscription_index']=i
                 c = sarracenia.moth.Moth.subFactory(od)

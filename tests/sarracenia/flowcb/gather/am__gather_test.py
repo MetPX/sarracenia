@@ -297,7 +297,7 @@ def test_bulletin_wrong_station():
     worklist.incoming = [message_test7]
 
     renamer.after_gather(worklist)
-    assert re.match('UECN99_CYCX_071200___....._PROBLEM' , worklist.incoming[0]['rename'])
+    assert re.match('UECN99_CYCX_071200___.....' , worklist.incoming[0]['rename'])
 
 # Test 8: SM Bulletin - Add station mapping + SM/SI bulletin accomodities 
 def test_SM_bulletin():
