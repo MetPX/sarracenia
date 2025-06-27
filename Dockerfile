@@ -4,5 +4,5 @@ WORKDIR /src
 
 COPY . /src
 
-RUN python3 setup.py install
+RUN pip3 install --break-system-packages .
 

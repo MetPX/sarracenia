@@ -145,9 +145,18 @@ class Sarracenia:
         and create corresponding python option dictionaries. One can supply small 
         dictionaries for example::
 
+          options = sarracenia.config.no_file_config()
+          options['broker'] = sarracenia.config.credentials.Credential(
+                    'amqps://anonymous:anonymous@hpfx.collab.science.gc.ca')
           options['topicPrefix'] = [ 'v02', 'post' ]
-          options['bindings'] = [ ('xpublic', [ 'v02', 'post'] , [ '#' ] )]
-          options['queueName'] = 'q_anonymous_' + socket.getfqdn() + '_SomethingHelpfulToYou'
+          options['subscriptions'] = sarracenia.config.subscription.Subscriptions( [
+               sarracenia.config.subscription.Subscriptions( 
+                  options, 
+                  options['queueName'],
+                  'q_anonymous_' + socket.getfqdn() + '_SomethingHelpfulToYou',
+                  '#' 
+               ) ] )
+
 
         Above is an example of a minimal options dictionary taken from the tutorial 
         example called moth_api_consumer.py. often 
@@ -542,7 +551,7 @@ class Message(dict):
         if 'mtime' in msg:
             xattr.set('mtime', msg['mtime'])
 
-        logger.debug("mtime persisted, calc_method: {calc_method}")
+        logger.debug( f"mtime persisted, calc_method: {calc_method}" )
 
         if calc_method[:4] == 'cod,' and len(calc_method) > 2:
             sumstr = calc_method
@@ -752,16 +761,8 @@ class Message(dict):
         msg = Message()
 
         #FIXME no variable substitution... o.variableExpansion ?
-        if hasattr(o,'post_format') :
-            msg['_format'] = o.post_format
-        elif hasattr(o,'post_topicPrefix') and o.post_topicPrefix[0] in [ 'v02', 'v03' ]:
-            msg['_format'] = o.post_topicPrefix[0]
-        else:
-            msg['_format'] = 'v03'
 
-        if hasattr(o, 'post_exchange'):
-            msg['exchange'] = o.post_exchange
-        elif hasattr(o, 'exchange'):
+        if hasattr(o, 'exchange'):
             msg['exchange'] = o.exchange
 
         if hasattr(o, 'blockSize') and (o.blockSize > 1) and lstat and \
@@ -932,7 +933,7 @@ class Message(dict):
         msg['report'] = {'code': code, 'timeCompleted': nowstr(), 'message': text}
         msg['_deleteOnPost'] |= set(['report'])
 
-    def updatePaths(msg, options, new_dir=None, new_file=None):
+    def updatePaths(msg, options, new_dir=None, new_file=None, publisher_index=0):
         """
         set the new_* fields in the message based on changed file placement.
         if new_* options are ommitted updaste the rest of the fields in 
@@ -975,11 +976,18 @@ class Message(dict):
     
         newFullPath = new_dir + '/' + new_file
         
+        # post_base settings.
+        setting_post_baseUrl=None
+        setting_post_baseDir=None
+        if hasattr(options,'publishers') and len(options.publishers) > publisher_index:
+             setting_post_baseUrl = options.publishers[publisher_index]['baseUrl']
+             setting_post_baseDir = options.publishers[publisher_index]['baseDir']
+
         # post_baseUrl option set in msg overrides other possible options
         if 'post_baseUrl' in msg:
             baseUrl_str = msg['post_baseUrl']
-        elif options.post_baseUrl:
-            baseUrl_str = options.variableExpansion(options.post_baseUrl, msg)
+        elif setting_post_baseUrl:
+            baseUrl_str = options.variableExpansion( setting_post_baseUrl, msg)
         else:
             if 'baseUrl' in msg:
                 baseUrl_str = msg['baseUrl']
@@ -987,19 +995,9 @@ class Message(dict):
                 logger.error('missing post_baseUrl setting')
                 return
 
-        if options.post_format:
-            msg['post_format'] = options.post_format
-        elif options.post_topicPrefix:
-            msg['post_format'] = options.post_topicPrefix[0]
-        elif options.topicPrefix != msg['_format']:
-            logger.warning( f"received message in {msg['_format']} format, expected {options.post_topicPrefix} " )
-            msg['post_format'] = options.topicPrefix[0]
-        else:
-            msg['post_format'] = msg['_format']
-           
-        if hasattr(options, 'post_baseDir') and ( type(options.post_baseDir) is str ) \
-            and ( len(options.post_baseDir) > 1):
-            pbd_str = options.variableExpansion(options.post_baseDir, msg)
+        if setting_post_baseDir and len(setting_post_baseDir) > 1:
+
+            pbd_str = options.variableExpansion( setting_post_baseDir, msg)
             parsed_baseUrl = sarracenia.baseUrlParse(baseUrl_str)
 
             if newFullPath.startswith(pbd_str):
@@ -1009,8 +1007,8 @@ class Message(dict):
                     parsed_baseUrl.path):
                 newFullPath = newFullPath.replace(parsed_baseUrl.path, '', 1)
 
-        if ('new_dir' not in msg) and options.post_baseDir:
-            msg['new_dir'] = options.post_baseDir
+        if ('new_dir' not in msg) and setting_post_baseDir:
+            msg['new_dir'] = setting_post_baseDir
             
         msg['new_baseUrl'] = baseUrl_str
 

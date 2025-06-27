@@ -1,4 +1,31 @@
-metpx-sr3 (3.00.58rc1) unstable; urgency=medium
+metpx-sr3 (3.01.00rc1) unstable; urgency=medium
+
+  * This release is the first of sr3 v3.01 because of a significant new
+    feature: support for subscribing and/or publishing to multiple
+    brokers in a single config. (Implement #339)
+  * Implement #1381: Add option to request a particular AMQP/RabbitMQ
+    queue type
+  * MQTT Fixes
+  * systemd unit improvements (related issues: #1461, #1439, #1319, #1318)
+  * Fix #1439: co-ordinate sanity and start/stop, to avoid conflicts
+  * Fix #1436: reduce maximum exponential back-off time
+  * Fix #1447: more poll refactoring. This fixes a problem where post failures
+    from scheduled polls would not be retried until the next scheduled
+    appointment. Likely also fixes #1132, unacked messages in polls.
+  * Fix #1366, #1377 and #1395: change fileOp processing to retry some fileOps
+    when they fail. Fixes race conditions with link renames and directory
+    removals when the subscriber has multiple instances or runs in a cluster.
+  * Fix #1453: crash when trying to check the content type of a file that
+    doesn't exist.
+  * Fix #1413: Azure transfer class rename problems
+  * Fix #1420: nodupe improvement: check nodupe expiry time when checking if
+    file is a duplicate. Previously, expiry time was only checked during
+    housekeeping which caused problems when nodupe_ttl was < housekeeping
+    interval.
+
+ -- Reid Sunderland <reid.sunderland@ssc-spc.gc.ca>  Mon, 23 Jun 2025 16:04:01 +0000
+
+metpx-sr3 (3.00.58) unstable; urgency=medium
 
   * Azure transfer class improvements
   * Fix #1398. Try a close when EOFError is encountered. (FTP)
@@ -16,7 +43,7 @@ metpx-sr3 (3.00.58rc1) unstable; urgency=medium
   * New #1371: Sets the product name and version for AMQP connections
   * New #1369: add attachment support to email sender plugin
 
- -- Reid Sunderland <reid.sunderland@ssc-spc.gc.ca>  Mon, 17 Mar 2025 19:15:28 +0000
+ -- Reid Sunderland <reid.sunderland@ssc-spc.gc.ca>  Fri, 28 Mar 2025 19:33:15 +0000
 
 metpx-sr3 (3.00.57) unstable; urgency=medium
 
@@ -141,7 +168,7 @@ metpx-sr3 (3.00.54) unstable; urgency=medium
   * enable tests of block transfers #1112
   * fix for #1115: stop won't start, or foreground won't
   * fix redis unit tests broken by inclusion of _name var.
-  * NEW #1084 add metadata fetch to scheduled http.
+  * NEW #1084 add metadata fetch to scheduled http. 
   * NEW #1104 (EXPERIMENTAL) restored block partitioned transfers.
   * fix #1104 add message per cpu second and cpuS state.
   * only run after_post when actually posted #1101
@@ -170,7 +197,6 @@ metpx-sr3 (3.00.54) unstable; urgency=medium
   * search function restored on web-site documentation. ( #1062, #1072)
 
  -- SSC-5CD2310S60 <andre.leblanc@ssc-spc.gc.ca>  Fri, 12 Aug 2024 12:29:22 -0400
-
 
 metpx-sr3 (3.00.53) unstable; urgency=medium
 

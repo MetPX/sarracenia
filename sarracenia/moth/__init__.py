@@ -9,10 +9,9 @@ import sarracenia
 
 logger = logging.getLogger(__name__)
 
-default_options = {
+__default_options = {
     'acceptUnmatched': True,
     'batch': 100,
-    'bindings': [],
     'broker': None,
     'dry_run': False,
     'exchange': 'xpublic',
@@ -33,6 +32,27 @@ default_options = {
     'topicPrefix': ['v03'],
     'tlsRigour': 'normal'
 }
+
+def default_options() -> dict:
+        """
+        get default properties to override, used by client for validation. 
+
+        """
+        if (sys.version_info.major == 3) and (sys.version_info.minor < 7):
+            o = {}
+            for k in __default_options:
+                if k == 'masks':
+                    o[k] = __default_options[k]
+                else:
+                    o[k] = copy.deepcopy(__default_options[k])
+        else:
+            o = copy.deepcopy(__default_options)
+
+        return o
+          
+import random
+
+eboIntervalMaximum = 60 + random.random()*60
 
 def ProtocolPresent(p) -> bool:
     if ( p[0:4] in ['amqp'] ) and sarracenia.features['amqp']['present']:
@@ -96,7 +116,7 @@ class Moth():
            import sarracenia.config.credentials
 
 
-           props = sarracenia.moth.default_options
+           props = sarracenia.moth.default_options()
            props['broker'] = sarracenia.config.credentials.Credential('amqps://anonymous:anonymous@hpfx.collab.science.gc.ca')
            props['expire'] = 300
            props['batch'] = 1
@@ -189,7 +209,7 @@ class Moth():
 
        *  'queueName'  : Mandatory, name of a queue. (only in AMQP... hmm...)
 
-       *  'bindings' : [ list of bindings ]
+       *  'subscriptions' : [ list of config.subscription.Subscription ]
 
        *  'loop'
 
@@ -206,15 +226,20 @@ class Moth():
     @staticmethod
     def subFactory(props) -> 'Moth':
 
-        if not props['broker'] :
+        if 'subscription_index' in props:
+            subIndex = props['subscription_index']
+            broker = props['subscriptions'][subIndex]['broker']
+        elif not props['broker'] :
             logger.error('no broker specified')
             return None
+        else:
+            broker = props['broker']
 
-        if not hasattr(props['broker'],'url'):
+        if not hasattr(broker,'url'):
             logger.error('invalid broker url')
             return None
 
-        if not ProtocolPresent(props['broker'].url.scheme):
+        if not ProtocolPresent(broker.url.scheme):
            logger.error('unknown broker scheme/protocol specified')
            return None
 
@@ -227,7 +252,7 @@ class Moth():
                 if driver == 'amqpconsumer':
                     # driver needs to be amqp to match with the broker URL's scheme
                     driver = 'amqp'
-            scheme=props['broker'].url.scheme
+            scheme=broker.url.scheme
             if (scheme == driver) or \
                ( (scheme[0:-1] == driver) and (scheme[-1] in [ 's', 'w' ])) or \
                ( (scheme[0:-2] == driver) and (scheme[-2] == 'ws')):
@@ -237,28 +262,36 @@ class Moth():
 
     @staticmethod
     def pubFactory(props) -> 'Moth':
-        if not props['broker']:
+        if 'publisher_index' in props:
+            pubIndex = props['publisher_index']
+            publisher = props['publishers'][pubIndex]
+            broker = publisher['broker']
+            props['broker'] = broker
+            props['exchange'] = publisher['exchange']
+        elif not props['broker']:
             logger.error('no broker specified')
             return None
+        else:
+            broker = props['broker']
 
-        if not hasattr(props['broker'],'url'):
-            logger.error('invalid broker url')
+        if not hasattr(broker,'url'):
+            logger.error( f"invalid broker url: {str(broker)} {type(broker)}")
             return None
 
-        if not ProtocolPresent(props['broker'].url.scheme):
-           logger.error('unknown broker scheme/protocol specified')
-           return None
+        if not ProtocolPresent(broker.url.scheme):
+            logger.error( f"unknown broker scheme/protocol specified: {broker.url.scheme}")
+            return None
 
+        scheme=broker.url.scheme
         for sc in Moth.__subclasses__():
             driver=sc.__name__.lower()
-            scheme=props['broker'].url.scheme
             if (scheme == driver) or \
                ( (scheme[0:-1] == driver) and (scheme[-1] in [ 's', 'w' ])) or \
                ( (scheme[0:-2] == driver) and (scheme[-2] == 'ws')):
                 return sc(props, False)
 
         # ProtocolPresent test should ensure that we never get here...
-        logger.error('broker intialization failure')
+        logger.error('broker {str(broker)} intialization failure')
         return None
     
     @staticmethod
@@ -288,20 +321,25 @@ class Moth():
         self.next_connect_time = now
         self.next_connect_failures = 0
 
-        if (sys.version_info.major == 3) and (sys.version_info.minor < 7):
-            self.o = {}
-            for k in default_options:
-                if k == 'masks':
-                    self.o[k] = default_options[k]
-                else:
-                    self.o[k] = copy.deepcopy(default_options[k])
-        else:
-            self.o = copy.deepcopy(default_options)
+        self.o = default_options()
 
         if props is not None:
             self.o.update(props)
 
         me = 'sarracenia.moth.Moth'
+
+        if is_subscriber:
+            if 'subscriber_index' in self.o:
+                subscription=self.o['subscriptions'][self.o['subscription_index']]
+                broker = subscription['broker']
+                self.o['broker'] = broker
+                self.o['exchange'] = subscription['exchange']
+        else:
+            if 'publisher_index' in self.o:
+                publisher=self.o['publishers'][self.o['publisher_index']]
+                self.o['broker'] = publisher['broker']
+                self.o['exchange'] = publisher['exchange']
+                self.o['topicPrefix'] = publisher['topicPrefix']
 
         # apply settings from props.
         if 'settings' in self.o:
@@ -311,6 +349,7 @@ class Moth():
 
         logging.basicConfig(format=self.o['logFormat'],
                             level=getattr(logging, self.o['logLevel'].upper()))
+        logger.debug( f" Maximum interval exponential back off of connecting to broker: {eboIntervalMaximum} " )
 
     def ack(self, message: sarracenia.Message ) -> bool:
         """
@@ -320,14 +359,6 @@ class Moth():
           If there's no 'ack_id' in the message, you should return True.
         """
         logger.error("ack unimplemented")
-
-    @property
-    def default_options(self) -> dict:
-        """
-        get default properties to override, used by client for validation. 
-
-        """
-        return Moth.__default_options
 
     def getNewMessage(self) -> sarracenia.Message:
         """
@@ -429,12 +460,19 @@ class Moth():
              it should eventually settle down to a long period though.
         """
         now=time.time()
-        attempt_duration = now - start
+        # if the attempt takes a long time, do not want to try again quickly.
+        # but if it fails immediately, then wait at least 1 second.
+        attempt_duration = max(now - start,1)
         self.next_connect_failures += 1
-        ebo = 2**self.next_connect_failures
-        next_try = min(attempt_duration * ebo, 600)
+
+        # wait a little longer after each failure. 
+        ebo = 1.2**self.next_connect_failures
+
+        # eboIntervalMaximum is something random between 1 and 4 minutes.
+        # it is the ceiling. Otherwise based on the number of failures to connect and 
+        # how long each attempt takes to fail.
+        next_try = min(max(attempt_duration * ebo,0.1), eboIntervalMaximum)
         self.next_connect_time = now + next_try
-        logger.error( f"could not connect. next try in {next_try} seconds.")
 
     def splitPick(self,message) -> int:
         """

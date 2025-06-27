@@ -6,6 +6,7 @@ import sarracenia.moth
 import sarracenia
 import sarracenia.config.credentials
 from sarracenia.config import default_config
+from sarracenia.config.publisher import Publisher
 
 import os
 import time
@@ -19,18 +20,21 @@ import sys
 if len(sys.argv) > 1:
     broker = sys.argv[1]
 else:
-    broker = 'amqp://tfeed:HungryCat@localhost'
+    broker = 'amqp://tfeed:password_for_tfeed@localhost'
 
 cfg = default_config()
 #cfg.logLevel = 'debug'
-cfg.broker = sarracenia.config.credentials.Credential( broker )
-cfg.exchange = 'xsarra'
+cfg.post_broker = sarracenia.config.credentials.Credential( broker )
+cfg.post_exchange = 'xsarra'
 cfg.post_baseUrl = 'http://host'
 cfg.post_baseDir = '/tmp'
 cfg.topicPrefix = [ 'v03', 'post' ]
 cfg.logLevel = 'debug'
+cfg.publishers=[ Publisher(cfg) ]
+cfg.publisher_index=0
 
-print('cfg: %s' % cfg)
+# print out the entire configuration content.
+cfg.dump()
 
 # moth wants a dict as options, rather than sarracenia.config.Config instance.
 posting_engine = sarracenia.moth.Moth.pubFactory(cfg.dictify())

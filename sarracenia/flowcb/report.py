@@ -61,7 +61,7 @@ class Report(FlowCB):
         self.__reset()
 
         if hasattr(self.o, 'report_broker'):
-            props = sarracenia.moth.default_options
+            props = sarracenia.moth.default_options()
             props.update(self.o.dictify())
             logger.info( f" in props... report_broker: {props['report_broker']}" )
 

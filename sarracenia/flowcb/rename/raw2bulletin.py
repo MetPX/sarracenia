@@ -21,7 +21,7 @@ Examples:
        WACN07 CWAO 082327
        CZEG AIRMET E1 VALID 080105/080505 CWEG-
 
-       Output filename: WACN07_CWAO_082327_CZEG__00001
+       Output filename: WACN07_CWAO_082327__CZEG_00001
     
     Another RAW Ninjo file
        FTCN32 CWAO 100500 AAM
@@ -36,7 +36,7 @@ Examples:
         CACN00 CWAO 141600
         PQU
 
-       Output filename: CACN00_CWAO_141600_PQU__00003
+       Output filename: CACN00_CWAO_141600__PQU_00003
 
     A ISA binary bulletin
        Input filename: ISAA41_CYZX_162000__00035 
@@ -91,16 +91,22 @@ class Raw2bulletin(FlowCB):
             # If called by a sarra, should always have post_baseDir, so should be OK in specifying it
             path = self.o.post_baseDir + '/' + msg['relPath']
 
-            data = msg.getContent(self.o)
-
             # Determine if bulletin is binary or not
             # From sundew source code
-            if data.splitlines()[1][:4] in self.o.binaryInitialCharacters:
-                # Decode data, only text. The raw binary data contains the header in which we're interested. Only get that header.
-                data = data.splitlines()[0].decode('ascii')
-            else:
-                # Data is not binary
-                data = data.decode(self.o.inputCharset)
+            try:
+                data = msg.getContent(self.o)
+
+                # Also accept bulletins that only have one line (health check bulletins)
+                if len(data.splitlines()) == 1 or data.splitlines()[1][:4] in self.o.binaryInitialCharacters:
+                    # Decode data, only text. The raw binary data contains the header in which we're interested. Only get that header.
+                    data = data.splitlines()[0].decode('ascii')
+                else:
+                    # Data is not binary
+                    data = data.decode(self.o.inputCharset)
+            except Exception as e:
+                logger.error(f"Error encountered trying to fetch or decode data. Error message: {e}")
+                worklist.rejected.append(msg)
+                continue
 
 
             if not data:
@@ -113,6 +119,9 @@ class Raw2bulletin(FlowCB):
             #first_line  = first_line.strip(' ')
             #first_line  = first_line.strip('\t')
             first_line  = lines[0].split(' ')
+
+            # Sometimes bulletins have carriage returns at the end of the first line. Remove if applicable
+            first_line[-1]  = first_line[-1].replace('\r', '')
 
             # Build header from bulletin
             header = self.bulletinHandler.buildHeader(first_line)
@@ -133,10 +142,12 @@ class Raw2bulletin(FlowCB):
             BBB = self.bulletinHandler.getBBB(first_line)
 
             # Get the station ID from bulletin
-            stn_id = self.bulletinHandler.getStation(data)
+            if not len(data.splitlines()) == 1:
+                stn_id = self.bulletinHandler.getStation(data)
+            else: stn_id = ''
 
             # Generate a sequence (random ints)
-            seq = self.bulletinHandler.getSequence()
+            seq = self.bulletinHandler.getRandom()
 
             # Assign a default value for messages not coming from AM
             if 'isProblem' not in msg:
@@ -172,7 +183,8 @@ class Raw2bulletin(FlowCB):
                 new_worklist.append(msg)
                 
             except Exception as e:
-                logger.error(f"Error in renaming. Error message: {e}")
+                logger.error(f"Error in renaming the filename. Error message: {e}")
+                worklist.rejected.append(msg)
                 continue
 
         worklist.incoming = new_worklist

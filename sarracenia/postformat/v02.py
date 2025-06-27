@@ -1,6 +1,8 @@
 from base64 import b64decode, b64encode
 from codecs import decode, encode
 
+import copy
+
 from sarracenia.flowcb import v2wrapper
 
 import logging
@@ -148,12 +150,13 @@ class V02(PostFormat):
         """
            given a v03 (internal) message, produce an encoded version.
        """
-        v2m = v2wrapper.Message(body)
+        v2m = copy.deepcopy(v2wrapper.Message(body))
                                 
+
         # v2wrapp
         for h in [
                     'pubTime', 'baseUrl', 'fileOp', 'relPath', 'size', 
-                    'blocks', 'content', 'identity'
+                    'blocks', 'content', 'identity', 'publisher_index', 
         ]:
             if h in v2m.headers:
                     del v2m.headers[h]
