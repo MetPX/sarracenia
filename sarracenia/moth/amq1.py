@@ -152,6 +152,7 @@ class AMQ1(Moth):
                 disconnected?
             - Equivalent to queue names - can we specify the name of our queue/connection?
             - How do we ack messages?
+            - How to have multiple instances share a 'queue'?
         """
         super().__init__(props, is_subscriber)
 

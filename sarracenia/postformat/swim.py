@@ -3,7 +3,7 @@ import logging
 import sarracenia
 from sarracenia.postformat import PostFormat
 import urllib
-import uuid
+import gzip
 
 logger = logging.getLogger(__name__)
 
@@ -23,7 +23,7 @@ class Swim(PostFormat):
     def mine(payload, headers, content_type, options) -> bool:
         """
             Determine if the message is in SWIM format. If we've received a SWIM message, headers
-            will contain conformsTo, and the conformsTo value will contain 'swim'.
+            will contain conformsTo (mandatory), and the conformsTo value will contain 'swim'.
             Maybe there's a better way. This works for now.
 
             payload is the message data (i.e. inline content), not always present, useless
@@ -79,15 +79,16 @@ class Swim(PostFormat):
         #              "item" is alternative (e.g. EDR API, JSON, zipped, etc.)
         #              "update" for amended or corrected reports
         # We'll map the canonical link to baseUrl and relPath when it's available.
+        # Otherwise we use update.
         # but baseUrl and relPath are always mandatory in sr3. FIXME what to do when links not avail?
         i = 0
         while True:
             if f'links[{i}].rel' in headers:
-                rel = headers[f'links[{i}].rel']
+                rel = headers[f'links[{i}].rel'].lower()
                 typ = headers[f'links[{i}].type']
                 href = headers[f'links[{i}].href']
                 logger.debug(f'links[{i}] .rel={rel} .type={typ} .href={href}')
-                if rel.lower() == 'canonical':
+                if rel == 'canonical' or rel == 'update':
                     urlparts = href.split('://')
                     if len(urlparts) != 2:
                         logger.error(f'problem with links[{i}] .rel={rel} .type={typ} .href={href}')
@@ -113,7 +114,54 @@ class Swim(PostFormat):
                          "value": headers['properties.integrity.value'],
                        }
 
+        # handle inline content
+        # based on https://github.com/iblsoft/swimdemo/blob/main/amqp_client_example.py
+        if body:
+            if 'amqp1_content_type' in headers:
+                msg['contentType'] = str(headers['amqp1_content_type'])
 
+            if isinstance(body, memoryview):
+                payload = body.tobytes()
+            elif isinstance(body, (bytes, bytearray)):
+                payload = bytes(body)
+            else:
+                payload = str(body).encode()
+
+            decompressed_payload = payload
+            decoded_payload = None
+            # Detect if the payload is gzipped
+            try:
+                # FIXME: i think we should support gzip as an inline content encoding and unzip somewhere else
+                # in the code, but leaving this here for now.
+                # content_encoding is only mandatory when compression is used
+                if 'amqp1_content_encoding' in headers and headers['amqp1_content_encoding'] == "gzip":
+                    if payload[:2] == b'\x1f\x8b':  # GZIP magic number
+                        decompressed_payload = gzip.decompress(payload)
+                        decoded_payload = decompressed_payload.decode('utf-8')
+                    else:
+                        print("Payload does not appear to be gzipped, but content encoding is set to gzip!")
+                        decoded_payload = payload.decode('utf-8')
+                else:
+                    decoded_payload = payload.decode('utf-8')
+            except Exception as e:
+                logger.error(f"failed to read inline content in SWIM message")
+                logger.debug("Exception Details", exc_info=True)
+
+            if decoded_payload:
+                msg['content'] = {
+                    'encoding': 'utf-8',
+                    'value': decoded_payload
+                }
+                # FIXME: sr3 bug:   File "/net/local/home/sunderlandr/sr3/sarracenia/flow/__init__.py", line 1424, in write_inline_file
+                #                   if ((msg['size'] > 0) and len(data) != msg['size']):
+                #                   KeyError: 'size'
+                # inline data download does not work when size is not set
+                msg['size'] = len(decoded_payload)
+
+        if 'baseUrl' not in msg or 'relPath' not in msg:
+            msg['baseUrl'] = 'http://fake/'
+            # the subject seems to be the filename, without the extension
+            msg['relPath'] = headers['amqp1_subject']
 
 
         return msg
