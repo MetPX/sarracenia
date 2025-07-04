@@ -124,4 +124,5 @@ class PostFormat:
 import sarracenia.postformat.wis
 import sarracenia.postformat.v03
 import sarracenia.postformat.v02
+import sarracenia.postformat.swim
 
