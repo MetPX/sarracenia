@@ -1883,7 +1883,7 @@ In a flow does neither of the above, then the last activity is based on the last
 received.
 
 This isn't a problem in itself, unless one is expecting a continuous flow. If a continuous flow
-of a certain rate is expected, set the *runStateThreshold_slow* for the flow so that *sr3 status* flags
+of a certain rate is expected, set the *runStateThreshold_idle* for the flow so that *sr3 status* flags
 it as a problem.
 
 

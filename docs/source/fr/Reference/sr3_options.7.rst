@@ -1861,7 +1861,7 @@ Dans un flux dont aucun des cas ci-haut s'appliquent, la dernière activité est
 message reçu.
 
 Ce n'est pas un problème en soi, sauf si l'on s'attend à un flux continu. Si un flux continu
-d'un certain débit est attendu, définissez le *runStateThreshold_slow* pour le flux afin que 
+d'un certain débit est attendu, définissez le *runStateThreshold_idle* pour le flux afin que
 les indicateurs *sr3 status* que c'est un problème (en affichant *slow* )
 
 runStateThreshold_lag <intervalle> (défaut: 30s)
