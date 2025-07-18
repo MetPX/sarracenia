@@ -1,3 +1,9 @@
+metpx-sr3 (3.01.00rc2) unstable; urgency=medium
+
+  * Just Debian packaging fixes (should work on Ubuntu 18.04 now)
+
+ -- Reid Sunderland <reid.sunderland@ssc-spc.gc.ca>  Fri, 18 Jul 2025 19:16:48 +0000
+
 metpx-sr3 (3.01.00rc1) unstable; urgency=medium
 
   * This release is the first of sr3 v3.01 because of a significant new
