@@ -114,6 +114,12 @@ class Retry(FlowCB):
 
         mlist = self.download_retry.get(qty)
 
+        for m in mlist:
+             m['_isRetry'] = True
+             if '_deleteOnPost' not in m:
+                 m['_deleteOnPost'] = set()
+             m['_deleteOnPost'].add('_isRetry')
+
         #logger.debug("loading from %s: qty=%d ... got: %d " % (self.download_retry_name, qty, len(mlist)))
         if len(mlist) > 0:
             worklist.incoming.extend(mlist)
