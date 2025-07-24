@@ -81,11 +81,14 @@ class Retry(FlowCB):
 
         # eliminate calculated values so it is refiltered from scratch.
         for m in message_list:
-             for k in list(m.keys()):
-                 if k in m and (k in m['_deleteOnPost'] or k.startswith('new_')):
-                     del m[k]
-             m['_isRetry'] = True
-             m['_deleteOnPost'] = set( [ '_isRetry' ] )
+            for k in list(m.keys()):
+                # can't delete local_offset, it is set in the moth classes and is required for downloads to work
+                if k == 'local_offset':
+                    continue
+                if k in m and (k in m['_deleteOnPost'] or k.startswith('new_')):
+                    del m[k]
+            m['_isRetry'] = True
+            m['_deleteOnPost'] = set( [ '_isRetry' ] )
 
 
         return (True, message_list)
