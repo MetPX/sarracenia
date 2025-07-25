@@ -1882,9 +1882,11 @@ In a flow that transfers data, the last activity will be based on the last data 
 In a flow does neither of the above, then the last activity is based on the last message
 received.
 
-This isn't a problem in itself, unless one is expecting a continuous flow. If a continuous flow
-of a certain rate is expected, set the *runStateThreshold_idle* for the flow so that *sr3 status* flags
-it as a problem.
+Idle isn't a problem in itself, unless one is expecting to receive data at regular intervals (e.g. at least
+one file per hour).
+
+If a continuous flow of a certain data rate (bytes per second) is expected, set
+*runStateThreshold_slow* for the flow so that *sr3 status* flags it as a problem (too slow).
 
 
 runStateThreshold_lag <interval> (default: 30)
