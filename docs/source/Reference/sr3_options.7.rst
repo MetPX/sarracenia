@@ -1883,7 +1883,7 @@ In a flow does neither of the above, then the last activity is based on the last
 received.
 
 Idle isn't a problem in itself, unless one is expecting to receive data at regular intervals (e.g. at least
-one file per hour).
+one file every 15 minutes).
 
 If a continuous flow of a certain data rate (bytes per second) is expected, set
 *runStateThreshold_slow* for the flow so that *sr3 status* flags it as a problem (too slow).
