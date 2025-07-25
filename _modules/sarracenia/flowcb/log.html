@@ -266,7 +266,7 @@
         <span class="k">for</span> <span class="n">msg</span> <span class="ow">in</span> <span class="n">worklist</span><span class="o">.</span><span class="n">incoming</span><span class="p">:</span>
 
             <span class="n">lag</span> <span class="o">=</span> <span class="n">now</span> <span class="o">-</span> <span class="n">timestr2flt</span><span class="p">(</span><span class="n">msg</span><span class="p">[</span><span class="s1">&#39;pubTime&#39;</span><span class="p">])</span>
-            <span class="k">if</span> <span class="ow">not</span> <span class="p">(</span> <span class="s1">&#39;_isRetry&#39;</span> <span class="ow">in</span> <span class="n">msg</span> <span class="ow">and</span> <span class="n">msg</span><span class="p">[</span><span class="s1">&#39;_isRetry&#39;</span><span class="p">]):</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">msg</span><span class="o">.</span><span class="n">isRetry</span><span class="p">():</span>
                <span class="bp">self</span><span class="o">.</span><span class="n">lagTotal</span> <span class="o">+=</span> <span class="n">lag</span>
                <span class="k">if</span> <span class="n">lag</span> <span class="o">&gt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">lagMax</span><span class="p">:</span>
                    <span class="bp">self</span><span class="o">.</span><span class="n">lagMax</span> <span class="o">=</span> <span class="n">lag</span>

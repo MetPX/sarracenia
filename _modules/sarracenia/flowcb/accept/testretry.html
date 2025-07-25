@@ -125,9 +125,7 @@
             <span class="c1"># retry message : recover it</span>
             <span class="c1"># update: this is set somewhere as true in /diskqueue.py, should think about initializing first so we</span>
             <span class="c1"># dont have to test for existence</span>
-            <span class="c1"># 2022-06-10: isRetry was removed. Maybe can check if the message has msg_baseUrl_bad?</span>
-            <span class="c1">#             see issues #466 and #527.</span>
-            <span class="k">if</span> <span class="s1">&#39;isRetry&#39;</span> <span class="ow">in</span> <span class="n">message</span> <span class="ow">and</span> <span class="n">message</span><span class="p">[</span><span class="s1">&#39;isRetry&#39;</span><span class="p">]:</span>
+            <span class="k">if</span> <span class="n">message</span><span class="o">.</span><span class="n">isRetry</span><span class="p">():</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">o</span><span class="o">.</span><span class="n">sendTo</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">sendTo</span>
                 <span class="n">ok</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">o</span><span class="o">.</span><span class="n">details</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">o</span><span class="o">.</span><span class="n">credentials</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">sendTo</span><span class="p">)</span>
 

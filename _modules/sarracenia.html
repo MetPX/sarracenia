@@ -1298,6 +1298,24 @@
             <span class="n">msg</span><span class="o">.</span><span class="n">computeIdentity</span><span class="p">(</span><span class="n">opath</span><span class="p">,</span><span class="bp">self</span><span class="o">.</span><span class="n">o</span><span class="p">,</span><span class="n">data</span><span class="o">=</span><span class="n">data</span><span class="p">)</span>
         <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">ex</span><span class="p">:</span>
             <span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span> <span class="sa">f</span><span class="s2">&quot;problem with </span><span class="si">{</span><span class="n">opath</span><span class="si">}</span><span class="s2">: </span><span class="si">{</span><span class="n">ex</span><span class="si">}</span><span class="s2">&quot;</span> <span class="p">)</span></div>
+
+
+    <span class="k">def</span> <span class="nf">isRetry</span><span class="p">(</span><span class="n">msg</span><span class="p">):</span>
+        <span class="k">return</span> <span class="s1">&#39;_isRetry&#39;</span> <span class="ow">in</span> <span class="n">msg</span> <span class="ow">and</span> <span class="n">msg</span><span class="p">[</span><span class="s1">&#39;_isRetry&#39;</span><span class="p">]</span>
+
+<div class="viewcode-block" id="Message.retryCount">
+<a class="viewcode-back" href="../api-documentation.html#sarracenia.Message.retryCount">[docs]</a>
+    <span class="k">def</span> <span class="nf">retryCount</span><span class="p">(</span><span class="n">msg</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot; return the number of times the message has been retried.</span>
+<span class="sd">            0 if the message has never been retried.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">rcount</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="k">if</span> <span class="s1">&#39;_isRetry&#39;</span> <span class="ow">in</span> <span class="n">msg</span><span class="p">:</span>
+            <span class="k">if</span> <span class="nb">type</span><span class="p">(</span><span class="n">msg</span><span class="p">[</span><span class="s1">&#39;_isRetry&#39;</span><span class="p">])</span> <span class="o">==</span> <span class="nb">int</span><span class="p">:</span>
+                <span class="n">rcount</span> <span class="o">=</span> <span class="n">msg</span><span class="p">[</span><span class="s1">&#39;_isRetry&#39;</span><span class="p">]</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">rcount</span> <span class="o">=</span> <span class="mi">1</span> <span class="k">if</span> <span class="n">msg</span><span class="p">[</span><span class="s1">&#39;_isRetry&#39;</span><span class="p">]</span> <span class="k">else</span> <span class="mi">0</span>
+        <span class="k">return</span> <span class="n">rcount</span></div>
 </div>
 
 </pre></div>

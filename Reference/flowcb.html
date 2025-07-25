@@ -1739,6 +1739,8 @@ is the files where the transfer failed. write those messages to
 a retry queue.</p></li>
 <li><p>the DiskQueue or RedisQueue classes are used to store the retries, and it handles
 expiry on each housekeeping event.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">_isRetry</span></code> in the message is a count of how many times a retry has been
+attempted for that file.</p></li>
 </ul>
 <dl class="py method">
 <dt class="sig sig-object py" id="sarracenia.flowcb.retry.Retry.__init__">

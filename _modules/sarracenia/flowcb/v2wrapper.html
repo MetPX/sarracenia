@@ -240,7 +240,7 @@
        
         <span class="bp">self</span><span class="o">.</span><span class="n">headers</span> <span class="o">=</span> <span class="n">h</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">hdrstr</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">h</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">isRetry</span> <span class="o">=</span> <span class="kc">False</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">isRetry</span> <span class="o">=</span> <span class="nb">bool</span><span class="p">(</span><span class="n">h</span><span class="o">.</span><span class="n">isRetry</span><span class="p">())</span>
 
         <span class="c1"># from sr_message/sr_new ...</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">local_offset</span> <span class="o">=</span> <span class="mi">0</span>
