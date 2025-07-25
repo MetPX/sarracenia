@@ -42,6 +42,9 @@ class Retry(FlowCB):
     * the DiskQueue or RedisQueue classes are used to store the retries, and it handles
       expiry on each housekeeping event.
 
+    * ``_isRetry`` in the message is a count of how many times a retry has been 
+      attempted for that file.
+
     """
     def __init__(self, options) -> None:
 
@@ -81,11 +84,13 @@ class Retry(FlowCB):
 
         # eliminate calculated values so it is refiltered from scratch.
         for m in message_list:
-             for k in list(m.keys()):
-                 if k in m and (k in m['_deleteOnPost'] or k.startswith('new_')):
-                     del m[k]
-             m['_isRetry'] = True
-             m['_deleteOnPost'] = set( [ '_isRetry' ] )
+            for k in list(m.keys()):
+                # can't delete local_offset, it is set in the moth classes and is required for downloads to work
+                if k == 'local_offset':
+                    continue
+                if k in m and (k in m['_deleteOnPost'] or k.startswith('new_')):
+                    del m[k]
+            self.__set_isRetry(m)
 
 
         return (True, message_list)
@@ -113,6 +118,9 @@ class Retry(FlowCB):
             return
 
         mlist = self.download_retry.get(qty)
+
+        for m in mlist:
+            self.__set_isRetry(m)
 
         #logger.debug("loading from %s: qty=%d ... got: %d " % (self.download_retry_name, qty, len(mlist)))
         if len(mlist) > 0:
@@ -160,10 +168,7 @@ class Retry(FlowCB):
             return
 
         for m in worklist.failed:
-             m['_isRetry'] = True
-             if '_deleteOnPost' not in m:
-                 m['_deleteOnPost'] = set()
-             m['_deleteOnPost'].add('_isRetry')
+            self.__set_isRetry(m)
 
         self.post_retry.put(worklist.failed)
         worklist.failed=[]
@@ -209,3 +214,13 @@ class Retry(FlowCB):
     def on_stop(self) -> None:
         self.download_retry.close()
         self.post_retry.close()
+
+    def __set_isRetry(self, msg):
+        if '_isRetry' not in msg or ('_isRetry' in msg and type(msg['_isRetry']) != int):
+            msg['_isRetry'] = 1
+        else:
+            msg['_isRetry'] += 1
+
+        if '_deleteOnPost' not in msg:
+            msg['_deleteOnPost'] = set()
+        msg['_deleteOnPost'].add('_isRetry')
