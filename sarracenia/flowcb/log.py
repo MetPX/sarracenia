@@ -177,7 +177,7 @@ class Log(FlowCB):
         for msg in worklist.incoming:
 
             lag = now - timestr2flt(msg['pubTime'])
-            if not ( '_isRetry' in msg and msg['_isRetry']):
+            if not msg.isRetry():
                self.lagTotal += lag
                if lag > self.lagMax:
                    self.lagMax = lag

@@ -611,7 +611,7 @@ class Flow:
                 #               worklist.ok by retry.py, even when last_poll_gather_len is 0
                 elif self.o.component == 'poll':
                     # get rid of non-retry messages from worklist.ok, we only want to post retries
-                    new_ok = [ msg for msg in self.worklist.ok if ('_isRetry' in msg and msg['_isRetry']) ]
+                    new_ok = [ msg for msg in self.worklist.ok if msg.isRetry() ]
                     self.worklist.ok = new_ok
                     self.post(now)
 
@@ -885,7 +885,7 @@ class Flow:
         #   a) messages that are not retries when retry_refilter is disabled
         #   b) all messages, when retry_refilter is enabled
         retry_refilter = hasattr(self.o, 'retry_refilter') and self.o.retry_refilter
-        msg_is_not_retry = retry_refilter or ('_isRetry' not in msg or ('_isRetry' in msg and not msg['_isRetry']))
+        msg_is_not_retry = retry_refilter or not msg.isRetry()
 
         if 'fileOp' in msg and msg_is_not_retry:
             msg['post_fileOp'] = copy.deepcopy(msg['fileOp'])

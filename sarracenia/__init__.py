@@ -1152,3 +1152,6 @@ class Message(dict):
             msg.computeIdentity(opath,self.o,data=data)
         except Exception as ex:
             logger.error( f"problem with {opath}: {ex}" )
+
+    def isRetry(msg):
+        return '_isRetry' in msg and msg['_isRetry']

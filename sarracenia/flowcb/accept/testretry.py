@@ -36,7 +36,7 @@ class TestRetry(FlowCB):
             # retry message : recover it
             # update: this is set somewhere as true in /diskqueue.py, should think about initializing first so we
             # dont have to test for existence
-            if '_isRetry' in message and message['_isRetry']:
+            if message.isRetry():
                 self.o.sendTo = self.sendTo
                 ok, self.o.details = self.o.credentials.get(self.sendTo)
 

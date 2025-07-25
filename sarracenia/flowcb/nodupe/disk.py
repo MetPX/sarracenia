@@ -176,7 +176,7 @@ class Disk(NoDupe):
                     worklist.rejected.append(m)
                     continue
 
-            if '_isRetry' in m or self.check_message(m):
+            if m.isRetry() or self.check_message(m):
                 new_incoming.append(m)
             else:
                 m['_deleteOnPost'] |= set(['reject'])
