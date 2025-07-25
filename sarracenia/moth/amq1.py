@@ -49,14 +49,14 @@ class Amqp1Client(MessagingHandler):
 
         self.is_connected = False # FIXME check connection.state can be UNINIT, ACTIVE, CLOSED https://qpid.apache.org/releases/qpid-proton-0.40.0/proton/python/docs/proton.html#proton.Connection.state
         self.receiver = None
-        self.sender = None
         self.connection = None
+        self.seq = 0
 
         scheme = self.url.split("://")[0].lower()
         self.__secure = scheme[-1] == 's'
 
     def on_start(self, event):
-        """ Event loop in container has started, new sender/receiver can be created.
+        """ Event loop in container has started, new receiver can be created.
         """
         if self.__secure:
             ssl_domain = SSLDomain(SSLDomain.MODE_CLIENT)
@@ -70,7 +70,6 @@ class Amqp1Client(MessagingHandler):
         # FIXME how to subscribe to multiple topics?
         if self.is_subscriber:
             self.receiver = event.container.create_receiver(self.connection, source=self.topics[0])
-        # FIXME publisher (sender) ??
 
     def on_message(self, event):
         """ Handle message received from broker.
@@ -93,6 +92,89 @@ class Amqp1Client(MessagingHandler):
             self.receiver.free()
             self.receiver = None
             logger.debug("closed receiver")
+        if self.connection:
+            self.connection.close()
+            self.connection.free()
+            self.connection = None
+            logger.debug("closed connection")
+
+class Amqp1Pub(MessagingHandler):
+    """
+        Based on https://qpid.apache.org/releases/qpid-proton-0.40.0/proton/python/examples/
+        Docs: https://qpid.apache.org/releases/qpid-proton-0.40.0/proton/python/docs/index.html
+    """
+
+    def __init__(self, url: str, topics: list, msg_q: queue.Queue, options):
+        #super().__init__(default_options)
+        super(Amqp1Pub, self).__init__()
+        self.url = url
+        self.topics = topics
+        self.msg_q = msg_q
+
+        self.is_connected = False # FIXME check connection.state can be UNINIT, ACTIVE, CLOSED https://qpid.apache.org/releases/qpid-proton-0.40.0/proton/python/docs/proton.html#proton.Connection.state
+        self.sender = None
+        self.connection = None
+        self.sent = 0
+        self.total = 1
+        self.o = options
+
+        scheme = self.url.split("://")[0].lower()
+        self.host = self.url.split("://")[1]
+        self.__secure = scheme[-1] == 's'
+
+    def on_start(self, event):
+        """ Event loop in container has started, new sender can be created.
+        """
+        if self.__secure:
+            ssl_domain = SSLDomain(SSLDomain.MODE_CLIENT)
+            # FIXME: currently not verifying SSL at all
+            ssl_domain.set_peer_authentication(SSLDomain.ANONYMOUS_PEER)
+        else:
+            ssl_domain = None
+
+        if self.o['broker'].url.username and self.o['broker'].url.password:
+            self.connection = event.container.connect(self.url, user=self.o['broker'].url.username, \
+                                                      password=self.o['broker'].url.password)
+            logger.critical(f"Topic {self.topics}")
+        else:
+            self.connection = event.container.connect(self.url, ssl_domain=ssl_domain)
+
+        # FIXME Probably need to have a guard here. Correct guard?
+        self.sender = event.container.create_sender(self.connection, self.topics[0])
+        logger.critical(f"Sender container initialized!")
+        # event.container.declare_transaction(self.connection, handler=self)
+        # self.transaction = None
+
+    # From : https://qpid.apache.org/releases/qpid-proton-0.40.0/proton/python/examples/tx_send.py.html
+    # def on_transaction_declared(self, event):
+    #     self.transaction = event.transaction
+    #     self.send()
+
+    def on_sendable(self, event):
+        while event.sender.credit and self.sent < self.total:
+            event.sender.send(self.msg_q.get_nowait())
+            logger.critical("MESSAGE SENT!")
+            self.sent += 1
+
+    def on_accepted(self, event):
+        logger.critical("Message was accepted!!!")
+        event.connection.close()
+
+    # From : https://qpid.apache.org/releases/qpid-proton-0.40.0/proton/python/examples/tx_send.py.html
+    # def send(self):
+    #     self.transaction.commit()
+    #     # Send nothing for now
+    #     self.seq = self.seq + 1
+    #     msg = Message(id=self.seq, body={'sequence': self.seq})
+    #     self.transaction.send(self.sender, msg)
+    #     self.transaction.commit()
+
+    def update_queue(self, new_q):
+        self.msg_q = new_q
+        logger.critical(f"Is the queue empty? {self.msg_q.empty()}")
+
+
+    def close(self):
         if self.sender:
             self.sender.close()
             self.sender.free()
@@ -183,6 +265,7 @@ class AMQ1(Moth):
         self.client_thread = None
 
         self._raw_msg_q = None
+        self.amq1msg = None
 
     def _msgRawToDict(self, raw_msg) -> sarracenia.Message:
         """ Convert AMQP1.0 raw message to sr3 message (dictionary)
@@ -308,7 +391,74 @@ class AMQ1(Moth):
     def putSetup(self) -> None:
         """ Setup as a publisher to post messages.
         """
-        logger.critical("NOT IMPLEMENTED, CANNOT PUBLISH TO AMQP1.0 BROKERS")
+        if self._stop_requested:
+            return
+
+        start = time.time()
+
+        if start < self.next_connect_time:
+            if start > self.next_message :
+                logger.critical( f"too soon to connect to {str(self.o['broker'])}. Will try again in: {self.next_connect_time-start:.2f} seconds" )
+                self.next_message=start+5
+            return
+
+        # subscription = self.o['subscriptions'][self.o['subscription_index']]
+        # subtopic = '.'.join(subscription['bindings'][self.o['subscription_index']]['sub'][:])
+        # prefix = '.'.join(subscription['bindings'][self.o['subscription_index']]['prefix'][:])
+        # topic = '.'.join(prefix + subtopic)
+
+        # It does not really matter how it fails, the recovery approach is always the same:
+        # tear the whole thing down, and start over.
+        try:
+            # if self.o['broker'] is None:
+            #     logger.critical( f"no broker given" )
+            #     return
+
+            # # FIXME?
+            # # if not self.__connect(self.o['broker']):
+            # #     self.setEbo(start)
+            # #     self.connection = None
+            # #     return
+
+            # if self.o['broker'].url.hostname:
+            #     host = self.o['broker'].url.hostname
+            #     if self.o['broker'].url.port is None:
+            #         if (self.o['broker'].url.scheme[-1] == 's'):
+            #             host += ':5671'
+            #         else:
+            #             host += ':5672'
+            #     else:
+            #         host += ':{}'.format(self.o['broker'].url.port)
+            #     if (self.o['broker'].url.scheme[-1] == 's'):
+            #         host = 'amqps://' + host
+            #     else:
+            #         host = 'amqp://' + host
+            # else:
+            #     logger.critical( f"invalid broker specification: {self.o['broker']} " )
+            #     return False
+
+            # self._raw_msg_q = queue.Queue() # FIXME need to deal with messages still in q?
+
+            # self.client = Amqp1Pub(
+            #     host,
+            #     topic,
+            #     self._raw_msg_q,
+            #     self.o
+            # )
+            # logger.critical(f"Host : {host}")
+
+            # self.connection = True
+
+            # logger.critical(f"AMQ1 client connection initialized")
+            return
+
+        except Exception as err:
+            logger.error( f"failed connection to {str(self.o['broker'])}: {err}" )
+            logger.debug('Exception details: ', exc_info=True)
+            self.setEbo(start)
+            self.connection=None
+            self.close()
+
 
     def newMessages(self) -> list:
 
@@ -385,6 +535,203 @@ class AMQ1(Moth):
         self.close()
         time.sleep(1)
         return None
+
+    def putNewMessage(self,
+                      message: sarracenia.Message,
+                      content_type: str = 'application/json',
+                      exchange: str = None ) -> bool:
+        """ Mostly a copy of moth.amqp.AMQP's putNewMessage.
+        """
+
+        if self.is_subscriber:  #build_consumer
+            logger.error("publishing from a consumer")
+            return False
+
+        # Check connection status, try to reconnect if not connected
+        # if (not self.connection) or (not self.__is_connected):
+        #     try:
+        #         self.close()
+        #         self.putSetup()
+        #         if (not self.connection) or (not self.__is_connected):
+        #             return False
+        #     except Exception as err:
+        #         logger.warning(f"failed, connection was closed/broken and could not be re-opened {exchange}: {err}")
+        #         logger.debug('Exception details: ', exc_info=True)
+        #         return False
+
+        # The caller probably doesn't expect the message to get modified by this method, so use a copy of the message
+        body = copy.deepcopy(message)
+
+        logger.critical(f"Message body {body}")
+
+        if 'format' in self.o:
+            version=self.o['format']
+        else:
+            version = body['_format']
+
+
+        if '_deleteOnPost' in body:
+            # FIXME: need to delete because building entire JSON object at once.
+            # makes this routine alter the message. Ideally, would use incremental
+            # method to build json and _deleteOnPost would be a guide of what to skip.
+            # library for that is jsonfile, but not present in repos so far.
+            for k in body['_deleteOnPost']:
+                if k in body:
+                    del body[k]
+            del body['_deleteOnPost']
+
+        #if not exchange:
+        #    if (type(self.o['exchange']) is list):
+        #        if (len(self.o['exchange']) > 1):
+        #            if ( 'exchangeSplit' in self.o) and self.o['exchangeSplit'] > 1:
+        #                exchange = self.o['exchange'][self.splitPick(message)]
+        #            else:
+        #                logger.error(
+        #                    'do not know which exchange to publish to: %s' %
+        #                    self.o['exchange'])
+        #                return False
+        #        else:
+        #            exchange = self.o['exchange'][0]
+        #    else:
+        #        exchange = self.o['exchange']
+
+        #if 'messageAgeMax' in self.o and self.o['messageAgeMax']:
+        #    ttl = "%d" * int(
+        #        sarracenia.durationToSeconds(self.o['messageAgeMax']) * 1000)
+        #else:
+        #    ttl = "0"
+        #
+        #if 'persistent' in self.o:
+        #    deliv_mode = 2 if self.o['persistent'] else 1
+        #else:
+        #    deliv_mode = 2
+
+        # Limit to only SWIM protocol now.
+        raw_body = PostFormat.exportAny( body, version, 'swim', self.o )
+        logger.critical(f"SWIM RAW MESSAGE BODY {raw_body}")
+
+        subscription = self.o['subscriptions'][self.o['subscription_index']]
+        subtopic = ''.join(subscription['bindings'][self.o['subscription_index']]['sub'][:])
+        prefix = ''.join(subscription['bindings'][self.o['subscription_index']]['prefix'][:])
+        topic = prefix + '.' + subtopic
+
+        logger.critical(f"Topic {topic} , prefix {prefix} , subtopic {subtopic}")
+
+        # topic = topic.replace('#', '%23')
+        # topic = topic.replace('*', '%22')
+        exchange = 'exchange-not-used' # FIXME: What to do about this?
+
+        #if len(topic) >= 255:  # ensure topic is <= 255 characters
+        #    logger.error("message topic too long, truncating")
+        #    mxlen = amqp_ss_maxlen
+        #    while (topic.encode("utf8")[mxlen - 1] & 0xc0 == 0xc0):
+        #        mxlen -= 1
+        #    topic = topic.encode("utf8")[0:mxlen].decode("utf8")
+
+        if self.o['messageDebugDump']:
+            logger.info('raw message body: version: %s type: %s %s' %
+                             (version, type(raw_body),  raw_body))
+            #logger.info('raw message headers: type: %s value: %s' % (type(headers),  headers))
+
+        if not 'posts' in message:
+            message['posts'] = []
+        message['posts'].append( { 'broker':str(self.o['broker']), 'topic': topic, 'exchange':exchange } ) 
+        message['_deleteOnPost'] |= set( ['posts'] )
+        #del headers['topic']
+
+        # if headers :  
+        #     for k in headers:
+        #         if (type(headers[k]) is str) and (len(headers[k]) >=
+        #                                               amqp_ss_maxlen):
+        #             logger.error("message header %s too long, dropping" % k)
+        #             return False
+
+        if self.o['broker'] is None:
+            logger.critical( f"no broker given" )
+            return
+
+        # FIXME?
+        # if not self.__connect(self.o['broker']):
+        #     self.setEbo(start)
+        #     self.connection = None
+        #     return
+    
+
+        if self.o['broker'].url.hostname:
+            host = self.o['broker'].url.hostname
+            if self.o['broker'].url.port is None:
+                if (self.o['broker'].url.scheme[-1] == 's'):
+                    host += ':5671'
+                else:
+                    host += ':5672'
+            else:
+                host += ':{}'.format(self.o['broker'].url.port)
+            if (self.o['broker'].url.scheme[-1] == 's'):
+                host = 'amqps://' + host
+            else:
+                host = 'amqp://' + host
+        else:
+            logger.critical( f"invalid broker specification: {self.o['broker']} " )
+            return False
+
+        self._raw_msg_q = queue.Queue() # FIXME need to deal with messages still in q?
+
+        self.client = Amqp1Pub(
+            host,
+            topic,
+            self._raw_msg_q,
+            self.o
+        )
+
+        self.amq1msg = Message(id=1, body=raw_body)
+        self._raw_msg_q.put_nowait(self.amq1msg)
+        #logger.critical(f"Client : {self.client}")
+        self.client.update_queue(self._raw_msg_q)
+
+        # FIXME: Add metrics
+        # self.metrics['txByteCount'] += len(raw_body) 
+        # if headers:
+        #     self.metrics['txByteCount'] += len(''.join(str(headers)))
+        # self.metrics['txLast'] = sarracenia.nowstr()
+
+        # timeout option is a float and default is 0.0. basic_publish wants int or None for no timeout
+        try:
+            if self.o['timeout']:
+                pub_timeout = int(self.o['timeout'])
+            else:
+                pub_timeout = None
+        except Exception as err:
+            logger.debug('Set pub_timeout to None. Exception details: ', exc_info=True)
+            pub_timeout = None
+
+        body=raw_body
+        ebo = 1
+        try:
+            #logger.debug( f"trying to publish body: {body} headers: {headers} to {exchange} under: {topic} " )
+            #self.channel.basic_publish(AMQP_Message, exchange, topic, timeout=pub_timeout)
+            self.reactor = Container(self.client)
+            self.reactor.run()
+
+            # Issue #732: tx_commit can get stuck forever
+            #logger.debug("published body: {} headers: {} to {} under: {} ".format(
+            #              body, headers, exchange, topic))
+            self.metrics['txGoodCount'] += 1
+            return True  # no failure == success :-)
+
+        except Exception as err:
+            logger.warning("failed %s: %s" % (exchange, err))
+            logger.debug('Exception details: ', exc_info=True)
+
+            self.metrics['txBadCount'] += 1
+            # Issue #466: commenting this out until message_strategy stubborn is working correctly (Issue #537)
+            # Always return False when an error occurs and use the DiskQueues to retry, instead of looping. This should
+            # eventually be configurable with message_strategy stubborn
+            # if True or not self.o['message_strategy']['stubborn']:
+            #     return False
+
+            self.close()
+            return False # instead of looping
+
 
     def __is_connected(self):
         return self.client and self.client.is_connected

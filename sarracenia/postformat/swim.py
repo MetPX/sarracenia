@@ -4,6 +4,9 @@ import sarracenia
 from sarracenia.postformat import PostFormat
 import urllib
 import gzip
+from datetime import datetime
+import xml.etree.ElementTree as ET
+
 
 logger = logging.getLogger(__name__)
 
@@ -217,9 +220,89 @@ class Swim(PostFormat):
         return msg
 
     @staticmethod
-    def exportMine(body, options) -> tuple[str, dict, str]:
+    def exportMine(body, options) -> dict:
         """
-           given a v03 (internal) message, produce an encoded SWIM version.
+            given a v03 (internal) message, produce an encoded SWIM version.
+
+            Data specific details::
+                properties.datetime 
+                    METAR/SPECI data only. Observation time in RFC 3339 format
+                properties.{end,start}_datetime
+                    TAF/SIGMET data only. Start,end of validity period in RFC 3339 format
+
+
+            Mandatory fields::
+                properties.pubtime (extracted from iwxxm:issueTime)
+                properties.datetime (for observations)
+                properties.{start,end}_datetime (for TAR/SIGMET)
+            Conditional fields::
+                properties.icao_location_identifier
+                properties.icao_location_type
+                    
+            NOTE: The links field is optional and not obligatory. 
+            NOTE: The payload integrity field is also theoretically optional. 
+            sha512 is the recommended method.
+            Geometry properties are optional 
+
+
+            Improvements::
+                Add a technical message field? 
+                    https://github.com/iblsoft/swimdemo/blob/main/MET-SWIM-AMQP-Guidance.md#technical-messages
+                Add geometry coordinates support?
         """
-        logger.critical("NOT IMPLEMENTED!!!")
-        return (None, None, None)
+
+        logger.critical(f"Incoming sarracenia message {body}")
+
+        raw_body = {}
+        # Generate datetime
+        now = datetime.now().strftime('%Y-%m-%dT%H:%M:%SZ')
+        
+        if 'content' in body and body['content']:
+            for type in [ 'METAR', 'TAF', 'SIGMET', 'SPECI']:
+                # Try to find data type and assign values according to data type
+                # https://github.com/iblsoft/swimdemo/blob/main/MET-SWIM-AMQP-Guidance.md#document-structure-overview
+                if body['content']['value'].find(f'iwxxm:{type}') != -1:
+                    if type == 'METAR' or type == 'SPECI':
+                        raw_body['properties.datetime'] = now
+                        raw_body['conformsTo'] = 'https://eur-registry.swim.aero/services/eurocontrol-iwxxm-metar-speci-subscription-and-request-service-10'
+                    if type == 'SIGMET' or type == 'TAF':
+                        # FIXME: Use XML parsing to fetch values?
+                        raw_body['properties.end_datetime'] = now
+                        raw_body['properties.start_datetime'] = now
+                        if type == 'SIGMET': raw_body['conformsTo'] = 'https://eur-registry.swim.aero/services/eurocontrol-iwxxm-sigmet-subscription-and-request-service-10'
+                        else: raw_body['conformsTo'] = 'https://eur-registry.swim.aero/services/eurocontrol-iwxxm-taf-subscription-and-request-service-10'
+
+            try:
+                xml_root = ET.fromstring(body['content'])
+                # Based on what we receive from the DMS
+                issue_time = xml_root.find('.//{http://icao.int/iwxxm/3.0}issueTime')
+                time_instant = issue_time.find('TimeInstant')
+                time_position = time_instant.find('{http://www.opengis.net/gml/3.2}timePosition')
+                raw_body['properties.pubtime'] = time_position
+            except:                
+                # Give a fake value for now if value not found
+                raw_body['properties.pubtime'] = now
+                
+        # If we don't have a payload in the message, we need to include a link to the data.
+        else:
+            # Assume its a METAR/SPECI for now I guess?
+            raw_body['properties.datetime'] = now
+            # Give a fake value for now as well
+            raw_body['properties.pubtime'] = now
+
+        if 'identity' in body and body['identity']:
+            raw_body['properties.integrity.method'] = body['identity']['method']
+            raw_body['properties.integrity.value'] = body['identity']['value']
+
+        if 'contentType' in body:
+            # Only accepts application/xml or application/uri-list
+            # Based on https://github.com/iblsoft/swimdemo/blob/main/MET-SWIM-AMQP-Guidance.md#content-type-mandatory
+            if 'xml' in body['contentType']:
+                raw_body['amq1_content_type'] = 'application/xml'
+            # For technical messages
+            # elif 'json' in body['contentType']:
+            #     raw_body['amq1_content_type'] = 'application/json'
+
+        logger.critical(f"SWIM Message : {raw_body}")
+
+        return raw_body

@@ -54,6 +54,7 @@ class Message(FlowCB):
                             failures.append(i)
                     except Exception as e:
                         failures.append(i)
+                        logger.critical("Exception details:", exc_info=True)
             else:
                 for p in self.posters:
                     if hasattr(p,'putNewMessage'):
