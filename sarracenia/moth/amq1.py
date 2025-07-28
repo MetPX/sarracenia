@@ -171,7 +171,7 @@ class Amqp1Pub(MessagingHandler):
 
     def update_queue(self, new_q):
         self.msg_q = new_q
-        logger.critical(f"Is the queue empty? {self.msg_q.empty()}")
+        #logger.critical(f"Is the queue empty? {self.msg_q.empty()}")
 
 
     def close(self):
@@ -610,15 +610,13 @@ class AMQ1(Moth):
         raw_body = PostFormat.exportAny( body, version, 'swim', self.o )
         logger.critical(f"SWIM RAW MESSAGE BODY {raw_body}")
 
-        subscription = self.o['subscriptions'][self.o['subscription_index']]
-        subtopic = ''.join(subscription['bindings'][self.o['subscription_index']]['sub'][:])
-        prefix = ''.join(subscription['bindings'][self.o['subscription_index']]['prefix'][:])
-        topic = prefix + '.' + subtopic
+        #subscription = self.o['subscriptions'][self.o['subscription_index']]
+        #subtopic = ''.join(subscription['bindings'][self.o['subscription_index']]['sub'][:])
+        #prefix = ''.join(subscription['bindings'][self.o['subscription_index']]['prefix'][:])
+        topic = raw_body['topic']
 
-        logger.critical(f"Topic {topic} , prefix {prefix} , subtopic {subtopic}")
+        #logger.critical(f"Topic {topic} , prefix {prefix} , subtopic {subtopic}")
 
-        # topic = topic.replace('#', '%23')
-        # topic = topic.replace('*', '%22')
         exchange = 'exchange-not-used' # FIXME: What to do about this?
 
         #if len(topic) >= 255:  # ensure topic is <= 255 characters

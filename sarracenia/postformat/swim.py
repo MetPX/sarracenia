@@ -232,76 +232,164 @@ class Swim(PostFormat):
 
 
             Mandatory fields::
+                topic
+                content-type
+                subject
                 properties.pubtime (extracted from iwxxm:issueTime)
                 properties.datetime (for observations)
                 properties.{start,end}_datetime (for TAR/SIGMET)
             Conditional fields::
+                content-encoding (defaults to `identity` - for uncompressed data)
                 properties.icao_location_identifier
                 properties.icao_location_type
+                properties.integrity.* (sha512 recommended)
+                links.*
+                geometry.*
                     
-            NOTE: The links field is optional and not obligatory. 
-            NOTE: The payload integrity field is also theoretically optional. 
-            sha512 is the recommended method.
-            Geometry properties are optional 
-
 
             Improvements::
-                Add a technical message field? 
+                - Add amendment support. Some fields like the subject and the links[x].rel value 
+                    can be based off of the data is an amendment or not
+                - Add a technical message field?
                     https://github.com/iblsoft/swimdemo/blob/main/MET-SWIM-AMQP-Guidance.md#technical-messages
-                Add geometry coordinates support?
+                - Add geometry coordinates support?
         """
 
+        # What TODO with data that isn't in the sarracenia messages' contents?
+        # We'd need a way to get information for the subject, topic, etc. some other way and pass it to the downstream message
+
         logger.critical(f"Incoming sarracenia message {body}")
+        logger.critical(f"Options: {'.'.join(options['post_topicPrefix'][:])}")
 
         raw_body = {}
         # Generate datetime
         now = datetime.now().strftime('%Y-%m-%dT%H:%M:%SZ')
         
         if 'content' in body and body['content']:
-            for type in [ 'METAR', 'TAF', 'SIGMET', 'SPECI']:
+            for datatype in [ 'METAR', 'TAF', 'SIGMET', 'SPECI']:
                 # Try to find data type and assign values according to data type
                 # https://github.com/iblsoft/swimdemo/blob/main/MET-SWIM-AMQP-Guidance.md#document-structure-overview
-                if body['content']['value'].find(f'iwxxm:{type}') != -1:
-                    if type == 'METAR' or type == 'SPECI':
+                if body['content']['value'].find(f'iwxxm:{datatype}') != -1:
+                    if datatype == 'METAR' or datatype == 'SPECI':
                         raw_body['properties.datetime'] = now
                         raw_body['conformsTo'] = 'https://eur-registry.swim.aero/services/eurocontrol-iwxxm-metar-speci-subscription-and-request-service-10'
-                    if type == 'SIGMET' or type == 'TAF':
-                        # FIXME: Use XML parsing to fetch values?
+                        if datatype == 'SPECI': raw_body['amqp1_default_priority'] = 7
+                        if datatype == 'METAR': raw_body['amqp1_default_priority'] = 4
+                    if datatype == 'SIGMET' or datatype == 'TAF':
+                        # FIXME: Use XML parsing to fetch values
                         raw_body['properties.end_datetime'] = now
                         raw_body['properties.start_datetime'] = now
-                        if type == 'SIGMET': raw_body['conformsTo'] = 'https://eur-registry.swim.aero/services/eurocontrol-iwxxm-sigmet-subscription-and-request-service-10'
-                        else: raw_body['conformsTo'] = 'https://eur-registry.swim.aero/services/eurocontrol-iwxxm-taf-subscription-and-request-service-10'
+                        raw_body['conformsTo'] = f'https://eur-registry.swim.aero/services/eurocontrol-iwxxm-{datatype.lower()}-subscription-and-request-service-10'
+                        if datatype == 'SIGMET': raw_body['amqp1_default_priority'] = 7
+                        if datatype == 'TAF': raw_body['amqp1_default_priority'] = 5
+                        
+                    # Topic in WIS2 format : https://community.wmo.int/en/activity-areas/wis/WIS2-overview
+                    # metpx-sarracenia as center-id
+                    # core data, being free and unrestricted
+                    if options['post_topicPrefix']:
+                        raw_body['topic'] = '.'.join(options['post_topicPrefix'][:]) + f'.weather.{datatype.lower()}'
+                        #raw_body['topic'] =  f'origin.a.wis2.ca-eccc-msc.data.core.weather.{datatype.lower()}'
+                    else:
+                        raw_body['topic'] = ''
+
 
             try:
-                xml_root = ET.fromstring(body['content'])
+                # Get pubtime
+                xml_root = ET.fromstring(body['content']['value'])
                 # Based on what we receive from the DMS
                 issue_time = xml_root.find('.//{http://icao.int/iwxxm/3.0}issueTime')
                 time_instant = issue_time.find('TimeInstant')
                 time_position = time_instant.find('{http://www.opengis.net/gml/3.2}timePosition')
-                raw_body['properties.pubtime'] = time_position
-            except:                
-                # Give a fake value for now if value not found
+                raw_body['properties.pubtime'] = time_position.text
+
+            except Exception as e:
+                # FIXME? Give sarracenia pubTime instead. Needs to conform to
+                logger.error("Unable to fetch pubtime from source.")
+                logger.error("Exception Details", exc_info=True)
                 raw_body['properties.pubtime'] = now
+
+            # Default location to CWAO for now
+            # FIXME: Add specific 4 letter code. Extract from XML
+            # FIXME: Amendment support
+            # raw_body['properties.pubtime'] = 2025-07-25T21:01:23Z
+            YYYY = raw_body['properties.pubtime'][0:4]
+            MM = raw_body['properties.pubtime'][5:7]
+            DD = raw_body['properties.pubtime'][8:10]
+            HH = raw_body['properties.pubtime'][11:13]
+            mm = raw_body['properties.pubtime'][14:16]
+            SS = raw_body['properties.pubtime'][17:19]
+            raw_body['amqp1_subject'] = f"DATA_{datatype}_CWAO_NORMAL_{YYYY}{MM}{DD}{HH}{mm}{SS}"
+
+            try:
+                # Default data to be gzipped
+                encoded_content = body['content']['value'].encode('utf-8')
+                compressed_content = gzip.compress(encoded_content)
+
+                raw_body['amqp1_content_encoding'] = "gzip"
+                raw_body['body'] = compressed_content
+
+            except Exception:
+                # Default to identity if can't gzip
+                raw_body['amqp1_content_encoding'] = 'identity'
+                raw_body['body'] = body['content']['value'].encode('utf-8')
                 
-        # If we don't have a payload in the message, we need to include a link to the data.
-        else:
-            # Assume its a METAR/SPECI for now I guess?
+        # If we don't have a payload in the incoming sarracenia message, we need to include a link to the data.
+        # We should still add an external link to the data even if we don't have the payload in the incoming sarracenia message.
+        # We're only going to include 1 link (for now) to conform with sarracenia standards.
+        # https://github.com/iblsoft/swimdemo/blob/main/MET-SWIM-AMQP-Guidance.md#conditional-properties---external-links
+
+
+        if 'baseUrl' in body and body['baseUrl'] and 'relPath' in body and body['relPath']:
+            # Advertised linked data should be XML formatted
+            raw_body['links[0].type'] = 'application/xml'
+
+            # Canonical - primary data link
+            # Update - For amendments
+            raw_body['links[0].rel'] = 'canonical'
+            raw_body['links.count'] = 1
+            if body['baseUrl'][-1] == '/' or body['relPath'][0] == '/': 
+                raw_body['links[0].href'] = f"{body['baseUrl']}{body['relPath']}"
+            else:
+                raw_body['links[0].href'] = f"{body['baseUrl']}/{body['relPath']}"
+
+
+        # Topic in WIS2 format : https://community.wmo.int/en/activity-areas/wis/WIS2-overview
+        # metpx-sarracenia as center-id
+        # core data, being free and unrestricted
+        if options['post_topicPrefix'] and 'topic' not in raw_body:
+            raw_body['topic'] = '.'.join(options['post_topicPrefix'][:]) + '.weather'
+            #raw_body['topic'] = 'origin.a.wis2.ca-eccc-msc.data.core.weather'
+
+        #TODO: Should this be different from the topic??
+        raw_body['amqp1_address'] = raw_body['topic']
+
+        if 'amqp1_default_priority' not in raw_body:
+            raw_body['amqp1_default_priority'] = 3
+
+        # Assume its a METAR/SPECI for now I guess?
+        if 'properties.datetime' not in raw_body and 'properties.start_datetime' not in raw_body:
             raw_body['properties.datetime'] = now
-            # Give a fake value for now as well
+        # Give a fake value for now as well
+        if 'properties.pubtime' not in raw_body:
             raw_body['properties.pubtime'] = now
+
+        if 'amqp1_subject' not in raw_body:
+             raw_body['amqp1_subject'] = f"DATA_NOTDEFINED_CWAO_NORMAL_{YYYY}{MM}{DD}{HH}{mm}{SS}"
 
         if 'identity' in body and body['identity']:
             raw_body['properties.integrity.method'] = body['identity']['method']
             raw_body['properties.integrity.value'] = body['identity']['value']
 
         if 'contentType' in body:
-            # Only accepts application/xml or application/uri-list
-            # Based on https://github.com/iblsoft/swimdemo/blob/main/MET-SWIM-AMQP-Guidance.md#content-type-mandatory
-            if 'xml' in body['contentType']:
-                raw_body['amq1_content_type'] = 'application/xml'
+            if 'xml' in body['contentType'] and 'content' in body and body['content'] is not None:
+                body['amqp1_content_type'] = 'application/xml'
+            # Only assign uri-list when data only available from link
+            else:
+               body['amqp1_content_type'] = 'application/uri-list'
+
             # For technical messages
-            # elif 'json' in body['contentType']:
-            #     raw_body['amq1_content_type'] = 'application/json'
+            if 'json' in body['contentType']:
+                raw_body['amqp1_content_type'] = 'application/json'
 
         logger.critical(f"SWIM Message : {raw_body}")
 
