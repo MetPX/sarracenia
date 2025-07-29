@@ -186,6 +186,9 @@ class Flow:
                 self.plugins['load'].append('sarracenia.flowcb.nodupe.redis.Redis')
             else:
                 self.plugins['load'].append('sarracenia.flowcb.nodupe.disk.Disk')
+
+        if hasattr(self.o, 'inline') and self.o.inline:
+            self.plugins['load'].append('sarracenia.flowcb.work.add_inline.Add_inline')
             
 
         if (( hasattr(self.o, 'delete_source') and self.o.delete_source ) or \

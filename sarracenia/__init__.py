@@ -1102,6 +1102,47 @@ class Message(dict):
         with urllib.request.urlopen(retUrl) as response:
             return response.read()
 
+
+    def putContentInline(msg,options=None):
+        """
+        Embed file data inside a sarracenia message. Leverages the
+        getContent method to acquire the file data, then inserts it
+        in the sarracenia message when possible.
+
+        Does not return any value.
+        """
+
+        if 'size' in msg and msg['size'] >= options.inlineByteMax:
+            logger.warning(f"Not placing file contents in message due to file size being to big. File size {msg['size']}, inlineByteMax: {options.inlineByteMax}")
+            return
+        elif 'size' not in msg:
+            logger.warning(f"Cannot get file size. Won't write file contents in message as a consequence")
+            return
+
+        try:
+            content = msg.getContent()
+        except Exception as e:
+            logger.error(f"Couldn't fetch file contents with getContent. Error: {e}")
+            logger.debug("Exception details:", exc_info=True)
+
+        # We may want to call this method even if the file contents is already in the message to rewrite the entries.
+        if 'content' not in msg:
+            msg['content'] = {'value' : '' , 'encoding' : ''}
+
+        try:
+            msg['content']['value'] = content.decode('utf-8')
+            msg['content']['encoding'] = 'utf-8'
+        except UnicodeDecodeError:
+            # Assuming file is binary if can't decode in utf-8.
+            msg['content']['value'] = b64encode(content).decode('utf-8')
+            msg['content']['encoding'] = 'base64'
+        except Exception as e:
+            # The exception gives a nice explanation already
+            logger.error(f"Unable to add file content to message. Error: {e}")
+            logger.debug("Exception details:", exc_info=True)
+            del msg['content']
+
+
     def new_pathWrite(msg,options,data):
         """
            expects: msg['new_dir'] and msg['new_file'] to be set.
