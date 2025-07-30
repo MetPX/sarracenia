@@ -1112,22 +1112,33 @@ class Message(dict):
         Does not return any value.
         """
 
-        if 'size' in msg and msg['size'] >= options.inlineByteMax:
-            logger.warning(f"Not placing file contents in message due to file size being to big. File size {msg['size']}, inlineByteMax: {options.inlineByteMax}")
-            return
-        elif 'size' not in msg:
-            logger.warning(f"Cannot get file size. Won't write file contents in message as a consequence")
+        # Don't try to add data inline if it's already present.
+        if 'content' in msg:
             return
 
         try:
             content = msg.getContent()
+            sz = len(content)
+
+            # If there's not already a size in the message, give it an arbitrary value.
+            if 'size' not in msg:
+                msg['size'] = 0
+            # We want to update the message size with the recently fetched content.
+            if sz != msg['size']:
+                logger.warning(f"Size from getContent doesn't match previously assigned size. Reassigning size to {sz}")
+                msg['size'] = sz
+
+            if msg['size'] >= options.inlineByteMax:
+                logger.warning(f"Not placing file contents in message due to file size being to big. File size {msg['size']}, inlineByteMax: {options.inlineByteMax}")
+                return
+
         except Exception as e:
             logger.error(f"Couldn't fetch file contents with getContent. Error: {e}")
             logger.debug("Exception details:", exc_info=True)
+            return
 
         # We may want to call this method even if the file contents is already in the message to rewrite the entries.
-        if 'content' not in msg:
-            msg['content'] = {'value' : '' , 'encoding' : ''}
+        msg['content'] = {'value' : '' , 'encoding' : ''}
 
         try:
             msg['content']['value'] = content.decode('utf-8')
