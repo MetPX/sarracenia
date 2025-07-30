@@ -1102,6 +1102,57 @@ class Message(dict):
         with urllib.request.urlopen(retUrl) as response:
             return response.read()
 
+
+    def putContentInline(msg,options=None):
+        """
+        Embed file data inside a sarracenia message. Leverages the
+        getContent method to acquire the file data, then inserts it
+        in the sarracenia message when possible.
+
+        Does not return any value.
+        """
+
+        # Don't try to add data inline if it's already present.
+        if 'content' in msg:
+            return
+
+        try:
+            content = msg.getContent()
+            sz = len(content)
+
+            # We want to update the message size with the recently fetched content.
+            if 'size' not in msg:
+                logger.debug(f"Size in incoming message not found. Including new size: {sz}")
+                msg['size'] = sz
+            elif sz != msg['size']:
+                logger.warning(f"Size from getContent doesn't match previously assigned size. Reassigning size to {sz}")
+                msg['size'] = sz
+
+            if msg['size'] >= options.inlineByteMax:
+                logger.warning(f"Not placing file contents in message due to file size being too big. File size {msg['size']}, inlineByteMax: {options.inlineByteMax}")
+                return
+
+        except Exception as e:
+            logger.error(f"Couldn't fetch file contents with getContent. Error: {e}")
+            logger.debug("Exception details:", exc_info=True)
+            return
+
+        msg['content'] = {'value' : '' , 'encoding' : ''}
+
+        try:
+            msg['content']['value'] = content.decode('utf-8')
+            msg['content']['encoding'] = 'utf-8'
+        except UnicodeDecodeError:
+            # Assuming file is binary if can't decode in utf-8.
+            msg['content']['value'] = b64encode(content).decode('utf-8')
+            msg['content']['encoding'] = 'base64'
+        except Exception as e:
+            # The exception gives a nice explanation already
+            logger.error(f"Unable to add file content to message. Error: {e}")
+            logger.debug("Exception details:", exc_info=True)
+            del msg['content']
+
+
     def new_pathWrite(msg,options,data):
         """
            expects: msg['new_dir'] and msg['new_file'] to be set.
