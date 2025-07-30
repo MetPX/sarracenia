@@ -432,6 +432,15 @@ and use the data from that.</p>
 </dd></dl>
 
 <dl class="py method">
+<dt class="sig sig-object py" id="sarracenia.Message.putContentInline">
+<span class="sig-name descname"><span class="pre">putContentInline</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">options</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/sarracenia.html#Message.putContentInline"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#sarracenia.Message.putContentInline" title="Link to this definition"></a></dt>
+<dd><p>Embed file data inside a sarracenia message. Leverages the
+getContent method to acquire the file data, then inserts it
+in the sarracenia message when possible.</p>
+<p>Does not return any value.</p>
+</dd></dl>
+
+<dl class="py method">
 <dt class="sig sig-object py" id="sarracenia.Message.retryCount">
 <span class="sig-name descname"><span class="pre">retryCount</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/sarracenia.html#Message.retryCount"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#sarracenia.Message.retryCount" title="Link to this definition"></a></dt>
 <dd><p>return the number of times the message has been retried.

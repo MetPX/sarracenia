@@ -1246,6 +1246,60 @@
             <span class="k">return</span> <span class="n">response</span><span class="o">.</span><span class="n">read</span><span class="p">()</span></div>
 
 
+
+<div class="viewcode-block" id="Message.putContentInline">
+<a class="viewcode-back" href="../api-documentation.html#sarracenia.Message.putContentInline">[docs]</a>
+    <span class="k">def</span> <span class="nf">putContentInline</span><span class="p">(</span><span class="n">msg</span><span class="p">,</span><span class="n">options</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Embed file data inside a sarracenia message. Leverages the</span>
+<span class="sd">        getContent method to acquire the file data, then inserts it</span>
+<span class="sd">        in the sarracenia message when possible.</span>
+
+<span class="sd">        Does not return any value.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="c1"># Don&#39;t try to add data inline if it&#39;s already present.</span>
+        <span class="k">if</span> <span class="s1">&#39;content&#39;</span> <span class="ow">in</span> <span class="n">msg</span><span class="p">:</span>
+            <span class="k">return</span>
+
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">content</span> <span class="o">=</span> <span class="n">msg</span><span class="o">.</span><span class="n">getContent</span><span class="p">()</span>
+            <span class="n">sz</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">content</span><span class="p">)</span>
+
+            <span class="c1"># We want to update the message size with the recently fetched content.</span>
+            <span class="k">if</span> <span class="s1">&#39;size&#39;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">msg</span><span class="p">:</span>
+                <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Size in incoming message not found. Including new size: </span><span class="si">{</span><span class="n">sz</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+                <span class="n">msg</span><span class="p">[</span><span class="s1">&#39;size&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">sz</span>
+            <span class="k">elif</span> <span class="n">sz</span> <span class="o">!=</span> <span class="n">msg</span><span class="p">[</span><span class="s1">&#39;size&#39;</span><span class="p">]:</span>
+                <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Size from getContent doesn&#39;t match previously assigned size. Reassigning size to </span><span class="si">{</span><span class="n">sz</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+                <span class="n">msg</span><span class="p">[</span><span class="s1">&#39;size&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">sz</span>
+
+            <span class="k">if</span> <span class="n">msg</span><span class="p">[</span><span class="s1">&#39;size&#39;</span><span class="p">]</span> <span class="o">&gt;=</span> <span class="n">options</span><span class="o">.</span><span class="n">inlineByteMax</span><span class="p">:</span>
+                <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Not placing file contents in message due to file size being too big. File size </span><span class="si">{</span><span class="n">msg</span><span class="p">[</span><span class="s1">&#39;size&#39;</span><span class="p">]</span><span class="si">}</span><span class="s2">, inlineByteMax: </span><span class="si">{</span><span class="n">options</span><span class="o">.</span><span class="n">inlineByteMax</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+                <span class="k">return</span>
+
+        <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Couldn&#39;t fetch file contents with getContent. Error: </span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;Exception details:&quot;</span><span class="p">,</span> <span class="n">exc_info</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+            <span class="k">return</span>
+
+        <span class="n">msg</span><span class="p">[</span><span class="s1">&#39;content&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;value&#39;</span> <span class="p">:</span> <span class="s1">&#39;&#39;</span> <span class="p">,</span> <span class="s1">&#39;encoding&#39;</span> <span class="p">:</span> <span class="s1">&#39;&#39;</span><span class="p">}</span>
+
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">msg</span><span class="p">[</span><span class="s1">&#39;content&#39;</span><span class="p">][</span><span class="s1">&#39;value&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">content</span><span class="o">.</span><span class="n">decode</span><span class="p">(</span><span class="s1">&#39;utf-8&#39;</span><span class="p">)</span>
+            <span class="n">msg</span><span class="p">[</span><span class="s1">&#39;content&#39;</span><span class="p">][</span><span class="s1">&#39;encoding&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;utf-8&#39;</span>
+        <span class="k">except</span> <span class="ne">UnicodeDecodeError</span><span class="p">:</span>
+            <span class="c1"># Assuming file is binary if can&#39;t decode in utf-8.</span>
+            <span class="n">msg</span><span class="p">[</span><span class="s1">&#39;content&#39;</span><span class="p">][</span><span class="s1">&#39;value&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">b64encode</span><span class="p">(</span><span class="n">content</span><span class="p">)</span><span class="o">.</span><span class="n">decode</span><span class="p">(</span><span class="s1">&#39;utf-8&#39;</span><span class="p">)</span>
+            <span class="n">msg</span><span class="p">[</span><span class="s1">&#39;content&#39;</span><span class="p">][</span><span class="s1">&#39;encoding&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;base64&#39;</span>
+        <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+            <span class="c1"># The exception gives a nice explanation already</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Unable to add file content to message. Error: </span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;Exception details:&quot;</span><span class="p">,</span> <span class="n">exc_info</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+            <span class="k">del</span> <span class="n">msg</span><span class="p">[</span><span class="s1">&#39;content&#39;</span><span class="p">]</span></div>
+
+
+
 <div class="viewcode-block" id="Message.new_pathWrite">
 <a class="viewcode-back" href="../api-documentation.html#sarracenia.Message.new_pathWrite">[docs]</a>
     <span class="k">def</span> <span class="nf">new_pathWrite</span><span class="p">(</span><span class="n">msg</span><span class="p">,</span><span class="n">options</span><span class="p">,</span><span class="n">data</span><span class="p">):</span>
