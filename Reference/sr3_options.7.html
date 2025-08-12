@@ -113,7 +113,7 @@
 <dd class="field-odd"><p>7</p>
 </dd>
 <dt class="field-even">Date<span class="colon">:</span></dt>
-<dd class="field-even"><p>Jul 30, 2025</p>
+<dd class="field-even"><p>Aug 12, 2025</p>
 </dd>
 <dt class="field-odd">Version<span class="colon">:</span></dt>
 <dd class="field-odd"><p>3.01.00rc2</p>
@@ -1717,9 +1717,10 @@ the <em>sr3 status</em> command will show such flows as <em>idle</em></p>
 In a flow that transfers data, the last activity will be based on the last data transfer.
 In a flow does neither of the above, then the last activity is based on the last message
 received.</p>
-<p>This isn’t a problem in itself, unless one is expecting a continuous flow. If a continuous flow
-of a certain rate is expected, set the <em>runStateThreshold_slow</em> for the flow so that <em>sr3 status</em> flags
-it as a problem.</p>
+<p>Idle isn’t a problem in itself, unless one is expecting to receive data at regular intervals (e.g. at least
+one file every 15 minutes).</p>
+<p>If a continuous flow of a certain data rate (bytes per second) is expected, set
+<em>runStateThreshold_slow</em> for the flow so that <em>sr3 status</em> flags it as a problem (too slow).</p>
 </section>
 <section id="runstatethreshold-lag-interval-default-30">
 <h4>runStateThreshold_lag &lt;interval&gt; (default: 30)<a class="headerlink" href="#runstatethreshold-lag-interval-default-30" title="Link to this heading"></a></h4>

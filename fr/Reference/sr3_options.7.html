@@ -112,7 +112,7 @@
 <dd class="field-odd"><p>7</p>
 </dd>
 <dt class="field-even">Date<span class="colon">:</span></dt>
-<dd class="field-even"><p>Jul 30, 2025</p>
+<dd class="field-even"><p>Aug 12, 2025</p>
 </dd>
 <dt class="field-odd">Version<span class="colon">:</span></dt>
 <dd class="field-odd"><p>3.01.00rc2</p>
@@ -1701,9 +1701,10 @@ la commande <em>sr3 status</em> affichera ces flux comme <em>idle</em></p>
 Dans un flux qui transfère des données, la dernière activité sera basée sur le dernier transfert de données.
 Dans un flux dont aucun des cas ci-haut s’appliquent, la dernière activité est alors basée sur le dernier
 message reçu.</p>
-<p>Ce n’est pas un problème en soi, sauf si l’on s’attend à un flux continu. Si un flux continu
-d’un certain débit est attendu, définissez le <em>runStateThreshold_slow</em> pour le flux afin que
-les indicateurs <em>sr3 status</em> que c’est un problème (en affichant <em>slow</em> )</p>
+<p>Ce n’est pas un problème en soi, sauf si l’on s’attend à recevoir des données à intervalles réguliers
+(par exemple, au moins un fichier toutes les 15 minutes).</p>
+<p>Si un flux continu d’un certain débit de données (octets par seconde) est attendu, définissez
+<em>runStateThreshold_slow</em> pour le flux afin que <em>sr3 status</em> le signale comme un problème (trop lent).</p>
 </section>
 <section id="runstatethreshold-lag-intervalle-defaut-30s">
 <h4>runStateThreshold_lag &lt;intervalle&gt; (défaut: 30s)<a class="headerlink" href="#runstatethreshold-lag-intervalle-defaut-30s" title="Link to this heading"></a></h4>
