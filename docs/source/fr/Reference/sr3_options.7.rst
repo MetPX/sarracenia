@@ -1860,9 +1860,11 @@ Dans un flux qui transfère des données, la dernière activité sera basée sur
 Dans un flux dont aucun des cas ci-haut s'appliquent, la dernière activité est alors basée sur le dernier 
 message reçu.
 
-Ce n'est pas un problème en soi, sauf si l'on s'attend à un flux continu. Si un flux continu
-d'un certain débit est attendu, définissez le *runStateThreshold_idle* pour le flux afin que
-les indicateurs *sr3 status* que c'est un problème (en affichant *slow* )
+Ce n'est pas un problème en soi, sauf si l'on s'attend à recevoir des données à intervalles réguliers
+(par exemple, au moins un fichier toutes les 15 minutes).
+ 
+Si un flux continu d'un certain débit de données (octets par seconde) est attendu, définissez
+*runStateThreshold_slow* pour le flux afin que *sr3 status* le signale comme un problème (trop lent).
 
 runStateThreshold_lag <intervalle> (défaut: 30s)
 ------------------------------------------------
