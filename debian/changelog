@@ -1,3 +1,9 @@
+metpx-sr3 (3.01.01rc1) UNRELEASED; urgency=medium
+
+  * incremented version number for new development work
+
+ -- Reid Sunderland <reid.sunderland@ssc-spc.gc.ca>  Fri, 15 Aug 2025 19:18:32 +0000
+
 metpx-sr3 (3.01.00) unstable; urgency=medium
 
   * This release is the first of sr3 v3.01 because of a significant new
