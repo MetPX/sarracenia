@@ -55,12 +55,14 @@ class Poll(Flow):
 
         super().__init__(options)
 
-        if hasattr(self.o,'post_exchange') and hasattr(self.o,'exchange'):
-            px = self.o.post_exchange if type(self.o.post_exchange) != list else self.o.post_exchange[0]
-            if px != self.o.exchange:
-                logger.warning( f"post_exchange: {px} is different from exchange: {self.o.exchange}. The settings need for multiple instances to share a poll." )
+        if hasattr(self.o,'publishers') and hasattr(self.o,'subscriptions') and \
+            len(self.o.subscriptions) > 0 and len(self.o.publishers) > 0:
+            px = self.o.publishers[0]['exchange'][0]
+            sx = self.o.subscriptions[0]['bindings'][0]['exchange'] 
+            if px != sx:
+                logger.warning( f"post_exchange: {px} is different from exchange: {sx}. The settings need for multiple instances to share a poll." )
             else:
-                logger.info( f"Good! post_exchange: {px} and exchange: {self.o.exchange} match so multiple instances to share a poll." )
+                logger.debug( f"Good! post_exchange: {px} and exchange: {sx} match so multiple instances to share a poll." )
 
         if not 'scheduled' in ','.join(self.plugins['load']):
             self.plugins['load'].append('sarracenia.flowcb.scheduled.poll.Poll')

@@ -59,7 +59,6 @@ default_options = {
     'logLevel': 'info',
     'persistent': True,
     'prefetch': 25,
-    'queueName': None,
     'queueBind': True,
     'queueDeclare': True,
     'reset': False,
@@ -199,6 +198,7 @@ class AMQP(Moth):
         self.connection = None
         self.connection_id = None
         self.broker = None
+        self.next_message = 0
 
     def __connect(self, broker) -> bool:
         """
@@ -265,45 +265,51 @@ class AMQP(Moth):
 
     def _queueDeclare(self,passive=False) ->  int:
 
+        subscription=self.o['subscriptions'][self.o['subscription_index']]
+        queue=subscription['queue']
+        broker = subscription['broker']
+
         try:
             # from sr_consumer.build_connection...
             if not self.connection or not self.connection.connected:
-                if not self.__connect(self.o['broker']):
-                    logger.critical('could not connect')
+                if not self.__connect(broker):
+                    logger.critical('could not connect to {str(broker)}')
                     if hasattr(self,'metrics'):
                         self.metrics['brokerQueuedMessageCount'] = -2
                     return -2
 
             #FIXME: test self.first_setup and props['reset']... delete queue...
-            broker_str = self.o['broker'].url.geturl().replace(
-                ':' + self.o['broker'].url.password + '@', '@')
+            broker_str = broker.url.geturl().replace( ':' + broker.url.password + '@', '@')
 
-            if self.o['queueDeclare'] and self.o['queueName']:
+            if queue['declare'] and queue['name']:
 
                 args = {}
-                if self.o['expire']:
-                    x = int(self.o['expire'] * 1000)
+                if 'expire' in queue and queue['expire'] is not None :
+                    x = int(queue['expire'] * 1000)
                     if x > 0: args['x-expires'] = x
-                if self.o['messageAgeMax']:
+                if 'messageAgeMax' in self.o and self.o['messageAgeMax']:
                     x = int(self.o['messageAgeMax'] * 1000)
                     if x > 0: args['x-message-ttl'] = x
+                if 'type' in queue and queue['type'] is not None:
+                    x = queue['type']
+                    if x in ['classic', 'quorum', 'stream']: args['x-queue-type'] = x
 
                 #FIXME: convert expire, message_ttl to proper units.
                 if self.o['dry_run']:
                     logger.info('queue declare (dry run) %s (as: %s) ' %
-                            (self.o['queueName'], broker_str))
+                            (queue['name'], broker_str))
                     msg_count=0
                 else:
                     qname, msg_count, consumer_count = self.management_channel.queue_declare(
-                        self.o['queueName'],
+                        queue['name'],
                         passive=passive,
-                        durable=self.o['durable'],
+                        durable=queue['durable'],
                         exclusive=False,
-                        auto_delete=self.o['auto_delete'],
+                        auto_delete=queue['auto_delete'],
                         nowait=False,
                         arguments=args)
                     if not passive:
-                        logger.info( f"queue declared {self.o['queueName']} (as: {broker_str}), (messages waiting: {msg_count})" )
+                        logger.info( f"queue declared {queue['name']} (as: {broker_str}), (messages waiting: {msg_count})" )
 
                 if hasattr(self,'metrics'):
                    self.metrics['brokerQueuedMessageCount'] = msg_count
@@ -311,31 +317,15 @@ class AMQP(Moth):
 
         except Exception as err:
             logger.error(
-                    f'connecting to: {self.o["queueName"]}, durable: {self.o["durable"]}, expire: {self.o["expire"]}, auto_delete={self.o["auto_delete"]}'
+                    f'connecting to: {queue["name"]}, durable: {queue["durable"]}, expire: {queue["expire"]}, auto_delete={queue["auto_delete"]}'
                 )
-            logger.error( f"failed queue declare to {self.o['broker'].url.hostname}: {err}" )
+            logger.error( f"failed queue declare to {broker.url.hostname}: {err}" )
             logger.debug('Exception details: ', exc_info=True)
 
         if hasattr(self,'metrics'):
             self.metrics['brokerQueuedMessageCount'] = -1
-        return -1
 
-    def setEbo(self,start)->None:
-        """  Calculate next retry time using exponential backoff
-             note that it doesn't look like classic EBO because the time
-             is multiplied by how long it took to fail. Long failures should not
-             be retried quickly, but short failures can be variable in duration.
-             If the timing of failures is variable, the "attempt_duration" will be low, 
-             and so the next_try might get smaller even though it hasn't succeeded yet... 
-             it should eventually settle down to a long period though.
-        """
-        now=time.time()
-        attempt_duration = now - start
-        self.next_connect_failures += 1
-        ebo = 2**self.next_connect_failures
-        next_try = min(attempt_duration * ebo, 600)
-        self.next_connect_time = now + next_try
-        logger.error( f"could not connect. next try in {next_try} seconds.")
+        return -1
 
     def getSetup(self) -> None:
         """
@@ -344,30 +334,37 @@ class AMQP(Moth):
         if message_strategy is stubborn, will loop here forever.
              connect, declare queue, apply bindings.
         """
+
         if self._stop_requested:
             return
 
-        if 'broker' not in self.o or self.o['broker'] is None:
+        elif 'broker' not in self.o or self.o['broker'] is None:
             logger.critical( f"no broker given" )
             return
 
+        subscription=self.o['subscriptions'][self.o['subscription_index']]
+        queue=subscription['queue']
+        broker=subscription['broker']
+
         start = time.time()
         if start < self.next_connect_time:
-            logger.critical( f"too soon to connect again will try in: {self.next_connect_time-start} seconds" )
+            if start > self.next_message:
+                logger.critical( f"too soon to connect again to {str(broker)} index={self.o['subscription_index']} will try in: {self.next_connect_time-start:.2f} seconds" )
+                self.next_message=start+5
             return
 
         # It does not really matter how it fails, the recovery approach is always the same:
         # tear the whole thing down, and start over.
         try:
             # from sr_consumer.build_connection...
-            if not self.__connect(self.o['broker']):
+            if not self.__connect(broker):
                 self.setEbo(start)
                 self.connection = None
                 return
             
             if self.o['prefetch'] != 0:
                 # using global False because RabbitMQ Quorum Queues don't support Global QoS, issue #1233
-                self.channel.basic_qos(0, self.o['prefetch'], False)
+                self.channel.basic_qos(0, queue['prefetch'], False)
 
             # only first/lead instance needs to declare a queue and bindings.
             if 'no' in self.o and self.o['no'] >= 2:
@@ -378,26 +375,29 @@ class AMQP(Moth):
             #logger.info('getSetup connected to {}'.format(self.o['broker'].url.hostname) )
 
             #FIXME: test self.first_setup and props['reset']... delete queue...
-            broker_str = self.o['broker'].url.geturl().replace(
-                ':' + self.o['broker'].url.password + '@', '@')
+            broker_str = broker.url.geturl().replace( ':' + broker.url.password + '@', '@')
 
             # from Queue declare
             msg_count = self._queueDeclare()
             
             if msg_count == -2: return
 
-            if self.o['queueBind'] and self.o['queueName']:
-                for tup in self.o['bindings']:
-                    exchange, prefix, subtopic = tup
+            if queue['bind'] and queue['name']:
+                for b in subscription['bindings']:
+                    #exchange, prefix, subtopic = tup
+                    exchange = b['exchange']
+                    prefix= b['prefix']
+                    subtopic = b['sub']
                     topic = '.'.join(prefix + subtopic)
+
                     if self.o['dry_run']:
                         logger.info('binding (dry run) %s with %s to %s (as: %s)' % \
-                            ( self.o['queueName'], topic, exchange, broker_str ) )
+                            ( queue['name'], topic, exchange, broker_str ) )
                     else:
                         logger.info('binding %s with %s to %s (as: %s)' % \
-                            ( self.o['queueName'], topic, exchange, broker_str ) )
+                            ( queue['name'], topic, exchange, broker_str ) )
                         if exchange:
-                            self.management_channel.queue_bind(self.o['queueName'], exchange,
+                            self.management_channel.queue_bind(queue['name'], exchange,
                                             topic)
 
             # Setup Successfully Complete!
@@ -408,26 +408,30 @@ class AMQP(Moth):
 
         except Exception as err:
             logger.error(
-                f'connecting to: {self.o["queueName"]}, durable: {self.o["durable"]}, expire: {self.o["expire"]}, auto_delete={self.o["auto_delete"]}'
+                f'connecting to: {queue["name"]}, durable: {queue["durable"]}, expire: {queue["expire"]}, auto_delete={queue["auto_delete"]}'
             )
-            logger.error( f"failed connection to {self.o['broker'].url.hostname}: {err}" )
+            logger.error( f"failed connection to {str(broker)}: {err}" )
             logger.debug('Exception details: ', exc_info=True)
             self.setEbo(start)
             self.connection = None
 
+
     def putSetup(self) -> None:
 
+        if self._stop_requested:
+            return
+
         start = time.time()
+
         if start < self.next_connect_time:
-            logger.critical( f"too soon to connect again will try in: {self.next_connect_time-start} seconds" )
+            if start > self.next_message :
+                logger.critical( f"too soon to connect to {str(self.o['broker'])}. Will try again in: {self.next_connect_time-start:.2f} seconds" )
+                self.next_message=start+5
             return
 
         # It does not really matter how it fails, the recovery approach is always the same:
         # tear the whole thing down, and start over.
         try:
-            if self._stop_requested:
-                return
-
             if self.o['broker'] is None:
                 logger.critical( f"no broker given" )
                 return
@@ -442,7 +446,7 @@ class AMQP(Moth):
             broker_str = self.o['broker'].url.geturl().replace(
                 ':' + self.o['broker'].url.password + '@', '@')
 
-            #logger.debug('putSetup ... 1. connected to {}'.format(broker_str ) )
+            logger.debug( f"putSetup ... 1. connected to {broker_str}" )
 
             if self.o['exchangeDeclare']:
                 logger.debug('putSetup ... 1. declaring {}'.format(
@@ -469,7 +473,7 @@ class AMQP(Moth):
 
         except Exception as err:
             logger.error(
-                "AMQP putSetup failed to connect or declare exchanges {}@{} on {}: {}"
+                "failed to connect or declare exchanges {}@{} on {}: {}"
                 .format(self.o['exchange'], self.o['broker'].url.username,
                         self.o['broker'].url.hostname, err))
             logger.debug('Exception details: ', exc_info=True)
@@ -492,22 +496,25 @@ class AMQP(Moth):
                     err_msg = str(err).replace("Exchange.delete: (406) PRECONDITION_FAILED - exchange ", "")
                     logger.warning("failed to delete exchange: %s" % err_msg)
         except Exception as err:
-            logger.error("failed on {} with {}".format(
-                self.o['broker'].url.hostname, err))
+            logger.error( f"failed on {str(self.o['broker'])} with {err}" ) 
             logger.debug('Exception details: ', exc_info=True)
 
     def getCleanUp(self) -> None:
 
+        if not 'subscriptions' in self.o:
+            return 
+
+        s=self.o['subscriptions'][self.o['subscription_index']]
+        q=s['queue']
         try:
             if self.o['dry_run']:
-                logger.info("deleting queue (dry run) %s" % self.o['queueName'] )
+                logger.info("deleting queue (dry run) %s" % q['name'] )
             else:
-                logger.info("deleting queue %s" % self.o['queueName'] )
+                logger.info("deleting queue %s" % q['name'] )
                 if hasattr(self,'channel'):
-                    self.channel.queue_delete(self.o['queueName'])
+                    self.channel.queue_delete(q['name'])
         except Exception as err:
-            logger.error("failed to {} with {}".format(
-                self.o['broker'].url.hostname, err))
+            logger.error( f"failed to {str(s['broker'])} with {err}" )
             logger.debug('Exception details: ', exc_info=True)
 
     def newMessages(self) -> list:
@@ -536,6 +543,9 @@ class AMQP(Moth):
             logger.error("getting from a publisher")
             return None
 
+        subscription=self.o['subscriptions'][self.o['subscription_index']]
+        queue=subscription['queue']
+    
         try:
             if not self.connection:
                 self.getSetup()
@@ -543,13 +553,15 @@ class AMQP(Moth):
             if (not hasattr(self,'channel')) or (not hasattr(self,'connection')) or not self.connection:
                 return None
 
-            raw_msg = self.channel.basic_get(self.o['queueName'])
+            raw_msg = self.channel.basic_get(queue['name'])
             if (raw_msg is None) and (self.connection.connected):
                 return None
             else:
                 self.metrics['rxByteCount'] += len(raw_msg.body)
                 try: 
                     msg = self._msgRawToDict(raw_msg)
+                    msg['subscription_index'] = self.o['subscription_index']
+                    msg['_deleteOnPost'] |= set( ['subscription_index'] )
                 except Exception as err:
                     logger.error("message decode failed. raw message: %s" % raw_msg.body )
                     logger.debug('Exception details: ', exc_info=True)
@@ -567,8 +579,7 @@ class AMQP(Moth):
                 logger.debug("new msg: %s" % msg)
                 return msg
         except Exception as err:
-            logger.warning("failed %s: %s" %
-                           (self.o['queueName'], err))
+            logger.warning("failed %s: %s" % (queue['name'], err))
             logger.debug('Exception details: ', exc_info=True)
 
         if not self.o['message_strategy']['stubborn']:
@@ -579,7 +590,7 @@ class AMQP(Moth):
         time.sleep(1)
         return None
 
-    def ack(self, m: sarracenia.Message) -> None:
+    def ack(self, m: sarracenia.Message) -> bool:
         """
            do what you need to acknowledge that processing of a message is done.
            NOTE: AMQP delivery tags (we call them ack_id) are scoped per channel. "Deliveries must be 
@@ -605,36 +616,27 @@ class AMQP(Moth):
             m['_deleteOnPost'].remove('ack_id')
             return False
         
-        #logger.info( f"acknowledging {m['ack_id']}" )
-        ebo = 1
-        while True:
-            try:
-                if hasattr(self, 'channel'): 
-                    self.channel.basic_ack(m['ack_id']['delivery_tag'])
-                    del m['ack_id']
-                    m['_deleteOnPost'].remove('ack_id')
-                    return True
-                else:
-                    logger.warning(f"Can't ack {m['ack_id']}, don't have a channel")
-                    del m['ack_id']
-                    m['_deleteOnPost'].remove('ack_id')
-                    return False
-            
-            except Exception as err:
-                logger.warning("failed for tag: %s: %s" % (m['ack_id'], err))
-                logger.debug('Exception details: ', exc_info=True)
-                # No point in trying to ack again if the connection is broken
+        try:
+            if hasattr(self, 'channel'): 
+                self.channel.basic_ack(m['ack_id']['delivery_tag'])
                 del m['ack_id']
                 m['_deleteOnPost'].remove('ack_id')
-                self.close()
-                return False
+                return True
+            else:
+                logger.warning(f"Can't ack {m['ack_id']}, don't have a channel")
+                del m['ack_id']
+                m['_deleteOnPost'].remove('ack_id')
             
-            if ebo < 60:
-                ebo *= 2
-            logger.info("Sleeping {} seconds before re-trying ack...".format(ebo))
-            interruptible_sleep(ebo, obj=self)
-            # TODO maybe implement message strategy stubborn here and give up after retrying?
+        except Exception as err:
+            logger.warning("failed for tag: %s: %s" % (m['ack_id'], err))
+            logger.debug('Exception details: ', exc_info=True)
+            # No point in trying to ack again if the connection is broken
+            del m['ack_id']
+            m['_deleteOnPost'].remove('ack_id')
+            self.close()
 
+        return False
+            
     def putNewMessage(self,
                       message: sarracenia.Message,
                       content_type: str = 'application/json',
@@ -652,6 +654,8 @@ class AMQP(Moth):
             try:
                 self.close()
                 self.putSetup()
+                if (not self.connection) or (not self.connection.connected) or (not self.channel.is_open):
+                    return False
             except Exception as err:
                 logger.warning(f"failed, connection was closed/broken and could not be re-opened {exchange}: {err}")
                 logger.debug('Exception details: ', exc_info=True)
@@ -660,7 +664,10 @@ class AMQP(Moth):
         # The caller probably doesn't expect the message to get modified by this method, so use a copy of the message
         body = copy.deepcopy(message)
 
-        version = body['_format']
+        if 'format' in self.o:
+            version=self.o['format']
+        else:
+            version = body['_format']
 
 
         if '_deleteOnPost' in body:
@@ -688,7 +695,7 @@ class AMQP(Moth):
             else:
                 exchange = self.o['exchange']
 
-        if self.o['messageAgeMax']:
+        if 'messageAgeMax' in self.o and self.o['messageAgeMax']:
             ttl = "%d" * int(
                 sarracenia.durationToSeconds(self.o['messageAgeMax']) * 1000)
         else:
@@ -717,9 +724,10 @@ class AMQP(Moth):
                              (version, type(raw_body),  raw_body))
             logger.info('raw message headers: type: %s value: %s' % (type(headers),  headers))
 
-        message['post_topic'] = topic
-        message['post_exchange'] = exchange
-        message['_deleteOnPost'] |= set( ['post_exchange', 'post_topic'] )
+        if not 'posts' in message: 
+            message['posts'] = []
+        message['posts'].append( { 'broker':str(self.o['broker']), 'topic': topic, 'exchange':exchange } ) 
+        message['_deleteOnPost'] |= set( ['posts'] )
         del headers['topic']
 
         if headers :  

@@ -71,9 +71,17 @@ class AMQPConsumer(AMQP):
 
     def getSetup(self) -> None:
         super().getSetup()
-        # (re)create queue. Anything in the queue is invalid after re-creating a connection.
+
+        # super getSetup failed
+        if self.connection is None:
+            return
+
+        # (re)create local msg queue. Anything in the queue is invalid after re-creating a connection.
         self._raw_msg_q = queue.Queue() 
-        self._active_consumer_tag = self.channel.basic_consume(queue=self.o['queueName'], 
+
+        subscription = self.o['subscriptions'][self.o['subscription_index']]
+        sub_queue = subscription['queue']
+        self._active_consumer_tag = self.channel.basic_consume(queue=sub_queue['name'],
                                                                consumer_tag=self._request_consumer_tag,
                                                                no_ack=False, 
                                                                callback=self.__get_on_message)
@@ -93,6 +101,9 @@ class AMQPConsumer(AMQP):
         try:
             if not self.connection:
                 self.getSetup()
+            # check again, fail if it didn't connect
+            if not self.connection:
+                return None
 
             # trigger incoming event processing
             try:
@@ -131,8 +142,9 @@ class AMQPConsumer(AMQP):
                 logger.debug("new msg: %s" % msg)
                 return msg
         except Exception as err:
-            logger.warning("failed %s: %s" %
-                           (self.o['queueName'], err))
+            subscription = self.o['subscriptions'][self.o['subscription_index']]
+            sub_queue = subscription['queue']
+            logger.warning("failed %s: %s" % (sub_queue['name'], err))
             logger.debug('Exception details: ', exc_info=True)
 
         if not self.o['message_strategy']['stubborn']:

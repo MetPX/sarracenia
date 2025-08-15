@@ -171,9 +171,8 @@ class Flow:
         self.worklist.failed = []
         self.worklist.directories_ok = []
 
-        # for poll only, mark if we are catching up on posted messages
-        #
-        self.worklist.poll_catching_up = False
+        # keep track of messages gathered from polling
+        self.last_poll_gather_len = 0
 
         # Witness the creation of this list
         self.plugins['load'] = self.o.plugins_early + [
@@ -599,13 +598,21 @@ class Flow:
 
                 self.filter()
 
-                # this for duplicate cache synchronization.
-                if self.worklist.poll_catching_up:
-                    self.ack(self.worklist.incoming)
-                    self.worklist.incoming = []
+                self.work()
 
-                else: # normal processing, when you are active.
-                    self.work()
+                # In a poll: for duplicate cache synchronization, only post messages that were acquired by polling;
+                # messages from brokers(s) should not be posted. We should never have messages gathered from the
+                # queue in worklist.incoming at the same time as messages gathered by polling.
+                # Issues #1447, #1132
+                # For non-polls: post when we have the VIP
+                if self.o.component != 'poll' or (self.o.component == 'poll' and self.last_poll_gather_len > 0):
+                    self.post(now)
+                # special case: in poll, need to post messages that previously failed to post and were added to
+                #               worklist.ok by retry.py, even when last_poll_gather_len is 0
+                elif self.o.component == 'poll':
+                    # get rid of non-retry messages from worklist.ok, we only want to post retries
+                    new_ok = [ msg for msg in self.worklist.ok if ('_isRetry' in msg and msg['_isRetry']) ]
+                    self.worklist.ok = new_ok
                     self.post(now)
 
             now = nowflt()
@@ -858,7 +865,13 @@ class Flow:
             if self.o.post_baseDir:
                 new_dir = self.o.variableExpansion(self.o.post_baseDir, msg)
         d=None
-        if self.o.baseDir:
+
+        if 'subcription_index' in msg:
+            old_baseDir = self.o.subscriptions[msg['subscription_index']]['baseDir']
+        else:
+            old_baseDir = self.o.baseDir
+
+        if old_baseDir:
             if new_dir:
                 d = new_dir
             elif self.o.post_baseDir:
@@ -868,7 +881,13 @@ class Flow:
         # to get something to restore for downstream consumers, need to put the original
         # names back.
 
-        if 'fileOp' in msg:
+        # only do the fileOp path adjustments for
+        #   a) messages that are not retries when retry_refilter is disabled
+        #   b) all messages, when retry_refilter is enabled
+        retry_refilter = hasattr(self.o, 'retry_refilter') and self.o.retry_refilter
+        msg_is_not_retry = retry_refilter or ('_isRetry' not in msg or ('_isRetry' in msg and not msg['_isRetry']))
+
+        if 'fileOp' in msg and msg_is_not_retry:
             msg['post_fileOp'] = copy.deepcopy(msg['fileOp'])
             msg['_deleteOnPost'] |= set( [ 'post_fileOp' ] )
 
@@ -883,7 +902,7 @@ class Flow:
             if strip < len(token):
                 token = token[strip:]
 
-            if 'fileOp' in msg:
+            if 'fileOp' in msg and msg_is_not_retry:
                 """
                    files are written with cwd being the directory containing the file written.
                    when stripping the root of the tree off, the path must be rendered relative to the
@@ -891,7 +910,7 @@ class Flow:
                 """
                 for f in ['link', 'hlink', 'rename']:
                     if f in msg['fileOp']:
-                        fopv = msg['fileOp'][f].split('/') 
+                        fopv = msg['fileOp'][f].split('/')
                         # an absolute path file posted is relative to '/' (in relPath) but the values in
                         # the link and rename fields may be absolute, requiring and adjustment when stripping
                         if fopv[0] == '':
@@ -928,9 +947,9 @@ class Flow:
                     if f in msg['fileOp']:
                         msg['fileOp'][f] = flatten.join(msg['fileOp'][f].split('/'))
                             
-        if self.o.baseDir:
+        if old_baseDir:
             # remove baseDir from relPath if present.
-            token_baseDir = self.o.baseDir.split('/')[1:]
+            token_baseDir = old_baseDir.split('/')[1:]
             remcnt=0
             if len(token) > len(token_baseDir):
                 for i in range(0,len(token_baseDir)):
@@ -942,11 +961,11 @@ class Flow:
                     token=token[remcnt:] 
 
             if d:
-                if 'fileOp' in msg and len(self.o.baseDir) > 1:
+                if 'fileOp' in msg and len(old_baseDir) > 1:
                     for f in ['link', 'hlink', 'rename']:
                         if (f in msg['fileOp']) :
-                            if msg['fileOp'][f].startswith(self.o.baseDir):
-                                msg['fileOp'][f] = msg['fileOp'][f].replace(self.o.baseDir, d, 1)
+                            if msg['fileOp'][f].startswith(old_baseDir):
+                                msg['fileOp'][f] = msg['fileOp'][f].replace(old_baseDir, d, 1)
 
         elif 'fileOp' in msg and new_dir:
             u = sarracenia.baseUrlParse(msg['baseUrl'])
@@ -1146,6 +1165,7 @@ class Flow:
 
 
     def gather(self) -> None:
+        self.last_poll_gather_len = 0
         so_far=0
         keep_going=True
         for p in self.plugins["gather"]:
@@ -1166,30 +1186,31 @@ class Flow:
 
             if len(new_incoming) > 0:
                 self.worklist.incoming.extend(new_incoming)
-                so_far += len(new_incoming) 
+                so_far += len(new_incoming)
+
+            self._runCallbacksWorklist('after_gather')
 
             # if we gathered enough with a subset of plugins then return.
             if not keep_going or (so_far >= self.o.batch):
-                if (self.o.component == 'poll' ):
-                    self.worklist.poll_catching_up=True
-
                 return
-
-        self._runCallbacksWorklist('after_gather')
 
         # gather is an extended version of poll.
         if self.o.component != 'poll':
             return
 
-        if len(self.worklist.incoming) > 0:
-            logger.debug('ingesting %d postings into duplicate suppression cache' % len(self.worklist.incoming) )
-            self.worklist.poll_catching_up = True
+        # For duplicate cache synchronization:
+        #   If we have ingested any messages from the queue, return and process them before we attempt polling.
+        #   We don't want to have any messages gathered from the queue in the worklist
+        #   at the same time as messages gathered from polling
+        #   i.e. only poll when the incoming queue is empty
+        num_gathered_from_q = len(self.worklist.incoming)
+        if num_gathered_from_q > 0:
+            logger.debug(f'ingesting {num_gathered_from_q} postings into duplicate suppression cache before polling')
             return
-        else:
-            self.worklist.poll_catching_up = False
 
         if self.have_vip:
             self._runCallbackPoll()
+            self.last_poll_gather_len = len(self.worklist.incoming)
 
     def do(self) -> None:
 
@@ -1202,6 +1223,56 @@ class Flow:
 
         logger.debug('processing %d messages worked!' % len(self.worklist.ok))
 
+    def work_message_adjust(self,m):
+
+        if ('new_baseUrl' in m) and (m['baseUrl'] !=
+                                     m['new_baseUrl']):
+            m['old_baseUrl'] = m['baseUrl']
+            m['_deleteOnPost'] |= set(['old_baseUrl'])
+            m['baseUrl'] = m['new_baseUrl']
+        if ('new_retrievePath' in m) :
+            m['old_retrievePath'] = m['retrievePath']
+            m['retrievePath'] = m['new_retrievePath']
+            m['_deleteOnPost'] |= set(['old_retrievePath'])
+
+        # if new_file does not match relPath, then adjust relPath so it does.
+        if ( 'relPath' in m ) and ('new_file' in m) and \
+                m['new_file'] != m['relPath'].split('/')[-1]:
+            if not 'new_relPath' in m:
+                if len(m['relPath']) > 1:
+                    m['new_relPath'] = '/'.join( m['relPath'].split('/')[0:-1] + [ m['new_file'] ])
+                else:
+                    m['new_relPath'] = m['new_file']
+            else:
+                if len(m['new_relPath']) > 1:
+                    m['new_relPath'] = '/'.join( m['new_relPath'].split('/')[0:-1] + [ m['new_file'] ] )
+                else:
+                    m['new_relPath'] = m['new_file']
+
+        if ('new_relPath' in m) and ('relPath' in m) \
+                and (m['relPath'] != m['new_relPath']):
+            m['old_relPath'] = m['relPath']
+            m['_deleteOnPost'] |= set(['old_relPath'])
+
+        if 'new_relPath' in m:
+            m['relPath'] = m['new_relPath']
+            if 'subtopic' in m:
+                m['old_subtopic'] = m['subtopic']
+            m['_deleteOnPost'] |= set(['old_subtopic','subtopic'])
+            m['subtopic'] = m['new_subtopic']
+
+        if '_format' in m:
+            m['old_format'] = m['_format']
+            m['_deleteOnPost'] |= set(['old_format'])
+
+        # restore adjustment to fileOp
+        if 'post_fileOp' in m:
+            m['fileOp'] = m['post_fileOp']
+
+        if self.o.download and 'retrievePath' in m:
+            # retrieve paths do not propagate after download.
+            del m['retrievePath'] 
+
     def work(self) -> None:
 
         self.do()
@@ -1212,58 +1283,27 @@ class Flow:
         self.ack(self.worklist.failed)
 
         # adjust message after action is done, but before 'after_work' so adjustment is possible.
+        post_messages=[]
+
         for m in self.worklist.ok:
-            if ('new_baseUrl' in m) and (m['baseUrl'] !=
-                                         m['new_baseUrl']):
-                m['old_baseUrl'] = m['baseUrl']
-                m['_deleteOnPost'] |= set(['old_baseUrl'])
-                m['baseUrl'] = m['new_baseUrl']
-            if ('new_retrievePath' in m) :
-                m['old_retrievePath'] = m['retrievePath']
-                m['retrievePath'] = m['new_retrievePath']
-                m['_deleteOnPost'] |= set(['old_retrievePath'])
-
-            # if new_file does not match relPath, then adjust relPath so it does.
-            if ( 'relPath' in m ) and ('new_file' in m) and \
-                    m['new_file'] != m['relPath'].split('/')[-1]:
-                if not 'new_relPath' in m:
-                    if len(m['relPath']) > 1:
-                        m['new_relPath'] = '/'.join( m['relPath'].split('/')[0:-1] + [ m['new_file'] ])
-                    else:
-                        m['new_relPath'] = m['new_file']
-                else:
-                    if len(m['new_relPath']) > 1:
-                        m['new_relPath'] = '/'.join( m['new_relPath'].split('/')[0:-1] + [ m['new_file'] ] )
-                    else:
-                        m['new_relPath'] = m['new_file']
-
-            if ('new_relPath' in m) and ('relPath' in m) \
-                    and (m['relPath'] != m['new_relPath']):
-                m['old_relPath'] = m['relPath']
-                m['_deleteOnPost'] |= set(['old_relPath'])
-
-            if 'new_relPath' in m:
-                m['relPath'] = m['new_relPath']
-                if 'subtopic' in m:
-                    m['old_subtopic'] = m['subtopic']
-                m['_deleteOnPost'] |= set(['old_subtopic','subtopic'])
-                m['subtopic'] = m['new_subtopic']
-
-            if '_format' in m:
-                m['old_format'] = m['_format']
-                m['_deleteOnPost'] |= set(['old_format'])
-
-            if 'post_format' in m:
-                m['_format'] = m['post_format']
-
-            # restore adjustment to fileOp
-            if 'post_fileOp' in m:
-                m['fileOp'] = m['post_fileOp']
-
-            if self.o.download and 'retrievePath' in m:
-                # retrieve paths do not propagate after download.
-                del m['retrievePath'] 
-
+            if len(self.o.publishers) <= 1: # save creation of new messages (a lot of space & time savings.)
+                self.work_message_adjust(m)
+                m['publisher_index'] = 0
+            else: # replace output messages with 1 per publishing destination.
+                i=0
+                for p in self.o.publishers:
+                    new_m=sarracenia.Message()
+                    new_m.copyDict(m)
+                    new_m['publisher_index'] = i
+                    new_m.updatePaths( self.o, m['new_dir'], m['new_file'], i )
+                    self.work_message_adjust(new_m)
+                    post_messages.append(new_m) 
+                    i += 1
+            m['_deleteOnPost'] |= set(['publisher_index'])
+                    
+        if len(self.o.publishers) > 1:
+            self.worklist.ok=post_messages
+    
         self._runCallbacksWorklist('after_work')
 
         self.ack(self.worklist.rejected)
@@ -1620,9 +1660,7 @@ class Flow:
         ok = True
         # it turns out that links that exist but point to non-existent files return exists: False.
         if not os.path.islink(old) and not os.path.exists(old):
-            logger.info(
-                "old file %s not found, if destination (%s) missing, then fall back to copy"
-                % (old, path))
+            logger.info("old file %s not found, can't rename to %s" % (old, path))
             # if the destination file exists, assume rename already happenned,
             # otherwis return false so that caller falls back to downloading/sending the file.
             # return os.path.isfile(path) 
@@ -1735,13 +1773,158 @@ class Flow:
 
         return ok
 
+    def do_fileOp(self, msg, new_path) -> bool:
+        """ for a message with a fileOp, do whatever action is specified by the fileOp field.
+            This code used to be in do_download, but that method was really long so it was moved here.
+            Returns: bool - True when the message has been fully processed and there's nothing left to do.
+                            False when there's still processing left to do with the message (i.e. need to
+                                execute the rest of the do_download code.)
+        """
+
+        if 'fileOp' not in msg:
+            return False # fall through to download
+
+        ok = False
+        attempt = 1
+
+        # retry fileOps multiple times, mostly to handle race conditions
+        while not ok and attempt <= self.o.attempts:
+
+            if attempt > 1:
+                logger.warning(f"previous fileOp {msg['fileOp']} -> {new_path} attempt failed, trying again, attempt {attempt}/{self.o.attempts}")
+
+            ## RENAME
+            if 'rename' in msg['fileOp']:
+
+                if 'renameUnlink' in msg:
+                    # if remove fails, assume it's because the file to be renamed is already gone
+                    self.removeOneFile(msg['fileOp']['rename'])
+                    msg.setReport(201, 'old unlinked %s' % msg['fileOp']['rename'])
+                    self.worklist.ok.append(msg)
+                    self.metrics['flow']['transferRxFiles'] += 1
+                    self.metrics['flow']['transferRxLast'] = msg['report']['timeCompleted']
+                    return False # fall through to download
+
+                else:
+                    # actual rename...
+                    ok = self.renameOneItem(msg['fileOp']['rename'], new_path)
+
+                    # if rename succeeds, fall through to download object (return False) to find if the file renamed
+                    # actually matches the one advertised, and potentially download it.
+                    if ok:
+                        msg.setReport(201, 'renamed')
+                        self.worklist.ok.append(msg)
+                        self.metrics['flow']['transferRxFiles'] += 1
+                        self.metrics['flow']['transferRxLast'] = msg['report']['timeCompleted']
+                        # When it's a broken symlink, the upstream doesn't exist and we can't compare. The download
+                        # will always fail. So return True and *don't fall through* to download for symlinks.
+                        return ('link' in msg['fileOp'])
+
+                    # if rename of *file* fails, fall through to download
+                    elif 'link' not in msg['fileOp'] and 'hlink' not in msg['fileOp']:
+                        return False # fall through to download
+
+                    # else: rename of link fails, retry until it succeeds (or expires from retry)
+
+            ## REMOVE DIRECTORY
+            elif ('directory' in msg['fileOp']) and ('remove' in msg['fileOp'] ):
+                if  'rmdir' not in self.o.fileEvents:
+                    self.reject(msg, 202, "skipping rmdir %s" % new_path)
+                    return True # done fileOp processing, continue
+
+                if self.removeOneFile(new_path):
+                    msg.setReport(201, 'rmdired')
+                    self.worklist.ok.append(msg)
+                    self.metrics['flow']['transferRxFiles'] += 1
+                    self.metrics['flow']['transferRxLast'] = msg['report']['timeCompleted']
+                    return True # done fileOp processing, continue
+                # else: retry directory removal to handle race conditions where the files
+                #       inside the directory haven't been deleted *yet* (issue #1377)
+                #self.reject(msg, 500, "rmdir %s failed" % new_path)
+
+
+            ## REMOVE FILE
+            elif ('remove' in msg['fileOp']):
+                if 'delete' not in self.o.fileEvents:
+                    self.reject(msg, 202, "skipping delete %s" % new_path)
+                    return True # done fileOp processing, continue
+
+                if self.removeOneFile(new_path):
+                    msg.setReport(201, 'removed')
+                    self.worklist.ok.append(msg)
+                    self.metrics['flow']['transferRxFiles'] += 1
+                    self.metrics['flow']['transferRxLast'] = msg['report']['timeCompleted']
+                    return True # done fileOp processing, continue
+                else:
+                    #FIXME: should this really be queued for retry? or just permanently failed?
+                    # in rejected to avoid retry, but wondering if failed and deferred
+                    # should be separate lists in worklist...
+                    # RS (FIXME note above is Peter's): it's hard to know what to do with failed file deletions. There
+                    # is a potential race condition when a file is created then deleted shortly after. If the delete
+                    # is processed out of order (before file is created), then retrying the deletion would be good. 
+                    # But that could cause problems in other situations: if a file is created, deleted, then created
+                    # again. In this case,  it's better to ignore the remove failure (reject the msg) because the new
+                    # file will overwrite the old one that got left on disk.
+                    self.reject(msg, 500, "remove %s failed" % new_path)
+                    return True # don't continue to download, don't retry, see above comment.
+
+            # no elif because if rename fails and operation is an mkdir or a symlink..
+            # need to retry as ordinary creation, similar to normal file copy case.
+            ## MKDIR
+            if 'directory' in msg['fileOp'] and 'remove' not in msg['fileOp']:
+                if 'mkdir' not in self.o.fileEvents:
+                    self.reject(msg, 202, "skipping mkdir %s" % new_path)
+                    return True # done fileOp processing, continue
+
+                if self.mkdir(msg):
+                    msg.setReport(201, 'made directory')
+                    self.worklist.ok.append(msg)
+                    self.metrics['flow']['transferRxFiles'] += 1
+                    self.metrics['flow']['transferRxLast'] = msg['report']['timeCompleted']
+                    return True # done fileOp processing, continue
+                # retry when mkdir fails
+                # PREVIOUS BEHAVIOUR: ignore and move on
+                # self.reject(msg, 500, "mkdir %s failed" % msg['new_file'])
+
+            ## LINK
+            # ignore link renames here, we want them to retry if they fail
+            elif ('link' in msg['fileOp'] or 'hlink' in msg['fileOp']) and 'rename' not in msg['fileOp']:
+                if 'link' not in self.o.fileEvents:
+                    self.reject(msg, 202, "skipping link %s" % new_path)
+                    return True # done fileOp processing, continue
+
+                if self.link1file(msg):
+                    msg.setReport(201, 'linked')
+                    self.worklist.ok.append(msg)
+                    self.metrics['flow']['transferRxFiles'] += 1
+                    self.metrics['flow']['transferRxLast'] = msg['report']['timeCompleted']
+                    return True # done fileOp processing, continue
+                else:
+                    # as above...
+                    # hard link creation failure: continue to download, symlink failure: reject and ignore
+                    if 'hlink' not in msg['fileOp']:
+                        self.reject(msg, 500, "link %s failed" % msg['fileOp'])
+                        return True # done fileOp processing, continue RS TODO are you sure?
+                    logger.info( f"since hard link failed, fall back to copying from source" )
+                    return False # fall through to download code
+
+            attempt += 1
+
+        # once attempts is exceeded, queue for retry later by putting the msg into worklist.failed
+        if not ok and attempt > self.o.attempts:
+            logger.error(f"fileOp {msg['fileOp']} -> {new_path} failed after {attempt-1}/{self.o.attempts} attempts, queueing for retry later")
+            self.worklist.failed.append(msg)
+            return True # done fileOp processing in this batch, msg in worklist.failed and will be retried later
+        else:
+            logger.debug("fileOp succeeded on the last attempt")
+
+
     def do_download(self) -> None:
         """
            do download work for self.worklist.incoming, placing files:
                 successfully downloaded in worklist.ok
                 temporary failures in worklist.failed
                 permanent failures (or files not to be downloaded) in worklist.rejected
-
         """
 
         if not self.o.download:
@@ -1780,8 +1963,8 @@ class Flow:
 
                 try:
                     logger.debug( f"missing destination directories, makedirs: {msg['new_dir']} " )
-                    self.worklist.directories_ok.append(msg['new_dir'])
                     os.makedirs(msg['new_dir'], self.o.permDirDefault, True)
+                    self.worklist.directories_ok.append(msg['new_dir'])
                 except Exception as ex:
                     logger.warning("making %s: %s" % (msg['new_dir'], ex))
                     logger.debug('Exception details:', exc_info=True)
@@ -1795,101 +1978,14 @@ class Flow:
             except Exception as e:
                 logger.error(f"failed to chdir ({e}), possible race condition, deferring transfer of {new_path}")
                 logger.debug("Exception details:", exc_info=True)
+                #RS TODO RETRY HERE?
                 self.worklist.failed.append(msg)
                 continue
 
             if 'fileOp' in msg :
-                if 'rename' in msg['fileOp']:
-
-                    if 'renameUnlink' in msg:
-                        self.removeOneFile(msg['fileOp']['rename'])
-                        msg.setReport(201, 'old unlinked %s' % msg['fileOp']['rename'])
-                        self.worklist.ok.append(msg)
-                        self.metrics['flow']['transferRxFiles'] += 1
-                        self.metrics['flow']['transferRxLast'] = msg['report']['timeCompleted']
-
-                    else:
-                        # actual rename...
-                        ok = self.renameOneItem(msg['fileOp']['rename'], new_path)
-                        # if rename succeeds, fall through to download object to find if the file renamed
-                        # actually matches the one advertised, and potentially download it.
-                        # if rename fails, recover by falling through to download the data anyways.
-                        if ok:
-                            self.worklist.ok.append(msg)
-                            self.metrics['flow']['transferRxFiles'] += 1
-                            msg.setReport(201, 'renamed')
-                            self.metrics['flow']['transferRxLast'] = msg['report']['timeCompleted']
-                            continue
-
-                elif ('directory' in msg['fileOp']) and ('remove' in msg['fileOp'] ): 
-                    if  'rmdir' not in self.o.fileEvents:
-                        self.reject(msg, 202, "skipping rmdir %s" % new_path)
-                        continue
-
-                    if self.removeOneFile(new_path):
-                        msg.setReport(201, 'rmdired')
-                        self.worklist.ok.append(msg)
-                        self.metrics['flow']['transferRxFiles'] += 1
-                        self.metrics['flow']['transferRxLast'] = msg['report']['timeCompleted']
-                    else:
-                        #FIXME: should this really be queued for retry? or just permanently failed?
-                        # in rejected to avoid retry, but wondering if failed and deferred
-                        # should be separate lists in worklist...
-                        self.reject(msg, 500, "rmdir %s failed" % new_path)
+                if self.do_fileOp(msg, new_path):
                     continue
-
-                elif ('remove' in msg['fileOp']):
-                    if 'delete' not in self.o.fileEvents:
-                        self.reject(msg, 202, "skipping delete %s" % new_path)
-                        continue
-
-                    if self.removeOneFile(new_path):
-                        msg.setReport(201, 'removed')
-                        self.worklist.ok.append(msg)
-                        self.metrics['flow']['transferRxFiles'] += 1
-                        self.metrics['flow']['transferRxLast'] = msg['report']['timeCompleted']
-                    else:
-                        #FIXME: should this really be queued for retry? or just permanently failed?
-                        # in rejected to avoid retry, but wondering if failed and deferred
-                        # should be separate lists in worklist...
-                        self.reject(msg, 500, "remove %s failed" % new_path)
-                    continue
-
-                # no elif because if rename fails and operation is an mkdir or a symlink..
-                # need to retry as ordinary creation, similar to normal file copy case.
-                if 'directory' in msg['fileOp']:
-                    if 'mkdir' not in self.o.fileEvents:
-                        self.reject(msg, 202, "skipping mkdir %s" % new_path)
-                        continue
-
-                    if self.mkdir(msg):
-                        msg.setReport(201, 'made directory')
-                        self.worklist.ok.append(msg)
-                        self.metrics['flow']['transferRxFiles'] += 1
-                        self.metrics['flow']['transferRxLast'] = msg['report']['timeCompleted']
-                    else:
-                        # as above...
-                        self.reject(msg, 500, "mkdir %s failed" % msg['new_file'])
-                    continue
-
-                elif 'link' in msg['fileOp'] or 'hlink' in msg['fileOp']:
-                    if 'link' not in self.o.fileEvents:
-                        self.reject(msg, 202, "skipping link %s" % new_path)
-                        continue
-
-                    if self.link1file(msg):
-                        msg.setReport(201, 'linked')
-                        self.worklist.ok.append(msg)
-                        self.metrics['flow']['transferRxFiles'] += 1
-                        self.metrics['flow']['transferRxLast'] = msg['report']['timeCompleted']
-                        continue
-                    else:
-                        # as above...
-                        if 'hlink' not in msg['fileOp']:
-                            self.reject(msg, 500, "link %s failed" % msg['fileOp'])
-                            continue
-
-                        logger.info( f"since hard link failed, fall back to copying from source" )
+                # else fall through to download
 
             # all non-files taken care of above... rest of routine is normal file download.
 
@@ -2432,7 +2528,10 @@ class Flow:
         # older versions don't include the contentType, so patch it here.
         if features['filetypes']['present'] and \
            ('contentType' not in msg) and (not 'fileOp' in msg):
-            msg['contentType'] = magic.from_file(local_path,mime=True)
+            try:
+                msg['contentType'] = magic.from_file(local_path,mime=True)
+            except Exception as e:
+                logger.warning(f"could not set contentType from local file {local_path} because {e}")
 
         local_dir = os.path.dirname(local_path).replace('\\', '/')
         local_file = os.path.basename(local_path).replace('\\', '/')
@@ -2639,9 +2738,8 @@ class Flow:
 
             # the file does not exist... warn, sleep and return false for the next attempt
             if not os.path.exists(local_file):
-                logger.warning(
-                    "product collision or base_dir not set, file %s does not exist"
-                    % local_file)
+                logger.error(
+                    f"file {local_file} does not exist in local dir {local_dir}, can't send (baseDir not set?)")
                 time.sleep(0.01)
                 return 0
             elif 'size' not in msg:

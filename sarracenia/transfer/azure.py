@@ -64,6 +64,11 @@ class Azure(Transfer):
             else:
                 self.connection_verify = True
 
+        # When inflight is used in Azure, we try to copy and removing the original the temp file instead of doing a rename (like in traditional ftp/sftp).
+        # For this, we discourage users to use the inflight option
+        if self.o.inflight:
+            logger.warning(f"inflight usage is discouraged. Azure can't rename files and will copy/delete the temp file. Current inflight setting set to {self.o.inflight}.")
+
         # The default INFO level for this logger is quite verbose, we might want to reduce it some day
         # logging.getLogger('azure.core.pipeline.policies.http_logging_policy').setLevel('WARNING')
 
@@ -341,13 +346,17 @@ class Azure(Transfer):
     
     def rename(self, remote_old, remote_new):
         remote_new = remote_new.lstrip('/')
-        b_new = self.client.get_blob_client(remote_new)
+        remote_new_wpath = self.path + remote_new
 
-        from_url = self.container_url + "/" + remote_old + "?" + self.credentials
+        remote_old_wpath = self.path + remote_old
 
-        logger.debug(f"remote_old={remote_old}; from_url={self.container_url}/{remote_old}; remote_new={remote_new}")
+        b_new = self.client.get_blob_client(remote_new_wpath)
+
+        from_url = self.container_url + "/" + remote_old_wpath + "?" + self.credentials
+
+        logger.debug(f"remote_old={remote_old_wpath}; from_url={self.container_url}/{remote_old_wpath}; remote_new={remote_new_wpath}")
         b_new.start_copy_from_url(from_url)
-        self.client.delete_blob(remote_old.lstrip('/'))
+        self.client.delete_blob(remote_old_wpath.lstrip('/'))
     
     def rmdir(self, path):
         blobList=[*self.client.list_blobs(name_starts_with=path)]

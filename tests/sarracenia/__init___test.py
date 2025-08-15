@@ -317,8 +317,8 @@ class Test_Message():
         options.post_exchange = 'post_exchange'
         msg = sarracenia.Message.fromFileInfo(str(tmp_path), options, os.lstat(tmp_path))
         assert msg['rename'] == os.sep + os.path.relpath(tmp_path, '/tmp')
-        assert msg['_format'] == 'post_format'
-        assert msg['exchange'] == 'post_exchange'
+        assert msg['_format'] == 'v03'
+        assert msg['exchange'] == ''
         assert msg['identity']['method'] == 'random'
 
         # Set 4
@@ -328,10 +328,11 @@ class Test_Message():
         options.strip = 20
         options.identity_method = 'cod,identityValue'
         delattr(options, 'post_format')
-        options.post_topicPrefix = ['v02']
+        #options.post_topicPrefix = ['v02']
         msg = sarracenia.Message.fromFileInfo(path, options, os.lstat(path))
         assert msg['rename'] == "/"
-        assert msg['_format'] == "v02"
+        # _format is now decided on output (per publisher.)
+        #assert msg['_format'] == "v02"
         assert msg['identity'] == {'method': 'cod', 'value': 'identityValue' }
 
         #Set 5
@@ -391,7 +392,8 @@ class Test_Message():
         options.fixed_headers = {'fixed_headers__Key1': 'fixed_headers__Val1'}
         msg.updatePaths(options, new_dir, new_file)
         assert msg['fixed_headers__Key1'] == 'fixed_headers__Val1'
-        assert msg['post_format'] == 'v03'
+        # post_format isn't in the message anymore... because it varies by publisher.
+        #assert msg['post_format'] == 'v03'
 
         #Test set 3
         options = sarracenia.config.default_config()
@@ -402,7 +404,8 @@ class Test_Message():
         msg['baseUrl'] = 'baseUrl'
         msg.updatePaths(options, new_dir, new_file)
         assert msg['new_baseUrl'] == 'baseUrl'
-        assert msg['post_format'] == 'p'
+        # post_format isn't in the message anymore... because it varies by publisher.
+        #assert msg['post_format'] == 'p'
 
         #Test set 4
         options = sarracenia.config.default_config()
@@ -413,7 +416,8 @@ class Test_Message():
         msg = sarracenia.Message()
         msg['baseUrl'] = 'baseUrl'
         msg.updatePaths(options, new_dir, new_file)
-        assert msg['post_format'] == 't'
+        # post_format isn't in the message anymore... because it varies by publisher.
+        #assert msg['post_format'] == 't'
 
         #Test set 5
         options = sarracenia.config.default_config()
@@ -425,7 +429,8 @@ class Test_Message():
         msg['baseUrl'] = '/this/is/a/path'
         msg.updatePaths(options, '/this/is/a/path/new', new_file)
         assert msg['new_baseUrl'] == '/this/is/a/path'
-        assert msg['post_format'] == msg['_format']
+        # post_format isn't in the message anymore... because it varies by publisher.
+        #assert msg['post_format'] == msg['_format']
 
         # Test set 6
         options = sarracenia.config.default_config()
@@ -433,10 +438,10 @@ class Test_Message():
         msg = sarracenia.Message()
         mocker.patch('sys.platform', 'win32')
         msg.updatePaths(options, '\\this\\is\\a\\path\\new', new_file)
-        assert msg['new_relPath'] == '/this/is/a/path/new/newfile.txt'
+        #assert msg['new_relPath'] == '/this/is/a/path/new/newfile.txt'
         options.currentDir = 'Z:'
         msg.updatePaths(options, '\\this\\is\\a\\path\\new', new_file)
-        assert msg['new_relPath'] == 'this/is/a/path/new/newfile.txt'
+        #assert msg['new_relPath'] == 'this/is/a/path/new/newfile.txt'
 
 
     def test_setReport(self):

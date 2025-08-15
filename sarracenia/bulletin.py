@@ -1,5 +1,6 @@
 import logging
 import time 
+import random
 import re
 from base64 import b64decode
 
@@ -26,7 +27,6 @@ class Bulletin:
     def __init__(self,options):
         super().__init__()
         self.o = options
-        self.seq = 0
         self.binary = 0
 
     def _verifyYear(self, bulletin_year):
@@ -156,13 +156,10 @@ class Bulletin:
             logger.error(f"Could not fetch file data of from either message content or {path}. Error details: {e}")
             return None
 
-    def getSequence(self):
-        """ sequence number to make the file unique...
+    def getRandom(self):
+        """ Generate Random number to make the file unique...
         """
-        self.seq = self.seq + 1
-        if self.seq > 99999:
-            self.seq = 1
-        return str(self.seq).zfill(5)
+        return str(random.randint(0, 99999)).zfill(5)
 
 
     def getStation(self, data):
@@ -216,7 +213,8 @@ class Bulletin:
 
             elif data[0][0:6] in ["SRCN40","SXCN40","SRMT60","SXAK50", "SRND20", "SRND30"]:
             #elif data[0][0:6] in self.wmo_id:
-                station = premiereLignePleine.split()[0]
+                #station = premiereLignePleine.split()[0]
+                station = ''
 
             elif data[0][0:2] in ["FC","FT"]:
                 if premiereLignePleine.split()[1] == "AMD":
@@ -249,9 +247,9 @@ class Bulletin:
                 station = ''
 
             # Added to SR3
-            # The station needs to be alphanumeric, between 3 and 5 characters. If not, don't assign a station
-            if re.search('^[a-zA-Z0-9]{3,5}$', station) == None:
-                station = None
+            # The station needs to be alphanumeric, between 3 and 7 characters. If not, don't assign a station
+            if re.search('^[a-zA-Z0-9]{3,7}$', station) == None:
+                station = ''
 
         return station
 

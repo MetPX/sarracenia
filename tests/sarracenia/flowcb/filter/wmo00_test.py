@@ -122,6 +122,7 @@ def test_after_accept(tmp_path):
     options.batch=50
     options.no=1
     options.hostname="hoho8.mydomain.org"
+    options.publishers = [ { 'baseDir': None, 'broker':'amqp://localhost', 'baseUrl': "file:/" } ]
     options.pid_filename= str(tmp_path) + os.sep + "myconfig_01.pid"
     options.wmo00_work_directory = str(tmp_path)
     options.wmo00_origin_CCCC = 'CYKK'
@@ -134,6 +135,7 @@ def test_after_accept(tmp_path):
     m = make_message()
     worklist.incoming = [ m ]
 
+    print( f" {m=} " )
     accumulator.after_accept( worklist )
 
     assert len(worklist.incoming) == 1

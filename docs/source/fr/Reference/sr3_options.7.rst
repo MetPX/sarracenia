@@ -523,7 +523,8 @@ broker
 
 **broker [amqp|mqtt]{s}://<utilisateur>:<mot-de-passe>@<hoteDuCourtier>[:port]/<vhost>**
 
-Un URI est utilisé pour configurer une connexion à une pompe de messages d'annonce, soit
+L´option *broker* démarre la déclaration d´une abonnement à une source de données.
+L'URI fournit est utilisé pour configurer une connexion à une pompe de messages d'annonce, soit
 un courtier MQTT ou AMQP. Certains composants de Sarracenia fixent un défaut raisonnable pour
 cette option. Il faut fournir l’utilisateur normal, l’hôte, et le port de connexion.
 Dans la plupart des fichiers de configurations,
@@ -548,6 +549,9 @@ aux échanges et aux thèmes pour déterminer le messages d'annonce en question.
 l´option *subtopic* devrait apparaître après le paramètre *broker* dans les fichiers
 pour que les liaisons de sujet s'appliquent à la file d'attente spécifié.
 
+Une fois qu'un sous-sujet est donné, on peut configurer des courtiers supplémentaires 
+comme sources pour une seule configuration en cours d'exécution, terminée par un 
+sous-sujet correspondant supplémentaire.
 
 bufSize <size> (défaut: 1m)
 ---------------------------
@@ -745,9 +749,27 @@ pour que les liaisons de sujet s'appliquent à la file d'attente spécifié.
 fileEvents <évènement, évènement,...>
 -------------------------------------
 
-ensemble séparée par des virgules de d'événements de fichiers à surveiller.
+Ensemble séparée par des virgules de d'événements de fichiers à surveiller.
 Événements de fichiers disponibles : *create, delete, link, modify, mkdir, rmdir*
-Si on commence la liste avec plus (+) ca signifie un rajout à l´ensemble actuel
+
+Nous pouvons faire ceci 3 façons:
+
+        1. On commence la liste avec plus (+). Ça signifie un rajout à l´ensemble actuel
+           i.e. fileEvents +create,modify
+           Liste résultante : create, delete, link, modify, mkdir, rmdir
+
+        2. Enlève un/des évènements de la liste présente. On commence la liste avec moins (-)
+           i.e. fileEvents -create,modify
+           Liste résultante : delete, link, mkdir, rmdir
+
+        3. On défini notre propre liste d'évènements.
+           i.e. fileEvents create,modify
+           Liste résultante : create,modify
+
+           On peut également spécifié un seul évènement.
+           i.e. fileEvents create
+           Liste résultante: create
+
 Les événements *create*, *modify* et *delete* reflètent ce qui est attendu : un fichier en cours de création,
 de modification ou de suppression.
 Si *link* est défini, des liens symboliques seront publiés sous forme de liens afin que les consommateurs puissent choisir
@@ -1209,7 +1231,7 @@ L’option **AgeMax** définit un temps pour lequel un message d´annonce peut a
 côté consommateur. Après ce temps, le message d´annonce est rejeté par le flot.
 (0 indique un age infini sera accepté.)
 
-mirror <flag> (défaut: off)
+mirror <flag> (défaut: on (sauf subcribe))
 ---------------------------
 
 L’option **miroir** peut être utilisée pour mettre en miroir l’arborescence des fichiers de dd.weather.gc.ca.
@@ -1227,6 +1249,12 @@ Par exemple, récupérer l’URL suivante, avec des options::
 entraînerait la création des répertoires et du fichier
 /monrépertoirelocal/radar/PRECIP/GIF/WGJ/201312141900_WGJ_PRECIP_SNOW.gif
 Les paramètres de mirror peuvent être modifiés entre les options de répertoire.
+Pour avoir un effet, il faut que *mirror* apparait dans le fichier avant *accept*
+
+Le composant *subscribe* est généralement utilisé pour le téléchargement finale, et *mirror off* signifie que le paramètre *directory* indiquera exactement où les fichiers sont téléchargés.
+
+Tous les autres composants sont utilisés dans les pompes de données, et la préservation de l'intégralité de l'arborescence est généralement souhaitée. Ainsi, pour tous les autres composants, *mirror on* est la valeur par défaut.
+
 
 no <count>
 ----------
@@ -1479,6 +1507,7 @@ post_broker <url>
 -----------------
 
 l’URL du courtier pour publier des messages d'annonce. Voir `broker <#broker>`_ pour plus de détails.
+Si plusieurs courtiers post_brokers sont fournis, les messages seront envoyés vers plusieurs destinations.
 
 post_exchange <name> (défaut: xpublic)
 --------------------------------------
@@ -1599,26 +1628,27 @@ queueName|queue|queue_name|qn
 Par défaut, les composants créent un nom de fil d’attente qui doit être unique. Par défaut, le
 queueName crée par les composants suit la convention suivante :
 
-   **q_<utilisateurDeCourtier>.<nomDuProgramme>.<nomDeConfig>.<queueShare>**
+   **q_${BROKER_USER}.${COMPONENT}.${CONFIG}.${QUEUESHARE}**
 
 Ou:
 
-* *utilisateurDeCourtier* est le nom d’utilisateur utilisé pour se connecter au courtier (souvent: *anonymous* )
+* *BROKER_USER* est le nom d’utilisateur utilisé pour se connecter au courtier (souvent: *anonymous* )
 
-* *nomDuProgramme* est le composant qui utilise la fil d’attente (par exemple *subscribe* ),
+* *COMPONENT* est le composant qui utilise la fil d’attente (par exemple *subscribe* ),
 
-* *nomDeConfig* est le fichier de configuration utilisé pour régler le comportement des composants.
+* *CONFIG* est le nom de fichier de configuration utilisé pour régler le comportement des composants.
 
-*  *queueShare* est par défaut ${USER}_${HOSTNAME}_${RAND8} mais doit être remplacé par le
- Option de configuration *queueShare*.
+*  *QUEUESHARE* est par défaut ${USER}_${HOSTNAME}_${RAND8} peut être modifier par l'option de 
+   configuration *queueShare*.
 
-Les utilisateurs peuvent remplacer le défaut à condition qu’il commence par **q_<utilisateurDeCourtier>**.
+
+Les utilisateurs peuvent remplacer le défaut à condition qu’il commence par **q_${BROKER_USER}**.
 
 Lorsque plusieurs instances sont utilisées, elles utilisent toutes la même fil d’attente, pour faire plusieurs
 taches simples à la fois. Si plusieurs ordinateurs disposent d’un système de fichiers domestique partagé, le
 queueName est écrit à :
 
- ~/.cache/sarra/<nomDuProgramme>/<nomDeConfig>/<nomDuProgramme>_<nomDeConfig>_<utilisateurDeCourtier>.qname
+ ~/.cache/sr3/<nomDuProgramme>/<nomDeConfig>/subscriptions.json
 
 Les instances démarrées sur n’importe quel nœud ayant accès au même fichier partagé utiliseront la
 même fil d’attente. Certains voudront peut-être utiliser l’option *queueName* comme méthode plus explicite
@@ -1647,6 +1677,24 @@ utilisera le nom de file d'attente ainsi défini.
 
 l´option *subtopic* devrait apparaître après le paramètre queueShare dans les fichiers
 pour que les liaisons de sujet s'appliquent à la file d'attente spécifié.
+
+queueType <str> (default: None)
+-------------------------------
+
+Définit le *queue type* qui sera utilisé sur un broker.
+
+RabbitMQ offre 3 options (définit par `x-queue-type`). Les options sont spécifiés
+chez https://www.rabbitmq.com/docs/vhosts#default-queue-type.
+
+        Stream
+
+        Quorum queue
+
+        Classic queue (no HA)
+
+À partir de RabbitMQ 4.0, les queues classic n'auront pu l'option High Availability (nommé mirrored queues).
+
+NOTE: Lorsque l'option est omis de sarracenia, le paramètre défaut sera tiré du broker.
 
 randomize <flag>
 ----------------
@@ -1988,6 +2036,10 @@ Dans les grands centres de données, le répertoire de base peut être partagé 
 nœuds. Statehost ajoute le nom du nœud après le répertoire de cache pour le rendre
 unique à chaque nœud. Ainsi, chaque nœud a ses propres fichiers d’état et journaux.
 Par exemple, sur un nœud nommé goofy, ~/.cache/sarra/log/ devient ~/.cache/sarra/goofy/log/.
+
+**L'option *statehost* doit être placé au début du fichier de configuration**
+
+
 
 strip <count|regexp> (défaut: 0)
 --------------------------------

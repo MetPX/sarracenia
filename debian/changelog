@@ -1,3 +1,36 @@
+metpx-sr3 (3.01.00rc2) unstable; urgency=medium
+
+  * Just Debian packaging fixes (should work on Ubuntu 18.04 now)
+
+ -- Reid Sunderland <reid.sunderland@ssc-spc.gc.ca>  Fri, 18 Jul 2025 19:16:48 +0000
+
+metpx-sr3 (3.01.00rc1) unstable; urgency=medium
+
+  * This release is the first of sr3 v3.01 because of a significant new
+    feature: support for subscribing and/or publishing to multiple
+    brokers in a single config. (Implement #339)
+  * Implement #1381: Add option to request a particular AMQP/RabbitMQ
+    queue type
+  * MQTT Fixes
+  * systemd unit improvements (related issues: #1461, #1439, #1319, #1318)
+  * Fix #1439: co-ordinate sanity and start/stop, to avoid conflicts
+  * Fix #1436: reduce maximum exponential back-off time
+  * Fix #1447: more poll refactoring. This fixes a problem where post failures
+    from scheduled polls would not be retried until the next scheduled
+    appointment. Likely also fixes #1132, unacked messages in polls.
+  * Fix #1366, #1377 and #1395: change fileOp processing to retry some fileOps
+    when they fail. Fixes race conditions with link renames and directory
+    removals when the subscriber has multiple instances or runs in a cluster.
+  * Fix #1453: crash when trying to check the content type of a file that
+    doesn't exist.
+  * Fix #1413: Azure transfer class rename problems
+  * Fix #1420: nodupe improvement: check nodupe expiry time when checking if
+    file is a duplicate. Previously, expiry time was only checked during
+    housekeeping which caused problems when nodupe_ttl was < housekeeping
+    interval.
+
+ -- Reid Sunderland <reid.sunderland@ssc-spc.gc.ca>  Mon, 23 Jun 2025 16:04:01 +0000
+
 metpx-sr3 (3.00.58) unstable; urgency=medium
 
   * Azure transfer class improvements

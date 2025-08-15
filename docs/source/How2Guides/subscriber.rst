@@ -277,8 +277,8 @@ High Priority Delivery
 
 While the Sarracenia protocol does not provide explicit prioritization, the use
 of multiple queues provides similar benefits. Each configuration results
-in a queue declaration on the server side. Group products at like priority into
-a queue by selecting them using a common configuration. The smaller the groupings,
+in one or more queue declarations on the server side. Group products at like priority 
+into a queue by selecting them using a common configuration. The smaller the groupings,
 the lower the delay of processing. While all queues are processed at the same priority,
 data passes though shorter queues more quickly. One can summarize with:
 

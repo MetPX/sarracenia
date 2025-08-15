@@ -25,6 +25,7 @@ import fnmatch
 import getpass
 import inspect
 import json
+import sarracenia.make_json_serializable
 import logging
 import os
 import os.path
@@ -228,6 +229,10 @@ class sr_GlobalState:
         if self.me != p['username'] :
             return
 
+        # defunct children waiting reap have no command line.
+        if not p['cmdline']:
+            return
+
         # process name 'python3' is not helpful, so overwrite...
         if 'python' in p['name']:
             if len(p['cmdline']) < 2:
@@ -249,7 +254,7 @@ class sr_GlobalState:
             # on windows, it seems to fork .exe and then there is a -script.py which is the right pid
             # .e.g sr_subscribe.exe -> sr_subscribe-script.py ... If you kill the -script, the .exe goes away.
             return
-
+ 
         if p['name'].startswith('sr3_'):
             #print( f"starts with sr3_ cmdline={p['cmdline']}" )
             p['memory'] = p['memory_full_info']._asdict()
@@ -312,7 +317,7 @@ class sr_GlobalState:
                     numi = 0
                     if cfg[-5:] == '.conf':
                         cbase = cfg[0:-5]
-                        state = 'stopped'
+                        state = 'new'
                     elif cfg[-4:] == '.inc':
                         cbase = cfg[0:-5]
                         state = 'include'
@@ -454,6 +459,9 @@ class sr_GlobalState:
             return
         os.chdir(dir1)
 
+        # some operating is pending, unwise to make changes.
+        self.flux={}
+
         for c in self.components:
             if c not in self.configs:
                 continue
@@ -464,11 +472,18 @@ class sr_GlobalState:
                     else:
                         state_dir=self.user_cache_dir + os.sep + c + os.sep + cfg
 
-                    if os.path.isdir(state_dir):
+                    if not os.path.isdir(state_dir):
+                        if c in self.configs and cfg in self.configs[c]:
+                            if c in ['post', 'cpost'] and not self._post_can_be_daemon(c, cfg): 
+                                 self.configs[c][cfg]['status'] = 'interactive'
+                            else:
+                                 self.configs[c][cfg]['status'] = 'new'
+                    else:
                         os.chdir(state_dir)
                         self.states[c][cfg] = {}
                         self.states[c][cfg]['instance_pids'] = {}
                         self.states[c][cfg]['queueName'] = None
+                        self.configs[c][cfg]['status'] = 'stopped'
                         if c in self.configs:
                             if cfg not in self.configs[c]:
                                 self.states[c][cfg]['status'] = 'removed'
@@ -476,8 +491,26 @@ class sr_GlobalState:
                         self.states[c][cfg]['has_state'] = False
                         self.states[c][cfg]['noVip'] = None
                         
+                        if os.path.exists('subscriptions.json'):
+                            s = Subscriptions()
+                            self.states[c][cfg]['subscriptions'] = s.read( \
+                                self.configs[c][cfg]['options'], 'subscriptions.json')
 
-                        for pathname in os.listdir():
+                        if c in ['post', 'cpost'] and not self._post_can_be_daemon(c, cfg): 
+                            self.configs[c][cfg]['status'] = 'interactive'
+                        if os.path.exists('starting'):
+                            self.states[c][cfg]['status'] = 'starting'
+                            self.flux[ f"{c}/{cfg}" ] = 'starting'
+                        elif os.path.exists('shutdown'):
+                            self.states[c][cfg]['status'] = 'shutdown'
+                            self.flux[ f"{c}/{cfg}" ] = 'shutdown'
+
+                        state_files = os.listdir() 
+                        if len(state_files) == 0:
+                            self.configs[c][cfg]['status'] = 'new'
+                            continue
+
+                        for pathname in state_files:
                             p = pathlib.Path(pathname)
                             if p.suffix in ['.pid', '.qname', '.state', '.noVip']:
                                 if sys.version_info[0] > 3 or sys.version_info[
@@ -510,7 +543,6 @@ class sr_GlobalState:
                                         self.states[c][cfg]['instance_metrics'][i]['status'] = { 'mtime':os.stat(p).st_mtime }
                                     except:
                                         logger.error( f"corrupt metrics file {pathname}: {t}" )
-
 
     def _read_metrics_dir(self,metrics_parent_dir):
         # read in metrics files
@@ -561,8 +593,10 @@ class sr_GlobalState:
         self._read_metrics_dir(self.user_cache_dir)
         self._read_metrics_dir(self.user_cache_dir + os.sep + self.hostdir)
 
-    def _find_missing_instances_dir(self, dir):
+    def _find_missing_instances_dir(self, dir, statehost=False):
         """ find processes which are no longer running, based on pidfiles in state, and procs.
+
+            check each configurations statehost setting, compare it to given parameter.
         """
         missing = []
         if not os.path.isdir(dir):
@@ -585,12 +619,23 @@ class sr_GlobalState:
                         if os.path.exists("disabled"): # double check, if disabled should ignore state.
                             continue
 
+                        if not 'status' in self.configs[c][cfg]:
+                            continue
+
+                        if self.configs[c][cfg]['status'] in [ 'disabled', 'interactive', 'new', 'stopped', 'stopping', 'starting' ]:
+                            continue
+
+                        if hasattr(self.configs[c][cfg]['options'],'statehost') and (statehost != self.configs[c][cfg]['options'].statehost):
+                            continue
+
+                        i_found=[]
                         for filename in os.listdir():
                             # look at pid files, find ones where process is missing.
                             if filename[-4:] == '.pid':
                                 i = self._instance_num_from_pidfile(filename, c, cfg)
                                 if i < 0:
                                     continue
+                                i_found.append(i)
                                 if i != 0:
                                     p = pathlib.Path(filename)
                                     if sys.version_info[0] > 3 or sys.version_info[
@@ -605,6 +650,12 @@ class sr_GlobalState:
                                             missing.append([c, cfg, i])
                                     else:
                                         missing.append([c, cfg, i])
+
+                        # find instances missing that don't have pid files.
+                        for i in range(1,self.configs[c][cfg]['instances']+1):
+                            if i not in i_found:
+                               missing.append([c, cfg, i])
+
                     os.chdir(c_dir) # back to component dir containing configs
                 os.chdir(dir) # back to dir containing components
 
@@ -612,9 +663,9 @@ class sr_GlobalState:
 
     def _find_missing_instances(self):
         self.missing = []
-        self._find_missing_instances_dir(self.user_cache_dir)
+        self._find_missing_instances_dir(self.user_cache_dir, False)
         self._find_missing_instances_dir(self.user_cache_dir + os.sep +
-                                         self.hostdir)
+                                         self.hostdir, True)
 
     def _clean_missing_proc_state_dir(self, dir):
         """ remove state pid files for process which are not running
@@ -715,86 +766,6 @@ class sr_GlobalState:
 
         return host
 
-    def __resolved_exchanges(self, c, cfg, o):
-        """
-          Guess the name of an exchange. looking at either a direct setting,
-          or an existing queue state file, or lastly just guess based on conventions.
-        """
-        exl = []
-        #if hasattr(o,'declared_exchanges'):
-        #    exl.extend(o.declared_exchanges)
-
-        if hasattr(o, 'exchange'):
-            if type(o.exchange) == list:
-                exl.extend(o.exchange)
-            else:
-                exl.append(o.exchange)
-            return exl
-
-        x = 'xs_%s' % o.broker.url.username
-
-        if hasattr(o, 'exchangeSuffix'):
-            x += '_%s' % o.exchangeSuffix
-
-        if hasattr(o, 'exchangeSplit'):
-            l = []
-            for i in range(0, o.instances):
-                y = x + '%02d' % i
-                l.append(y)
-            return l
-        else:
-            exl.append(x)
-            return exl
-
-    def __resolved_post_exchanges(self, c, cfg, o):
-        """
-          Guess the name of an exchange. looking at either a direct setting,
-          or an existing queue state file, or lastly just guess based on conventions.
-        """
-        exl = []
-        #if hasattr(o,'declared_exchanges'):
-        #    exl.extend(o.declared_exchanges)
-
-        if hasattr(o, 'post_exchange'):
-            if type(o.post_exchange) == list:
-                exl.extend(o.post_exchange)
-            else:
-                exl.append(o.post_exchange)
-            return exl
-
-        x = 'xs_%s' % o.post_broker.url.username
-
-        if hasattr(o, 'post_exchangeSuffix'):
-            x += '_%s' % o.post_exchangeSuffix
-
-        if hasattr(o, 'post_exchangeSplit'):
-            l = []
-            for i in range(0, o.instances):
-                y = x + '%02d' % i
-                l.append(y)
-            return l
-        else:
-            exl.append(x)
-            return exl
-
-    def __guess_queueName(self, c, cfg, o):
-        """
-          Guess the name of a queue. looking at either a direct setting,
-          or an existing queue state file, or lastly just guess based on conventions.
-        """
-        if hasattr(o, 'queueName'):
-            return o.queueName
-
-        if cfg in self.states[c]:
-            if self.states[c][cfg]['queueName']:
-                return self.states[c][cfg]['queueName']
-
-        n = 'q_' + o.broker.url.username + '.sr3_' + c + '.' + cfg
-        n += '.' + str(random.randint(0, 100000000)).zfill(8)
-        n += '.' + str(random.randint(0, 100000000)).zfill(8)
-
-        return n
-
     def _resolve_brokers(self):
         """ make a map of dependencies
 
@@ -816,12 +787,9 @@ class sr_GlobalState:
             if hasattr(o, 'declared_exchanges'):
                 for x in o.declared_exchanges:
                     if not x in self.brokers[host]['exchanges']:
-                        self.brokers[host]['exchanges'][x] = [
-                            'declared'
-                        ]
+                        self.brokers[host]['exchanges'][x] = [ 'declared' ]
                     else:
-                        if not 'declared' in self.brokers[host][
-                                'exchanges'][x]:
+                        if not 'declared' in self.brokers[host]['exchanges'][x]:
                             self.brokers[host]['exchanges'][x].append(
                                 'declared')
 
@@ -840,32 +808,34 @@ class sr_GlobalState:
                     o.instances = 1
                 name = c + os.sep + cfg
 
-                if hasattr(o, 'broker') and o.broker is not None and o.broker.url is not None:
-                    host = self._init_broker_host(o.broker.url.netloc)
-                    xl = self.__resolved_exchanges(c, cfg, o)
-                    q = self.__guess_queueName(c, cfg, o)
+                if hasattr(o, 'subscriptions') and len(o.subscriptions):
+                    for s in o.subscriptions:
+                        #logger.critical( f" {s=}  ")
+                        host = self._init_broker_host(s['broker'].url.netloc)
+                        xl=[]
+                        for b in s['bindings']:
+                            xl.append(b['exchange'])
+                        #logger.critical( f" {xl=}  ")
+                        q = s['queue']['name']
 
-                    self.configs[c][cfg]['options'].queueName_resolved = q
+                        for exch in xl:
+                            if exch in self.brokers[host]['exchanges']:
+                                self.brokers[host]['exchanges'][exch].append(q)
+                            else:
+                                self.brokers[host]['exchanges'][exch] = [q]
+                        
+                            if q in self.brokers[host]['queues']:
+                                self.brokers[host]['queues'][q].append(name)
+                            else:
+                                self.brokers[host]['queues'][q] = [name]
 
-                    for exch in xl:
-                        if exch in self.brokers[host]['exchanges']:
-                            self.brokers[host]['exchanges'][exch].append(q)
+                if hasattr(o,'publishers') and len(o.publishers):
+                    for p in o.publishers:
+                        host = self._init_broker_host(p['broker'].url.netloc)
+                        if 'exchange' in self.brokers[host]:
+                            self.brokers[host]['exchange'].extend(p['exchange'])
                         else:
-                            self.brokers[host]['exchanges'][exch] = [q]
-
-                    if q in self.brokers[host]['queues']:
-                        self.brokers[host]['queues'][q].append(name)
-                    else:
-                        self.brokers[host]['queues'][q] = [name]
-
-                if hasattr(o, 'post_broker') and o.post_broker is not None and o.post_broker.url is not None:
-                    host = self._init_broker_host(o.post_broker.url.netloc)
-
-                    self.configs[c][cfg]['options'].resolved_exchanges = \
-                            self.__resolved_post_exchanges(c, cfg, o)
-
-                    if hasattr(o, 'post_exchange'):
-                        self.brokers[host]['exchange'] = o.post_exchange
+                            self.brokers[host]['exchange'] = p['exchange']
 
         self.exchange_summary = {}
         for h in self.brokers:
@@ -916,11 +886,20 @@ class sr_GlobalState:
                     self.states[c][cfg] = {}
                     self.states[c][cfg]['instance_pids'] = {}
                     self.states[c][cfg]['queueName'] = None
-                    self.states[c][cfg]['status'] = 'stopped'
+                    self.states[c][cfg]['status'] = 'new'
                     self.states[c][cfg]['has_state'] = False
                     continue
+
                 if os.path.exists(self.user_cache_dir + os.sep + c + os.sep + cfg + os.sep + 'disabled'):
                     self.configs[c][cfg]['status'] = 'disabled'
+                if c in ['post', 'cpost'] and not self._post_can_be_daemon(c, cfg): 
+                    self.configs[c][cfg]['status'] = 'interactive'
+                if os.path.exists(self.user_cache_dir + os.sep + c + os.sep + cfg + os.sep + 'starting'):
+                    self.configs[c][cfg]['status'] = 'starting'
+                if os.path.exists(self.user_cache_dir + os.sep + c + os.sep + cfg + os.sep + 'shutdown'):
+                    self.configs[c][cfg]['status'] = 'shutdown'
+                if os.path.exists(self.user_cache_dir + os.sep + c + os.sep + cfg + os.sep + 'running'):
+                    self.configs[c][cfg]['status'] = 'running'
                 if 'instance_metrics' in self.states[c][cfg]:
                     if 'housekeeping' in self.configs[c][cfg]:
                         expiry = now - self.configs[c][cfg]['housekeeping']*1.5
@@ -1088,7 +1067,11 @@ class sr_GlobalState:
                                 hung_instances += 1
                                 self.states[c][cfg]['hung_instances'].append(i)
 
-                    flow_status = 'unknown' if self.configs[c][cfg]['status'] != 'disabled' else 'disabled'
+                    if self.configs[c][cfg]['status'] in [ 'disabled', 'interactive', 'new', 'starting', 'shutdown', 'running' ]:
+                        flow_status = self.configs[c][cfg]['status']
+                    else:
+                        flow_status = 'unknown'
+ 
                     if hasattr(self.configs[c][cfg]['options'],'download') and self.configs[c][cfg]['options'].download and \
                          (self.states[c][cfg]['metrics']['retry']+self.states[c][cfg]['metrics']['messagesQueued'] > 0 ) :
                         if not self.states[c][cfg]['metrics']['transferConnected']:
@@ -1104,24 +1087,27 @@ class sr_GlobalState:
                          flow_status = 'hung'
                     elif observed_instances < int(self.configs[c][cfg]['instances']):
                         if (c == 'post') and (('sleep' not in self.states[c][cfg]) or self.states[c][cfg]['sleep'] <= 0):
-                            if self.configs[c][cfg]['status'] != 'disabled':
+                            if self.configs[c][cfg]['status'] not in [ 'disabled', 'new', 'interactive' ]:
                                 flow_status = 'stopped'
                         else:
-                            if observed_instances > 0:
+                            if observed_instances > 0 and flow_status not in ['starting','shutdown']:
                                 flow_status = 'partial'
                                 for i in range(1, int(self.configs[c][cfg]['instances'])+1 ):
                                     if not i in self.states[c][cfg]['instance_pids']:
                                          self.states[c][cfg]['missing_instances'].append(i)
                             else:
                                 if self.configs[c][cfg]['status'] != 'disabled':
-                                    if len(self.states[c][cfg]['instance_pids']) == 0 :
+                                    if flow_status not in [ 'interactive', 'new', 'running'] and len(self.states[c][cfg]['instance_pids']) == 0 :
                                         flow_status = 'stopped' 
                                     else:
-                                        flow_status = 'missing' 
-                                        if not i in self.states[c][cfg]['instance_pids']:
-                                             self.states[c][cfg]['missing_instances'].append(i)
+                                        if flow_status not in [ 'interactive', 'new', 'shutdown', 'starting' ]:
+                                            flow_status = 'missing' 
+                                        for i in range(1, int(self.configs[c][cfg]['instances'])+1 ):
+                                            if not i in self.states[c][cfg]['instance_pids']:
+                                                 self.states[c][cfg]['missing_instances'].append(i)
                     elif observed_instances == 0:
-                        flow_status = "stopped" if len(self.states[c][cfg]['instance_pids']) == 0 else "missing"
+                        if flow_status not in ['interactive','new']:
+                            flow_status = 'stopped' if len(self.states[c][cfg]['instance_pids']) == 0 else "missing"
                     elif self.states[c][cfg]['noVip']:
                         flow_status = 'waitVip'
                     elif self.states[c][cfg]['metrics']['byteRate'] < self.configs[c][cfg]['options'].runStateThreshold_slow:
@@ -1139,7 +1125,7 @@ class sr_GlobalState:
                         flow_status='standby'
                     elif flow_status in [ 'down', 'disconnected' ]:
                         pass
-                    elif hasattr(self.configs[c][cfg]['options'],'post_broker') and self.configs[c][cfg]['options'].post_broker \
+                    elif hasattr(self.configs[c][cfg]['options'],'publishers') and len(self.configs[c][cfg]['options'].publishers) \
                             and (now-self.states[c][cfg]['metrics']['txLast']) > self.configs[c][cfg]['options'].runStateThreshold_idle:
                         flow_status = 'idle'
                     elif  hasattr(self.configs[c][cfg]['options'],'download') and self.configs[c][cfg]['options'].download \
@@ -1328,8 +1314,8 @@ class sr_GlobalState:
             'sender', 'shovel', 'subscribe', 'watch', 'winnow'
         ]
         # active means >= 1 process exists on the node.
-        self.status_active =  ['cpuSlow', 'disconnected', 'down', 'hung', 'idle', 'lagging', 'partial', 'reject', 'retry', 'running', 'slow', 'standby', 'waitVip' ]
-        self.status_values = self.status_active + [ 'disabled', 'include', 'missing', 'stopped', 'unknown' ]
+        self.status_active =  ['cpuSlow', 'disconnected', 'down', 'hung', 'idle', 'lagging', 'partial', 'reject', 'retry', 'running', 'slow', 'standby', 'starting', 'shutdown', 'waitVip' ]
+        self.status_values = self.status_active + [ 'disabled', 'include', 'interactive', 'missing', 'new', 'stopped', 'unknown' ]
 
         self.bin_dir = os.path.dirname(os.path.realpath(__file__))
 
@@ -1358,6 +1344,7 @@ class sr_GlobalState:
         os.chdir(self.invoking_directory)
 
     def _start_missing(self):
+        max_instance=0
         for instance in self.missing:
             if self.please_stop:
                 break
@@ -1367,7 +1354,11 @@ class sr_GlobalState:
             component_path = self._find_component_path(c)
             if component_path == '':
                 continue
+            if max_instance < i:
+                max_instance=i 
             self._launch_instance(component_path, c, cfg, i)
+        time.sleep(0.2+max_instance*0.1)
+        
 
     def _stop_signal(self, signum, stack):
         logging.info('signal %d received' % signum)
@@ -1483,10 +1474,12 @@ class sr_GlobalState:
 
                 o = self.configs[c][cfg]['options']
 
-                if hasattr(o, "broker") and o.broker:
-                    filtered_users.append(f"{o.broker.url.username}@{o.broker.url.hostname}")
-                if hasattr(o, "post_broker") and o.post_broker:
-                    filtered_users.append(f"{o.post_broker.url.username}@{o.post_broker.url.hostname}")
+                if hasattr(o, "subscriptions") and len(o.subscriptions):
+                    for s in o.subscriptions:
+                        filtered_users.append(f"{s['broker'].url.username}@{s['broker'].url.hostname}")
+                if hasattr(o, "publishers") and len(o.publishers):
+                    for p in o.publishers:
+                        filtered_users.append(f"{p['broker'].url.username}@{p['broker'].url.hostname}")
                 if hasattr(o, "report_broker") and o.report_broker:
                     filtered_users.append(f"{o.report_broker.url.username}@{o.report_broker.url.hostname}")
 
@@ -1553,19 +1546,18 @@ class sr_GlobalState:
             if not 'options' in self.configs[c][cfg]:
                 continue
             logging.info('looking at %s/%s ' % (c, cfg))
-            o = self.configs[c][cfg]['options']
-            if hasattr(
-                    o,
-                    'resolved_exchanges') and o.resolved_exchanges is not None:
-                xdc = sarracenia.moth.Moth.pubFactory(
-                    {
-                        'broker': o.post_broker,
-                        'dry_run': self.options.dry_run,
-                        'exchange': o.resolved_exchanges,
-                        'message_strategy': { 'stubborn':True }
-                    })
-                xdc.putSetup()
-                xdc.close()
+            if hasattr(self.configs[c][cfg]['options'],'publishers'):
+                for p in self.configs[c][cfg]['options'].publishers:
+                     if 'exchange' in p:
+                         xdc = sarracenia.moth.Moth.pubFactory(
+                            {   
+                                'broker': p['broker'],
+                                'dry_run': self.options.dry_run,
+                                'exchange': p['exchange'],
+                                'message_strategy': { 'stubborn':True }
+                            })
+                         xdc.putSetup()
+                         xdc.close()
 
         # then declare and bind queues....
         for f in self.filtered_configurations:
@@ -1578,14 +1570,20 @@ class sr_GlobalState:
                 continue
             logging.info('looking at %s/%s ' % (c, cfg))
             o = self.configs[c][cfg]['options']
-            od = o.dictify()
-            if hasattr(o, 'queueName_resolved'):
-                od['broker'] = o.broker
-                od['queueName'] = o.queueName_resolved
+            if not hasattr(o,'subscriptions'):
+                continue
+
+            i=0
+            for s in o.subscriptions:
+                od = o.dictify()
+                od['broker'] = s['broker']
+                od['queueName'] = s['queue']['name']
                 od['dry_run'] = self.options.dry_run
+                od['subscription_index']=i
                 qdc = sarracenia.moth.Moth.subFactory(od)
                 qdc.getSetup()
                 qdc.close()
+                i += 1
 
         # run on_declare plugins.
         for f in self.filtered_configurations:
@@ -1624,24 +1622,7 @@ class sr_GlobalState:
                 logging.error("cannot disable %s while it is running! " % f)
                 continue
 
-            if self.configs[c][cfg]['options'].statehost:
-                state_file_dir = self.user_cache_dir + os.sep + self.hostdir + os.sep + f.replace('/', os.sep)
-            else:
-                state_file_dir = self.user_cache_dir + os.sep + f.replace('/', os.sep)
-
-            if not os.path.isdir(state_file_dir):
-                os.makedirs(state_file_dir, exist_ok=True)
-
-            state_file_disabled = state_file_dir + os.sep + 'disabled'
-            
-            if os.path.exists(state_file_disabled):
-                logging.error("%s is already disabled! " % f)
-                continue
-
-            with open(state_file_disabled, 'w') as f:
-                f.write('')
-            logging.info(c + '/' + cfg)
-
+            self._tag_progress( c, cfg, 'disabled', ending=False )
 
     def edit(self):
 
@@ -1674,7 +1655,7 @@ class sr_GlobalState:
             if not 'options' in self.configs[c][cfg]:
                 continue
 
-            lfn = self.log_dir + os.sep + c + "_" + cfg + "_01" + '.log'
+            lfn = self.log_dir + os.sep + c + '_' + cfg + '_01' + '.log'
 
             if sys.platform == 'win32':
                 self.run_command(['sr_tailf', lfn])
@@ -1761,7 +1742,7 @@ class sr_GlobalState:
             if component_path == '':
                 continue
 
-            if self.configs[c][cfg]['status'] in ['stopped','missing']:
+            if self.configs[c][cfg]['status'] in ['stopped','new','interactive','missing']:
                 numi = self.configs[c][cfg]['instances']
                 for i in range(1, numi + 1):
                     if pcount % 10 == 0: print('.', end='', flush=True)
@@ -1832,25 +1813,38 @@ class sr_GlobalState:
                 break
             (c, cfg) = f.split(os.sep)
 
+            if not hasattr(self.configs[c][cfg]['options'], 'subscriptions'):
+                continue
+
             o = self.configs[c][cfg]['options']
 
-            if hasattr(o, 'queueName_resolved'):
-                #print('deleting: %s is: %s @ %s' % (f, o.queueName_resolved, o.broker.url.hostname ))
-                qdc = sarracenia.moth.Moth.subFactory(
-                    {
-                        'broker': o.broker,
-                        'dry_run': self.options.dry_run,
-                        'echangeDeclare': False,
-                        'queueDeclare': False,
-                        'queueBind': False,
-                        'broker': o.broker,
-                        'queueName': o.queueName_resolved,
-                        'message_strategy': { 'stubborn':True }
-                    })
-                qdc.getSetup()
-                qdc.getCleanUp()
-                qdc.close()
-                queues_to_delete.append((o.broker, o.queueName_resolved))
+            for s in o.subscriptions:
+                q = s['queue']
+                if 'name' in q:
+                    if type(o.broker) == str:
+                        ok, broker = o.credentials.get( o.broker )
+                    else:
+                        broker=o.broker
+
+                    if not broker:
+                        print( f" could not resolve broker: {o.broker} " )
+                        continue
+
+                    print('deleting: %s is: %s @ %s' % (f, q['name'], broker.url.hostname ))
+                    qdc = sarracenia.moth.Moth.subFactory(
+                        {
+                            'broker': broker,
+                            'dry_run': self.options.dry_run,
+                            'credentials': o.credentials,
+                            'echangeDeclare': False,
+                            'subscription_index': 0,
+                            'subscriptions' : [ s ],
+                            'message_strategy': { 'stubborn':True }
+                        })
+                    qdc.getSetup()
+                    qdc.getCleanUp()
+                    qdc.close()
+                    queues_to_delete.append((broker, q['name']))
 
         for h in self.brokers:
             if self.please_stop:
@@ -1859,6 +1853,7 @@ class sr_GlobalState:
                 if self.please_stop:
                     break
                 if qd[0].url.hostname != h: continue
+                
                 for x in self.brokers[h]['exchanges']:
                     xx = self.brokers[h]['exchanges'][x]
                     if qd[1] in xx:
@@ -1867,21 +1862,25 @@ class sr_GlobalState:
                         print(' remove %s from %s subscribers ' %
                               (qd[1], x))
                         xx.remove(qd[1])
-                        if o.post_broker and len(xx) < 1:
+                        if len(o.publishers) and len(xx) < 1:
                             print("No local queues found for exchange %s, attemping to remove it..." % x)
-                            qdc = sarracenia.moth.Moth.pubFactory(
-                                {
-                                    'broker': o.post_broker,
-                                    'declare': False,
-                                    'exchange': x,
-                                    'dry_run': self.options.dry_run,
-                                    'broker': self.brokers[h]['admin'],
-                                    'message_strategy': { 'stubborn':True }
-                                })
-                            if qdc:
-                                qdc.putSetup()
-                                qdc.putCleanUp()
-                                qdc.close()
+                            for p in o.publishers:
+                                if p['broker'].url.hostname != h:
+                                    continue
+
+                                qdc = sarracenia.moth.Moth.pubFactory(
+                                    {
+                                        'broker': p['broker'],
+                                        'declare': False,
+                                        'exchange': p['exchange'],
+                                        'dry_run': self.options.dry_run,
+                                        'broker': self.brokers[h]['admin'],
+                                        'message_strategy': { 'stubborn':True }
+                                    })
+                                if qdc:
+                                    qdc.putSetup()
+                                    qdc.putCleanUp()
+                                    qdc.close()
 
         # run on_cleanup plugins.
         for f in self.filtered_configurations:
@@ -2176,6 +2175,15 @@ class sr_GlobalState:
             logging.error( f"{self.leftovers} configuration not found" )
             return
 
+        if self.flux:
+            if len(self.flux) > 10:
+                logging.warning( f"Not interfering with more than 10 operations in progress" )
+            else:
+                logging.warning( f"Not interfering with operations in progress: {self.flux}" )
+            return
+
+        self._tag_sanity(ending=False)
+
         pcount = 0
         kill_hung=[]
         for f in self.filtered_configurations:
@@ -2200,8 +2208,8 @@ class sr_GlobalState:
             for pid in kill_hung:
                 signal_pid(pid, signal.SIGKILL)
             time.sleep(5)
-            self._read_procs()
             # next step should identify the missing instances and start them up.
+            self._read_procs()
 
         if pcount != 0:
             self._find_missing_instances()
@@ -2218,8 +2226,9 @@ class sr_GlobalState:
             if not self.options.dry_run:
                 self._start_missing()
         else:
-            print('no missing processes found')
+            logger.info('no missing processes found')
 
+ 
         if len(self.strays) > 0:
             print('killing strays...')
             for pid in self.strays:
@@ -2227,7 +2236,7 @@ class sr_GlobalState:
                 if not self.options.dry_run:
                     signal_pid(pid, signal.SIGTERM)
         else:
-            print('no stray processes found')
+            logger.info('no stray processes found')
 
         #It is enough to have it *features* not needed in sanity.
         #for l in sarracenia.features.keys():
@@ -2253,7 +2262,20 @@ class sr_GlobalState:
                 flow.runCallbacksTime('on_sanity')
                 del flow
                 flow=None
+
+        self._tag_sanity(ending=True)
         
+    def _pid_file_count(self,c,cfg) -> int:
+        d = self.user_cache_dir 
+        if self.configs[c][cfg]['options'].statehost:
+            d += os.sep + self.hostdir
+        d += os.sep + c + os.sep + cfg
+        if os.path.exists(d):
+            return sum( [ i[-4:] == '.pid' for i in os.listdir(d) ] )
+        else:
+            return 0
+
+
     def start(self):
         """ Starting all components
 
@@ -2264,6 +2286,18 @@ class sr_GlobalState:
             logging.error( f"{self.leftovers} configuration not found" )
             return
         
+        count=0
+        while self._check_sanitizing():
+            if self.please_stop:
+                return
+            if count % 10 == 0:
+                logger.info( "sanitizing in progress, please wait." )
+            count += 1
+            time.sleep(1)
+ 
+        if count > 0:
+            logger.info( "sanitize complete, proceeding with start" )
+
         has_disabled_config = False
 
         # if any configs are disabled, don't start any
@@ -2280,9 +2314,55 @@ class sr_GlobalState:
                 return
 
         pcount = 0
+        max_instances=0
         for f in self.filtered_configurations:
 
             (c, cfg) = f.split(os.sep)
+
+            # skip posts that cannot run as daemons
+            if c in ['post', 'cpost'] and not self._post_can_be_daemon(c, cfg): continue
+
+            # Skip disabled configurations
+            if self.configs[c][cfg]['status'] in ['disabled']: continue
+
+            component_path = self._find_component_path(c)
+            if component_path == '':
+                continue
+
+            if self.configs[c][cfg]['status'] in [ 'missing', 'interactive', 'new', 'stopped']:
+                numi = self.configs[c][cfg]['instances']
+                if numi > max_instances:
+                    max_instances=numi
+                self._tag_progress( c, cfg, 'starting', ending=False )
+                for i in range(1, numi + 1):
+                    if pcount % 10 == 0: print('.', end='', flush=True)
+                    pcount += 1
+                    self._launch_instance(component_path, c, cfg, i)
+ 
+        instance_gap=0.10
+        time.sleep(1+max_instances*instance_gap) 
+
+        for f in self.filtered_configurations:
+            (c, cfg) = f.split(os.sep)
+
+            pid_count = self._pid_file_count(c,cfg)
+            partial=False
+            if c in ['post', 'cpost'] and not self._post_can_be_daemon(c, cfg): 
+                 continue
+
+            if self.configs[c][cfg]['status'] in ['disabled']: continue
+
+            while pid_count < self.configs[c][cfg]['options'].instances:
+
+                 if self.please_stop:
+                     return
+
+                 partial=True
+                 logger.debug( f"{pid_count}/{self.configs[c][cfg]['options'].instances} instances started." )
+                 time.sleep(5)
+                 pid_count = self._pid_file_count(c,cfg)
+
+            logger.debug( f"{c}/{cfg}: {pid_count}/{self.configs[c][cfg]['options'].instances} instances started." )
 
             # skip posts that cannot run as daemons
             if c in ['post', 'cpost'] and not self._post_can_be_daemon(c, cfg): continue
@@ -2291,12 +2371,8 @@ class sr_GlobalState:
             if component_path == '':
                 continue
 
-            if self.configs[c][cfg]['status'] in [ 'missing', 'stopped']:
-                numi = self.configs[c][cfg]['instances']
-                for i in range(1, numi + 1):
-                    if pcount % 10 == 0: print('.', end='', flush=True)
-                    pcount += 1
-                    self._launch_instance(component_path, c, cfg, i)
+            self._tag_progress( c, cfg, 'starting', ending=True )
+            self._tag_progress( c, cfg, 'running', ending=False )
 
         print('( %d ) Done' % pcount)
 
@@ -2329,6 +2405,18 @@ class sr_GlobalState:
             logging.error( f"{self.leftovers} configuration not found" )
             return
 
+        count=0
+        while self._check_sanitizing():
+            if self.please_stop:
+                return
+            if count % 10 == 0:
+                logger.info( "sanitizing in progress, please wait.." )
+            count += 1
+            time.sleep(1)
+
+        if count > 0:
+            logger.info( "sanitize complete, proceeding with stop" )
+
         self._clean_missing_proc_state()
 
         if len(self.procs) == 0:
@@ -2355,6 +2443,11 @@ class sr_GlobalState:
                 continue
 
             if self.configs[c][cfg]['status'] in self.status_active:
+
+                if not self.options.dry_run:
+                    self._tag_progress( c, cfg, 'running', ending=True )
+                    self._tag_progress( c, cfg, 'shutdown', ending=False )
+
                 for i in self.states[c][cfg]['instance_pids']:
                     #print( "for %s/%s - %s signal_pid( %s, SIGTERM )" % \
                     #    ( c, cfg, i, self.states[c][cfg]['instance_pids'][i] ) )
@@ -2406,6 +2499,12 @@ class sr_GlobalState:
                 running_pids += len(self.states[c][cfg]['instance_pids'])
 
             if (running_pids == 0) and len(self.strays)==0:
+                for f in self.filtered_configurations:
+                    (c, cfg) = f.split(os.sep)
+                    # exclude foreground instances unless --dangerWillRobinson specified
+                    if (not self.options.dangerWillRobinson) and self._cfg_running_foreground(c, cfg):
+                        continue
+                    self._tag_progress( c, cfg, 'shutdown', ending=True )
                 print('All stopped after try %d' % attempts)
                 if len(fg_instances) > 0:
                     print(f"Foreground instances {fg_instances} are running and were not stopped.")
@@ -2450,10 +2549,13 @@ class sr_GlobalState:
             if (not self.options.dangerWillRobinson) and self._cfg_running_foreground(c, cfg):
                 fg_instances.add(f"{c}/{cfg}")
                 continue
+
             if self.configs[c][cfg]['status'] in self.status_active:
                 for i in self.states[c][cfg]['instance_pids']:
                     print("failed to kill: %s/%s instance: %s, pid: %s )" %
                           (c, cfg, i, self.states[c][cfg]['instance_pids'][i]))
+
+            self._tag_progress( c, cfg, 'shutdown', ending=True )
 
         if len(self.procs) == 0:
             print('All stopped after KILL')
@@ -2540,7 +2642,7 @@ class sr_GlobalState:
             if lengthSelfBrokers - 1 > indexSelfBrokers:
                print(',') 
 
-        print('}\n},\n"nbroker summaries": {\n\n')
+        print('}\n},\n"broker summaries": {\n\n')
         lengthSelfBroker = len(self.brokers)
         print('\n\"broker\": {')
         for indexSelfBroker,h in enumerate(self.brokers):
@@ -2628,7 +2730,7 @@ class sr_GlobalState:
         configs_running = 0
         now = time.time()
 
-                
+        configs_extant=0                
         for c in sorted(self.configs):
             for cfg in sorted(self.configs[c]):
                 f = c + os.sep + cfg
@@ -2636,15 +2738,26 @@ class sr_GlobalState:
                     continue
                 if self.configs[c][cfg]['status'] == 'include':
                     continue
+                configs_extant+=1
 
                 if not (c in self.states and cfg in self.states[c]):
                     continue
 
-                #find missing instances for this config.
-                missing_instances = sum(map(lambda x: c in x and cfg in x, self.missing))
-                if self.configs[c][cfg]['status'] != 'stopped':
+                #find running and missing instances for this config.
+                missing_instances=[]
+                running_instances=[]
+                if 'instance_pids' in self.states[c][cfg]:
+                    instance_pids=self.states[c][cfg]['instance_pids'].values()
+
+                    for p in instance_pids:
+                        if p in self.procs.keys():
+                            running_instances.append(p)
+                        else:
+                            missing_instances.append(p)
+
+                if self.configs[c][cfg]['status'] not in [ 'stopped', 'new' ]:
                     expected = self.configs[c][cfg]['instances']
-                    running = expected - missing_instances
+                    running = len(running_instances)
                     if running > 0:
                         configs_running += 1
                 else:
@@ -2726,8 +2839,8 @@ class sr_GlobalState:
                 bad = 1
                 print( f"pid:{pid} \"{self.strays[pid]}\" is not a configured instance" )
 
-            print('      Total Running Configs: %3d ( Processes: %d missing: %d stray: %d )' %
-                (configs_running, len(self.procs), len(self.missing), stray ) )
+            print('      Total Running Configs: %3d/%d ( Processes: %d missing: %d stray: %d )' %
+                (configs_running, configs_extant, len(self.procs), len(self.missing), stray ) )
             print('                     Memory: uss:%s rss:%s vms:%s ' % ( \
                   naturalSize( self.resources['uss'] ), \
                   naturalSize( self.resources['rss'] ), naturalSize( self.resources['vms'] )\
@@ -3017,7 +3130,7 @@ class sr_GlobalState:
                 if not (c in self.states and cfg in self.states[c]):
                     continue
 
-                if self.configs[c][cfg]['status'] != 'stopped':
+                if self.configs[c][cfg]['status'] not in [ 'stopped', 'new' ]:
                     m = sum(map(
                         lambda x: c in x and cfg in x,
                         self.missing))  #perhaps expensive, but I am lazy FIXME
@@ -3130,6 +3243,78 @@ class sr_GlobalState:
             logger.error(f"Failed to determine instance # for {component}/{cfg} {pathname}")
             i = -1
         return i
+
+    def _check_sanitizing(self) -> bool:
+        """
+           return true if sr3 sanity is running somewhere... 
+        """
+
+        d1 = self.user_cache_dir
+
+        d2 = d1 + os.sep + self.hostdir
+
+        sanitizing=False
+        for d in [ d1, d2 ]:
+            f = d + os.sep + "sanitizing"
+            if os.path.exists(f):
+                sanitizing=True
+        return sanitizing
+
+    def _tag_sanity( self, ending: bool ):
+
+        dir_list = [ self.user_cache_dir + os.sep + self.hostdir, self.user_cache_dir ]
+
+        for d in dir_list:
+            if not os.path.exists( d ):
+                 os.makedirs(d, exist_ok=True)
+            
+            fname = d + os.sep + "sanitizing"
+
+            if ending:
+                if os.path.exists(fname):
+                    os.unlink( fname )
+            else:
+                with open(fname, "w") as f:
+                    f.write(nowstr())
+                    
+            
+    def _tag_progress( self, c: str, cfg: str, what_is_in_progress: str, ending: bool ):
+        """ mark a configuration as being in flux, to disable sr3 sanity.
+            Do that by creating a file in the state directory. 
+
+            sample call: 
+                 self._tag_progress( \
+                     c='subscribe', 
+                     cfg='amis', 
+                     what_is_in_progress='shutdown', 
+                     ending=False 
+                 ) ...
+ 
+            results in a file named: *~/.cache/sr3/subscribe/amis/shutdown* being created.
+
+            if the *ending* argument is true, then the corresponding state file is removed
+            to indicate that the operation completed.
+        """
+        if 'options' in self.configs[c][cfg] and self.configs[c][cfg]['options'].statehost:
+            state_dir=self.user_cache_dir + os.sep + self.hostdir + os.sep + c + os.sep + cfg
+        else:
+            state_dir=self.user_cache_dir + os.sep + c + os.sep + cfg
+
+        fname =  f"{state_dir}{os.sep}{what_is_in_progress}"
+        if ending:
+            if os.path.exists(fname):
+                os.unlink( fname )
+        else:
+            if not os.path.exists(state_dir):
+                 os.makedirs(state_dir, exist_ok=True)
+
+            if os.path.exists( fname ):
+                 logger.error( f" {c}/{cfg} already tagged: {what_is_in_progress}" )
+                 return
+
+            with open(fname, "w") as f:
+                f.write(nowstr())
+
 
 
 def main():
@@ -3247,6 +3432,7 @@ def main():
     elif action == 'sanity':
         print('sanity: ', end='', flush=True)
         gs.sanity()
+        print('')
 
     if action == 'show':
         gs.config_show()

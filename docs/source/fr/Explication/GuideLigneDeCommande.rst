@@ -263,130 +263,201 @@ show
 Afficher tous les paramètres de configuration (le résultat de toutes les analyses... ce que les composants du flux voient réellement) ::
 
     
-    % sr3 show subscribe/q_f71
-    2022-03-20 15:30:32,507 1084652 [INFO] sarracenia.config parse_fil download_f20.conf:35 obsolete v2:"on_message msg_log" converted to sr3:"logEvents after_accept"
-    2022-03-20 15:30:32,508 1084652 [INFO] sarracenia.config parse_file tsource2send_f50.conf:26 obsolete v2:"on_message msg_rawlog" converted to sr3:"logEvents after_accept"
-    2022-03-20 15:30:32,508 1084652 [INFO] sarracenia.config parse_file rabbitmqtt_f22.conf:6 obsolete v2:"on_message msg_log" converted to sr3:"logEvents after_accept"
+    fractal% sr3 show sarra/download_f20
+
+    2025-04-14 09:27:08,834 1314778 [DEBUG] sarracenia.flow loadCallbacks flowCallback plugins to load: ['sarracenia.flowcb.post.message.Message', 'sarracenia.flowcb.gather.message.Message', 'sarracenia.flowcb.retry.Retry', 'sarracenia.flowcb.housekeeping.resources.Resources', 'sarracenia.flowcb.nodupe.disk.Disk', 'log']
+    2025-04-14 09:27:08,836 1314778 [DEBUG] sarracenia.flowcb.retry __init__ logLevel=debug
+    2025-04-14 09:27:08,837 1314778 [DEBUG] sarracenia.flowcb.nodupe.disk __init__ NoDupe init
+    2025-04-14 09:27:08,838 1314778 [DEBUG] sarracenia.flowcb.log __init__ sarra initialized with: logEvents: {'post', 'after_accept', 'after_post', 'after_work', 'on_housekeeping', 'reject'},  logMessageDump: False
+    2025-04-14 09:27:08,838 1314778 [DEBUG] sarracenia.flow loadCallbacks complete
     
-    Config of subscribe/q_f71: 
-    {'_Config__admin': 'amqp://bunnymaster@localhost/ None True True False False None None',
-     '_Config__broker': 'amqp://tsource@localhost/ None True True False False None None',
-     '_Config__post_broker': None,
-     'accelThreshold': 0,
+    Config of sarra/download_f20: (with callbacks)
+    {'_Config__admin': 'amqp://bunnymaster@localhost/',
+     '_Config__broker': 'amqp://tfeed@localhost/',
+     '_Config__post_broker': 'amqp://tfeed@localhost/',
+     'accelThreshold': 100,
      'acceptSizeWrong': False,
-     'acceptUnmatched': False,
-     'admin': 'amqp://bunnymaster@localhost/ None True True False False None None',
+     'acceptUnmatched': True,
+     'action': 'show',
+     'admin': 'amqp://bunnymaster@localhost/',
+     'amqp_consumer': False,
      'attempts': 3,
      'auto_delete': False,
      'baseDir': None,
      'baseUrl_relPath': False,
-     'batch': 1,
-     'bindings': [('xs_tsource_poll', ['v03', 'post'], ['#'])],
-     'broker': 'amqp://tsource@localhost/ None True True False False None None',
-     'bufsize': 1048576,
+     'batch': 20,
+     'broker': 'amqp://tfeed@localhost/',
+     'bufSize': 1048576,
      'byteRateMax': None,
-     'cfg_run_dir': '/home/peter/.cache/sr3/subscribe/q_f71',
-     'component': 'subscribe',
-     'config': 'q_f71',
+     'cfg_run_dir': '/home/peter/.cache/sr3/fractal/sarra/download_f20',
+     'component': 'sarra',
+     'config': 'download_f20',
+     'config_search_path': ['.', '/home/peter/.config/sr3', '/home/peter/Sarracenia/sr3/sarracenia/examples', '/home/peter/Sarracenia/sr3/sarracenia/examples/flow'],
      'currentDir': None,
-     'debug': False,
-     'declared_exchanges': [],
+     'debug': True,
+     'declared_exchanges': ['xs_tfeed', 'xs_tfeed_hoho'],
      'declared_users': {'anonymous': 'subscriber', 'eggmeister': 'subscriber', 'ender': 'source', 'tfeed': 'feeder', 'tsource': 'source', 'tsub': 'subscriber'},
      'delete': False,
-     'destfn_script': None,
-     'directory': '//home/peter/sarra_devdocroot/recd_by_srpoll_test1',
+     'destfn_scripts': [],
+     'directory': '/home/peter/sarra_devdocroot',
      'discard': False,
+     'displayFull': False,
      'documentRoot': None,
      'download': True,
+     'dry_run': False,
      'durable': True,
-     'env_declared': ['FLOWBROKER', 'MQP', 'SFTPUSER', 'TESTDOCROOT'],
-     'exchange': 'xs_tsource_poll',
+     'env_declared': ['FLOWBROKER', 'SFTPUSER', 'TESTDOCROOT', 'MQP', 'several', 'PRIMARY_DIR', 'COPY_DIR'],
+     'exchange': 'xsarra',
      'exchangeDeclare': True,
-     'exchangeSuffix': 'poll',
-     'expire': 1800.0,
+     'expire': 25200.0,
      'feeder': ParseResult(scheme='amqp', netloc='tfeed@localhost', path='/', params='', query='', fragment=''),
-     'fileEvents': {'create', 'link', 'modify', 'delete', 'mkdir', 'rmdir' },
-     'file_total_interval': '0',
-     'filename': 'WHATFN',
+     'fileAgeMax': 0,
+     'fileAgeMin': 0,
+     'fileEvents': {'link', 'rmdir', 'delete', 'create', 'mkdir', 'modify'},
+     'fileSizeMax': 0,
+     'filename': None,
+     'files': [],
      'fixed_headers': {},
      'flatten': '/',
+     'flowMain': None,
      'hostdir': 'fractal',
      'hostname': 'fractal',
-     'housekeeping': 300,
+     'housekeeping': 60.0,
+     'identity_arbitrary_value': None,
+     'identity_method': 'sha512',
      'imports': [],
-     'inflight': None,
+     'inflight': '.tmp',
      'inline': False,
      'inlineByteMax': 4096,
      'inlineEncoding': 'guess',
      'inlineOnly': False,
      'instances': 1,
-     'identity_arbitrary_value': None,
-     'identity_method': 'sha512',
-     'logEvents': {'after_work', 'after_accept', 'on_housekeeping'},
+     'lineno': 75,
+     'logDuplicates': False,
+     'logEvents': {'post', 'after_accept', 'after_post', 'after_work', 'on_housekeeping', 'reject'},
      'logFormat': '%(asctime)s [%(levelname)s] %(name)s %(funcName)s %(message)s',
-     'logLevel': 'info',
-     'logReject': False,
+     'logJson': False,
+     'logLevel': 'debug',
+     'logMetrics': False,
+     'logReject': True,
      'logRotateCount': 5,
      'logRotateInterval': 86400,
-     'logStdout': True,
+     'logStdout': False,
      'log_flowcb_needed': False,
-     'masks': ['accept .* into //home/peter/sarra_devdocroot/recd_by_srpoll_test1 with mirror:True strip:.*sent_by_tsource2send/'],
+     'masks': [],
      'messageAgeMax': 0,
      'messageCountMax': 0,
-     'messageDebugDump': False,
+     'messageDebugDump': True,
      'messageRateMax': 0,
      'messageRateMin': 0,
      'message_strategy': {'failure_duration': '5m', 'reset': True, 'stubborn': True},
-     'message_ttl': 0,
+     'metricsFilename': '/home/peter/.cache/sr3/fractal/metrics/sarra_download_f20_00.json',
+     'metrics_writeInterval': 5,
      'mirror': True,
-     'msg_total_interval': '0',
-     'fileAgeMax': 0,
-     'nodupe_ttl': 0,
+     'no': 0,
+     'nodupe_driver': 'disk',
+     'nodupe_ttl': 600.0,
+     'novipFilename': '/home/peter/.cache/sr3/fractal/sarra/download_f20//sarra_download_f20_00.noVip',
+     'old_subscriptions': [{'auto_delete': False,
+                            'bindings': [{'exchange': 'xsarra', 'prefix': ['v03', 'post'], 'sub': ['#']}],
+                            'broker': 'amqp://tfeed@localhost/',
+                            'queue': {'auto_delete': False,
+                                      'bind': True,
+                                      'cleanup_needed': None,
+                                      'declare': True,
+                                      'durable': True,
+                                      'expire': 25200.0,
+                                      'name': 'q_tfeed.sarra.download_f20.peter_fractal_70374978',
+                                      'prefetch': 25,
+                                      'template': 'q_${BROKER_USER}.${COMPONENT}.${CONFIG}.${QUEUESHARE}',
+                                      'tlsRigour': 'normal'}}],
      'overwrite': True,
+     'path': [],
      'permCopy': True,
      'permDefault': 0,
      'permDirDefault': 509,
      'permLog': 384,
+     'persistent': True,
+     'pid_filename': '/home/peter/.cache/sr3/fractal/sarra/download_f20//sarra_download_f20_00.pid',
      'plugins_early': [],
-     'plugins_late': ['sarracenia.flowcb.log.Log'],
-     'post_baseDir': None,
-     'post_baseUrl': None,
-     'post_broker': None,
+     'plugins_late': ['log'],
+     'post_baseDir': '/home/peter/sarra_devdocroot',
+     'post_baseUrl': 'http://localhost:8001/',
+     'post_broker': 'amqp://tfeed@localhost/',
      'post_documentRoot': None,
+     'post_exchange': ['xflow_public'],
      'post_exchanges': [],
+     'post_format': 'v03',
+     'post_messageAgeMax': 0,
      'post_topicPrefix': ['v03', 'post'],
      'prefetch': 25,
-     'pstrip': '.*sent_by_tsource2send/',
+     'pstrip': False,
      'queueBind': True,
      'queueDeclare': True,
-     'queueName': 'q_tsource_subscribe.q_f71.76359618.62916076',
-     'queue_filename': '/home/peter/.cache/sr3/subscribe/q_f71/subscribe.q_f71.tsource.qname',
-     'randid': 'cedf',
+     'queueName': 'q_${BROKER_USER}.${COMPONENT}.${CONFIG}.${QUEUESHARE}',
+     'queueShare': '${USER}_${HOSTNAME}_${RAND8}',
+     'queue_filename': '/home/peter/.cache/sr3/fractal/sarra/download_f20/sarra.download_f20.tfeed.qname',
+     'randid': '502e',
      'randomize': False,
      'realpathPost': False,
+     'recursive': True,
      'rename': None,
      'report': False,
      'reset': False,
-     'resolved_qname': 'q_tsource_subscribe.q_f71.76359618.62916076',
-     'retry_ttl': 1800.0,
-     'settings': {},
+     'resolved_exchanges': ['xflow_public'],
+     'retryEmptyBeforeExit': False,
+     'retry_path': '/home/peter/.cache/sr3/fractal/sarra/download_f20//sarra_download_f20_00.retry',
+     'retry_refilter': False,
+     'retry_ttl': 25200.0,
+     'runStateThreshold_cpuSlow': 0,
+     'runStateThreshold_disconnected': 80,
+     'runStateThreshold_hung': 450,
+     'runStateThreshold_idle': 900,
+     'runStateThreshold_lag': 30,
+     'runStateThreshold_reject': 80,
+     'runStateThreshold_retry': 1000,
+     'runStateThreshold_slow': 0,
+     'settings': {'sarracenia.moth.amqp.AMQP': {'logLevel': 'info'}, 'sarracenia.moth.mqtt.MQTT': {'logLevel': 'debug'}},
      'sleep': 0.1,
-     'statehost': False,
+     'source': 'tfeed',
+     'sourceFromExchange': False,
+     'sourceFromMessage': False,
+     'statehost': True,
      'strip': 0,
+     'subscription_index': 0,
+     'subscriptions': [{'bindings': [{'exchange': 'xsarra', 'prefix': ['v03', 'post'], 'sub': ['#']}],
+                        'broker': 'amqp://tfeed@localhost/',
+                        'queue': {'auto_delete': False,
+                                  'bind': True,
+                                  'cleanup_needed': None,
+                                  'declare': True,
+                                  'durable': True,
+                                  'expire': 25200.0,
+                                  'name': 'q_tfeed.sarra.download_f20.peter_fractal_70374978',
+                                  'prefetch': 25,
+                                  'template': 'q_${BROKER_USER}.${COMPONENT}.${CONFIG}.${QUEUESHARE}',
+                                  'tlsRigour': 'normal'}}],
+     'subscriptionsPath': '/home/peter/.cache/sr3/fractal/sarra/download_f20/subscriptions.json',
      'subtopic': [],
-     'timeCopy': True,
+     'subtopic_seen': False,
+     'sundew_compat_regex_first_match_is_zero': False,
+     'timeCopy': False,
      'timeout': 300,
      'timezone': 'UTC',
-     'tls_rigour': 'normal',
+     'tlsRigour': 'normal',
+     'topicCopy': False,
      'topicPrefix': ['v03', 'post'],
-     'undeclared': ['msg_total_interval', 'file_total_interval'],
+     'undeclared': [],
      'users': False,
+     'v2compatRenameDoublePost': False,
      'v2plugin_options': [],
-     'v2plugins': {'plugin': ['msg_total_save', 'file_total_save']},
+     'v2plugins': {},
+     'varTimeOffset': 0,
      'vhost': '/',
-     'vip': []}
+     'vip': [],
+     'wololo': False}
     
-    % 
+    fractal%
 
 
 convert
@@ -550,12 +621,16 @@ sera :
 * down : impossible de se connecter ou d'échanger des données avec une source ou un récepteur de données distant.
 * hung : les processus semblent bloqués et n'écrivent rien dans les journaux.
 * idle : tous les processus en cours d'exécution, mais ne transfert pas depuis trop longtemps (runStateThreshold_idle.)
+* inte : configuration à usage intéractif, n'éxecute pas comme un daëmon (processus de service en arrière plan.)
 * lag : tous les processus en cours d'exécution, mais les messages en cours de traitement sont trop anciens ( runStateThreshold_lag )
 * part: certains processus sont en cours d'exécution, d'autres manquent à l'appel.
 * reje : tous les processus en cours d'exécution, mais un pourcentage trop élevé de messages rejetés (runStateThreshold_reject )
 * rtry : tous les processus en cours d'exécution, mais un grand nombre de transferts échouent, causant d'autres tentatives (runStateThreshold_retry )
+* new : une configuration neuve (nouvellement installéé/créé, ou après un opeations *clean* )
 * run : tous les processus sont en cours d'exécution (et en transfert, et pas en retard, et pas lents... état normal.)
+* shut : en cours d'arrêt (stop ou restart en cours.)
 * slow : transfert de moins que le minimum d'octets/seconde ( runStateThreshold_slow )
+* star : en cours de démarrage (start ou restart en cours.)
 * stby : Mode veille (Standby): tous les processus sont en cours d'exécution, mais les messages sont stockés dans la file d'attente download_retry locale.
 * stop : aucun processus n'est en cours d'exécution.
 Les colonnes à droite donnent plus d’informations, détaillant le nombre de processus en cours d’exécution à partir du nombre attendu.
@@ -636,12 +711,13 @@ Réglage de Broker
 
 **broker [amqp|mqtt]{s}://<user>:<password>@<brokerhost>[:port]/<vhost>**
 
-Un URI AMQP est utilisé pour configurer une connexion à une pompe à messages
-(AMQP broker). Certains composants de Sarracenia définissent une valeur par
-défaut raisonnable pour cette option. Vous fournissez l'utilisateur normal,
-l'hôte, le port des connexions. Dans la plupart des fichiers de configuration,
-le mot de passe est manquant. Le mot de passe n'est normalement inclus que dans
-le fichier credentials.conf.
+Une déclaration d'abonnement commence par un paramètre *broker*. L'argument URI donné 
+à *broker* permet de configurer une connexion à une pompe de messages de notification, 
+qu'il s'agisse d'un broker MQTT ou AMQP. Certains composants Sarracenia définissent 
+une valeur par défaut raisonnable pour cette option. Fournissez les paramètres utilisateur, 
+hôte et port habituels des connexions. Dans la plupart des fichiers de configuration, 
+le mot de passe est manquant. Il est généralement inclus uniquement dans le 
+fichier credentials.conf.
 
 L´application Sarracenia n'a pas utilisé vhosts, donc **vhost** devrait toujours être **/**.
 
@@ -649,7 +725,7 @@ pour plus d'informations sur le format URI de l'AMQP : ( https://www.rabbitmq.co
 
 
 soit dans le fichier default.conf, soit dans chaque fichier de configuration spécifique.
-L'option courtier indique à chaque composante quel courtier contacter.
+L'option *broker* indique à chaque composante quel courtier contacter.
 
 **broker [amqp|mqtt]{s}://<user>:<pw>@<brokerhost>[:port]/<vhost>**
 
@@ -658,6 +734,12 @@ L'option courtier indique à chaque composante quel courtier contacter.
 
 Une fois connecté à un courtier AMQP, l'utilisateur doit lier une fil d'attente.
 à l´*exchange* et aux thèmes (*topics*) pour déterminer les messages intérêsseants.
+
+Une fois l'option *broker* spécifiée, elle doit être suivie d'une entrée *subtopic* 
+pour finaliser l'abonnement. Entre ces deux options, vous pouvez utiliser *topicPrefix*, 
+*exchange*, *exchangeSuffix*, *expire*, *timeout*, *queueName*, etc. pour modifier 
+les paramètres d'abonnement.
+
 
 Configuration de fil d´attente
 ------------------------------
@@ -784,7 +866,65 @@ On peut désactiver la liaison de fil d’attente comme cela::
 
 (False, ou off marchera aussi.)
 
+Il est également possible de configurer un client pour qu'il gère plusieurs 
+abonnés (avec plusieurs files d'attente, potentiellement sur différents brokers). 
+Par exemple, on peut configurer un datamart haute disponibilité comme suit ::
 
+
+   broker amqps://dd.weather.gc.ca/
+   topicPrefix v02.post
+
+   subtopic *.WXO-DD.bulletins.alphanumeric.#
+
+   broker amqps://hpfx.collab.science.gc.ca/
+   subtopic *.WXO-DD.bulletins.alphanumeric.#
+
+   directory /tmp/hpfx_amis/
+
+La configuration ci-dessus crée des files d'attente sur deux brokers (dd et hpfx) :
+
+* Le *broker* lance la définition d'un abonnement.
+* Les options suivantes définissent ses préférences.
+* Le *subtopic* déclenche l'évaluation.
+
+Les paramètres saisis sont ensuite utilisés pour créer un abonnement lorsqu'une 
+entrée de *subtopic* est trouvée dans la configuration.
+
+Les abonnements ainsi créés sont visibles dans le show sr3 :
+
+
+    'subscriptions': [{'bindings': [{'exchange': 'xpublic', 'prefix': ['v02', 'post'], 'sub': ['*.WXO-DD.bulletins.alphanumeric.#']}],
+                    'broker': 'amqps://anonymous@dd.weather.gc.ca/',
+                    'queue': {'auto_delete': False,
+                              'bind': True,
+                              'cleanup_needed': None,
+                              'declare': True,
+                              'durable': True,
+                              'expire': 600.0,
+                              'name': 'q_anonymous.subscribe.dual_amis.peter_fractal_14948564',
+                              'prefetch': 25,
+                              'template': 'q_${BROKER_USER}.${COMPONENT}.${CONFIG}.${QUEUESHARE}',
+                              'tlsRigour': 'normal'}},
+                   {'bindings': [{'exchange': 'xpublic', 'prefix': ['v02', 'post'], 'sub': ['*.WXO-DD.bulletins.alphanumeric.#']}],
+                    'broker': 'amqps://anonymous@hpfx.collab.science.gc.ca/',
+                    'queue': {'auto_delete': False,
+                              'bind': True,
+                              'cleanup_needed': None,
+                              'declare': True,
+                              'durable': True,
+                              'expire': 600.0,
+                              'name': 'q_anonymous.subscribe.dual_amis.peter_fractal_82263266',
+                              'prefetch': 25,
+                              'template': 'q_${BROKER_USER}.${COMPONENT}.${CONFIG}.${QUEUESHARE}',
+                              'tlsRigour': 'normal'}}],
+
+Le paramètre utilisé dans un abonnement donné est le dernier saisi avant l'apparition du sous-thème dans le fichier.
+Remarque :
+
+L'option de fichier de configuration ou l'argument de ligne de commande *queueName* 
+entraîne la définition du champ *queue['template']*. Lorsque le sous-thème est trouvé, 
+ce modèle subit une substitution de variable pour créer la valeur du champ *queue['name']*, 
+utilisé avec le broker.
 
 
 
@@ -909,7 +1049,7 @@ informations d’identification pour se connecter au courtier de sortie **AMQP**
 
 Une fois connecté au courtier de source AMQP, le programme génère des notifications après que
 le téléchargement d’un fichier a eu lieu. Pour générer la notification et l’envoyer au
-courtier au saut suivant, l’utilisateur définit ces options :
+prochain courtier, l’utilisateur définit ces options:
 
 * **post_baseDir     <path>    (facultatif)**
 * **post_topicPrefix <pfx> (par défaut: 'v03')**
@@ -918,6 +1058,9 @@ courtier au saut suivant, l’utilisateur définit ces options :
 
 FIXME : Des exemples de ce à quoi ils servent, de ce qu’ils font...
 
+Si plusieurs options *post_broker* sont déclarés, ainsi que les options *post_exchange* 
+et *post_topicPrefix* correspondantes dans la configuration, ca entraînera l'envoi 
+des messages de notification vers des destinations supplémentaires.
 
 Convention d´appellation des EXCHANGES
 --------------------------------------
