@@ -540,7 +540,7 @@ class sr_GlobalState:
                                         self.states[c][cfg]['instance_metrics'] = {}
                                     try:
                                         self.states[c][cfg]['instance_metrics'][i] = json.loads(t)
-                                        self.states[c][cfg]['instance_metrics'][i]['status'] = { 'mtime':os.stat(p).st_mtime }
+                                        self.states[c][cfg]['instance_metrics'][i]['status'] = { 'mtime':ageOfFile(p) }
                                     except:
                                         logger.error( f"corrupt metrics file {pathname}: {t}" )
 
@@ -578,7 +578,7 @@ class sr_GlobalState:
                     t = f.read().strip()
 
                 self.states[c][cfg]['instance_metrics'][i] = json.loads(t)
-                self.states[c][cfg]['instance_metrics'][i]['status'] = { 'mtime':os.stat(p).st_mtime }
+                self.states[c][cfg]['instance_metrics'][i]['status'] = { 'mtime':ageOfFile(p) }
             except:
                 logger.error( f"corrupt metrics file {dir1+os.sep+l}: {t}" )
 
@@ -1062,10 +1062,15 @@ class sr_GlobalState:
                             resource_usage[ 'system_cpu' ] += self.procs[pid]['cpu']['system'] 
                             self.resources[ 'system_cpu' ] += self.procs[pid]['cpu']['system'] 
 
+                            # GitHub 1480 - Add metrics check to verify if instance is hung
                             if ('logAge' in self.states[c][cfg]) and (i in self.states[c][cfg]['logAge'] ) and \
-                                    ( self.states[c][cfg]['logAge'][i] > self.configs[c][cfg]['options'].runStateThreshold_hung ):
-                                hung_instances += 1
-                                self.states[c][cfg]['hung_instances'].append(i)
+                                    (('instance_metrics' in self.states[c][cfg]) and (i in self.states[c][cfg]['instance_metrics'] ) and \
+                                    ('status' in self.states[c][cfg]['instance_metrics'][i] )):
+                                # Metrics file and log file need to both be outdated to have an instance be marked as hung
+                                if ( now - self.states[c][cfg]['instance_metrics'][i]['status']['mtime'] > self.configs[c][cfg]['options'].runStateThreshold_hung ) and \
+                                    ( self.states[c][cfg]['logAge'][i] > self.configs[c][cfg]['options'].runStateThreshold_hung):
+                                    hung_instances += 1
+                                    self.states[c][cfg]['hung_instances'].append(i)
 
                     if self.configs[c][cfg]['status'] in [ 'disabled', 'interactive', 'new', 'starting', 'shutdown', 'running' ]:
                         flow_status = self.configs[c][cfg]['status']
