@@ -161,9 +161,8 @@ class Log(FlowCB):
         if set(['reject']) & self.o.logEvents:
             for msg in worklist.rejected:
                 if 'report' in msg:
-                    logger.info(
-                        "%s rejected: %d %s " %
-                        (msg['relPath'], msg['report']['code'], msg['report']['message']))
+                    logger.info("rejected: %s (%d: %s)" % (
+                        self._messageAcceptStr(msg), msg['report']['code'], msg['report']['message']))
                 else:
                     logger.info("rejected: %s " % self._messageAcceptStr(msg))
         
