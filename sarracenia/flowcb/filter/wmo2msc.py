@@ -312,10 +312,9 @@ class Wmo2msc(FlowCB):
                 d.write(self.bintxt)
                 d.close()
 
-            # need to recalculate checksum (identity) and update size when file is converted
-            if self.o.filter_wmo2msc_convert:
-                message.computeIdentity(output_file, self.o, offset=0, data=self.bintxt)
-                msg['size'] = len(self.bintxt)
+            # need to recalculate checksum (identity) and update size
+            message.computeIdentity(output_file, self.o, offset=0, data=self.bintxt)
+            msg['size'] = len(self.bintxt)
 
             logger.info('%s -> %s (%s)' % (input_file, output_file, fmt))
 
