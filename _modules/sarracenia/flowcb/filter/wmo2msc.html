@@ -82,73 +82,87 @@
            <div itemprop="articleBody">
              
   <h1>Source code for sarracenia.flowcb.filter.wmo2msc</h1><div class="highlight"><pre>
-<span></span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">wmo2msc.py is an on_message plugin script to convert WMO bulletins on local disk</span>
-<span class="sd">to MSC internal format in an alternate tree.  It is analogous to Sundew&#39;s &#39;bulletin-file&#39;.</span>
-<span class="sd">Meant to be called as an sr_shovel plugin.</span>
+<span></span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">#######</span>
+<span class="sd">wmo2msc</span>
+<span class="sd">#######</span>
 
-<span class="sd">It prints an output line:</span>
+<span class="sd">wmo2msc.py is a plugin that can:</span>
 
-<span class="sd">wmo2msc: &lt;input_file&gt; -&gt; &lt;output_file&gt; (&lt;detected format&gt;)</span>
+<span class="sd">- rename files based on the WMO AHL (header) inside the file</span>
+<span class="sd">- convert WMO-format bulletins to the internal MSC-format</span>
+<span class="sd">- place bulletin files in a directory tree structure based on the AHL</span>
 
-<span class="sd">usage:</span>
+<span class="sd">It is analogous to Sundew&#39;s &#39;bulletin-file&#39; receiver and is meant to be used from within a shovel configuration.</span>
 
-<span class="sd">Use the directory setting to know the root of tree where files are placed.</span>
-<span class="sd">FIXME: well, likely what you really what is something like::</span>
+<span class="sd">It logs a line like this::</span>
 
-<span class="sd">     &lt;date&gt;/&lt;source&gt;/dir1/dir2/dir3</span>
+<span class="sd">    wmo2msc: &lt;input_file&gt; -&gt; &lt;output_file&gt; (&lt;detected format&gt;)</span>
 
-<span class="sd">     &lt;date&gt;/&lt;source&gt;/dir1/dir2/newdir4/...</span>
+<span class="sd">Usage:</span>
+<span class="sd">^^^^^^</span>
 
-<span class="sd">     -- so Directory doesn&#39;t cut it.</span>
+<span class="sd">Requires local files. Either use ``callback accept.tolocalfile`` or define</span>
+<span class="sd">``baseDir`` correctly (``baseDir`` + ``msg[&#39;relPath&#39;]`` should be a valid local file).</span>
 
-<span class="sd">In a sr_shovel configuration:: </span>
+<span class="sd">For example, in a shovel configuration::</span>
 
-<span class="sd">    directory /.... </span>
+<span class="sd">    callback accept.tolocalfile</span>
+
 <span class="sd">    callback filter.wmo2msc</span>
+<span class="sd">    filter_wmo2msc_replace_dir MY-SOURCE/original_bulletins,MY-SOURCE/MSC-BULLETINS</span>
+
+<span class="sd">Or::</span>
+
+<span class="sd">    baseDir /apps/sarra/public_data</span>
+
+<span class="sd">    callback filter.wmo2msc</span>
+<span class="sd">    filter_wmo2msc_replace_dir MY-SOURCE/original_bulletins,MY-SOURCE/WMO-BULLETINS</span>
+<span class="sd">    # keep WMO format, just rename the files</span>
+<span class="sd">    filter_wmo2msc_convert off</span>
 
 
 <span class="sd">Parameters:</span>
+<span class="sd">^^^^^^^^^^^</span>
 
-<span class="sd">* filter_wmo2msc_replace_dir  old,new</span>
+<span class="sd">* ``filter_wmo2msc_replace_dir old,new``</span>
+<span class="sd">    * defines the source and destination directories</span>
 
-<span class="sd">* filter_wmo2msc_uniquify hash|time|anything else</span>
-<span class="sd">  - whether to add a string in addition to the AHL to make the filename unique.</span>
-<span class="sd">  - hash - means apply a hash, so that the additional string is content based.</span>
-<span class="sd">  - if time, add a suffix _YYYYMMDDHHMMSS_99999 which ensures file name uniqueness.</span>
-<span class="sd">  - otherwise, no suffix will be added.</span>
-<span class="sd">  - default: hash</span>
+<span class="sd">* ``filter_wmo2msc_uniquify hash|time|anything else``  (default: ``hash``)</span>
+<span class="sd">    * whether to add a string in addition to the AHL to make the filename unique.</span>
+<span class="sd">    * hash - means apply a hash, so that the additional string is content based.</span>
+<span class="sd">    * if time, add a suffix ``_YYYYMMDDHHMMSS_99999`` which ensures file name uniqueness.</span>
+<span class="sd">    * otherwise, no suffix will be added.</span>
 
-<span class="sd">* filter_wmo2msc_convert on|off</span>
-<span class="sd">  if on, then traditional conversion to MSC-BULLETINS is done as per TANDEM/APPS &amp; MetPX Sundew</span>
-<span class="sd">  this involves \n as termination character, and other charater substitutions.</span>
+<span class="sd">* ``filter_wmo2msc_convert on|off``  (default: ``on``; v2 default was ``off``)</span>
+<span class="sd">    * if on, then traditional conversion to MSC-BULLETINS is done as per TANDEM/APPS &amp; MetPX Sundew</span>
+<span class="sd">    * this involves \n as termination character, and other character substitutions.</span>
+<span class="sd">    * if the file is **not** being converted, then the plugin will try to symlink the renamed file</span>
+<span class="sd">      to the source file. If symlinking fails, a copy will be created.</span>
 
-<span class="sd">* filter_wmo2msc_tree  on|off</span>
-<span class="sd">  if tree is off, files are just placed in destination directory.</span>
-<span class="sd">  if tree is on, then the file is placed in a subdirectory tree, based on</span>
-<span class="sd">  the WMO 386 AHL::</span>
+<span class="sd">* ``filter_wmo2msc_tree  on|off``  (default: ``on``)</span>
+<span class="sd">    * if tree is off, files are just placed in destination directory.</span>
+<span class="sd">    * if tree is on, then the file is placed in a subdirectory tree, based on the WMO 386 AHL::</span>
 
 <span class="sd">         TTAAii CCCC YYGGgg  ( example: SACN37 CWAO 300104 )</span>
-<span class="sd"> </span>
+
 <span class="sd">         TT = SA - surface observation.</span>
 <span class="sd">         AA = CN - Canada ( but the AA depends on TT value, in many cases not a national code. )</span>
 <span class="sd">         ii = 37 - a number.. there are various conventions, they are picked to avoid duplication.</span>
-<span class="sd">     </span>
-<span class="sd">  The first line of the file is expected to contain an AHL. and when we build a tree</span>
-<span class="sd">  from it, we build it as follows::</span>
 
-<span class="sd">      TT/CCCC/GG/TTAAii_CCCC_YYGGgg_&lt;uniquify&gt;</span>
+<span class="sd">     The first line of the file is expected to contain an AHL. and when we build a tree</span>
+<span class="sd">     from it, we build it as follows::</span>
 
-<span class="sd">  assuming tree=on, uniquify=hash:</span>
+<span class="sd">         TT/CCCC/GG/TTAAii_CCCC_YYGGgg_&lt;uniquify&gt;</span>
 
-<span class="sd">     SA/CWAO/01/SACN37_CWAO_300104_1c699da91817cc4a84ab19ee4abe4e22</span>
+<span class="sd">     assuming tree=on, uniquify=hash::</span>
 
-<span class="sd">NOTE: Look at the end of the file for SUPPLEMENTARY INFORMATION </span>
-<span class="sd">      including hints about debugging.</span>
+<span class="sd">         SA/CWAO/01/SACN37_CWAO_300104_1c699da91817cc4a84ab19ee4abe4e22</span>
+
+<span class="sd">NOTE: Look at the end of the file for SUPPLEMENTARY INFORMATION including hints about debugging.</span>
 
 <span class="sd">&quot;&quot;&quot;</span>
 
-<span class="kn">import</span> <span class="nn">sys</span>
 <span class="kn">import</span> <span class="nn">os</span>
 <span class="kn">import</span> <span class="nn">re</span>
 <span class="kn">import</span> <span class="nn">time</span>
@@ -157,8 +171,7 @@
 <span class="kn">import</span> <span class="nn">random</span>
 <span class="kn">from</span> <span class="nn">sarracenia.flowcb</span> <span class="kn">import</span> <span class="n">FlowCB</span>
 
-<span class="n">logger</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="s1">&#39;__name__&#39;</span><span class="p">)</span>
-
+<span class="n">logger</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="vm">__name__</span><span class="p">)</span>
 
 <div class="viewcode-block" id="Wmo2msc">
 <a class="viewcode-back" href="../../../../Reference/flowcb.html#sarracenia.flowcb.filter.wmo2msc.Wmo2msc">[docs]</a>
@@ -174,12 +187,15 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">o</span><span class="o">.</span><span class="n">add_option</span><span class="p">(</span> <span class="s1">&#39;filter_wmo2msc_convert&#39;</span><span class="p">,</span> <span class="s1">&#39;flag&#39;</span><span class="p">,</span> <span class="kc">True</span> <span class="p">)</span>
 
         <span class="k">if</span> <span class="ow">not</span> <span class="nb">hasattr</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">o</span><span class="p">,</span> <span class="s1">&#39;filter_wmo2msc_replace_dir&#39;</span><span class="p">):</span>
-            <span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="s2">&quot;filter_wmo2msc_replace_dir setting is mandatory&quot;</span><span class="p">)</span>
-            <span class="k">return</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">critical</span><span class="p">(</span><span class="s2">&quot;filter_wmo2msc_replace_dir setting is mandatory&quot;</span><span class="p">)</span>
+            <span class="k">return</span> <span class="kc">False</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">o</span><span class="o">.</span><span class="n">download</span><span class="p">:</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="s2">&quot;wmo2msc plugin being used in a config with download enabled&quot;</span><span class="p">)</span>
 
         <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">o</span><span class="o">.</span><span class="n">filter_olddir</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">o</span><span class="o">.</span><span class="n">filter_newdir</span><span class="p">)</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">o</span><span class="o">.</span><span class="n">filter_wmo2msc_replace_dir</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;,&#39;</span><span class="p">)</span>
 
-        <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;filter_wmo2msc old-dir=</span><span class="si">%s</span><span class="s2">, newdir=</span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;old-dir=</span><span class="si">%s</span><span class="s2">, new-dir=</span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span>
                     <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">o</span><span class="o">.</span><span class="n">filter_olddir</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">o</span><span class="o">.</span><span class="n">filter_newdir</span><span class="p">))</span>
 
         <span class="bp">self</span><span class="o">.</span><span class="n">trimre</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">compile</span><span class="p">(</span><span class="sa">b</span><span class="s2">&quot; +</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span></div>
@@ -206,7 +222,6 @@
 
 <span class="sd">           Modify bulletins received from Washington via the WMO socket protocol.</span>
 <span class="sd">           started as a direct copy from sundew of routine with same name in bulletinManagerWmo.py</span>
-<span class="sd">      </span>
 <span class="sd">           - encode/decode, and binary stuff came because of python3</span>
 <span class="sd">        &quot;&quot;&quot;</span>
 
@@ -283,32 +298,36 @@
             <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Trimmed </span><span class="si">%d</span><span class="s1"> trailing blanks!&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">lenb</span> <span class="o">-</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">bintxt</span><span class="p">)))</span></div>
 
 
-    <span class="k">def</span> <span class="nf">after_accept</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">worklist</span><span class="p">):</span>
-        <span class="n">new_incoming</span> <span class="o">=</span> <span class="p">[]</span>
-        <span class="k">for</span> <span class="n">message</span> <span class="ow">in</span> <span class="n">worklist</span><span class="o">.</span><span class="n">incoming</span><span class="p">:</span>
-            <span class="k">if</span> <span class="n">message</span><span class="p">[</span><span class="s1">&#39;baseUrl&#39;</span><span class="p">]</span> <span class="o">!=</span> <span class="s1">&#39;file:&#39;</span><span class="p">:</span>
-                <span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span>
-                    <span class="s1">&#39;filter_wmo2msc needs local files invalid url: </span><span class="si">%s</span><span class="s1"> &#39;</span> <span class="o">%</span>
+    <span class="k">def</span> <span class="nf">after_work</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">worklist</span><span class="p">):</span>
+        <span class="n">new_ok</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">message</span> <span class="ow">in</span> <span class="n">worklist</span><span class="o">.</span><span class="n">ok</span><span class="p">:</span>
+
+            <span class="k">if</span> <span class="n">message</span><span class="p">[</span><span class="s1">&#39;baseUrl&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="s1">&#39;file:&#39;</span><span class="p">:</span>
+                <span class="n">input_file</span> <span class="o">=</span> <span class="n">message</span><span class="p">[</span><span class="s1">&#39;relPath&#39;</span><span class="p">]</span>
+            <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">o</span><span class="o">.</span><span class="n">baseDir</span><span class="p">:</span>
+                <span class="n">input_file</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">o</span><span class="o">.</span><span class="n">baseDir</span><span class="p">,</span> <span class="n">message</span><span class="p">[</span><span class="s1">&#39;relPath&#39;</span><span class="p">])</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;needs local files invalid url: %s or baseDir not set&#39;</span> <span class="o">%</span>
                     <span class="p">(</span><span class="n">message</span><span class="p">[</span><span class="s1">&#39;baseUrl&#39;</span><span class="p">]</span> <span class="o">+</span> <span class="n">message</span><span class="p">[</span><span class="s1">&#39;relPath&#39;</span><span class="p">]))</span>
                 <span class="n">worklist</span><span class="o">.</span><span class="n">rejected</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">message</span><span class="p">)</span>
                 <span class="k">continue</span>
 
-            <span class="n">input_file</span> <span class="o">=</span> <span class="n">message</span><span class="p">[</span><span class="s1">&#39;relPath&#39;</span><span class="p">]</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">input_file</span><span class="p">):</span>
+                <span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;local file </span><span class="si">{</span><span class="n">input_file</span><span class="si">}</span><span class="s1"> does not exist&#39;</span><span class="p">)</span>
+                <span class="n">worklist</span><span class="o">.</span><span class="n">rejected</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">message</span><span class="p">)</span>
+                <span class="k">continue</span>
 
             <span class="c1"># read once to get headers and type.</span>
 
-            <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s1">&#39;filter_wmo2msc reading file: </span><span class="si">%s</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">input_file</span><span class="p">))</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s1">&#39;reading file: </span><span class="si">%s</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">input_file</span><span class="p">))</span>
 
             <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">input_file</span><span class="p">,</span> <span class="s1">&#39;rb&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">s</span><span class="p">:</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">bulletin</span> <span class="o">=</span> <span class="p">[</span><span class="n">s</span><span class="o">.</span><span class="n">readline</span><span class="p">(),</span> <span class="n">s</span><span class="o">.</span><span class="n">read</span><span class="p">(</span><span class="mi">4</span><span class="p">)]</span>
 
-            <span class="n">AHLfn</span> <span class="o">=</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">bulletin</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="sa">b</span><span class="s1">&#39; &#39;</span><span class="p">,</span>
-                                              <span class="sa">b</span><span class="s1">&#39;_&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">strip</span><span class="p">())</span><span class="o">.</span><span class="n">decode</span><span class="p">(</span><span class="s1">&#39;ascii&#39;</span><span class="p">)</span>
+            <span class="n">AHLfn</span> <span class="o">=</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">bulletin</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="sa">b</span><span class="s1">&#39; &#39;</span><span class="p">,</span> <span class="sa">b</span><span class="s1">&#39;_&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">strip</span><span class="p">())</span><span class="o">.</span><span class="n">decode</span><span class="p">(</span><span class="s1">&#39;ascii&#39;</span><span class="p">)</span>
 
             <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">AHLfn</span><span class="p">)</span> <span class="o">&lt;</span> <span class="mi">18</span><span class="p">:</span>
-                <span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span>
-                    <span class="s1">&#39;filter_wmo2msc: not a WMO bulletin, malformed header: (</span><span class="si">%s</span><span class="s1">)&#39;</span>
-                    <span class="o">%</span> <span class="p">(</span><span class="n">AHLfn</span><span class="p">))</span>
+                <span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;not a WMO bulletin, malformed header: </span><span class="si">{</span><span class="n">AHLfn</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
                 <span class="n">worklist</span><span class="o">.</span><span class="n">rejected</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">message</span><span class="p">)</span>
                 <span class="k">continue</span>
 
@@ -316,7 +335,7 @@
             <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">input_file</span><span class="p">,</span> <span class="s1">&#39;rb&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">s</span><span class="p">:</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">bintxt</span> <span class="o">=</span> <span class="n">s</span><span class="o">.</span><span class="n">read</span><span class="p">()</span>
 
-            <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s1">&#39;filter_wmo2msc read twice: </span><span class="si">%s</span><span class="s1"> &#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">input_file</span><span class="p">))</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s1">&#39;read twice: </span><span class="si">%s</span><span class="s1"> &#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">input_file</span><span class="p">))</span>
 
             <span class="c1"># Determine file format (fmt) and apply transformation.</span>
             <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">bulletin</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">lstrip</span><span class="p">()[:</span><span class="mi">4</span><span class="p">]</span> <span class="ow">in</span> <span class="p">[</span><span class="s1">&#39;BUFR&#39;</span><span class="p">,</span> <span class="s1">&#39;GRIB&#39;</span><span class="p">,</span> <span class="s1">&#39;</span><span class="se">\211</span><span class="s1">PNG&#39;</span><span class="p">]:</span>
@@ -334,7 +353,7 @@
                 <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">o</span><span class="o">.</span><span class="n">filter_wmo2msc_convert</span><span class="p">:</span>
                     <span class="bp">self</span><span class="o">.</span><span class="n">doSpecificProcessing</span><span class="p">()</span>
 
-            <span class="c1"># apply &#39;d&#39; checksum (md5)</span>
+            <span class="c1"># apply &#39;d&#39; checksum (md5) (FIXME use checksum from msg if available?)</span>
 
             <span class="n">s</span> <span class="o">=</span> <span class="n">hashlib</span><span class="o">.</span><span class="n">md5</span><span class="p">()</span>
             <span class="n">s</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">bintxt</span><span class="p">)</span>
@@ -351,70 +370,75 @@
 
             <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">o</span><span class="o">.</span><span class="n">filter_wmo2msc_treeify</span><span class="p">:</span>
                 <span class="n">d</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">dirname</span><span class="p">(</span><span class="n">input_file</span><span class="p">)</span>
-                <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s1">&#39;filter_wmo2msc check </span><span class="si">%s</span><span class="s1"> start match: </span><span class="si">%s</span><span class="s1">&#39;</span> <span class="o">%</span>
+                <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s1">&#39;check </span><span class="si">%s</span><span class="s1"> start match: </span><span class="si">%s</span><span class="s1">&#39;</span> <span class="o">%</span>
                              <span class="p">(</span><span class="n">d</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">o</span><span class="o">.</span><span class="n">filter_olddir</span><span class="p">))</span>
                 <span class="n">d</span> <span class="o">=</span> <span class="n">d</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">o</span><span class="o">.</span><span class="n">filter_olddir</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">o</span><span class="o">.</span><span class="n">filter_newdir</span><span class="p">)</span>
-                <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s1">&#39;filter_wmo2msc check </span><span class="si">%s</span><span class="s1"> after replace&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">d</span><span class="p">))</span>
+                <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s1">&#39;check </span><span class="si">%s</span><span class="s1"> after replace&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">d</span><span class="p">))</span>
                 <span class="k">if</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">isdir</span><span class="p">(</span><span class="n">d</span><span class="p">):</span>
                     <span class="n">os</span><span class="o">.</span><span class="n">makedirs</span><span class="p">(</span><span class="n">d</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">o</span><span class="o">.</span><span class="n">permDirDefault</span><span class="p">,</span> <span class="kc">True</span><span class="p">)</span>
 
                 <span class="n">d</span> <span class="o">=</span> <span class="n">d</span> <span class="o">+</span> <span class="n">os</span><span class="o">.</span><span class="n">sep</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">bulletin</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="mi">0</span><span class="p">:</span><span class="mi">2</span><span class="p">]</span><span class="o">.</span><span class="n">decode</span><span class="p">(</span><span class="s1">&#39;ascii&#39;</span><span class="p">)</span>
                 <span class="n">d</span> <span class="o">=</span> <span class="n">d</span> <span class="o">+</span> <span class="n">os</span><span class="o">.</span><span class="n">sep</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">bulletin</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="mi">7</span><span class="p">:</span><span class="mi">11</span><span class="p">]</span><span class="o">.</span><span class="n">decode</span><span class="p">(</span><span class="s1">&#39;ascii&#39;</span><span class="p">)</span>
-                <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s1">&#39;filter_wmo2msc check </span><span class="si">%s</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">d</span><span class="p">))</span>
+                <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s1">&#39;check </span><span class="si">%s</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">d</span><span class="p">))</span>
                 <span class="k">if</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">isdir</span><span class="p">(</span><span class="n">d</span><span class="p">):</span>
                     <span class="n">os</span><span class="o">.</span><span class="n">makedirs</span><span class="p">(</span><span class="n">d</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">o</span><span class="o">.</span><span class="n">permDirDefault</span><span class="p">,</span> <span class="kc">True</span><span class="p">)</span>
 
                 <span class="n">d</span> <span class="o">=</span> <span class="n">d</span> <span class="o">+</span> <span class="n">os</span><span class="o">.</span><span class="n">sep</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">bulletin</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="mi">14</span><span class="p">:</span><span class="mi">16</span><span class="p">]</span><span class="o">.</span><span class="n">decode</span><span class="p">(</span><span class="s1">&#39;ascii&#39;</span><span class="p">)</span>
-                <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s1">&#39;filter_wmo2msc check </span><span class="si">%s</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">d</span><span class="p">))</span>
+                <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s1">&#39;check </span><span class="si">%s</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">d</span><span class="p">))</span>
                 <span class="k">if</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">isdir</span><span class="p">(</span><span class="n">d</span><span class="p">):</span>
                     <span class="n">os</span><span class="o">.</span><span class="n">makedirs</span><span class="p">(</span><span class="n">d</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">o</span><span class="o">.</span><span class="n">permDirDefault</span><span class="p">,</span> <span class="kc">True</span><span class="p">)</span>
 
-                <span class="n">local_file</span> <span class="o">=</span> <span class="n">d</span> <span class="o">+</span> <span class="n">os</span><span class="o">.</span><span class="n">sep</span> <span class="o">+</span> <span class="n">AHLfn</span>
+                <span class="n">output_file</span> <span class="o">=</span> <span class="n">d</span> <span class="o">+</span> <span class="n">os</span><span class="o">.</span><span class="n">sep</span> <span class="o">+</span> <span class="n">AHLfn</span>
             <span class="k">else</span><span class="p">:</span>
-                <span class="n">local_file</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">o</span><span class="o">.</span><span class="n">currentDir</span> <span class="o">+</span> <span class="n">os</span><span class="o">.</span><span class="n">sep</span> <span class="o">+</span> <span class="n">AHLfn</span>
+                <span class="n">output_file</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">o</span><span class="o">.</span><span class="n">currentDir</span> <span class="o">+</span> <span class="n">os</span><span class="o">.</span><span class="n">sep</span> <span class="o">+</span> <span class="n">AHLfn</span>
 
             <span class="c1"># write the data.</span>
             <span class="n">fileOK</span> <span class="o">=</span> <span class="kc">False</span>
 
             <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">o</span><span class="o">.</span><span class="n">filter_wmo2msc_convert</span><span class="p">:</span>
                 <span class="k">try</span><span class="p">:</span>
-                    <span class="n">os</span><span class="o">.</span><span class="n">link</span><span class="p">(</span><span class="n">input_file</span><span class="p">,</span> <span class="n">local_file</span><span class="p">)</span>
+                    <span class="n">os</span><span class="o">.</span><span class="n">link</span><span class="p">(</span><span class="n">input_file</span><span class="p">,</span> <span class="n">output_file</span><span class="p">)</span>
                     <span class="n">fileOK</span> <span class="o">=</span> <span class="kc">True</span>
                 <span class="k">except</span><span class="p">:</span>
                     <span class="k">pass</span>
 
             <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">o</span><span class="o">.</span><span class="n">filter_wmo2msc_convert</span> <span class="ow">or</span> <span class="ow">not</span> <span class="n">fileOK</span><span class="p">:</span>
-                <span class="n">d</span> <span class="o">=</span> <span class="nb">open</span><span class="p">(</span><span class="n">local_file</span><span class="p">,</span> <span class="s1">&#39;wb+&#39;</span><span class="p">)</span>
+                <span class="n">d</span> <span class="o">=</span> <span class="nb">open</span><span class="p">(</span><span class="n">output_file</span><span class="p">,</span> <span class="s1">&#39;wb+&#39;</span><span class="p">)</span>
                 <span class="n">d</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">bintxt</span><span class="p">)</span>
                 <span class="n">d</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
 
-            <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s1">&#39;filter_wmo2msc </span><span class="si">%s</span><span class="s1"> -&gt; </span><span class="si">%s</span><span class="s1"> (</span><span class="si">%s</span><span class="s1">)&#39;</span> <span class="o">%</span>
-                         <span class="p">(</span><span class="n">input_file</span><span class="p">,</span> <span class="n">local_file</span><span class="p">,</span> <span class="n">fmt</span><span class="p">))</span>
+            <span class="c1"># need to recalculate checksum (identity) when file is converted</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">o</span><span class="o">.</span><span class="n">filter_wmo2msc_convert</span><span class="p">:</span>
+                <span class="n">message</span><span class="o">.</span><span class="n">computeIdentity</span><span class="p">(</span><span class="n">output_file</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">o</span><span class="p">,</span> <span class="n">offset</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">data</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">bintxt</span><span class="p">)</span>
+
+            <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s1">&#39;</span><span class="si">%s</span><span class="s1"> -&gt; </span><span class="si">%s</span><span class="s1"> (</span><span class="si">%s</span><span class="s1">)&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">input_file</span><span class="p">,</span> <span class="n">output_file</span><span class="p">,</span> <span class="n">fmt</span><span class="p">))</span>
 
             <span class="c1"># set how the file will be announced</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">o</span><span class="o">.</span><span class="n">post_baseDir</span><span class="p">:</span>
+                <span class="n">relPath</span> <span class="o">=</span> <span class="n">output_file</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">o</span><span class="o">.</span><span class="n">post_baseDir</span><span class="p">,</span> <span class="s1">&#39;&#39;</span><span class="p">)</span>
+            <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">o</span><span class="o">.</span><span class="n">baseDir</span><span class="p">:</span>
+                <span class="n">relPath</span> <span class="o">=</span> <span class="n">output_file</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">o</span><span class="o">.</span><span class="n">baseDir</span><span class="p">,</span> <span class="s1">&#39;&#39;</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">relPath</span> <span class="o">=</span> <span class="n">output_file</span>
 
-            <span class="n">baseDir</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">o</span><span class="o">.</span><span class="n">base_dir</span>
-            <span class="k">if</span> <span class="n">baseDir</span> <span class="o">==</span> <span class="kc">None</span><span class="p">:</span> <span class="n">baseDir</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">o</span><span class="o">.</span><span class="n">post_base_dir</span>
-
-            <span class="n">relPath</span> <span class="o">=</span> <span class="n">local_file</span>
-            <span class="k">if</span> <span class="n">baseDir</span> <span class="o">!=</span> <span class="kc">None</span><span class="p">:</span> <span class="n">relPath</span> <span class="o">=</span> <span class="n">local_file</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="n">baseDir</span><span class="p">,</span> <span class="s1">&#39;&#39;</span><span class="p">)</span>
-
-            <span class="n">baseUrl</span> <span class="o">=</span> <span class="s1">&#39;file:&#39;</span>
-            <span class="c1"># from tolocal.py if used</span>
-            <span class="k">if</span> <span class="s1">&#39;savedUrl&#39;</span> <span class="ow">in</span> <span class="n">message</span><span class="o">.</span><span class="n">keys</span><span class="p">():</span> <span class="n">baseUrl</span> <span class="o">=</span> <span class="n">message</span><span class="p">[</span><span class="s1">&#39;savedUrl&#39;</span><span class="p">]</span>
-            <span class="c1"># from tolocalfile.py if used</span>
-            <span class="k">if</span> <span class="s1">&#39;saved_baseUrl&#39;</span> <span class="ow">in</span> <span class="n">message</span><span class="o">.</span><span class="n">keys</span><span class="p">():</span>
-                <span class="n">baseUrl</span> <span class="o">=</span> <span class="n">message</span><span class="p">[</span><span class="s1">&#39;saved_baseUrl&#39;</span><span class="p">]</span>
+            <span class="k">if</span> <span class="n">relPath</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="s1">&#39;/&#39;</span><span class="p">:</span>
+                <span class="n">relPath</span> <span class="o">=</span> <span class="n">relPath</span><span class="p">[</span><span class="mi">1</span><span class="p">:]</span>
 
             <span class="n">relPath</span> <span class="o">=</span> <span class="n">relPath</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s1">&#39;//&#39;</span><span class="p">,</span> <span class="s1">&#39;/&#39;</span><span class="p">)</span>
-            <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s1">&#39;filter_wmo2msc relPath </span><span class="si">%s</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="n">relPath</span><span class="p">)</span>
-
-            <span class="n">message</span><span class="p">[</span><span class="s1">&#39;set_topic&#39;</span><span class="p">](</span><span class="bp">self</span><span class="o">.</span><span class="n">o</span><span class="o">.</span><span class="n">topic_prefix</span><span class="p">,</span> <span class="n">relPath</span><span class="p">)</span>
-            <span class="c1">#message[&#39;set_notice&#39;](baseUrl, relPath)</span>
-            <span class="n">message</span><span class="p">[</span><span class="s1">&#39;baseUrl&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">baseUrl</span>
             <span class="n">message</span><span class="p">[</span><span class="s1">&#39;relPath&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">relPath</span>
-            <span class="n">new_incoming</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">message</span><span class="p">)</span>
-        <span class="n">worklist</span><span class="o">.</span><span class="n">incoming</span> <span class="o">=</span> <span class="n">new_incoming</span></div>
+            <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s1">&#39;relPath </span><span class="si">%s</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="n">relPath</span><span class="p">)</span>
+
+            <span class="c1"># from tolocal.py if used</span>
+            <span class="k">if</span> <span class="s1">&#39;savedUrl&#39;</span> <span class="ow">in</span> <span class="n">message</span><span class="p">:</span>
+                <span class="n">message</span><span class="p">[</span><span class="s1">&#39;baseUrl&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">message</span><span class="p">[</span><span class="s1">&#39;savedUrl&#39;</span><span class="p">]</span>
+            <span class="c1"># from tolocalfile.py if used</span>
+            <span class="k">if</span> <span class="s1">&#39;saved_baseUrl&#39;</span> <span class="ow">in</span> <span class="n">message</span><span class="p">:</span>
+                <span class="n">message</span><span class="p">[</span><span class="s1">&#39;baseUrl&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">message</span><span class="p">[</span><span class="s1">&#39;saved_baseUrl&#39;</span><span class="p">]</span>
+            <span class="c1"># otherwise, we assume the baseUrl is still good (used self.o.baseDir to find local file)</span>
+
+            <span class="n">new_ok</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">message</span><span class="p">)</span>
+
+        <span class="n">worklist</span><span class="o">.</span><span class="n">ok</span> <span class="o">=</span> <span class="n">new_ok</span></div>
 
 
 
