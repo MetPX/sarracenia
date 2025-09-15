@@ -1,70 +1,84 @@
-r"""
-wmo2msc.py is an on_message plugin script to convert WMO bulletins on local disk
-to MSC internal format in an alternate tree.  It is analogous to Sundew's 'bulletin-file'.
-Meant to be called as an sr_shovel plugin.
+"""
+#######
+wmo2msc
+#######
 
-It prints an output line:
+wmo2msc.py is a plugin that can:
 
-wmo2msc: <input_file> -> <output_file> (<detected format>)
+- rename files based on the WMO AHL (header) inside the file
+- convert WMO-format bulletins to the internal MSC-format
+- place bulletin files in a directory tree structure based on the AHL
 
-usage:
+It is analogous to Sundew's 'bulletin-file' receiver and is meant to be used from within a shovel configuration.
 
-Use the directory setting to know the root of tree where files are placed.
-FIXME: well, likely what you really what is something like::
+It logs a line like this::
 
-     <date>/<source>/dir1/dir2/dir3
+    wmo2msc: <input_file> -> <output_file> (<detected format>)
 
-     <date>/<source>/dir1/dir2/newdir4/...
+Usage:
+^^^^^^
 
-     -- so Directory doesn't cut it.
+Requires local files. Either use ``callback accept.tolocalfile`` or define
+``baseDir`` correctly (``baseDir`` + ``msg['relPath']`` should be a valid local file).
 
-In a sr_shovel configuration:: 
+For example, in a shovel configuration::
 
-    directory /.... 
+    callback accept.tolocalfile
+
     callback filter.wmo2msc
+    filter_wmo2msc_replace_dir MY-SOURCE/original_bulletins,MY-SOURCE/MSC-BULLETINS
+
+Or::
+
+    baseDir /apps/sarra/public_data
+
+    callback filter.wmo2msc
+    filter_wmo2msc_replace_dir MY-SOURCE/original_bulletins,MY-SOURCE/WMO-BULLETINS
+    # keep WMO format, just rename the files
+    filter_wmo2msc_convert off
 
 
 Parameters:
+^^^^^^^^^^^
 
-* filter_wmo2msc_replace_dir  old,new
+* ``filter_wmo2msc_replace_dir old,new``
+    * defines the source and destination directories
 
-* filter_wmo2msc_uniquify hash|time|anything else
-  - whether to add a string in addition to the AHL to make the filename unique.
-  - hash - means apply a hash, so that the additional string is content based.
-  - if time, add a suffix _YYYYMMDDHHMMSS_99999 which ensures file name uniqueness.
-  - otherwise, no suffix will be added.
-  - default: hash
+* ``filter_wmo2msc_uniquify hash|time|anything else``  (default: ``hash``)
+    * whether to add a string in addition to the AHL to make the filename unique.
+    * hash - means apply a hash, so that the additional string is content based.
+    * if time, add a suffix ``_YYYYMMDDHHMMSS_99999`` which ensures file name uniqueness.
+    * otherwise, no suffix will be added.
 
-* filter_wmo2msc_convert on|off
-  if on, then traditional conversion to MSC-BULLETINS is done as per TANDEM/APPS & MetPX Sundew
-  this involves \n as termination character, and other charater substitutions.
+* ``filter_wmo2msc_convert on|off``  (default: ``on``; v2 default was ``off``)
+    * if on, then traditional conversion to MSC-BULLETINS is done as per TANDEM/APPS & MetPX Sundew
+    * this involves \n as termination character, and other character substitutions.
+    * if the file is **not** being converted, then the plugin will try to symlink the renamed file
+      to the source file. If symlinking fails, a copy will be created.
 
-* filter_wmo2msc_tree  on|off
-  if tree is off, files are just placed in destination directory.
-  if tree is on, then the file is placed in a subdirectory tree, based on
-  the WMO 386 AHL::
+* ``filter_wmo2msc_tree  on|off``  (default: ``on``)
+    * if tree is off, files are just placed in destination directory.
+    * if tree is on, then the file is placed in a subdirectory tree, based on the WMO 386 AHL::
 
          TTAAii CCCC YYGGgg  ( example: SACN37 CWAO 300104 )
- 
+
          TT = SA - surface observation.
          AA = CN - Canada ( but the AA depends on TT value, in many cases not a national code. )
          ii = 37 - a number.. there are various conventions, they are picked to avoid duplication.
-     
-  The first line of the file is expected to contain an AHL. and when we build a tree
-  from it, we build it as follows::
 
-      TT/CCCC/GG/TTAAii_CCCC_YYGGgg_<uniquify>
+     The first line of the file is expected to contain an AHL. and when we build a tree
+     from it, we build it as follows::
 
-  assuming tree=on, uniquify=hash:
+         TT/CCCC/GG/TTAAii_CCCC_YYGGgg_<uniquify>
 
-     SA/CWAO/01/SACN37_CWAO_300104_1c699da91817cc4a84ab19ee4abe4e22
+     assuming tree=on, uniquify=hash::
 
-NOTE: Look at the end of the file for SUPPLEMENTARY INFORMATION 
-      including hints about debugging.
+         SA/CWAO/01/SACN37_CWAO_300104_1c699da91817cc4a84ab19ee4abe4e22
+
+NOTE: Look at the end of the file for SUPPLEMENTARY INFORMATION including hints about debugging.
 
 """
 
-import sys
 import os
 import re
 import time
@@ -73,8 +87,7 @@ import logging
 import random
 from sarracenia.flowcb import FlowCB
 
-logger = logging.getLogger('__name__')
-
+logger = logging.getLogger(__name__)
 
 class Wmo2msc(FlowCB):
     def __init__(self, options):
@@ -86,12 +99,15 @@ class Wmo2msc(FlowCB):
         self.o.add_option( 'filter_wmo2msc_convert', 'flag', True )
 
         if not hasattr(self.o, 'filter_wmo2msc_replace_dir'):
-            logger.error("filter_wmo2msc_replace_dir setting is mandatory")
-            return
+            logger.critical("filter_wmo2msc_replace_dir setting is mandatory")
+            return False
+
+        if self.o.download:
+            logger.warning("wmo2msc plugin being used in a config with download enabled")
 
         (self.o.filter_olddir, self.o.filter_newdir) = self.o.filter_wmo2msc_replace_dir.split(',')
 
-        logger.info("filter_wmo2msc old-dir=%s, newdir=%s" %
+        logger.debug("old-dir=%s, new-dir=%s" %
                     (self.o.filter_olddir, self.o.filter_newdir))
 
         self.trimre = re.compile(b" +\n")
@@ -112,7 +128,6 @@ class Wmo2msc(FlowCB):
 
            Modify bulletins received from Washington via the WMO socket protocol.
            started as a direct copy from sundew of routine with same name in bulletinManagerWmo.py
-      
            - encode/decode, and binary stuff came because of python3
         """
 
@@ -188,32 +203,36 @@ class Wmo2msc(FlowCB):
         if len(self.bintxt) < lenb:
             print('Trimmed %d trailing blanks!' % (lenb - len(self.bintxt)))
 
-    def after_accept(self, worklist):
-        new_incoming = []
-        for message in worklist.incoming:
-            if message['baseUrl'] != 'file:':
-                logger.error(
-                    'filter_wmo2msc needs local files invalid url: %s ' %
+    def after_work(self, worklist):
+        new_ok = []
+        for message in worklist.ok:
+
+            if message['baseUrl'] == 'file:':
+                input_file = message['relPath']
+            elif self.o.baseDir:
+                input_file = os.path.join(self.o.baseDir, message['relPath'])
+            else:
+                logger.error(f'needs local files invalid url: %s or baseDir not set' %
                     (message['baseUrl'] + message['relPath']))
                 worklist.rejected.append(message)
                 continue
 
-            input_file = message['relPath']
+            if not os.path.exists(input_file):
+                logger.error(f'local file {input_file} does not exist')
+                worklist.rejected.append(message)
+                continue
 
             # read once to get headers and type.
 
-            logger.debug('filter_wmo2msc reading file: %s' % (input_file))
+            logger.debug('reading file: %s' % (input_file))
 
             with open(input_file, 'rb') as s:
                 self.bulletin = [s.readline(), s.read(4)]
 
-            AHLfn = (self.bulletin[0].replace(b' ',
-                                              b'_').strip()).decode('ascii')
+            AHLfn = (self.bulletin[0].replace(b' ', b'_').strip()).decode('ascii')
 
             if len(AHLfn) < 18:
-                logger.error(
-                    'filter_wmo2msc: not a WMO bulletin, malformed header: (%s)'
-                    % (AHLfn))
+                logger.error(f'not a WMO bulletin, malformed header: {AHLfn}')
                 worklist.rejected.append(message)
                 continue
 
@@ -221,7 +240,7 @@ class Wmo2msc(FlowCB):
             with open(input_file, 'rb') as s:
                 self.bintxt = s.read()
 
-            logger.debug('filter_wmo2msc read twice: %s ' % (input_file))
+            logger.debug('read twice: %s ' % (input_file))
 
             # Determine file format (fmt) and apply transformation.
             if self.bulletin[1].lstrip()[:4] in ['BUFR', 'GRIB', '\211PNG']:
@@ -239,7 +258,7 @@ class Wmo2msc(FlowCB):
                 if self.o.filter_wmo2msc_convert:
                     self.doSpecificProcessing()
 
-            # apply 'd' checksum (md5)
+            # apply 'd' checksum (md5) (FIXME use checksum from msg if available?)
 
             s = hashlib.md5()
             s.update(self.bintxt)
@@ -256,70 +275,75 @@ class Wmo2msc(FlowCB):
 
             if self.o.filter_wmo2msc_treeify:
                 d = os.path.dirname(input_file)
-                logger.debug('filter_wmo2msc check %s start match: %s' %
+                logger.debug('check %s start match: %s' %
                              (d, self.o.filter_olddir))
                 d = d.replace(self.o.filter_olddir, self.o.filter_newdir)
-                logger.debug('filter_wmo2msc check %s after replace' % (d))
+                logger.debug('check %s after replace' % (d))
                 if not os.path.isdir(d):
                     os.makedirs(d, self.o.permDirDefault, True)
 
                 d = d + os.sep + self.bulletin[0][0:2].decode('ascii')
                 d = d + os.sep + self.bulletin[0][7:11].decode('ascii')
-                logger.debug('filter_wmo2msc check %s' % (d))
+                logger.debug('check %s' % (d))
                 if not os.path.isdir(d):
                     os.makedirs(d, self.o.permDirDefault, True)
 
                 d = d + os.sep + self.bulletin[0][14:16].decode('ascii')
-                logger.debug('filter_wmo2msc check %s' % (d))
+                logger.debug('check %s' % (d))
                 if not os.path.isdir(d):
                     os.makedirs(d, self.o.permDirDefault, True)
 
-                local_file = d + os.sep + AHLfn
+                output_file = d + os.sep + AHLfn
             else:
-                local_file = self.o.currentDir + os.sep + AHLfn
+                output_file = self.o.currentDir + os.sep + AHLfn
 
             # write the data.
             fileOK = False
 
             if not self.o.filter_wmo2msc_convert:
                 try:
-                    os.link(input_file, local_file)
+                    os.link(input_file, output_file)
                     fileOK = True
                 except:
                     pass
 
             if self.o.filter_wmo2msc_convert or not fileOK:
-                d = open(local_file, 'wb+')
+                d = open(output_file, 'wb+')
                 d.write(self.bintxt)
                 d.close()
 
-            logger.debug('filter_wmo2msc %s -> %s (%s)' %
-                         (input_file, local_file, fmt))
+            # need to recalculate checksum (identity) when file is converted
+            if self.o.filter_wmo2msc_convert:
+                message.computeIdentity(output_file, self.o, offset=0, data=self.bintxt)
+
+            logger.info('%s -> %s (%s)' % (input_file, output_file, fmt))
 
             # set how the file will be announced
+            if self.o.post_baseDir:
+                relPath = output_file.replace(self.o.post_baseDir, '')
+            elif self.o.baseDir:
+                relPath = output_file.replace(self.o.baseDir, '')
+            else:
+                relPath = output_file
 
-            baseDir = self.o.base_dir
-            if baseDir == None: baseDir = self.o.post_base_dir
-
-            relPath = local_file
-            if baseDir != None: relPath = local_file.replace(baseDir, '')
-
-            baseUrl = 'file:'
-            # from tolocal.py if used
-            if 'savedUrl' in message.keys(): baseUrl = message['savedUrl']
-            # from tolocalfile.py if used
-            if 'saved_baseUrl' in message.keys():
-                baseUrl = message['saved_baseUrl']
+            if relPath[0] == '/':
+                relPath = relPath[1:]
 
             relPath = relPath.replace('//', '/')
-            logger.debug('filter_wmo2msc relPath %s' % relPath)
-
-            message['set_topic'](self.o.topic_prefix, relPath)
-            #message['set_notice'](baseUrl, relPath)
-            message['baseUrl'] = baseUrl
             message['relPath'] = relPath
-            new_incoming.append(message)
-        worklist.incoming = new_incoming
+            logger.debug('relPath %s' % relPath)
+
+            # from tolocal.py if used
+            if 'savedUrl' in message:
+                message['baseUrl'] = message['savedUrl']
+            # from tolocalfile.py if used
+            if 'saved_baseUrl' in message:
+                message['baseUrl'] = message['saved_baseUrl']
+            # otherwise, we assume the baseUrl is still good (used self.o.baseDir to find local file)
+
+            new_ok.append(message)
+
+        worklist.ok = new_ok
 
 
 """
