@@ -1,52 +1,53 @@
-Migrating from Sarracenia v2 to sr3
+Migrer de Sarracenia v2 à sr3
 ===================================
 
-This document is intended to be a short tutorial to help a Sarracenia v2
-user convert their configurations to sr3. It assumes the user is already
-familiar with basic v2 usage, and does not cover more detailed topics,
-such as plugins.
+Ce document est destiné à être un court tutoriel pour aider un utilisateur
+de Sarracenia v2 à convertir sa configuration à sr3. Cela suppose que 
+l'utilisateur est déjà familier avec l'usage de base de v2, et ne couvre
+pas des sujet plus detaillés, tels que les plugins. 
 
 .. IMPORTANT::
 
-   This tutorial assumes that you have already installed
-   sr3. If not, use `these
-   instructions <../Tutorials/Install.html>`__
-   to install sr3 first.
+   Ce tutoriel suppose que vous avez déjà installé sr3. 
+   Si ce n'est pas le cas, utilisez use `ces
+   instructions <../Tutoriels/Installer.html>`
+   pour installer sr3 en premier.
 
 .. NOTE::
 
-   Both Sarracenia v2 and sr3 can run alongside each other on the same computer.
+   Sarracenia v2 et sr3 peuvent tous les deux exécuter en même temps sur le même ordinateur. 
 
-For further reading, see:
+Pour en savoir plus, voir:
 
-- `How2Guides/UPGRADING <../How2Guides/UPGRADING.html#v2-to-sr3>`__ - notes
-  about major changes between v2 and sr3
-- `Contribution/v03 <../Contribution/v03.html>`__ - in-depth documentation
-  about sr3’s design and changes from v2
-- `How2Guides/v2ToSr3 <../How2Guides/v2ToSr3.html>`__ - detailed instructions
-  for developers who want to port their v2 plugins to sr3
+- `CommentFaire/MiseANiveau <../CommentFaire/MiseANiveau.html#v2-to-sr3>`__ - notes
+  
+  notes concernant rapport aux changements majeurs entre v2 et sr3
+- `Contribution/v03 <../Contribution/v03.html>`__ - documentation détaillée
+  à propos de la conception et les changements par rapport à v2
+- `CommentFaire/v2ASr3 <../CommentFaire/v2ASr3.html>`__ - instructions détaillées 
+  pour des développeurs qui veulent envoyer leur plugins v2 à sr3
 
-Background Information
+Informations générales
 ----------------------
 
-New Command-Line Interface (CLI)
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Nouvelle Interface en ligne de commande (ILC)
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-sr3 has a new command-line interface that is documented in detail
-`here <../Explanation/CommandLineGuide.html>`__.
-The ``sr3`` command syntax is ``sr3 action component/config ...``, which
-replaces the *component-specific* commands of v2 (e.g. ``sr_subscribe``
-for the subscribe component).
+sr3 a une nouvelle interface en ligne de commande qui est documenté 
+en détail `ici <../Explication/GuideLigneDeCommande.html>`__.
 
-.. HINT::
+La syntaxe de la commande ``sr3`` est ``sr3 action composant/config ...``,
+qui remplace les commandes *specifique-au-composant* de v2 
+(par exemple ``sr_subscribe`` pour le composant d'abonnement).
 
-   A *component* is the general name for a *subscribe*, *sarra*,
-   *watch*, *shovel*, etc.
+.. INDICE::
+   un *composant* est le nom générale pour les mots clé *subscribe*,
+    *sarra*, *watch*, *shovel*, etc.
 
-For example:
+Par exemple:
 
 +--------------------------------------------+----------------------------------------+
-| v2 Command                                 | sr3 Equivalent Command                 |
+| Commande v2                                | Commande équivalente sr3               |
 +============================================+========================================+
 | ``sr_subscribe start my_subscriber``       | ``sr3 start subscribe/my_subscriber``  |
 +--------------------------------------------+----------------------------------------+
@@ -59,41 +60,42 @@ For example:
 | ``sr_subscribe start``                     | ``sr3 start subscribe/*``              |
 +--------------------------------------------+----------------------------------------+
 
-New Config and Cache Locations
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Nouvelle configuration et emplacement du cache
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-sr3 also changes the location of logs and configurations:
+sr3 change l'emplacement des logs et configurations aussi:
 
 ======= =================== =================
-Item    v2 Location         sr3 Location
+Item    emplacement v2      emplacement sr3
 ======= =================== =================
 Configs ``~/.config/sarra`` ``~/.config/sr3``
 Cache   ``~/.cache/sarra``  ``~/.cache/sr3``
 Logs    ``~/.cache/sarra``  ``~/.cache/sr3``
 ======= =================== =================
 
-Migrating a v2 Configuration to sr3
+Migrer une configuration v2 vers sr3
 -----------------------------------
 
-sr3 slightly changes some of the keywords used in config files. Full
-documentation for all the options that can be used in an sr3 config file
-can be found
-`here <../Reference/sr3_options.7.html>`__.
+sr3 modifie légèrement certains des mots-clés utilisés dans les fichiers de configuration. 
+La documentation complète de toutes les options utilisables dans un fichier de 
+configuration sr3 est disponible 
+`ici <../Reference/sr3_options.7.html>`__.
 
-sr3 recognizes the v2 keywords, so a v2 config file should be usable in
-sr3 without modification, but we recommend using the built-in converter
-to “upgrade” your configs to sr3 syntax.
 
-Pre-conversion Preparation
-~~~~~~~~~~~~~~~~~~~~~~~~~~
+sr3 reconnaît les mots-clés v2, alors un fichier de configuration v2 
+devrait donc être utilisable dans sr3 sans modification. 
+Par contre, nous recommandons toutefois d'utiliser le convertisseur 
+intégré pour <<mettre à niveau>> vos configurations en syntaxe sr3.
 
-credentials.conf and default.conf
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+Préparation avant la conversion
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-If you have modified v2’s credentials.conf
-(``~/.config/sarra/credentials.conf``) or default.conf
-(``~/.config/sarra/default.conf``), you should copy those files over to
-sr3’s config directory:
+credentials.conf et default.conf
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+Si vous avez modifié le fichier credentials.conf de v2
+(``~/.config/sarra/credentials.conf``) ou default.conf
+(``~/.config/sarra/default.conf``),vous devez copier ces fichers 
+dans le répertoire de configuration de sr3.
 
 .. code:: bash
 
@@ -102,42 +104,44 @@ sr3’s config directory:
 
 .. IMPORTANT::
 
-   If you are converting from v2 to sr3, it is very likely
-   that the source you are subscribing to (e.g. the MSC Datamart) is
-   still publishing messages in the v2 format. Prior to converting your
-   configs, you should add ``topicPrefix v02.post`` to your sr3
-   ``default.conf`` file.
+   Si vous convertissez de v2 à sr3, 
+   il est fort probable que la source à laquelle vous êtes abonné 
+   (par exemple, le Datamart MSC) publie toujours des messages au format v2. 
+   Avant de convertir vos configurations, vous devez ajouter 
+   `topicPrefix v02.post`` à votre fichier ``default.conf`` de sr3.
 
-   To do this, run:
+   Pour ce faire, exécutez :
 
    .. code:: bash
 
       echo 'topicPrefix v02.post' >> ~/.config/sr3/default.conf
 
-Step-by-step Conversion
-~~~~~~~~~~~~~~~~~~~~~~~
+Conversion étape par étape
+~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Here is a step by step example demonstrating how to convert a v2
-subscriber to sr3 using the converter, and how to disable the v2 config
-once it’s complete.
+Voici un exemple étape par étape montrant comment convertir un abonné v2 
+en sr3 à l'aide du convertisseur, et comment désactiver 
+la configuration v2 une fois l'opération terminée.
+
+.. code:: bash
+   
+   # les commentaires dans cette section, indiqués par #, fournissent des explications
+
+   # les commandes sont affichées dans les lignes qui avec une invite de commande qui se termine par $, 
+   # par exemple : 
+   
+   #       invite de commande commande
+   #                       ↓ ↓
+   #    sarra@mon-serveur:~$ ma_commande
+
+   # la sortie des commandes est affichée après la ligne avec l'invite de commande et la commande 
 
 .. code:: bash
 
-   # the comments in this section, denoted by # provide explanation
-
-   # commands are shown in the lines with a prompt that ends with $, for example:
-   #                prompt command
-   #                     ↓ ↓
-   #    sarra@my-server:~$ my_command
-
-   # the output from commands is shown after the line with the prompt and command
-
-.. code:: bash
-
-   # sr status --> show the status of your v2 configs
-   #   In the example below, it shows that we have
-   #   one *subscribe* config running named "dd_amis"
-   sarra@my-server:~$ sr status
+   # sr status --> afficher l'état de vos configurations v2
+   #   Dans l'exemple ci-dessous, cela montre que nous avons
+   #   une configuration *subscribe* en cours d'exécution nommée "dd_amis"
+   sarra@mon-serveur:~$ sr status
    status:
    Component  State      Good?  Qty Configurations-i(r/e)-r(Retry)
    ---------  -----      -----  --- ------------------------------
@@ -156,9 +160,9 @@ once it’s complete.
          total running configs:   1 ( processes: 6 missing: 0 stray: 0 )
 
 
-   # sr3 status --> show the status of your sr3 configs
-   #   In the example below, we do not have any sr3 configs
-   sarra@my-server:~$ sr3 status
+   # sr3 status --> afficher l'état de vos configurations sr3
+   #   Dans l'exemple ci-dessous, nous n'avons aucune configuration sr3
+   sarra@mon-serveur:~$ sr3 status
    status:
    Component/Config     Processes                                         Rates
                         State   Run Retry  Que     Lag  Last    %rej  messages      Data
@@ -170,22 +174,22 @@ once it’s complete.
                  Data Received: 0f/s (0B/s), Sent: 0f/s (0B/s)
 
 
-   #####################
-   # Convert v2 to sr3 #
-   #####################
+   ######################
+   # Convertir v2 à sr3 #
+   ######################
 
-   # sr3 convert component/config --> convert a v2 config to sr3
-   #   We will convert our v2 subscriber named "dd_amis" to an sr3 subscriber, also named "dd_amis".
-   #   This will convert any v2 syntax to sr3 and place the resulting config file in
+   # sr3 convert composant/configuration --> Convertir une configuration v2 en sr3
+   #   Nous allons convertir notre abonné v2 nommé « dd_amis » en abonné sr3, également nommé « dd_amis ».
+   #   Ceci convertira toute syntaxe v2 en sr3 et placera le fichier de configuration résultant dans
    #   ~/.config/sr3/subscribe/dd_amis.conf.
-   sarra@my-server:~$ sr3 convert subscribe/dd_amis
+   sarra@mon-serveur:~$ sr3 convert subscribe/dd_amis
    v2_config: ['subscribe/dd_amis']
    2025-08-25 17:21:20,858 2241245 [INFO] sarracenia.sr convert1 wrote conversion from v2 subscribe/dd_amis to sr3
 
 
-   # Now sr3 status shows that we have one sr3 config.
-   # the state "new" indicates that the config has never been started before.
-   sarra@my-server:~$ sr3 status
+   # Maintenant, L'état sr3 indique que nous avons une configuration sr3.
+   # L'état « new » indique que la configuration n'a jamais été démarrée auparavant.
+   sarra@mon-serveur:~$ sr3 status
    status:
    Component/Config     Processes                                         Rates
                         State   Run Retry  Que     Lag  Last    %rej  messages      Data
@@ -198,19 +202,20 @@ once it’s complete.
                  Data Received: 0f/s (0B/s), Sent: 0f/s (0B/s)
 
 
-   # sr3 start component/config --> start a config
-   #   We will start our new subscriber. That the v2 subscriber will also continue
-   #   running, so duplicate data may be received while both subscribers are active.
+   # sr3 start component/config --> démarrer une configuration
+   #   Nous allons démarrer notre nouvel abonné. L'abonné v2 continuera également à fonctionner, 
+   #   ce qui peut entraîner la réception de données en double pendant que les deux abonnés sont actifs.
    #
-   #   NOTE: The ERROR message stating that the subscription write failed can be ignored.
-   #         It will be removed in a future version.
+   #   REMARQUE : Le message d'erreur «ERROR» indiquant l'échec de l'écriture de l'abonnement peut être ignoré.
+   #              Ce sera supprimé dans une prochaine version.
+   
    sarra@my-server:~$ sr3 start subscribe/dd_amis
    2025-08-25 17:28:08,410 2242079 [ERROR] sarracenia.config.subscription write failed: /home/sarra/.cache/sr3/subscribe/dd_amis/subscriptions.json: [Errno 2] No such file or directory: '/home/sarra/.cache/sr3/subscribe/dd_amis/subscriptions.json'
    starting:.( 5 ) Done
 
 
    # Now sr3 status shows that the config is running, in idle state:
-   sarra@my-server:~$ sr3 status
+   sarra@mon-serveur:~$ sr3 status
    status:
    Component/Config     Processes                                         Rates
                         State   Run Retry  Que     Lag  Last    %rej  messages      Data
@@ -223,14 +228,14 @@ once it’s complete.
                  Data Received: 0f/s (0B/s), Sent: 0f/s (0B/s)
 
 
-   ################################
-   # Stop & Disable v2 Subscriber #
-   ################################
+   #####################################
+   # Arrêter et désactiver l'abonné v2 #
+   #####################################
 
-   # Now that sr3 has been started, you can stop, cleanup and disable your v2 subscriber:
-
-   # sr_subscribe stop --> stop the v2 subscriber
-   sarra@my-server:~$ sr_subscribe stop dd_amis
+   # Maintenant que sr3 a démarré, vous pouvez arrêter, nettoyer et désactiver votre abonné v2 :
+   
+   # sr_subscribe stop --> arrêter l'abonné v2
+   sarra@mon-serveur:~$ sr_subscribe stop dd_amis
    2025-08-25 17:31:54,247 [INFO] sr_subscribe dd_amis 01 stopped
    2025-08-25 17:31:54,247 [INFO] sr_subscribe dd_amis 02 stopped
    2025-08-25 17:31:54,247 [INFO] sr_subscribe dd_amis 03 stopped
@@ -238,16 +243,16 @@ once it’s complete.
    2025-08-25 17:31:54,247 [INFO] sr_subscribe dd_amis 05 stopped
 
 
-   # sr_subscribe cleanup --> cleanup files in ~/.cache/sarra and delete queue on the broker
-   sarra@my-server:~$ sr_subscribe cleanup dd_amis
+   # sr_subscribe cleanup --> nettoyer les fichiers dans ~/.cache/sarra et supprimer la file d'attente sur le courtier
+   sarra@mon-serveur:~$ sr_subscribe cleanup dd_amis
    2025-08-25 17:32:49,264 [INFO] sr_subscribe dd_amis cleanup
    2025-08-25 17:32:49,264 [INFO] AMQP  broker(dd.weather.gc.ca) user(anonymous) vhost(/)
    2025-08-25 17:32:49,264 [INFO] Using amqp module (AMQP 0-9-1)
    2025-08-25 17:32:49,282 [INFO] deleting queue q_anonymous.sr_subscribe.dd_amis.00483673.20371363 (anonymous@dd.weather.gc.ca)
 
 
-   # sr status now shows that the v2 subscriber is stopped
-   sarra@my-server:~$ sr status
+   # sr status indique maintenant que l'abonné v2 est arrêté
+   sarra@mon-serveur:~$ sr status
    status:
    Component  State      Good?  Qty Configurations-i(r/e)-r(Retry)
    ---------  -----      -----  --- ------------------------------
@@ -266,14 +271,14 @@ once it’s complete.
          total running configs:   0 ( processes: 1 missing: 0 stray: 0 )
 
 
-   # sr_subscribe disable --> prevent the v2 config from being started in the future
-   #   disable renames the config file from ...conf to ...conf.off
-   #   e.g. ~/.config/sarra/subscribe/dd_amis.conf becomes ~/.config/sarra/subscribe/dd_amis.conf.off
-   sarra@my-server:~$ sr_subscribe disable dd_amis
+   # sr_subscribe disable --> Empêcher le lancement futur de la configuration v2
+   # disable renomme le fichier de configuration de ...conf à ...conf.off
+   #   Par exemple, ~/.config/sarra/subscribe/dd_amis.conf devient ~/.config/sarra/subscribe/dd_amis.conf.off
+   sarra@mon-serveur:~$ sr_subscribe disable dd_amis
 
 
-   # sr status now shows that the v2 subscriber is removed/disabled
-   sarra@my-server:~$ sr status
+   # sr status indique maintenant que l'abonné v2 est supprimé/désactivé
+   sarra@mon-serveur:~$ sr status
    status:
    Component  State      Good?  Qty Configurations-i(r/e)-r(Retry)
    ---------  -----      -----  --- ------------------------------
@@ -291,13 +296,14 @@ once it’s complete.
    winnow     stopped    OK       0
          total running configs:   0 ( processes: 1 missing: 0 stray: 0 )
 
-You should now have a working sr3 subscriber! You can repeat the process
-above as many times as necessary to convert all your v2 configurations
-to sr3.
+Vous devriez maintenant avoir un abonné sr3 fonctionnel ! Vous pouvez répéter la procédure 
+ci-dessus autant de fois que nécessaire pour convertir toutes vos configurations v2
+en sr3.
 
-The sr3 CLI also accepts *multiple component/config combinations at the
-same time* and *wildcards*, so you can convert all your configs in one
-command. For example: 
+L'interface de ligne de commande sr3 accepte également *plusieurs combinaisons composant/configuration
+simultanément* et les *caractères génériques*(wildcards), 
+vous permettant ainsi de convertir toutes vos configurations en une seule
+commande. Par exemple :
 
 - ``sr3 convert subscribe/my_config1 poll/test_poll``
 - ``sr3 convert 'subscribe/*'`` 
