@@ -210,6 +210,7 @@ once it’s complete.
 
 
    # Now sr3 status shows that the config is running, in idle state:
+   # (see Note below/Command Line Guide document for information about sr3's states)
    sarra@my-server:~$ sr3 status
    status:
    Component/Config     Processes                                         Rates
@@ -297,8 +298,13 @@ to sr3.
 
 The sr3 CLI also accepts *multiple component/config combinations at the
 same time* and *wildcards*, so you can convert all your configs in one
-command. For example: 
+command. For example:
 
 - ``sr3 convert subscribe/my_config1 poll/test_poll``
-- ``sr3 convert 'subscribe/*'`` 
+- ``sr3 convert 'subscribe/*'``
 - ``sr3 convert '*/*'``
+
+.. NOTE::
+
+   sr3's status command provides more detailed ``states`` than v2. For an explanation
+   of each possible state, read the `Command Line Guide document <../Explanation/CommandLineGuide.html#status>`__.

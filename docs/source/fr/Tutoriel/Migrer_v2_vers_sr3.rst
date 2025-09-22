@@ -1,5 +1,5 @@
 Migrer de Sarracenia v2 à sr3
-===================================
+=============================
 
 Ce document est destiné à être un court tutoriel pour aider un utilisateur
 de Sarracenia v2 à convertir sa configuration à sr3. Cela suppose que 
@@ -10,7 +10,7 @@ pas des sujet plus detaillés, tels que les plugins.
 
    Ce tutoriel suppose que vous avez déjà installé sr3. 
    Si ce n'est pas le cas, utilisez use `ces
-   instructions <../Tutoriels/Installer.html>`
+   instructions <../Tutoriel/Installer.html>`__
    pour installer sr3 en premier.
 
 .. NOTE::
@@ -19,9 +19,8 @@ pas des sujet plus detaillés, tels que les plugins.
 
 Pour en savoir plus, voir:
 
-- `CommentFaire/MiseANiveau <../CommentFaire/MiseANiveau.html#v2-to-sr3>`__ - notes
-  
-  notes concernant rapport aux changements majeurs entre v2 et sr3
+- `CommentFaire/MiseANiveau <../CommentFaire/MiseANiveau.html#v2-to-sr3>`__ - notes 
+  concernant rapport aux changements majeurs entre v2 et sr3
 - `Contribution/v03 <../Contribution/v03.html>`__ - documentation détaillée
   à propos de la conception et les changements par rapport à v2
 - `CommentFaire/v2ASr3 <../CommentFaire/v2ASr3.html>`__ - instructions détaillées 
@@ -40,9 +39,9 @@ La syntaxe de la commande ``sr3`` est ``sr3 action composant/config ...``,
 qui remplace les commandes *specifique-au-composant* de v2 
 (par exemple ``sr_subscribe`` pour le composant d'abonnement).
 
-.. INDICE::
+.. HINT::
    un *composant* est le nom générale pour les mots clé *subscribe*,
-    *sarra*, *watch*, *shovel*, etc.
+   *sarra*, *watch*, *shovel*, etc.
 
 Par exemple:
 
@@ -61,7 +60,7 @@ Par exemple:
 +--------------------------------------------+----------------------------------------+
 
 Nouvelle configuration et emplacement du cache
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 sr3 change l'emplacement des logs et configurations aussi:
 
@@ -74,7 +73,7 @@ Logs    ``~/.cache/sarra``  ``~/.cache/sr3``
 ======= =================== =================
 
 Migrer une configuration v2 vers sr3
------------------------------------
+------------------------------------
 
 sr3 modifie légèrement certains des mots-clés utilisés dans les fichiers de configuration. 
 La documentation complète de toutes les options utilisables dans un fichier de 
@@ -214,7 +213,10 @@ la configuration v2 une fois l'opération terminée.
    starting:.( 5 ) Done
 
 
-   # Now sr3 status shows that the config is running, in idle state:
+   # Maintenant, l'état sr3 indique que la configuration est en cours d'exécution, mais n'a pas
+   # transféré de données depuis longtemps (état «idle») :
+   # (voir la note ci-dessous/le document Guide de ligne de commande pour 
+   #  plus d'informations sur les états de sr3)
    sarra@mon-serveur:~$ sr3 status
    status:
    Component/Config     Processes                                         Rates
@@ -301,10 +303,16 @@ ci-dessus autant de fois que nécessaire pour convertir toutes vos configuration
 en sr3.
 
 L'interface de ligne de commande sr3 accepte également *plusieurs combinaisons composant/configuration
-simultanément* et les *caractères génériques*(wildcards), 
+simultanément* et les *caractères génériques* (wildcards), 
 vous permettant ainsi de convertir toutes vos configurations en une seule
 commande. Par exemple :
 
 - ``sr3 convert subscribe/my_config1 poll/test_poll``
 - ``sr3 convert 'subscribe/*'`` 
 - ``sr3 convert '*/*'``
+
+.. NOTE::
+
+   La commande status de sr3 fournit des information plus détaillés que la version 2.
+   Pour une explication de chaque état possible, consultez le document
+   `Command Line Guide <../Explication/GuideLigneDeCommande.html#status>`__.
