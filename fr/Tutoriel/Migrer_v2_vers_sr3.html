@@ -1,0 +1,471 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../../">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Migrer de Sarracenia v2 à sr3 &mdash; Sarracenia 3.01.01rc1 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=80d5e7a1" />
+      <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=e59714d7" />
+
+  
+    <link rel="shortcut icon" href="../../_static/sarra_horror_culture_favicon.png"/>
+      <script src="../../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../../_static/documentation_options.js?v=6e32622f"></script>
+      <script src="../../_static/doctools.js?v=9bcbadda"></script>
+      <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
+      <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+      <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" />
+    <link rel="next" title="Manuel de l’utilisateur Windows" href="Windows.html" />
+    <link rel="prev" title="Administrateur du serveur : un abonné local" href="Mettre_en_place_un_subscriber_local.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../index.html" class="icon icon-home">
+            Sarracenia
+              <img src="../../_static/sarra_horror_culture_w200.png" class="logo" alt="Logo"/>
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../../Explanation/Overview.html">Overview</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Tutorials/index.html">Tutorials</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../How2Guides/index.html">HOWTOS</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Explanation/index.html">Explanation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Reference/index.html">Reference</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Contribution/index.html">Contributing</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../api-documentation.html">API Documentation</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="../index.html">En français</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="../Reference/index.html">Référence</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../Explication/index.html">Explication</a></li>
+<li class="toctree-l2 current"><a class="reference internal" href="index.html">Tutoriel</a><ul class="current">
+<li class="toctree-l3"><a class="reference internal" href="1_CLI_introduction.html">Téléchargement en utilisant la console</a></li>
+<li class="toctree-l3"><a class="reference internal" href="2_CLI_with_flowcb_demo.html">Personnalisez la gestion des fichiers avec les rappels.</a></li>
+<li class="toctree-l3"><a class="reference internal" href="3_api_flow_demo.html">Exemple d’API de flux</a></li>
+<li class="toctree-l3"><a class="reference internal" href="4_api_moth_sub_demo.html">Un premier exemple utilisant l’API Sarracenia Moth</a></li>
+<li class="toctree-l3"><a class="reference internal" href="5_api_moth_post_demo.html">Publication à partir du code Python</a></li>
+<li class="toctree-l3"><a class="reference internal" href="Installer.html">Installation de MetPX Sarracenia</a></li>
+<li class="toctree-l3"><a class="reference internal" href="Mettre_en_place_un_subscriber_distant.html">Comment configurer un abonné distant</a></li>
+<li class="toctree-l3"><a class="reference internal" href="Mettre_en_place_un_subscriber_local.html">Administrateur du serveur : un abonné local</a></li>
+<li class="toctree-l3 current"><a class="current reference internal" href="#">Migrer de Sarracenia v2 à sr3</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#informations-generales">Informations générales</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#migrer-une-configuration-v2-vers-sr3">Migrer une configuration v2 vers sr3</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="Windows.html">Manuel de l’utilisateur Windows</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../CommentFaire/index.html">Comment Faire</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../Contribution/index.html">Contribuer à Sarracenia</a></li>
+</ul>
+</li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../index.html">Sarracenia</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../index.html">S´abonner et répliquer</a></li>
+          <li class="breadcrumb-item"><a href="index.html">Tutoriel</a></li>
+      <li class="breadcrumb-item active">Migrer de Sarracenia v2 à sr3</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../../_sources/fr/Tutoriel/Migrer_v2_vers_sr3.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="migrer-de-sarracenia-v2-a-sr3">
+<h1>Migrer de Sarracenia v2 à sr3<a class="headerlink" href="#migrer-de-sarracenia-v2-a-sr3" title="Link to this heading"></a></h1>
+<p>Ce document est destiné à être un court tutoriel pour aider un utilisateur
+de Sarracenia v2 à convertir sa configuration à sr3. Cela suppose que
+l’utilisateur est déjà familier avec l’usage de base de v2, et ne couvre
+pas des sujet plus detaillés, tels que les plugins.</p>
+<div class="admonition important">
+<p class="admonition-title">Important</p>
+<p>Ce tutoriel suppose que vous avez déjà installé sr3.
+Si ce n’est pas le cas, utilisez use <a class="reference external" href="../Tutoriel/Installer.html">ces
+instructions</a>
+pour installer sr3 en premier.</p>
+</div>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>Sarracenia v2 et sr3 peuvent tous les deux exécuter en même temps sur le même ordinateur.</p>
+</div>
+<p>Pour en savoir plus, voir:</p>
+<ul class="simple">
+<li><p><a class="reference external" href="../CommentFaire/MiseANiveau.html#v2-to-sr3">CommentFaire/MiseANiveau</a> - notes
+concernant rapport aux changements majeurs entre v2 et sr3</p></li>
+<li><p><a class="reference external" href="../Contribution/v03.html">Contribution/v03</a> - documentation détaillée
+à propos de la conception et les changements par rapport à v2</p></li>
+<li><p><a class="reference external" href="../CommentFaire/v2ASr3.html">CommentFaire/v2ASr3</a> - instructions détaillées
+pour des développeurs qui veulent envoyer leur plugins v2 à sr3</p></li>
+</ul>
+<section id="informations-generales">
+<h2>Informations générales<a class="headerlink" href="#informations-generales" title="Link to this heading"></a></h2>
+<section id="nouvelle-interface-en-ligne-de-commande-ilc">
+<h3>Nouvelle Interface en ligne de commande (ILC)<a class="headerlink" href="#nouvelle-interface-en-ligne-de-commande-ilc" title="Link to this heading"></a></h3>
+<p>sr3 a une nouvelle interface en ligne de commande qui est documenté
+en détail <a class="reference external" href="../Explication/GuideLigneDeCommande.html">ici</a>.</p>
+<p>La syntaxe de la commande <code class="docutils literal notranslate"><span class="pre">sr3</span></code> est <code class="docutils literal notranslate"><span class="pre">sr3</span> <span class="pre">action</span> <span class="pre">composant/config</span> <span class="pre">...</span></code>,
+qui remplace les commandes <em>specifique-au-composant</em> de v2
+(par exemple <code class="docutils literal notranslate"><span class="pre">sr_subscribe</span></code> pour le composant d’abonnement).</p>
+<div class="admonition hint">
+<p class="admonition-title">Hint</p>
+<p>un <em>composant</em> est le nom générale pour les mots clé <em>subscribe</em>,
+<em>sarra</em>, <em>watch</em>, <em>shovel</em>, etc.</p>
+</div>
+<p>Par exemple:</p>
+<table class="docutils align-default">
+<thead>
+<tr class="row-odd"><th class="head"><p>Commande v2</p></th>
+<th class="head"><p>Commande équivalente sr3</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">sr_subscribe</span> <span class="pre">start</span> <span class="pre">my_subscriber</span></code></p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">sr3</span> <span class="pre">start</span> <span class="pre">subscribe/my_subscriber</span></code></p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">sr_subscribe</span> <span class="pre">status</span> <span class="pre">my_subscriber</span></code></p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">sr3</span> <span class="pre">status</span> <span class="pre">subscribe/my_subscriber</span></code></p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">sr_watch</span> <span class="pre">restart</span> <span class="pre">my_files</span></code></p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">sr3</span> <span class="pre">restart</span> <span class="pre">watch/my_files</span></code></p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">sr</span> <span class="pre">status</span></code></p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">sr3</span> <span class="pre">status</span></code></p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">sr_subscribe</span> <span class="pre">start</span></code></p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">sr3</span> <span class="pre">start</span> <span class="pre">subscribe/*</span></code></p></td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="nouvelle-configuration-et-emplacement-du-cache">
+<h3>Nouvelle configuration et emplacement du cache<a class="headerlink" href="#nouvelle-configuration-et-emplacement-du-cache" title="Link to this heading"></a></h3>
+<p>sr3 change l’emplacement des logs et configurations aussi:</p>
+<table class="docutils align-default">
+<thead>
+<tr class="row-odd"><th class="head"><p>Item</p></th>
+<th class="head"><p>emplacement v2</p></th>
+<th class="head"><p>emplacement sr3</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>Configs</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">~/.config/sarra</span></code></p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">~/.config/sr3</span></code></p></td>
+</tr>
+<tr class="row-odd"><td><p>Cache</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">~/.cache/sarra</span></code></p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">~/.cache/sr3</span></code></p></td>
+</tr>
+<tr class="row-even"><td><p>Logs</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">~/.cache/sarra</span></code></p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">~/.cache/sr3</span></code></p></td>
+</tr>
+</tbody>
+</table>
+</section>
+</section>
+<section id="migrer-une-configuration-v2-vers-sr3">
+<h2>Migrer une configuration v2 vers sr3<a class="headerlink" href="#migrer-une-configuration-v2-vers-sr3" title="Link to this heading"></a></h2>
+<p>sr3 modifie légèrement certains des mots-clés utilisés dans les fichiers de configuration.
+La documentation complète de toutes les options utilisables dans un fichier de
+configuration sr3 est disponible
+<a class="reference external" href="../Reference/sr3_options.7.html">ici</a>.</p>
+<p>sr3 reconnaît les mots-clés v2, alors un fichier de configuration v2
+devrait donc être utilisable dans sr3 sans modification.
+Par contre, nous recommandons toutefois d’utiliser le convertisseur
+intégré pour &lt;&lt;mettre à niveau&gt;&gt; vos configurations en syntaxe sr3.</p>
+<section id="preparation-avant-la-conversion">
+<h3>Préparation avant la conversion<a class="headerlink" href="#preparation-avant-la-conversion" title="Link to this heading"></a></h3>
+<section id="credentials-conf-et-default-conf">
+<h4>credentials.conf et default.conf<a class="headerlink" href="#credentials-conf-et-default-conf" title="Link to this heading"></a></h4>
+<p>Si vous avez modifié le fichier credentials.conf de v2
+(<code class="docutils literal notranslate"><span class="pre">~/.config/sarra/credentials.conf</span></code>) ou default.conf
+(<code class="docutils literal notranslate"><span class="pre">~/.config/sarra/default.conf</span></code>),vous devez copier ces fichers
+dans le répertoire de configuration de sr3.</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>cp<span class="w"> </span>~/.config/sarra/credentials.conf<span class="w"> </span>~/.config/sr3/credentials.conf
+cp<span class="w"> </span>~/.config/sarra/default.conf<span class="w"> </span>~/.config/sarra/default.conf
+</pre></div>
+</div>
+<div class="admonition important">
+<p class="admonition-title">Important</p>
+<p>Si vous convertissez de v2 à sr3,
+il est fort probable que la source à laquelle vous êtes abonné
+(par exemple, le Datamart MSC) publie toujours des messages au format v2.
+Avant de convertir vos configurations, vous devez ajouter
+<cite>topicPrefix v02.post`</cite> à votre fichier <code class="docutils literal notranslate"><span class="pre">default.conf</span></code> de sr3.</p>
+<p>Pour ce faire, exécutez :</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="nb">echo</span><span class="w"> </span><span class="s1">&#39;topicPrefix v02.post&#39;</span><span class="w"> </span>&gt;&gt;<span class="w"> </span>~/.config/sr3/default.conf
+</pre></div>
+</div>
+</div>
+</section>
+</section>
+<section id="conversion-etape-par-etape">
+<h3>Conversion étape par étape<a class="headerlink" href="#conversion-etape-par-etape" title="Link to this heading"></a></h3>
+<p>Voici un exemple étape par étape montrant comment convertir un abonné v2
+en sr3 à l’aide du convertisseur, et comment désactiver
+la configuration v2 une fois l’opération terminée.</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="c1"># les commentaires dans cette section, indiqués par #, fournissent des explications</span>
+
+<span class="c1"># les commandes sont affichées dans les lignes qui avec une invite de commande qui se termine par $,</span>
+<span class="c1"># par exemple :</span>
+
+<span class="c1">#       invite de commande commande</span>
+<span class="c1">#                       ↓ ↓</span>
+<span class="c1">#    sarra@mon-serveur:~$ ma_commande</span>
+
+<span class="c1"># la sortie des commandes est affichée après la ligne avec l&#39;invite de commande et la commande</span>
+</pre></div>
+</div>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="c1"># sr status --&gt; afficher l&#39;état de vos configurations v2</span>
+<span class="c1">#   Dans l&#39;exemple ci-dessous, cela montre que nous avons</span>
+<span class="c1">#   une configuration *subscribe* en cours d&#39;exécution nommée &quot;dd_amis&quot;</span>
+sarra@mon-serveur:~$<span class="w"> </span>sr<span class="w"> </span>status
+status:
+Component<span class="w">  </span>State<span class="w">      </span>Good?<span class="w">  </span>Qty<span class="w"> </span>Configurations-i<span class="o">(</span>r/e<span class="o">)</span>-r<span class="o">(</span>Retry<span class="o">)</span>
+---------<span class="w">  </span>-----<span class="w">      </span>-----<span class="w">  </span>---<span class="w"> </span>------------------------------
+audit<span class="w">      </span>running<span class="w">    </span>OK<span class="w">       </span><span class="m">1</span>
+cpost<span class="w">      </span>stopped<span class="w">    </span>OK<span class="w">       </span><span class="m">0</span>
+cpump<span class="w">      </span>stopped<span class="w">    </span>OK<span class="w">       </span><span class="m">0</span>
+poll<span class="w">       </span>stopped<span class="w">    </span>OK<span class="w">       </span><span class="m">0</span>
+post<span class="w">       </span>stopped<span class="w">    </span>OK<span class="w">       </span><span class="m">0</span>
+report<span class="w">     </span>stopped<span class="w">    </span>OK<span class="w">       </span><span class="m">0</span>
+sarra<span class="w">      </span>stopped<span class="w">    </span>OK<span class="w">       </span><span class="m">0</span>
+sender<span class="w">     </span>stopped<span class="w">    </span>OK<span class="w">       </span><span class="m">0</span>
+shovel<span class="w">     </span>stopped<span class="w">    </span>OK<span class="w">       </span><span class="m">0</span>
+subscribe<span class="w">  </span>running<span class="w">    </span>OK<span class="w">       </span><span class="m">1</span><span class="w"> </span>dd_amis-i5/0
+watch<span class="w">      </span>stopped<span class="w">    </span>OK<span class="w">       </span><span class="m">0</span>
+winnow<span class="w">     </span>stopped<span class="w">    </span>OK<span class="w">       </span><span class="m">0</span>
+<span class="w">      </span>total<span class="w"> </span>running<span class="w"> </span>configs:<span class="w">   </span><span class="m">1</span><span class="w"> </span><span class="o">(</span><span class="w"> </span>processes:<span class="w"> </span><span class="m">6</span><span class="w"> </span>missing:<span class="w"> </span><span class="m">0</span><span class="w"> </span>stray:<span class="w"> </span><span class="m">0</span><span class="w"> </span><span class="o">)</span>
+
+
+<span class="c1"># sr3 status --&gt; afficher l&#39;état de vos configurations sr3</span>
+<span class="c1">#   Dans l&#39;exemple ci-dessous, nous n&#39;avons aucune configuration sr3</span>
+sarra@mon-serveur:~$<span class="w"> </span>sr3<span class="w"> </span>status
+status:
+Component/Config<span class="w">     </span>Processes<span class="w">                                         </span>Rates
+<span class="w">                     </span>State<span class="w">   </span>Run<span class="w"> </span>Retry<span class="w">  </span>Que<span class="w">     </span>Lag<span class="w">  </span>Last<span class="w">    </span>%rej<span class="w">  </span>messages<span class="w">      </span>Data
+<span class="w">                     </span>-----<span class="w">   </span>---<span class="w"> </span>-----<span class="w">  </span>---<span class="w">     </span>---<span class="w">  </span>----<span class="w">    </span>----<span class="w">  </span>--------<span class="w">      </span>----
+<span class="w">      </span>Total<span class="w"> </span>Running<span class="w"> </span>Configs:<span class="w">   </span><span class="m">0</span>/0<span class="w"> </span><span class="o">(</span><span class="w"> </span>Processes:<span class="w"> </span><span class="m">0</span><span class="w"> </span>missing:<span class="w"> </span><span class="m">0</span><span class="w"> </span>stray:<span class="w"> </span><span class="m">0</span><span class="w"> </span><span class="o">)</span>
+<span class="w">                     </span>Memory:<span class="w"> </span>uss:0Bytes<span class="w"> </span>rss:0Bytes<span class="w"> </span>vms:0Bytes
+<span class="w">                   </span>CPU<span class="w"> </span>Time:<span class="w"> </span>User:0.00s<span class="w"> </span>System:0.00s
+<span class="w">           </span>Pub/Sub<span class="w"> </span>Received:<span class="w"> </span>0m/s<span class="w"> </span><span class="o">(</span>0B/s<span class="o">)</span>,<span class="w"> </span>Sent:<span class="w">  </span>0m/s<span class="w"> </span><span class="o">(</span>0B/s<span class="o">)</span><span class="w"> </span>Queued:<span class="w"> </span><span class="m">0</span><span class="w"> </span>Retry:<span class="w"> </span><span class="m">0</span>,<span class="w"> </span>Mean<span class="w"> </span>lag:<span class="w"> </span><span class="m">0</span>.00s
+<span class="w">              </span>Data<span class="w"> </span>Received:<span class="w"> </span>0f/s<span class="w"> </span><span class="o">(</span>0B/s<span class="o">)</span>,<span class="w"> </span>Sent:<span class="w"> </span>0f/s<span class="w"> </span><span class="o">(</span>0B/s<span class="o">)</span>
+
+
+<span class="c1">######################</span>
+<span class="c1"># Convertir v2 à sr3 #</span>
+<span class="c1">######################</span>
+
+<span class="c1"># sr3 convert composant/configuration --&gt; Convertir une configuration v2 en sr3</span>
+<span class="c1">#   Nous allons convertir notre abonné v2 nommé « dd_amis » en abonné sr3, également nommé « dd_amis ».</span>
+<span class="c1">#   Ceci convertira toute syntaxe v2 en sr3 et placera le fichier de configuration résultant dans</span>
+<span class="c1">#   ~/.config/sr3/subscribe/dd_amis.conf.</span>
+sarra@mon-serveur:~$<span class="w"> </span>sr3<span class="w"> </span>convert<span class="w"> </span>subscribe/dd_amis
+v2_config:<span class="w"> </span><span class="o">[</span><span class="s1">&#39;subscribe/dd_amis&#39;</span><span class="o">]</span>
+<span class="m">2025</span>-08-25<span class="w"> </span><span class="m">17</span>:21:20,858<span class="w"> </span><span class="m">2241245</span><span class="w"> </span><span class="o">[</span>INFO<span class="o">]</span><span class="w"> </span>sarracenia.sr<span class="w"> </span>convert1<span class="w"> </span>wrote<span class="w"> </span>conversion<span class="w"> </span>from<span class="w"> </span>v2<span class="w"> </span>subscribe/dd_amis<span class="w"> </span>to<span class="w"> </span>sr3
+
+
+<span class="c1"># Maintenant, L&#39;état sr3 indique que nous avons une configuration sr3.</span>
+<span class="c1"># L&#39;état « new » indique que la configuration n&#39;a jamais été démarrée auparavant.</span>
+sarra@mon-serveur:~$<span class="w"> </span>sr3<span class="w"> </span>status
+status:
+Component/Config<span class="w">     </span>Processes<span class="w">                                         </span>Rates
+<span class="w">                     </span>State<span class="w">   </span>Run<span class="w"> </span>Retry<span class="w">  </span>Que<span class="w">     </span>Lag<span class="w">  </span>Last<span class="w">    </span>%rej<span class="w">  </span>messages<span class="w">      </span>Data
+<span class="w">                     </span>-----<span class="w">   </span>---<span class="w"> </span>-----<span class="w">  </span>---<span class="w">     </span>---<span class="w">  </span>----<span class="w">    </span>----<span class="w">  </span>--------<span class="w">      </span>----
+subscribe/dd_amis<span class="w">    </span>new<span class="w">     </span><span class="m">0</span>/0<span class="w">    </span>-<span class="w">    </span>-<span class="w">       </span>-<span class="w">      </span>-<span class="w">       </span>-<span class="w">       </span>-<span class="w">           </span>-
+<span class="w">      </span>Total<span class="w"> </span>Running<span class="w"> </span>Configs:<span class="w">   </span><span class="m">0</span>/1<span class="w"> </span><span class="o">(</span><span class="w"> </span>Processes:<span class="w"> </span><span class="m">0</span><span class="w"> </span>missing:<span class="w"> </span><span class="m">0</span><span class="w"> </span>stray:<span class="w"> </span><span class="m">0</span><span class="w"> </span><span class="o">)</span>
+<span class="w">                     </span>Memory:<span class="w"> </span>uss:0Bytes<span class="w"> </span>rss:0Bytes<span class="w"> </span>vms:0Bytes
+<span class="w">                   </span>CPU<span class="w"> </span>Time:<span class="w"> </span>User:0.00s<span class="w"> </span>System:0.00s
+<span class="w">           </span>Pub/Sub<span class="w"> </span>Received:<span class="w"> </span>0m/s<span class="w"> </span><span class="o">(</span>0B/s<span class="o">)</span>,<span class="w"> </span>Sent:<span class="w">  </span>0m/s<span class="w"> </span><span class="o">(</span>0B/s<span class="o">)</span><span class="w"> </span>Queued:<span class="w"> </span><span class="m">0</span><span class="w"> </span>Retry:<span class="w"> </span><span class="m">0</span>,<span class="w"> </span>Mean<span class="w"> </span>lag:<span class="w"> </span><span class="m">0</span>.00s
+<span class="w">              </span>Data<span class="w"> </span>Received:<span class="w"> </span>0f/s<span class="w"> </span><span class="o">(</span>0B/s<span class="o">)</span>,<span class="w"> </span>Sent:<span class="w"> </span>0f/s<span class="w"> </span><span class="o">(</span>0B/s<span class="o">)</span>
+
+
+<span class="c1"># sr3 start component/config --&gt; démarrer une configuration</span>
+<span class="c1">#   Nous allons démarrer notre nouvel abonné. L&#39;abonné v2 continuera également à fonctionner,</span>
+<span class="c1">#   ce qui peut entraîner la réception de données en double pendant que les deux abonnés sont actifs.</span>
+<span class="c1">#</span>
+<span class="c1">#   REMARQUE : Le message d&#39;erreur «ERROR» indiquant l&#39;échec de l&#39;écriture de l&#39;abonnement peut être ignoré.</span>
+<span class="c1">#              Ce sera supprimé dans une prochaine version.</span>
+
+sarra@my-server:~$<span class="w"> </span>sr3<span class="w"> </span>start<span class="w"> </span>subscribe/dd_amis
+<span class="m">2025</span>-08-25<span class="w"> </span><span class="m">17</span>:28:08,410<span class="w"> </span><span class="m">2242079</span><span class="w"> </span><span class="o">[</span>ERROR<span class="o">]</span><span class="w"> </span>sarracenia.config.subscription<span class="w"> </span>write<span class="w"> </span>failed:<span class="w"> </span>/home/sarra/.cache/sr3/subscribe/dd_amis/subscriptions.json:<span class="w"> </span><span class="o">[</span>Errno<span class="w"> </span><span class="m">2</span><span class="o">]</span><span class="w"> </span>No<span class="w"> </span>such<span class="w"> </span>file<span class="w"> </span>or<span class="w"> </span>directory:<span class="w"> </span><span class="s1">&#39;/home/sarra/.cache/sr3/subscribe/dd_amis/subscriptions.json&#39;</span>
+starting:.<span class="o">(</span><span class="w"> </span><span class="m">5</span><span class="w"> </span><span class="o">)</span><span class="w"> </span>Done
+
+
+<span class="c1"># Maintenant, l&#39;état sr3 indique que la configuration est en cours d&#39;exécution, mais n&#39;a pas</span>
+<span class="c1"># transféré de données depuis longtemps (état «idle») :</span>
+<span class="c1"># (voir la note ci-dessous/le document Guide de ligne de commande pour</span>
+<span class="c1">#  plus d&#39;informations sur les états de sr3)</span>
+sarra@mon-serveur:~$<span class="w"> </span>sr3<span class="w"> </span>status
+status:
+Component/Config<span class="w">     </span>Processes<span class="w">                                         </span>Rates
+<span class="w">                     </span>State<span class="w">   </span>Run<span class="w"> </span>Retry<span class="w">  </span>Que<span class="w">     </span>Lag<span class="w">  </span>Last<span class="w">    </span>%rej<span class="w">  </span>messages<span class="w">      </span>Data
+<span class="w">                     </span>-----<span class="w">   </span>---<span class="w"> </span>-----<span class="w">  </span>---<span class="w">     </span>---<span class="w">  </span>----<span class="w">    </span>----<span class="w">  </span>--------<span class="w">      </span>----
+subscribe/dd_amis<span class="w">    </span>idle<span class="w">    </span><span class="m">5</span>/5<span class="w">    </span><span class="m">0</span><span class="w">    </span><span class="m">0</span><span class="w">    </span><span class="m">0</span>.00s<span class="w">   </span>n/a<span class="w">    </span><span class="m">0</span>.0%<span class="w">     </span>0m/s<span class="w">       </span>0B/s
+<span class="w">      </span>Total<span class="w"> </span>Running<span class="w"> </span>Configs:<span class="w">   </span><span class="m">1</span>/1<span class="w"> </span><span class="o">(</span><span class="w"> </span>Processes:<span class="w"> </span><span class="m">5</span><span class="w"> </span>missing:<span class="w"> </span><span class="m">0</span><span class="w"> </span>stray:<span class="w"> </span><span class="m">0</span><span class="w"> </span><span class="o">)</span>
+<span class="w">                     </span>Memory:<span class="w"> </span>uss:210.9MiB<span class="w"> </span>rss:288.9MiB<span class="w"> </span>vms:428.1MiB
+<span class="w">                   </span>CPU<span class="w"> </span>Time:<span class="w"> </span>User:2.34s<span class="w"> </span>System:0.18s
+<span class="w">           </span>Pub/Sub<span class="w"> </span>Received:<span class="w"> </span>0m/s<span class="w"> </span><span class="o">(</span>0B/s<span class="o">)</span>,<span class="w"> </span>Sent:<span class="w">  </span>0m/s<span class="w"> </span><span class="o">(</span>0B/s<span class="o">)</span><span class="w"> </span>Queued:<span class="w"> </span><span class="m">0</span><span class="w"> </span>Retry:<span class="w"> </span><span class="m">0</span>,<span class="w"> </span>Mean<span class="w"> </span>lag:<span class="w"> </span><span class="m">0</span>.00s
+<span class="w">              </span>Data<span class="w"> </span>Received:<span class="w"> </span>0f/s<span class="w"> </span><span class="o">(</span>0B/s<span class="o">)</span>,<span class="w"> </span>Sent:<span class="w"> </span>0f/s<span class="w"> </span><span class="o">(</span>0B/s<span class="o">)</span>
+
+
+<span class="c1">#####################################</span>
+<span class="c1"># Arrêter et désactiver l&#39;abonné v2 #</span>
+<span class="c1">#####################################</span>
+
+<span class="c1"># Maintenant que sr3 a démarré, vous pouvez arrêter, nettoyer et désactiver votre abonné v2 :</span>
+
+<span class="c1"># sr_subscribe stop --&gt; arrêter l&#39;abonné v2</span>
+sarra@mon-serveur:~$<span class="w"> </span>sr_subscribe<span class="w"> </span>stop<span class="w"> </span>dd_amis
+<span class="m">2025</span>-08-25<span class="w"> </span><span class="m">17</span>:31:54,247<span class="w"> </span><span class="o">[</span>INFO<span class="o">]</span><span class="w"> </span>sr_subscribe<span class="w"> </span>dd_amis<span class="w"> </span><span class="m">01</span><span class="w"> </span>stopped
+<span class="m">2025</span>-08-25<span class="w"> </span><span class="m">17</span>:31:54,247<span class="w"> </span><span class="o">[</span>INFO<span class="o">]</span><span class="w"> </span>sr_subscribe<span class="w"> </span>dd_amis<span class="w"> </span><span class="m">02</span><span class="w"> </span>stopped
+<span class="m">2025</span>-08-25<span class="w"> </span><span class="m">17</span>:31:54,247<span class="w"> </span><span class="o">[</span>INFO<span class="o">]</span><span class="w"> </span>sr_subscribe<span class="w"> </span>dd_amis<span class="w"> </span><span class="m">03</span><span class="w"> </span>stopped
+<span class="m">2025</span>-08-25<span class="w"> </span><span class="m">17</span>:31:54,247<span class="w"> </span><span class="o">[</span>INFO<span class="o">]</span><span class="w"> </span>sr_subscribe<span class="w"> </span>dd_amis<span class="w"> </span><span class="m">04</span><span class="w"> </span>stopped
+<span class="m">2025</span>-08-25<span class="w"> </span><span class="m">17</span>:31:54,247<span class="w"> </span><span class="o">[</span>INFO<span class="o">]</span><span class="w"> </span>sr_subscribe<span class="w"> </span>dd_amis<span class="w"> </span><span class="m">05</span><span class="w"> </span>stopped
+
+
+<span class="c1"># sr_subscribe cleanup --&gt; nettoyer les fichiers dans ~/.cache/sarra et supprimer la file d&#39;attente sur le courtier</span>
+sarra@mon-serveur:~$<span class="w"> </span>sr_subscribe<span class="w"> </span>cleanup<span class="w"> </span>dd_amis
+<span class="m">2025</span>-08-25<span class="w"> </span><span class="m">17</span>:32:49,264<span class="w"> </span><span class="o">[</span>INFO<span class="o">]</span><span class="w"> </span>sr_subscribe<span class="w"> </span>dd_amis<span class="w"> </span>cleanup
+<span class="m">2025</span>-08-25<span class="w"> </span><span class="m">17</span>:32:49,264<span class="w"> </span><span class="o">[</span>INFO<span class="o">]</span><span class="w"> </span>AMQP<span class="w">  </span>broker<span class="o">(</span>dd.weather.gc.ca<span class="o">)</span><span class="w"> </span>user<span class="o">(</span>anonymous<span class="o">)</span><span class="w"> </span>vhost<span class="o">(</span>/<span class="o">)</span>
+<span class="m">2025</span>-08-25<span class="w"> </span><span class="m">17</span>:32:49,264<span class="w"> </span><span class="o">[</span>INFO<span class="o">]</span><span class="w"> </span>Using<span class="w"> </span>amqp<span class="w"> </span>module<span class="w"> </span><span class="o">(</span>AMQP<span class="w"> </span><span class="m">0</span>-9-1<span class="o">)</span>
+<span class="m">2025</span>-08-25<span class="w"> </span><span class="m">17</span>:32:49,282<span class="w"> </span><span class="o">[</span>INFO<span class="o">]</span><span class="w"> </span>deleting<span class="w"> </span>queue<span class="w"> </span>q_anonymous.sr_subscribe.dd_amis.00483673.20371363<span class="w"> </span><span class="o">(</span>anonymous@dd.weather.gc.ca<span class="o">)</span>
+
+
+<span class="c1"># sr status indique maintenant que l&#39;abonné v2 est arrêté</span>
+sarra@mon-serveur:~$<span class="w"> </span>sr<span class="w"> </span>status
+status:
+Component<span class="w">  </span>State<span class="w">      </span>Good?<span class="w">  </span>Qty<span class="w"> </span>Configurations-i<span class="o">(</span>r/e<span class="o">)</span>-r<span class="o">(</span>Retry<span class="o">)</span>
+---------<span class="w">  </span>-----<span class="w">      </span>-----<span class="w">  </span>---<span class="w"> </span>------------------------------
+audit<span class="w">      </span>running<span class="w">    </span>OK<span class="w">       </span><span class="m">1</span>
+cpost<span class="w">      </span>stopped<span class="w">    </span>OK<span class="w">       </span><span class="m">0</span>
+cpump<span class="w">      </span>stopped<span class="w">    </span>OK<span class="w">       </span><span class="m">0</span>
+poll<span class="w">       </span>stopped<span class="w">    </span>OK<span class="w">       </span><span class="m">0</span>
+post<span class="w">       </span>stopped<span class="w">    </span>OK<span class="w">       </span><span class="m">0</span>
+report<span class="w">     </span>stopped<span class="w">    </span>OK<span class="w">       </span><span class="m">0</span>
+sarra<span class="w">      </span>stopped<span class="w">    </span>OK<span class="w">       </span><span class="m">0</span>
+sender<span class="w">     </span>stopped<span class="w">    </span>OK<span class="w">       </span><span class="m">0</span>
+shovel<span class="w">     </span>stopped<span class="w">    </span>OK<span class="w">       </span><span class="m">0</span>
+subscribe<span class="w">  </span>stopped<span class="w">    </span>OK<span class="w">       </span><span class="m">1</span><span class="w"> </span>dd_amis
+watch<span class="w">      </span>stopped<span class="w">    </span>OK<span class="w">       </span><span class="m">0</span>
+winnow<span class="w">     </span>stopped<span class="w">    </span>OK<span class="w">       </span><span class="m">0</span>
+<span class="w">      </span>total<span class="w"> </span>running<span class="w"> </span>configs:<span class="w">   </span><span class="m">0</span><span class="w"> </span><span class="o">(</span><span class="w"> </span>processes:<span class="w"> </span><span class="m">1</span><span class="w"> </span>missing:<span class="w"> </span><span class="m">0</span><span class="w"> </span>stray:<span class="w"> </span><span class="m">0</span><span class="w"> </span><span class="o">)</span>
+
+
+<span class="c1"># sr_subscribe disable --&gt; Empêcher le lancement futur de la configuration v2</span>
+<span class="c1"># disable renomme le fichier de configuration de ...conf à ...conf.off</span>
+<span class="c1">#   Par exemple, ~/.config/sarra/subscribe/dd_amis.conf devient ~/.config/sarra/subscribe/dd_amis.conf.off</span>
+sarra@mon-serveur:~$<span class="w"> </span>sr_subscribe<span class="w"> </span>disable<span class="w"> </span>dd_amis
+
+
+<span class="c1"># sr status indique maintenant que l&#39;abonné v2 est supprimé/désactivé</span>
+sarra@mon-serveur:~$<span class="w"> </span>sr<span class="w"> </span>status
+status:
+Component<span class="w">  </span>State<span class="w">      </span>Good?<span class="w">  </span>Qty<span class="w"> </span>Configurations-i<span class="o">(</span>r/e<span class="o">)</span>-r<span class="o">(</span>Retry<span class="o">)</span>
+---------<span class="w">  </span>-----<span class="w">      </span>-----<span class="w">  </span>---<span class="w"> </span>------------------------------
+audit<span class="w">      </span>running<span class="w">    </span>OK<span class="w">       </span><span class="m">1</span>
+cpost<span class="w">      </span>stopped<span class="w">    </span>OK<span class="w">       </span><span class="m">0</span>
+cpump<span class="w">      </span>stopped<span class="w">    </span>OK<span class="w">       </span><span class="m">0</span>
+poll<span class="w">       </span>stopped<span class="w">    </span>OK<span class="w">       </span><span class="m">0</span>
+post<span class="w">       </span>stopped<span class="w">    </span>OK<span class="w">       </span><span class="m">0</span>
+report<span class="w">     </span>stopped<span class="w">    </span>OK<span class="w">       </span><span class="m">0</span>
+sarra<span class="w">      </span>stopped<span class="w">    </span>OK<span class="w">       </span><span class="m">0</span>
+sender<span class="w">     </span>stopped<span class="w">    </span>OK<span class="w">       </span><span class="m">0</span>
+shovel<span class="w">     </span>stopped<span class="w">    </span>OK<span class="w">       </span><span class="m">0</span>
+subscribe<span class="w">  </span>stopped<span class="w">    </span>OK<span class="w">       </span><span class="m">0</span>
+watch<span class="w">      </span>stopped<span class="w">    </span>OK<span class="w">       </span><span class="m">0</span>
+winnow<span class="w">     </span>stopped<span class="w">    </span>OK<span class="w">       </span><span class="m">0</span>
+<span class="w">      </span>total<span class="w"> </span>running<span class="w"> </span>configs:<span class="w">   </span><span class="m">0</span><span class="w"> </span><span class="o">(</span><span class="w"> </span>processes:<span class="w"> </span><span class="m">1</span><span class="w"> </span>missing:<span class="w"> </span><span class="m">0</span><span class="w"> </span>stray:<span class="w"> </span><span class="m">0</span><span class="w"> </span><span class="o">)</span>
+</pre></div>
+</div>
+<p>Vous devriez maintenant avoir un abonné sr3 fonctionnel ! Vous pouvez répéter la procédure
+ci-dessus autant de fois que nécessaire pour convertir toutes vos configurations v2
+en sr3.</p>
+<p>L’interface de ligne de commande sr3 accepte également <em>plusieurs combinaisons composant/configuration
+simultanément</em> et les <em>caractères génériques</em> (wildcards),
+vous permettant ainsi de convertir toutes vos configurations en une seule
+commande. Par exemple :</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">sr3</span> <span class="pre">convert</span> <span class="pre">subscribe/my_config1</span> <span class="pre">poll/test_poll</span></code></p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">sr3</span> <span class="pre">convert</span> <span class="pre">'subscribe/*'</span></code></p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">sr3</span> <span class="pre">convert</span> <span class="pre">'*/*'</span></code></p></li>
+</ul>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>La commande status de sr3 fournit des information plus détaillés que la version 2.
+Pour une explication de chaque état possible, consultez le document
+<a class="reference external" href="../Explication/GuideLigneDeCommande.html#status">Command Line Guide</a>.</p>
+</div>
+</section>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="Mettre_en_place_un_subscriber_local.html" class="btn btn-neutral float-left" title="Administrateur du serveur : un abonné local" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="Windows.html" class="btn btn-neutral float-right" title="Manuel de l’utilisateur Windows" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2022, Shared Services Canada, Government of Canada, GPLv2.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>
