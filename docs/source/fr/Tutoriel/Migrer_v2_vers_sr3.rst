@@ -10,7 +10,7 @@ pas des sujet plus detaillés, tels que les plugins.
 
    Ce tutoriel suppose que vous avez déjà installé sr3. 
    Si ce n'est pas le cas, utilisez use `ces
-   instructions <../Tutoriel/Installer.html>`__
+   instructions <../Tutoriel/Installer.html>`_
    pour installer sr3 en premier.
 
 .. NOTE::
@@ -19,11 +19,11 @@ pas des sujet plus detaillés, tels que les plugins.
 
 Pour en savoir plus, voir:
 
-- `CommentFaire/MiseANiveau <../CommentFaire/MiseANiveau.html#v2-to-sr3>`__ - notes 
+- `CommentFaire/MiseANiveau <../CommentFaire/MiseANiveau.html#v2-to-sr3>`_ - notes 
   concernant rapport aux changements majeurs entre v2 et sr3
-- `Contribution/v03 <../Contribution/v03.html>`__ - documentation détaillée
+- `Contribution/v03 <../Contribution/v03.html>`_ - documentation détaillée
   à propos de la conception et les changements par rapport à v2
-- `CommentFaire/v2ASr3 <../CommentFaire/v2ASr3.html>`__ - instructions détaillées 
+- `CommentFaire/v2ASr3 <../CommentFaire/v2ASr3.html>`_ - instructions détaillées 
   pour des développeurs qui veulent envoyer leur plugins v2 à sr3
 
 Informations générales
@@ -33,7 +33,7 @@ Nouvelle Interface en ligne de commande (ILC)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 sr3 a une nouvelle interface en ligne de commande qui est documenté 
-en détail `ici <../Explication/GuideLigneDeCommande.html>`__.
+en détail `ici <../Explication/GuideLigneDeCommande.html>`_.
 
 La syntaxe de la commande ``sr3`` est ``sr3 action composant/config ...``,
 qui remplace les commandes *specifique-au-composant* de v2 
@@ -78,7 +78,7 @@ Migrer une configuration v2 vers sr3
 sr3 modifie légèrement certains des mots-clés utilisés dans les fichiers de configuration. 
 La documentation complète de toutes les options utilisables dans un fichier de 
 configuration sr3 est disponible 
-`ici <../Reference/sr3_options.7.html>`__.
+`ici <../Reference/sr3_options.7.html>`_.
 
 
 sr3 reconnaît les mots-clés v2, alors un fichier de configuration v2 
@@ -315,4 +315,4 @@ commande. Par exemple :
 
    La commande status de sr3 fournit des information plus détaillés que la version 2.
    Pour une explication de chaque état possible, consultez le document
-   `Command Line Guide <../Explication/GuideLigneDeCommande.html#status>`__.
+   `Command Line Guide <../Explication/GuideLigneDeCommande.html#status>`_.
