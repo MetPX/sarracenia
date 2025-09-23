@@ -13,4 +13,5 @@ Tutorials
    Install
    Setup_a_local_subscriber
    Setup_a_remote_subscriber
+   Migrate_v2_to_sr3
    Windows
