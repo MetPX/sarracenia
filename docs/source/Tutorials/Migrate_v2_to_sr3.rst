@@ -10,7 +10,7 @@ such as plugins.
 
    This tutorial assumes that you have already installed
    sr3. If not, use `these
-   instructions <../Tutorials/Install.html>`__
+   instructions <../Tutorials/Install.html>`_
    to install sr3 first.
 
 .. NOTE::
@@ -19,11 +19,11 @@ such as plugins.
 
 For further reading, see:
 
-- `How2Guides/UPGRADING <../How2Guides/UPGRADING.html#v2-to-sr3>`__ - notes
+- `How2Guides/UPGRADING <../How2Guides/UPGRADING.html#v2-to-sr3>`_ - notes
   about major changes between v2 and sr3
-- `Contribution/v03 <../Contribution/v03.html>`__ - in-depth documentation
+- `Contribution/v03 <../Contribution/v03.html>`_ - in-depth documentation
   about sr3’s design and changes from v2
-- `How2Guides/v2ToSr3 <../How2Guides/v2ToSr3.html>`__ - detailed instructions
+- `How2Guides/v2ToSr3 <../How2Guides/v2ToSr3.html>`_ - detailed instructions
   for developers who want to port their v2 plugins to sr3
 
 Background Information
@@ -33,7 +33,7 @@ New Command-Line Interface (CLI)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 sr3 has a new command-line interface that is documented in detail
-`here <../Explanation/CommandLineGuide.html>`__.
+`here <../Explanation/CommandLineGuide.html>`_.
 The ``sr3`` command syntax is ``sr3 action component/config ...``, which
 replaces the *component-specific* commands of v2 (e.g. ``sr_subscribe``
 for the subscribe component).
@@ -78,7 +78,7 @@ Migrating a v2 Configuration to sr3
 sr3 slightly changes some of the keywords used in config files. Full
 documentation for all the options that can be used in an sr3 config file
 can be found
-`here <../Reference/sr3_options.7.html>`__.
+`here <../Reference/sr3_options.7.html>`_.
 
 sr3 recognizes the v2 keywords, so a v2 config file should be usable in
 sr3 without modification, but we recommend using the built-in converter
@@ -307,4 +307,4 @@ command. For example:
 .. NOTE::
 
    sr3's status command provides more detailed ``states`` than v2. For an explanation
-   of each possible state, read the `Command Line Guide document <../Explanation/CommandLineGuide.html#status>`__.
+   of each possible state, read the `Command Line Guide document <../Explanation/CommandLineGuide.html#status>`_.
