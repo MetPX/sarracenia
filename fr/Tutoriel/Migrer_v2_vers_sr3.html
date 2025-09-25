@@ -112,22 +112,22 @@
 <p>Ce document est destiné à être un court tutoriel pour aider un utilisateur
 de Sarracenia v2 à convertir sa configuration à sr3. Cela suppose que
 l’utilisateur est déjà familier avec l’usage de base de v2, et ne couvre
-pas des sujet plus detaillés, tels que les plugins.</p>
+pas des sujets plus detaillés, tels que les plugins.</p>
 <div class="admonition important">
 <p class="admonition-title">Important</p>
 <p>Ce tutoriel suppose que vous avez déjà installé sr3.
-Si ce n’est pas le cas, utilisez use <a class="reference external" href="../Tutoriel/Installer.html">ces
+Si ce n’est pas le cas, utilisez <a class="reference external" href="../Tutoriel/Installer.html">ces
 instructions</a>
 pour installer sr3 en premier.</p>
 </div>
 <div class="admonition note">
 <p class="admonition-title">Note</p>
-<p>Sarracenia v2 et sr3 peuvent tous les deux exécuter en même temps sur le même ordinateur.</p>
+<p>Sarracenia v2 et sr3 peuvent tous les deux être exécutés en même temps sur le même ordinateur.</p>
 </div>
 <p>Pour en savoir plus, voir:</p>
 <ul class="simple">
 <li><p><a class="reference external" href="../CommentFaire/MiseANiveau.html#v2-to-sr3">CommentFaire/MiseANiveau</a> - notes
-concernant rapport aux changements majeurs entre v2 et sr3</p></li>
+concernant les changements majeurs entre v2 et sr3</p></li>
 <li><p><a class="reference external" href="../Contribution/v03.html">Contribution/v03</a> - documentation détaillée
 à propos de la conception et les changements par rapport à v2</p></li>
 <li><p><a class="reference external" href="../CommentFaire/v2ASr3.html">CommentFaire/v2ASr3</a> - instructions détaillées
@@ -137,14 +137,14 @@ pour des développeurs qui veulent envoyer leur plugins v2 à sr3</p></li>
 <h2>Informations générales<a class="headerlink" href="#informations-generales" title="Link to this heading"></a></h2>
 <section id="nouvelle-interface-en-ligne-de-commande-ilc">
 <h3>Nouvelle Interface en ligne de commande (ILC)<a class="headerlink" href="#nouvelle-interface-en-ligne-de-commande-ilc" title="Link to this heading"></a></h3>
-<p>sr3 a une nouvelle interface en ligne de commande qui est documenté
-en détail <a class="reference external" href="../Explication/GuideLigneDeCommande.html">ici</a>.</p>
+<p>sr3 a une nouvelle interface en ligne de commande qui est documentée
+en détails <a class="reference external" href="../Explication/GuideLigneDeCommande.html">ici</a>.</p>
 <p>La syntaxe de la commande <code class="docutils literal notranslate"><span class="pre">sr3</span></code> est <code class="docutils literal notranslate"><span class="pre">sr3</span> <span class="pre">action</span> <span class="pre">composant/config</span> <span class="pre">...</span></code>,
 qui remplace les commandes <em>specifique-au-composant</em> de v2
 (par exemple <code class="docutils literal notranslate"><span class="pre">sr_subscribe</span></code> pour le composant d’abonnement).</p>
 <div class="admonition hint">
 <p class="admonition-title">Hint</p>
-<p>un <em>composant</em> est le nom générale pour les mots clé <em>subscribe</em>,
+<p>un <em>composant</em> est le nom général pour les mots clé <em>subscribe</em>,
 <em>sarra</em>, <em>watch</em>, <em>shovel</em>, etc.</p>
 </div>
 <p>Par exemple:</p>
@@ -208,7 +208,7 @@ configuration sr3 est disponible
 <a class="reference external" href="../Reference/sr3_options.7.html">ici</a>.</p>
 <p>sr3 reconnaît les mots-clés v2, alors un fichier de configuration v2
 devrait donc être utilisable dans sr3 sans modification.
-Par contre, nous recommandons toutefois d’utiliser le convertisseur
+Par contre, nous recommandons d’utiliser le convertisseur
 intégré pour &lt;&lt;mettre à niveau&gt;&gt; vos configurations en syntaxe sr3.</p>
 <section id="preparation-avant-la-conversion">
 <h3>Préparation avant la conversion<a class="headerlink" href="#preparation-avant-la-conversion" title="Link to this heading"></a></h3>
@@ -216,7 +216,7 @@ intégré pour &lt;&lt;mettre à niveau&gt;&gt; vos configurations en syntaxe sr
 <h4>credentials.conf et default.conf<a class="headerlink" href="#credentials-conf-et-default-conf" title="Link to this heading"></a></h4>
 <p>Si vous avez modifié le fichier credentials.conf de v2
 (<code class="docutils literal notranslate"><span class="pre">~/.config/sarra/credentials.conf</span></code>) ou default.conf
-(<code class="docutils literal notranslate"><span class="pre">~/.config/sarra/default.conf</span></code>),vous devez copier ces fichers
+(<code class="docutils literal notranslate"><span class="pre">~/.config/sarra/default.conf</span></code>), vous devez copier ces fichers
 dans le répertoire de configuration de sr3.</p>
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>cp<span class="w"> </span>~/.config/sarra/credentials.conf<span class="w"> </span>~/.config/sr3/credentials.conf
 cp<span class="w"> </span>~/.config/sarra/default.conf<span class="w"> </span>~/.config/sarra/default.conf
@@ -226,7 +226,7 @@ cp<span class="w"> </span>~/.config/sarra/default.conf<span class="w"> </span>~/
 <p class="admonition-title">Important</p>
 <p>Si vous convertissez de v2 à sr3,
 il est fort probable que la source à laquelle vous êtes abonné
-(par exemple, le Datamart MSC) publie toujours des messages au format v2.
+(par exemple, le Datamart du SMC) publie toujours des messages au format v2.
 Avant de convertir vos configurations, vous devez ajouter
 <cite>topicPrefix v02.post`</cite> à votre fichier <code class="docutils literal notranslate"><span class="pre">default.conf</span></code> de sr3.</p>
 <p>Pour ce faire, exécutez :</p>
@@ -429,7 +429,7 @@ commande. Par exemple :</p>
 </ul>
 <div class="admonition note">
 <p class="admonition-title">Note</p>
-<p>La commande status de sr3 fournit des information plus détaillés que la version 2.
+<p>La commande status de sr3 fournit des informations plus détaillées que la version 2.
 Pour une explication de chaque état possible, consultez le document
 <a class="reference external" href="../Explication/GuideLigneDeCommande.html#status">Command Line Guide</a>.</p>
 </div>

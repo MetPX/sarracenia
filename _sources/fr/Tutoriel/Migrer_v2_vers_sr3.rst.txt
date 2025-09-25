@@ -4,23 +4,23 @@ Migrer de Sarracenia v2 à sr3
 Ce document est destiné à être un court tutoriel pour aider un utilisateur
 de Sarracenia v2 à convertir sa configuration à sr3. Cela suppose que 
 l'utilisateur est déjà familier avec l'usage de base de v2, et ne couvre
-pas des sujet plus detaillés, tels que les plugins. 
+pas des sujets plus detaillés, tels que les plugins. 
 
 .. IMPORTANT::
 
    Ce tutoriel suppose que vous avez déjà installé sr3. 
-   Si ce n'est pas le cas, utilisez use `ces
+   Si ce n'est pas le cas, utilisez `ces
    instructions <../Tutoriel/Installer.html>`_
    pour installer sr3 en premier.
 
 .. NOTE::
 
-   Sarracenia v2 et sr3 peuvent tous les deux exécuter en même temps sur le même ordinateur. 
+   Sarracenia v2 et sr3 peuvent tous les deux être exécutés en même temps sur le même ordinateur. 
 
 Pour en savoir plus, voir:
 
 - `CommentFaire/MiseANiveau <../CommentFaire/MiseANiveau.html#v2-to-sr3>`_ - notes 
-  concernant rapport aux changements majeurs entre v2 et sr3
+  concernant les changements majeurs entre v2 et sr3
 - `Contribution/v03 <../Contribution/v03.html>`_ - documentation détaillée
   à propos de la conception et les changements par rapport à v2
 - `CommentFaire/v2ASr3 <../CommentFaire/v2ASr3.html>`_ - instructions détaillées 
@@ -32,15 +32,15 @@ Informations générales
 Nouvelle Interface en ligne de commande (ILC)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-sr3 a une nouvelle interface en ligne de commande qui est documenté 
-en détail `ici <../Explication/GuideLigneDeCommande.html>`_.
+sr3 a une nouvelle interface en ligne de commande qui est documentée 
+en détails `ici <../Explication/GuideLigneDeCommande.html>`_.
 
 La syntaxe de la commande ``sr3`` est ``sr3 action composant/config ...``,
 qui remplace les commandes *specifique-au-composant* de v2 
 (par exemple ``sr_subscribe`` pour le composant d'abonnement).
 
 .. HINT::
-   un *composant* est le nom générale pour les mots clé *subscribe*,
+   un *composant* est le nom général pour les mots clé *subscribe*,
    *sarra*, *watch*, *shovel*, etc.
 
 Par exemple:
@@ -83,7 +83,7 @@ configuration sr3 est disponible
 
 sr3 reconnaît les mots-clés v2, alors un fichier de configuration v2 
 devrait donc être utilisable dans sr3 sans modification. 
-Par contre, nous recommandons toutefois d'utiliser le convertisseur 
+Par contre, nous recommandons d'utiliser le convertisseur 
 intégré pour <<mettre à niveau>> vos configurations en syntaxe sr3.
 
 Préparation avant la conversion
@@ -93,7 +93,7 @@ credentials.conf et default.conf
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 Si vous avez modifié le fichier credentials.conf de v2
 (``~/.config/sarra/credentials.conf``) ou default.conf
-(``~/.config/sarra/default.conf``),vous devez copier ces fichers 
+(``~/.config/sarra/default.conf``), vous devez copier ces fichers 
 dans le répertoire de configuration de sr3.
 
 .. code:: bash
@@ -105,7 +105,7 @@ dans le répertoire de configuration de sr3.
 
    Si vous convertissez de v2 à sr3, 
    il est fort probable que la source à laquelle vous êtes abonné 
-   (par exemple, le Datamart MSC) publie toujours des messages au format v2. 
+   (par exemple, le Datamart du SMC) publie toujours des messages au format v2. 
    Avant de convertir vos configurations, vous devez ajouter 
    `topicPrefix v02.post`` à votre fichier ``default.conf`` de sr3.
 
@@ -313,6 +313,6 @@ commande. Par exemple :
 
 .. NOTE::
 
-   La commande status de sr3 fournit des information plus détaillés que la version 2.
+   La commande status de sr3 fournit des informations plus détaillées que la version 2.
    Pour une explication de chaque état possible, consultez le document
    `Command Line Guide <../Explication/GuideLigneDeCommande.html#status>`_.
