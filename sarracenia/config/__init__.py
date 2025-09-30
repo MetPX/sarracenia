@@ -103,7 +103,7 @@ default_options = {
     'metrics_writeInterval': 5,
     'nodupe_driver': 'disk',
     'nodupe_ttl': 0,
-    'nofsetstat': True,
+    'nofsetstat': False,
     'overwrite': True,
     'path': [],
     'permDefault' : octal_number(0),
