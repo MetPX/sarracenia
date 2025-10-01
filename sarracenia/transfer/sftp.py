@@ -167,9 +167,9 @@ class Sftp(Transfer):
 
     # chmod
     def chmod(self, perm, path):
-        logger.debug("sr_sftp chmod %s %s" % ("{0:o}".format(perm), path))
-        alarm_set(self.o.timeout)
         if not self.o.nofsetstat: 
+            logger.debug("sr_sftp chmod %s %s" % ("{0:o}".format(perm), path))
+            alarm_set(self.o.timeout)
             try:
                 self.sftp.chmod(path, perm)
             except Exception as ex:
