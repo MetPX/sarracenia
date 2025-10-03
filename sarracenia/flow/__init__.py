@@ -1061,6 +1061,11 @@ class Flow:
                     break
 
             url = self.o.variableExpansion(m['baseUrl'], m)
+
+            # relPath should never end in /
+            if len(m['relPath']) > 1 and m['relPath'][-1] == '/':
+                m['relPath'] = m['relPath'][0:-1]  
+
             if (m['baseUrl'][-1] == '/') or (len(m['relPath']) > 0 and (m['relPath'][0] == '/')):
                 if (m['baseUrl'][-1] == '/') and (len(m['relPath'])>0) and (m['relPath'][0] == '/'):
                     url += m['relPath'][1:]
