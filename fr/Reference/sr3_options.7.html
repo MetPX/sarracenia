@@ -112,7 +112,7 @@
 <dd class="field-odd"><p>7</p>
 </dd>
 <dt class="field-even">Date<span class="colon">:</span></dt>
-<dd class="field-even"><p>Sep 25, 2025</p>
+<dd class="field-even"><p>Oct 06, 2025</p>
 </dd>
 <dt class="field-odd">Version<span class="colon">:</span></dt>
 <dd class="field-odd"><p>3.01.01rc1</p>
@@ -1309,6 +1309,17 @@ et si un doublon est ensuite reçu, il sera probablement choisi par une autre in
 Utiliser une <strong>première couche d’abonnés (shovels)</strong> avec la suppression de doublons éteinte et
 utiliser <em>post_exchangeSplit</em> pour la sortie. Cela achemine les publications du même chemin
 une <strong>deuxième couche d’abonnés (winnow) dont les caches de suppression des doublons sont actives.</strong></p>
+</section>
+<section id="nofsetstat-on-off-defaut-faux">
+<h4>nofsetstat on|off (défaut: faux)<a class="headerlink" href="#nofsetstat-on-off-defaut-faux" title="Link to this heading"></a></h4>
+<p>Certains serveurs limitent le permissions aux répertoires:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">[</span><span class="n">ERROR</span><span class="p">]</span> <span class="n">sarracenia</span><span class="o">.</span><span class="n">flow</span> <span class="n">send</span> <span class="n">could</span> <span class="ow">not</span> <span class="n">send</span> <span class="o">/</span><span class="n">source</span><span class="o">/</span><span class="n">filename</span> <span class="n">to</span> <span class="n">inflight</span><span class="o">=</span><span class="kc">None</span> <span class="n">sftp</span><span class="p">:</span><span class="o">//</span><span class="n">user</span><span class="nd">@example</span><span class="o">.</span><span class="n">com</span><span class="o">/</span> <span class="o">/</span><span class="n">destination</span><span class="o">/</span><span class="n">filename</span><span class="p">:</span> <span class="n">FSETSTAT</span> <span class="n">unsupported</span>
+</pre></div>
+</div>
+<p>Les autorisations restreintes sur le serveur signifient des fonctionnalités limitées. Impossible de corriger les
+heures de modification ou de tronquer les fichiers (lorsque le nouveau fichier est plus court que la version
+précédente), impossible de définir les bits de mode/autorisation. On allume cette option pour supprimer
+des avertissements pour vous informer de tels difficultés.</p>
 </section>
 <section id="outlet-post-json-url-defaut-post">
 <h4>outlet post|json|url (défaut: post)<a class="headerlink" href="#outlet-post-json-url-defaut-post" title="Link to this heading"></a></h4>

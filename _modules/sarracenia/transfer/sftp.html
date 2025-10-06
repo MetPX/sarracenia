@@ -259,12 +259,16 @@
 
     <span class="c1"># chmod</span>
     <span class="k">def</span> <span class="nf">chmod</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">perm</span><span class="p">,</span> <span class="n">path</span><span class="p">):</span>
-        <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;sr_sftp chmod </span><span class="si">%s</span><span class="s2"> </span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="s2">&quot;</span><span class="si">{0:o}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">perm</span><span class="p">),</span> <span class="n">path</span><span class="p">))</span>
-        <span class="n">alarm_set</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">o</span><span class="o">.</span><span class="n">timeout</span><span class="p">)</span>
-        <span class="k">try</span><span class="p">:</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">sftp</span><span class="o">.</span><span class="n">chmod</span><span class="p">(</span><span class="n">path</span><span class="p">,</span> <span class="n">perm</span><span class="p">)</span>
-        <span class="k">finally</span><span class="p">:</span>
-            <span class="n">alarm_cancel</span><span class="p">()</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">o</span><span class="o">.</span><span class="n">nofsetstat</span><span class="p">:</span> 
+            <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;sr_sftp chmod </span><span class="si">%s</span><span class="s2"> </span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="s2">&quot;</span><span class="si">{0:o}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">perm</span><span class="p">),</span> <span class="n">path</span><span class="p">))</span>
+            <span class="n">alarm_set</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">o</span><span class="o">.</span><span class="n">timeout</span><span class="p">)</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">sftp</span><span class="o">.</span><span class="n">chmod</span><span class="p">(</span><span class="n">path</span><span class="p">,</span> <span class="n">perm</span><span class="p">)</span>
+            <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">ex</span><span class="p">:</span>
+                <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span> <span class="sa">f</span><span class="s2">&quot;chmod </span><span class="si">{</span><span class="n">path</span><span class="si">}</span><span class="s2"> failed: </span><span class="si">{</span><span class="n">ex</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+                <span class="n">logging</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;Exception details:&quot;</span><span class="p">,</span> <span class="n">exc_info</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+            <span class="k">finally</span><span class="p">:</span>
+                <span class="n">alarm_cancel</span><span class="p">()</span>
 
     <span class="c1"># close</span>
     <span class="k">def</span> <span class="nf">close</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
@@ -602,12 +606,17 @@
         <span class="c1"># no sparse file... truncate where we are at</span>
 
         <span class="n">alarm_set</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">o</span><span class="o">.</span><span class="n">timeout</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">fpos</span> <span class="o">=</span> <span class="n">remote_offset</span> <span class="o">+</span> <span class="n">rw_length</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">o</span><span class="o">.</span><span class="n">nofsetstat</span> <span class="ow">and</span> <span class="n">length</span> <span class="o">!=</span> <span class="mi">0</span><span class="p">:</span> 
+            <span class="k">try</span><span class="p">:</span>
+                <span class="n">rfp</span><span class="o">.</span><span class="n">truncate</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">fpos</span><span class="p">)</span>
+            <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">ex</span><span class="p">:</span>
+                <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span> <span class="sa">f</span><span class="s2">&quot;truncate </span><span class="si">{</span><span class="n">remote_file</span><span class="si">}</span><span class="s2"> failed: </span><span class="si">{</span><span class="n">ex</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+                <span class="n">logging</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;Exception details:&quot;</span><span class="p">,</span> <span class="n">exc_info</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
         <span class="k">try</span><span class="p">:</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">fpos</span> <span class="o">=</span> <span class="n">remote_offset</span> <span class="o">+</span> <span class="n">rw_length</span>
-            <span class="k">if</span> <span class="n">length</span> <span class="o">!=</span> <span class="mi">0</span><span class="p">:</span> <span class="n">rfp</span><span class="o">.</span><span class="n">truncate</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">fpos</span><span class="p">)</span>
             <span class="n">rfp</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
         <span class="k">finally</span><span class="p">:</span>
-           <span class="n">alarm_cancel</span><span class="p">()</span>
+            <span class="n">alarm_cancel</span><span class="p">()</span>
 
         <span class="k">return</span> <span class="n">rw_length</span>
 
@@ -665,10 +674,15 @@
     <span class="k">def</span> <span class="nf">utime</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">path</span><span class="p">,</span> <span class="n">tup</span><span class="p">):</span>
         <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;sr_sftp utime </span><span class="si">%s</span><span class="s2"> </span><span class="si">%s</span><span class="s2"> &quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">path</span><span class="p">,</span> <span class="n">tup</span><span class="p">))</span>
         <span class="n">alarm_set</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">o</span><span class="o">.</span><span class="n">timeout</span><span class="p">)</span>
-        <span class="k">try</span><span class="p">:</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">sftp</span><span class="o">.</span><span class="n">utime</span><span class="p">(</span><span class="n">path</span><span class="p">,</span> <span class="n">tup</span><span class="p">)</span>
-        <span class="k">finally</span><span class="p">:</span>
-            <span class="n">alarm_cancel</span><span class="p">()</span></div>
+
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">o</span><span class="o">.</span><span class="n">nofsetstat</span><span class="p">:</span> 
+            <span class="k">try</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">sftp</span><span class="o">.</span><span class="n">utime</span><span class="p">(</span><span class="n">path</span><span class="p">,</span> <span class="n">tup</span><span class="p">)</span>
+            <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">ex</span><span class="p">:</span>
+                <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span> <span class="sa">f</span><span class="s2">&quot;utime </span><span class="si">{</span><span class="n">path</span><span class="si">}</span><span class="s2"> failed: </span><span class="si">{</span><span class="n">ex</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+                <span class="n">logging</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;Exception details:&quot;</span><span class="p">,</span> <span class="n">exc_info</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+            <span class="k">finally</span><span class="p">:</span>
+                <span class="n">alarm_cancel</span><span class="p">()</span></div>
 
 </pre></div>
 
