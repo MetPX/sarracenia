@@ -133,6 +133,7 @@ class Transfer():
 
      uses options (on Sarracenia.config data structure passed to constructor/factory.)
      * credentials - used to authentication information.
+     * nofsetstat - used for SFTP to deal with limited server side permissions.
      * sendTo  - server to connect to.
      * batch   - how many files to transfer before a connection is torn down and re-established.
      * permDefault - what permissions to set on files transferred.
@@ -397,7 +398,7 @@ class Transfer():
         #   logger.error("util/readlocal mismatched file length reading %s. Message announced it as %d bytes, but read %d bytes " % (local_file,length,rw_length))
 
         # 2022/12/02 - pas attempting to get files that get shorter addressed.
-        if ((length==0) or (rw_length < length)) and hasattr(dst,'truncate'):
+        if ((length==0) or (rw_length < length)) and hasattr(dst,'truncate') and not self.o.nofsetstat:
              dst.truncate(rw_length)
 
         return rw_length
