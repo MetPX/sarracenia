@@ -2309,13 +2309,18 @@ class Flow:
             # FIXME  locking for i parts in temporary file ... should stay lock
             # and file_reassemble... take into account the locking
 
-            if self.o.identity_method.startswith('cod,'):
-                download_algo = self.o.identity_method[4:]
-            elif 'identity' in msg:
+            # First try to fetch identity from the incoming message
+            if 'identity' in msg:
                 if msg['identity']['method'] == 'cod':
                     download_algo = msg['identity']['value']
+                elif msg['identity']['method'].startswith('cod,'):
+                    download_algo = msg['identity']['method'][4:]
                 else:
-                    download_algo = msg['identity']['method']
+                    # Don't try re-calculating checksum if method doesn't include "cod"
+                    download_algo = None
+            # Assign whatever is set in the configuration if identity isn't found in incoming message.
+            elif self.o.identity_method != None:
+                download_algo = self.o.identity_method
             else:
                 download_algo = None
 
