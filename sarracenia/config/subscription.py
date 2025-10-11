@@ -22,6 +22,9 @@ class Subscription(dict):
                 exchange = 'xs_%s' % options.broker.url.username
 
             if options.component in [ 'poll', 'post', 'watch' ]:
+                if hasattr(options,'post_exchange') and options.post_exchange:
+                    exchange = options.post_exchange
+
                 if hasattr(options,'post_exchangeSuffix') and options.post_exchangeSuffix:
                     exchange += '_%s' % options.post_exchangeSuffix
 
