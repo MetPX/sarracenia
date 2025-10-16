@@ -6,14 +6,16 @@ from sarracenia.flowcb.scheduled import Scheduled
 
 logger = logging.getLogger(__name__)
 
+
 class Poll(Scheduled):
     """
-      
-    """
-    def __init__(self,options,logger=logger):
-        super().__init__(options,logger)
 
-    def gather(self,messageCountMax): # placeholder
+    """
+
+    def __init__(self, options, logger=logger):
+        super().__init__(options, logger)
+
+    def gather(self, messageCountMax):  # placeholder
         """
            This gather aborts further gathers if the next interval has not yet arrived.
         """
@@ -31,9 +33,9 @@ if __name__ == '__main__':
 
     options = sarracenia.config.default_config()
     flow = sarracenia.flow.Flow(options)
-    flow.o.scheduled_interval= 5
+    flow.o.scheduled_interval = 5
     flow.o.pollUrl = "https://dd.weather.gc.ca/bulletins/alphanumeric/"
-    if sys.platform.startswith( "win" ):
+    if sys.platform.startswith("win"):
         flow.o.directory = "C:\\temp\\poll"
     else:
         flow.o.directory = "/tmp/scheduled_poll/${%Y%m%d}"

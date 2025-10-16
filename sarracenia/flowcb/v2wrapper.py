@@ -19,30 +19,31 @@ from sarracenia import nowflt, timestr2flt, timev2tov3str
 logger = logging.getLogger(__name__)
 
 sum_algo_v3tov2 = {
-                "arbitrary": "a",
-                "md5": "d",
-                "sha512": "s",
-                "md5name": "n",
-                "random": "0",
-                "link": "L",
-                "remove": "R",
-                "cod": "z"
+    "arbitrary": "a",
+    "md5": "d",
+    "sha512": "s",
+    "md5name": "n",
+    "random": "0",
+    "link": "L",
+    "remove": "R",
+    "cod": "z"
 }
 
-sum_algo_v2tov3 = { v: k for k,v in sum_algo_v3tov2.items() }
+sum_algo_v2tov3 = {v: k for k, v in sum_algo_v3tov2.items()}
 
-def sumstrFromMessage( msg ) -> str:
+
+def sumstrFromMessage(msg) -> str:
     """
    accepts a v3 message as argument msg. returns the corresponding sum string for a v2 'sum' header.
     """
 
     if 'identity' in msg:
         if msg['identity']['method'] in sum_algo_v3tov2:
-           sa = sum_algo_v3tov2[msg["identity"]["method"]]
-        else: # FIXME ... 1st md5name case... default when unknown...
-           logger.error('identity method unknown to v2: %s, replacing with md5name' % msg['identity']['method'] )
-           sa = 'n'
-           sv = md5(bytes(os.path.basename(msg['relPath']),'utf-8')).hexdigest()
+            sa = sum_algo_v3tov2[msg["identity"]["method"]]
+        else:  # FIXME ... 1st md5name case... default when unknown...
+            logger.error('identity method unknown to v2: %s, replacing with md5name' % msg['identity']['method'])
+            sa = 'n'
+            sv = md5(bytes(os.path.basename(msg['relPath']), 'utf-8')).hexdigest()
 
         # transform sum value
         if sa in ['0', 'a']:
@@ -56,7 +57,7 @@ def sumstrFromMessage( msg ) -> str:
         sumstr = sa + ',' + sv
     else:
         # FIXME ... 2nd md5name case.
-        sumstr = 'n,%s' % md5(bytes(os.path.basename(msg['relPath']),'utf-8')).hexdigest()
+        sumstr = 'n,%s' % md5(bytes(os.path.basename(msg['relPath']), 'utf-8')).hexdigest()
 
     if 'fileOp' in msg:
         if 'rename' in msg['fileOp']:
@@ -64,14 +65,14 @@ def sumstrFromMessage( msg ) -> str:
 
         if 'link' in msg['fileOp']:
             hash = sha512()
-            hash.update( bytes( msg['fileOp']['link'], encoding='utf-8' ) )
+            hash.update(bytes(msg['fileOp']['link'], encoding='utf-8'))
             sumstr = 'L,%s' % hash.hexdigest()
         elif 'remove' in msg['fileOp']:
-            hash   = sha512()
+            hash = sha512()
             hash.update(bytes(os.path.basename(msg['relPath']), encoding='utf-8'))
             sumstr = 'R,%s' % hash.hexdigest()
         elif 'directory' in msg['fileOp']:
-            hash   = sha512()
+            hash = sha512()
             hash.update(bytes(os.path.basename(msg['relPath']), encoding='utf-8'))
 
             if 'remove' in msg['fileOp']:
@@ -79,8 +80,9 @@ def sumstrFromMessage( msg ) -> str:
             else:
                 sumstr = 'm,%s' % hash.hexdigest()
         else:
-            logger.error('unknown fileOp: %s' % msg['fileOp'] )
+            logger.error('unknown fileOp: %s' % msg['fileOp'])
     return sumstr
+
 
 class Message:
     def __init__(self, h):
@@ -108,12 +110,12 @@ class Message:
         self.notice = self.pubtime + ' ' + h["baseUrl"] + ' ' + h[
             "relPath"].replace(' ', '%20').replace('#', '%23')
 
-        #FIXME: ensure headers are < 255 chars.
+        # FIXME: ensure headers are < 255 chars.
         for k in ['mtime', 'atime']:
             if k in h:
                 h[k] = h[k].replace("T", "")
 
-        #FIXME: sum header encoding.
+        # FIXME: sum header encoding.
         if 'size' in h:
             if type(h['size']) is str:
                 h['size'] = int(h['size'])
@@ -129,28 +131,28 @@ class Message:
                 remainder = p['manifest'][p['number']]['size']
                 number = p['number']
             else:
-                number=0
+                number = 0
                 if 'manifest' in p:
-                    remainder = p['manifest'][len(p['manifest'])-1]['size']
-                else:       
+                    remainder = p['manifest'][len(p['manifest']) - 1]['size']
+                else:
                     remainder = 0
             h['parts'] = '%s,%d,%d,%d,%d' % (m, p['size'], len(p['manifest']),
                                              remainder, number)
 
-        h['topic'] = [ 'v02', 'post' ] + self.relpath.split('/')[0:-1]
+        h['topic'] = ['v02', 'post'] + self.relpath.split('/')[0:-1]
 
         if 'parts' in h:
             self.partstr = h['parts']
-        #else:
+        # else:
         #    self.partstr = None
 
-        self.sumstr = sumstrFromMessage( h )
+        self.sumstr = sumstrFromMessage(h)
         self.sumflg = self.sumstr[0]
         h['sum'] = self.sumstr
 
-        if 'fileOp' in h and  'rename' in h['fileOp'] :
-            h['oldname'] = h['fileOp']['rename'] 
-       
+        if 'fileOp' in h and 'rename' in h['fileOp']:
+            h['oldname'] = h['fileOp']['rename']
+
         self.headers = h
         self.hdrstr = str(h)
         self.isRetry = bool(h.isRetry())
@@ -183,7 +185,7 @@ class V2Wrapper(FlowCB):
 
            entry_point is a string like 'on_message',  and module being the one to add.
 
-           weird v2 stuff:   
+           weird v2 stuff:
                 when calling init, self is a config/subscriber...
                 when calling on_message, self is a message...
                 that is kind of blown away for each message...
@@ -198,11 +200,11 @@ class V2Wrapper(FlowCB):
 
         logger.setLevel(getattr(logging, o.logLevel.upper()))
 
-        #logger.info('logging: fmt=%s, level=%s' % ( o.logFormat, o.logLevel ) )
+        # logger.info('logging: fmt=%s, level=%s' % ( o.logFormat, o.logLevel ) )
 
         # FIXME, insert parent fields for v2 plugins to use here.
         self.logger = logger
-        #logger.info('v2wrapper init start')
+        # logger.info('v2wrapper init start')
 
         self.state_vars = []
 
@@ -229,7 +231,7 @@ class V2Wrapper(FlowCB):
 
         unsupported_v2_events = ['do_download', 'do_get', 'do_put', 'do_send']
         for e in o.v2plugins:
-            #logger.info('resolving: %s' % e)
+            # logger.info('resolving: %s' % e)
             for v in o.v2plugins[e]:
                 if e in unsupported_v2_events:
                     logger.error(
@@ -238,8 +240,8 @@ class V2Wrapper(FlowCB):
                     continue
                 self.add(e, v)
 
-        #propagate options back to self.o for on_timing calls.
-        #for v2o in self.o.v2plugin_options:
+        # propagate options back to self.o for on_timing calls.
+        # for v2o in self.o.v2plugin_options:
         #    setattr( self.o, v2o, getattr(self,v2o )  )
 
         # backward compat...
@@ -249,7 +251,7 @@ class V2Wrapper(FlowCB):
         if hasattr(self.o, 'post_baseDir'):
             self.o.post_base_dir = self.o.post_baseDir
 
-        #logger.info('v2wrapper init done')
+        # logger.info('v2wrapper init done')
 
     def declare_option(self, option):
         logger.info('v2plugin option: %s declared' % option)
@@ -282,7 +284,7 @@ class V2Wrapper(FlowCB):
                          (opname, path))
             return False
 
-        #logger.info('installing: %s %s' % ( opname, path ) )
+        # logger.info('installing: %s %s' % ( opname, path ) )
 
         c1 = set(vars(self))
 
@@ -291,7 +293,7 @@ class V2Wrapper(FlowCB):
                 exec(
                     compile(f.read().replace('self.plugin', 'self.v2plugin'),
                             script, 'exec'))
-        except:
+        except BaseException:
             logger.error(
                 "sr_config/execfile 2 failed for option '%s' and plugin '%s'" %
                 (opname, path))
@@ -312,14 +314,14 @@ class V2Wrapper(FlowCB):
             pcv = eval('vars(' + self.v2plugin + ')')
             for when in sarracenia.config.Config.v2entry_points:
                 if when in pcv:
-                    #logger.info("v2 registering %s from %s" % ( when, path ) )
+                    # logger.info("v2 registering %s from %s" % ( when, path ) )
 
                     # 2020/05/22. I think the commented exec can be removed.
-                    #FIXME: this breaks things horrible in v3. I do not see the usefulness even in v2.
+                    # FIXME: this breaks things horrible in v3. I do not see the usefulness even in v2.
                     #       everything is done with the lists, so value of setting individual value is nil.
                     #      self.on_start... vs.
                     #       self.v2plugins['on_start'].append( thing. )
-                    #exec( 'self.' + when + '=' + pci + '.' + when )
+                    # exec( 'self.' + when + '=' + pci + '.' + when )
                     eval('self.v2plugins["' + when + '"].append(' + pci + '.' +
                          when + ')')
         else:
@@ -328,13 +330,13 @@ class V2Wrapper(FlowCB):
                              (opname, path, opname))
                 return False
 
-            #eval( 'self.' + opname + '_list.append(self.' + opname + ')' )
+            # eval( 'self.' + opname + '_list.append(self.' + opname + ')' )
             eval('self.v2plugins["' + opname + '"].append( self.' + opname +
                  ')')
 
         c2 = set(vars(self))
         c12diff = list(c2 - c1)
-        #logger.error('init added: +%s+ to %s' % (c12diff, self.state_vars) )
+        # logger.error('init added: +%s+ to %s' % (c12diff, self.state_vars) )
         if len(c12diff) > 0:
             self.state_vars.extend(c12diff)
 
@@ -350,7 +352,7 @@ class V2Wrapper(FlowCB):
             if self.run_entry('on_file', m):
                 ok_to_post.append(m)
             else:
-                #worklist.failed.append(m)
+                # worklist.failed.append(m)
                 pass
                 # FIXME: what should we do on failure of on_file plugin?
                 #     download worked, but on_file failed... hmm...
@@ -376,9 +378,9 @@ class V2Wrapper(FlowCB):
                 else:
                     worklist.rejected.append(m)
             except Exception as Ex:
-               logger.error( f"plugin {m} died: {Ex}" );
-               logger.debug( 'details: ', exc_info=True)
-               worklist.rejected.append(m)
+                logger.error(f"plugin {m} died: {Ex}")
+                logger.debug('details: ', exc_info=True)
+                worklist.rejected.append(m)
         # set incoming for future steps.
         worklist.incoming = outgoing
 
@@ -402,17 +404,17 @@ class V2Wrapper(FlowCB):
     def restoreMsg(self, m, v2msg):
 
         if 'topic' in m:
-            if m['topic'][0:2] == ['v02', 'post' ]:
-               m['topic'] = self.o.post_topicPrefix + m['topic'][2:]      
+            if m['topic'][0:2] == ['v02', 'post']:
+                m['topic'] = self.o.post_topicPrefix + m['topic'][2:]
 
         if ('link' in v2msg.headers):
             if not 'fileOp' in m:
-               m['fileOp'] = {}
+                m['fileOp'] = {}
 
             if m['fileOp']['link'] != v2msg.headers['link']:
                 m['fileOp']['link'] = v2msg.headers['link']
-            
-        for h in ['oldname', 'newname' ]:
+
+        for h in ['oldname', 'newname']:
             if (h in v2msg.headers) and ((h not in m) or
                                          (v2msg.headers[h] != m[h])):
                 m[h] = v2msg.headers[h]
@@ -456,7 +458,8 @@ class V2Wrapper(FlowCB):
         ok = True
         for plugin in self.v2plugins[ep]:
             ok = plugin(self.o)
-            if not ok: break
+            if not ok:
+                break
 
         vars_after = set(vars(self.msg))
 

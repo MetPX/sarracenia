@@ -1,6 +1,6 @@
 """
 Plugin renamewhatfn.py:
-    This plugin is no longer needed.  Sundew compoatibility was added to Sarracenia, 
+    This plugin is no longer needed.  Sundew compoatibility was added to Sarracenia,
     so now can get the same effect by using the *filename* option which works like it
     does in Sundew:
 
@@ -20,7 +20,11 @@ Usage:
 """
 
 import logging
-import sys, os, os.path, time, stat
+import sys
+import os
+import os.path
+import time
+import stat
 from sarracenia.flowcb import FlowCB
 
 logger = logging.getLogger(__name__)
@@ -28,7 +32,7 @@ logger = logging.getLogger(__name__)
 
 class RenameWhatFn(FlowCB):
     def __init__(self, options):
-        super().__init__(options,logger)
+        super().__init__(options, logger)
 
     def after_accept(self, worklist):
         for message in worklist.incoming:

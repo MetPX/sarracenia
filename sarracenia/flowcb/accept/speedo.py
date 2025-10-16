@@ -8,7 +8,7 @@ Options:
     msgSpeedoInterval -> how often the speedometer is updated. (default: 5)
     msg_speedo_maxlag  -> if the message flow indicates that messages are 'late', emit warnings. (default 60)
 
-Usage: 
+Usage:
     callback accept.speedo
     msgSpeedoInterval x
     msg_speedo_maxlag y
@@ -29,18 +29,18 @@ class Speedo(FlowCB):
         super().__init__(options, logger)
 
         self.o.add_option('msg_speedo_maxlag', 'count', 60)
-        #if hasattr(self.o, 'msg_speedo_maxlag'):
+        # if hasattr(self.o, 'msg_speedo_maxlag'):
         #    if type(self.o.msg_speedo_maxlag) is list:
         #        self.o.msg_speedo_maxlag = int(self.o.msg_speedo_maxlag[0])
-        #else:
+        # else:
         #    self.o.msg_speedo_maxlag = 60
         logger.debug("speedo init: 2 ")
 
         self.o.add_option('msgSpeedoInterval', 'count', 5)
-        #if hasattr(self.o, 'msgSpeedoInterval'):
+        # if hasattr(self.o, 'msgSpeedoInterval'):
         #    if type(self.o.msgSpeedoInterval) is list:
         #        self.o.msgSpeedoInterval = int(self.o.msgSpeedoInterval[0])
-        #else:
+        # else:
         #    self.o.msgSpeedoInterval = 5
 
         now = nowflt()
@@ -58,14 +58,15 @@ class Speedo(FlowCB):
 
             self.msg_speedo_bytecount += int(psize)
 
-            #not time to report yet.
+            # not time to report yet.
             if self.o.msgSpeedoInterval > now - self.msg_speedo_last:
                 continue
 
             lag = now - msgtime
             msgpersec = self.msg_speedo_msgcount / (now - self.msg_speedo_last)
             bytespersec = self.msg_speedo_bytecount / (now - self.msg_speedo_last)
-            logger.info("speedo: %3d messages received: %5.4f msg/s, %4.2f bytes/s, lag: %4.0f s" % (self.msg_speedo_msgcount, msgpersec, bytespersec, lag))
+            logger.info("speedo: %3d messages received: %5.4f msg/s, %4.2f bytes/s, lag: %4.0f s" %
+                        (self.msg_speedo_msgcount, msgpersec, bytespersec, lag))
 
             # If lag is higher than max allowed, emmit a warning
             if lag > self.o.msg_speedo_maxlag:

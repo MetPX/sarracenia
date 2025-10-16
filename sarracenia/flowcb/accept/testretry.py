@@ -17,7 +17,7 @@ logger = logging.getLogger(__name__)
 
 class TestRetry(FlowCB):
     def __init__(self, options):
-        super().__init__(options,logger)
+        super().__init__(options, logger)
         self.sendTo = None
         self.msg_baseUrl_good = None
         self.details_bad = None
@@ -28,9 +28,9 @@ class TestRetry(FlowCB):
         for message in worklist.incoming:
             logger.debug("testretry after_accept")
 
-            if self.sendTo == None:
+            if self.sendTo is None:
                 self.sendTo = self.o.sendTo
-            if self.msg_baseUrl_good == None:
+            if self.msg_baseUrl_good is None:
                 self.msg_baseUrl_good = message['baseUrl']
 
             # retry message : recover it
@@ -40,8 +40,8 @@ class TestRetry(FlowCB):
                 self.o.sendTo = self.sendTo
                 ok, self.o.details = self.o.credentials.get(self.sendTo)
 
-                ## # FIXME dont see 'set_notice' as an entry in the message dictionary, could cause an error
-                ## #message['set_notice'](self.msg_baseUrl_good, message['relPath'], message['pubTime'])
+                # FIXME dont see 'set_notice' as an entry in the message dictionary, could cause an error
+                # message['set_notice'](self.msg_baseUrl_good, message['relPath'], message['pubTime'])
                 # Fixed missing message.set_notice method; now just set baseUrl
                 message['baseUrl'] = self.msg_baseUrl_good
 
@@ -53,8 +53,8 @@ class TestRetry(FlowCB):
                     logger.debug("making it bad 1")
                     ok, self.o.details = self.o.credentials.get(self.sendTo)
 
-                    ## # FIXME dont see 'set_notice' as an entry in the message dictionary, could cause an error
-                    ## #message['set_notice'](self.msg_baseUrl_bad, message['relpath'], message['pubTime'])
+                    # FIXME dont see 'set_notice' as an entry in the message dictionary, could cause an error
+                    # message['set_notice'](self.msg_baseUrl_bad, message['relpath'], message['pubTime'])
                     # Fixed missing message.set_notice method; now just set baseUrl
                     message['baseUrl'] = self.msg_baseUrl_bad
 

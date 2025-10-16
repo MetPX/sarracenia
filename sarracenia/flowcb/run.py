@@ -15,22 +15,22 @@ class Run(FlowCB):
        run_work_item ls -al
        callback run
 
-       module to run scripts or binary (non-python) whenever you need to.  
+       module to run scripts or binary (non-python) whenever you need to.
        typically use would be to fetch files for processing by watch.
 
        options:
 
-       run_gather  
+       run_gather
 
               using flowCallbackPrepend places it at the front of the flowcb list.
               ... script to run before gather (so gather.file will pick it up.)
- 
+
        run_accept ...
 
        run_accept_item ...
                item scripts, instead of being invoked to replace all processing at a given time,
                are invoked per item in the worklist. At the accept phase, these are in worklist.incoming.
-       
+
        run_work
                invoked for the whole phase.
 
@@ -45,11 +45,12 @@ class Run(FlowCB):
        run_stop
 
     """
+
     def __init__(self, options):
 
         # FIXME: should a logging module have a logLevel setting?
         #        just put in a cookie cutter for now...
-        super().__init__(options,logger)
+        super().__init__(options, logger)
         self.o.add_option('run_gather', 'str')
         self.o.add_option('run_accept', 'str')
         self.o.add_option('run_accept_item', 'str')
@@ -59,7 +60,7 @@ class Run(FlowCB):
         self.o.add_option('run_start', 'str')
         self.o.add_option('run_stop', 'str')
         self.o.add_option('run_housekeeping', 'str')
-        logger.info( f"run_work_itemis {self.o.run_work_item}")
+        logger.info(f"run_work_itemis {self.o.run_work_item}")
 
     def run_script(self, script):
         try:
@@ -70,7 +71,7 @@ class Run(FlowCB):
 
     def gather(self, messageCountMax):
         """
-           FIXME: this does not make sense. need to figure out how to get the 
+           FIXME: this does not make sense. need to figure out how to get the
            messages back from the script, perhaps using a json file reader?
         """
         if hasattr(self.o,
@@ -81,54 +82,54 @@ class Run(FlowCB):
     def after_accept(self, worklist):
         """
            FIXME: this does not make sense. need to figure out how to feed the
-           files to the script... command line argument? 
+           files to the script... command line argument?
         """
         if hasattr(self.o,
                    'run_accept') and self.o.run_accept:
             self.run_script(self.o.run_accept)
 
-        if hasattr(self.o, 'run_accept_item' ) and self.o.run_accept_item:
+        if hasattr(self.o, 'run_accept_item') and self.o.run_accept_item:
             for m in worklist.incoming:
                 cmd = self.o.run_accept_item.split()
-                cmd.append( str(os.path.join(m['new_dir'], m['new_file'])))
+                cmd.append(str(os.path.join(m['new_dir'], m['new_file'])))
                 try:
-                    p = subprocess.Popen( cmd )
+                    p = subprocess.Popen(cmd)
                     p.wait()
                     if p.returncode == 0:
-                        logger.info( f"ran {cmd} successfully")
+                        logger.info(f"ran {cmd} successfully")
                     else:
-                        logger.error( f"ran {cmd}: output: {o}")
+                        logger.error(f"ran {cmd}: output: {o}")
 
                 except Exception as ex:
-                    logger.error( f"problem running {cmd}: {ex}" )
+                    logger.error(f"problem running {cmd}: {ex}")
 
     def after_work(self, worklist):
         """
            FIXME: this does not make sense. need to figure out how to feed the
-           files to the script... command line argument? 
+           files to the script... command line argument?
         """
         if hasattr(self.o, 'run_work') and self.o.run_work is not None:
             self.run_script(self.o.run_work)
 
-        if hasattr(self.o, 'run_work_item' ) and self.o.run_work_item is not None:
+        if hasattr(self.o, 'run_work_item') and self.o.run_work_item is not None:
             for m in worklist.ok:
                 cmd = self.o.run_work_item.split()
-                cmd.append( os.path.join(m['new_dir'], m['new_file']))
+                cmd.append(os.path.join(m['new_dir'], m['new_file']))
                 try:
-                    p = subprocess.Popen( cmd )
+                    p = subprocess.Popen(cmd)
                     p.wait()
                     if p.returncode == 0:
-                        logger.info( f"ran {cmd} successfully")
+                        logger.info(f"ran {cmd} successfully")
                     else:
-                        logger.error( f"ran {cmd}: output: {o}")
+                        logger.error(f"ran {cmd}: output: {o}")
 
                 except Exception as ex:
-                    logger.error( f"problem running {cmd}: {ex}" )
+                    logger.error(f"problem running {cmd}: {ex}")
 
     def post(self, worklist):
         """
            FIXME: this does not make sense. need to figure out how to feed the
-           messages to the script... command line argument? 
+           messages to the script... command line argument?
         """
         if hasattr(self.o, 'run_post') and self.o.run_post is not None:
             self.run_script(self.o.run_post)

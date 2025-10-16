@@ -3,7 +3,7 @@ import pytest
 import types
 import json
 from tests.conftest import *
-#from unittest.mock import Mock
+# from unittest.mock import Mock
 
 import sarracenia.config
 import sarracenia.flowcb.filter.geometry
@@ -25,6 +25,7 @@ features = {
     "line1": '{"type": "LineString", "coordinates": [93, 100]}',
 }
 
+
 def make_worklist():
     WorkList = types.SimpleNamespace()
     WorkList.ok = []
@@ -34,8 +35,8 @@ def make_worklist():
     WorkList.directories_ok = []
     return WorkList
 
+
 def make_message(feature):
-   
 
     m = SR3Message()
     m['new_file'] = '/foo/bar/NewFile.txt'
@@ -44,15 +45,15 @@ def make_message(feature):
 
     return m
 
+
 def test___init__():
     options = sarracenia.config.default_config()
     options.logLevel = 'DEBUG'
 
     # Basic, happy path, without configured geometry
     geojson = sarracenia.flowcb.filter.geometry.Geometry(options)
-    assert geojson.geometry_geojson == None
+    assert geojson.geometry_geojson is None
     assert geojson.o.geometry_maxDistance == -1
-
 
     # happy path with configured geometry
     options.geometry = [
@@ -66,13 +67,13 @@ def test___init__():
         '    ]',
         ' ]',
         '}'
-        ]
+    ]
     options.geometry_maxDistance = 1.5
     geojson = sarracenia.flowcb.filter.geometry.Geometry(options)
     assert geojson.geometry_geojson['type'] == "Polygon"
     assert geojson.o.geometry_maxDistance == 1.5
 
-    #unhappy path, with garbage geometry
+    # unhappy path, with garbage geometry
     options.geometry = ['lkjasdf']
     with pytest.raises(json.decoder.JSONDecodeError):
         geojson = sarracenia.flowcb.filter.geometry.Geometry(options)
@@ -87,13 +88,13 @@ def test_after_accept():
     geojson = sarracenia.flowcb.filter.geometry.Geometry(options)
 
     worklist = make_worklist()
-    #accepted
+    # accepted
     worklist.incoming.append(make_message("poly2"))
     worklist.incoming.append(make_message("pointA"))
-    #rejected
+    # rejected
     worklist.incoming.append(make_message("poly3"))
     worklist.incoming.append(make_message("pointB"))
-    #failed
+    # failed
     worklist.incoming.append(make_message("line1"))
 
     geojson.after_accept(worklist)
@@ -101,69 +102,63 @@ def test_after_accept():
     assert len(worklist.incoming) == 2
     assert len(worklist.failed) == 1
 
-
     # testing when the config is a point
     options.geometry = [features['pointA']]
     options.geometry_maxDistance = 10
     geojson = sarracenia.flowcb.filter.geometry.Geometry(options)
 
     worklist = make_worklist()
-    #accepted
+    # accepted
     worklist.incoming.append(make_message("poly2"))
     worklist.incoming.append(make_message("pointA"))
-    #rejected
+    # rejected
     worklist.incoming.append(make_message("poly3"))
     worklist.incoming.append(make_message("pointB"))
-    
+
     geojson.after_accept(worklist)
     assert len(worklist.rejected) == 2
     assert len(worklist.incoming) == 2
 
-    
-    #Testing what happens if a message has invalid geometry
+    # Testing what happens if a message has invalid geometry
     geojson = sarracenia.flowcb.filter.geometry.Geometry(options)
 
     worklist = make_worklist()
-    #rejected
+    # rejected
     worklist.incoming.append(make_message("pointC"))
 
     geojson.after_accept(worklist)
     assert len(worklist.failed) == 1
-    
 
-    #Tests for cases with missing maxDistance
+    # Tests for cases with missing maxDistance
     options.geometry_maxDistance = -1
     geojson = sarracenia.flowcb.filter.geometry.Geometry(options)
 
     worklist = make_worklist()
-    #failed
+    # failed
     worklist.incoming.append(make_message("pointA"))
     worklist.incoming.append(make_message("pointB"))
 
     geojson.after_accept(worklist)
     assert len(worklist.failed) == 2
 
-
-    #Tests where message geometry is invalid JSON
+    # Tests where message geometry is invalid JSON
     geojson = sarracenia.flowcb.filter.geometry.Geometry(options)
 
     worklist = make_worklist()
-    #failed
+    # failed
     worklist.incoming.append(make_message("pointB"))
     worklist.incoming[0]['geometry'] = 'lkjasdf'
     with pytest.raises(json.decoder.JSONDecodeError):
         geojson.after_accept(worklist)
 
-
-    #Tests missing geometry in config
+    # Tests missing geometry in config
     del options.geometry
     geojson = sarracenia.flowcb.filter.geometry.Geometry(options)
 
     worklist = make_worklist()
-    #rejected
+    # rejected
     worklist.incoming.append(make_message("pointA"))
     worklist.incoming.append(make_message("pointB"))
 
     geojson.after_accept(worklist)
     assert len(worklist.rejected) == 2
-

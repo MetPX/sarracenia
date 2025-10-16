@@ -1,6 +1,6 @@
 """
 Plugin postoverride.py:
-    Override message header for products that are posted. This can be useful or necessary 
+    Override message header for products that are posted. This can be useful or necessary
     when re-distributing beyond the original intended destinations.
 
 Example:
@@ -10,7 +10,7 @@ Example:
     * postOverride to_clusters ACME
     * postOverrideDel from_cluster
 
-Usage: 
+Usage:
     flowcb sarracenia.flowcb.accept.postoverride.PostOverride
     postOverride x y
     postOverrideDel z
@@ -26,25 +26,25 @@ logger = logging.getLogger(__name__)
 
 class PostOverride(FlowCB):
     def __init__(self, options):
-        super().__init__(options,logger)
+        super().__init__(options, logger)
         self.o.add_option('postOverride', 'list')
         self.o.add_option('postOverrideDel', 'list')
 
-        if self.o.postOverride != None:
+        if self.o.postOverride is not None:
             logger.info('postOverride settings: %s' % self.o.postOverride)
-        if self.o.postOverrideDel != None:
+        if self.o.postOverrideDel is not None:
             logger.info('postOverrideDel settings: %s' % self.o.postOverrideDel)
 
     def after_accept(self, worklist):
         for message in worklist.incoming:
-            
-            if self.o.postOverride != None:
+
+            if self.o.postOverride is not None:
                 for o in self.o.postOverride:
                     (osetting, ovalue) = o.split()
                     logger.debug('postOverride applying key:%s value:%s' % (osetting, ovalue))
                     message[osetting] = ovalue
 
-            if self.o.postOverrideDel != None:
+            if self.o.postOverrideDel is not None:
                 for od in self.o.postOverrideDel:
                     if od in message:
                         logger.debug('postOverride deleting key:%s ' % od)

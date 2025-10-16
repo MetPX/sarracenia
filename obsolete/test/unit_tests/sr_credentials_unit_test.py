@@ -3,7 +3,7 @@
 try:
     from sr_credentials import *
     from sr_config import *
-except:
+except BaseException:
     from sarra.sr_credentials import *
     from sarra.sr_config import *
 
@@ -32,7 +32,7 @@ def self_test():
 
     # check details
     if not details.passive == False or \
-       not details.binary  == True   :
+       not details.binary == True:
         print("test 02: parsed %s and passive = %s, binary = %s" %
               (line, details.passive, details.binary))
         failed = True
@@ -109,7 +109,7 @@ def self_test():
 def main():
     try:
         self_test()
-    except:
+    except BaseException:
         print("sr_credentials.py TEST FAILED")
         raise
 

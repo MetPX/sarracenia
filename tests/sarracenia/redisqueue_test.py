@@ -9,6 +9,7 @@ import fakeredis
 
 import jsonpickle
 
+
 class Options:
     def __init__(self):
         self.no = 1
@@ -23,9 +24,11 @@ class Options:
         self.pid_filename = "/tmp/sarracenia/diskqueue_test/pid_filename"
         self.housekeeping = float(39)
         self.batch = 0
-    def add_option(self, option, type, default = None):
+
+    def add_option(self, option, type, default=None):
         if not hasattr(self, option):
             setattr(self, option, default)
+
 
 def make_message():
     m = SR3Message()
@@ -33,19 +36,20 @@ def make_message():
     m["topic"] = "v02.post.sent_by_tsource2send"
     m["mtime"] = "20180118151048"
     m["headers"] = {
-            "atime": "20180118151049.356378078", 
-            "from_cluster": "localhost",
-            "mode": "644",
-            "parts": "1,69,1,0,0",
-            "source": "tsource",
-            "sum": "d,c35f14e247931c3185d5dc69c5cd543e",
-            "to_clusters": "localhost"
-        }
-    m["baseUrl"] =  "https://NotARealURL"
+        "atime": "20180118151049.356378078",
+        "from_cluster": "localhost",
+        "mode": "644",
+        "parts": "1,69,1,0,0",
+        "source": "tsource",
+        "sum": "d,c35f14e247931c3185d5dc69c5cd543e",
+        "to_clusters": "localhost"
+    }
+    m["baseUrl"] = "https://NotARealURL"
     m["relPath"] = "ThisIsAPath/To/A/File.txt"
     m["notice"] = "20180118151050.45 ftp://anonymous@localhost:2121 /sent_by_tsource2send/SXAK50_KWAL_181510___58785"
     m["_deleteOnPost"] = set()
     return m
+
 
 def test___len__():
     with patch(target="redis.from_url", new=fakeredis.FakeStrictRedis.from_url, ):
@@ -57,6 +61,7 @@ def test___len__():
         assert len(download_retry) == 2
         download_retry.redis.lpush(download_retry.key_name_hk, "third")
         assert len(download_retry) == 2
+
 
 def test__in_cache():
     with patch(target="redis.from_url", new=fakeredis.FakeStrictRedis.from_url, ):
@@ -70,6 +75,7 @@ def test__in_cache():
         # Checking if it's there actually adds it, so checking it again right after should return True
         assert download_retry._in_cache(message) == True
 
+
 def test__is_exired__TooSoon():
     with patch(target="redis.from_url", new=fakeredis.FakeStrictRedis.from_url, ):
         BaseOptions = Options()
@@ -79,6 +85,7 @@ def test__is_exired__TooSoon():
         message = make_message()
 
         assert download_retry._is_expired(message) == True
+
 
 def test__is_exired__TooLate():
     with patch(target="redis.from_url", new=fakeredis.FakeStrictRedis.from_url, ):
@@ -91,6 +98,7 @@ def test__is_exired__TooLate():
         message["pubTime"] = sarracenia.nowstr()
 
         assert download_retry._is_expired(message) == False
+
 
 def test__needs_requeuing():
     with patch(target="redis.from_url", new=fakeredis.FakeStrictRedis.from_url, ):
@@ -105,6 +113,7 @@ def test__needs_requeuing():
         download_retry.o.retry_ttl = 1000000
         assert download_retry._needs_requeuing(message) == False
 
+
 def test__msgFromJSON():
     with patch(target="redis.from_url", new=fakeredis.FakeStrictRedis.from_url, ):
         BaseOptions = Options()
@@ -113,6 +122,7 @@ def test__msgFromJSON():
         message = make_message()
 
         assert message == download_retry._msgFromJSON(jsonpickle.encode(message))
+
 
 def test__msgToJSON():
     with patch(target="redis.from_url", new=fakeredis.FakeStrictRedis.from_url, ):
@@ -123,6 +133,7 @@ def test__msgToJSON():
 
         assert jsonpickle.encode(message) == download_retry._msgToJSON(message)
 
+
 def test__lpop():
     with patch(target="redis.from_url", new=fakeredis.FakeStrictRedis.from_url, ):
         BaseOptions = Options()
@@ -131,9 +142,10 @@ def test__lpop():
         message = make_message()
 
         download_retry.put([message])
-        assert download_retry.redis.llen(download_retry.key_name_new) == 1 
+        assert download_retry.redis.llen(download_retry.key_name_new) == 1
         assert message == download_retry._lpop(download_retry.key_name_new)
-    
+
+
 def test_put__Single():
     with patch(target="redis.from_url", new=fakeredis.FakeStrictRedis.from_url, ):
         BaseOptions = Options()
@@ -144,6 +156,7 @@ def test_put__Single():
         download_retry.put([message])
         assert download_retry.redis.llen(download_retry.key_name_new) == 1
 
+
 def test_put__Multi():
     with patch(target="redis.from_url", new=fakeredis.FakeStrictRedis.from_url, ):
         BaseOptions = Options()
@@ -153,6 +166,7 @@ def test_put__Multi():
 
         download_retry.put([message, message, message, message])
         assert download_retry.redis.llen(download_retry.key_name_new) == 4
+
 
 def test_cleanup():
     with patch(target="redis.from_url", new=fakeredis.FakeStrictRedis.from_url, ):
@@ -172,6 +186,7 @@ def test_cleanup():
         assert len(download_retry.redis.keys(download_retry.key_name + "*")) == 0
         assert len(download_retry.redis.keys(download_retry.key_name_lasthk)) == 0
 
+
 def test_get__NotLocked_Single():
     with patch(target="redis.from_url", new=fakeredis.FakeStrictRedis.from_url, ):
         BaseOptions = Options()
@@ -185,6 +200,7 @@ def test_get__NotLocked_Single():
 
         assert len(gotten) == 1
         assert gotten == [message]
+
 
 def test_get__NotLocked_Multi():
     with patch(target="redis.from_url", new=fakeredis.FakeStrictRedis.from_url, ):
@@ -203,6 +219,7 @@ def test_get__NotLocked_Multi():
         assert len(gotten) == 2
         assert gotten == [message, message]
 
+
 def test_get__Locked():
     with patch(target="redis.from_url", new=fakeredis.FakeStrictRedis.from_url, ):
         BaseOptions = Options()
@@ -219,6 +236,7 @@ def test_get__Locked():
         assert len(gotten) == 0
         assert gotten == []
 
+
 def test_on_housekeeping__TooSoon(caplog):
     with patch(target="redis.from_url", new=fakeredis.FakeStrictRedis.from_url, ):
         BaseOptions = Options()
@@ -227,11 +245,12 @@ def test_on_housekeeping__TooSoon(caplog):
         download_retry.redis.set(download_retry.key_name_lasthk, download_retry.now)
         hk_out = download_retry.on_housekeeping()
 
-        assert hk_out == None
+        assert hk_out is None
 
         for record in caplog.records:
             if "Housekeeping ran less than " in record.message:
                 assert "Housekeeping ran less than " in record.message
+
 
 def test_on_housekeeping__FinishRetry(caplog):
     with patch(target="redis.from_url", new=fakeredis.FakeStrictRedis.from_url, ):
@@ -244,19 +263,21 @@ def test_on_housekeeping__FinishRetry(caplog):
         download_retry.redis.lpush(download_retry.key_name, jsonpickle.encode(message))
         download_retry.redis.lpush(download_retry.key_name, jsonpickle.encode(message))
         download_retry.redis.lpush(download_retry.key_name, jsonpickle.encode(message))
-        download_retry.redis.set(download_retry.key_name_lasthk, download_retry.now - download_retry.o.housekeeping - 100)
+        download_retry.redis.set(download_retry.key_name_lasthk,
+                                 download_retry.now - download_retry.o.housekeeping - 100)
 
         hk_out = download_retry.on_housekeeping()
 
-        assert hk_out == None
+        assert hk_out is None
 
         log_found_notFinished = False
 
         for record in caplog.records:
             if "have not finished retry list" in record.message:
                 log_found_notFinished = True
-    
+
         assert log_found_notFinished == True
+
 
 def test_on_housekeeping(caplog):
     with patch(target="redis.from_url", new=fakeredis.FakeStrictRedis.from_url, ):
@@ -270,11 +291,12 @@ def test_on_housekeeping(caplog):
         download_retry.redis.lpush(download_retry.key_name_new, jsonpickle.encode(message))
         download_retry.redis.lpush(download_retry.key_name_new, jsonpickle.encode(message))
 
-        download_retry.redis.set(download_retry.key_name_lasthk, download_retry.now - download_retry.o.housekeeping - 100)
+        download_retry.redis.set(download_retry.key_name_lasthk,
+                                 download_retry.now - download_retry.o.housekeeping - 100)
 
         hk_out = download_retry.on_housekeeping()
 
-        assert hk_out == None
+        assert hk_out is None
         assert download_retry.redis.exists(download_retry.key_name_hk) == False
 
         log_found_LockReleased = log_found_Elapsed = False

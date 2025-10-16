@@ -1,10 +1,11 @@
 #!/usr/bin/env python3
 
-import time, sys
+import time
+import sys
 
 try:
     from sr_config import *
-except:
+except BaseException:
     from sarra.sr_config import *
 
 # ===================================
@@ -75,7 +76,7 @@ def self_test():
 def main():
     try:
         self_test()
-    except:
+    except BaseException:
         print("sr_pattern_test.py TEST FAILED")
         raise
 

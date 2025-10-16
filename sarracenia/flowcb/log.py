@@ -20,31 +20,33 @@ class Log(FlowCB):
 
        * how many messages were received, rejected, %accepted.
        * number of files transferred, their size, and rate in files/s and bytes/s
-       * lag: some information about how old the messages are when processed 
+       * lag: some information about how old the messages are when processed
 
     """
+
     def __init__(self, options):
 
-        super().__init__(options,logger)
+        super().__init__(options, logger)
         self.o.add_option('logEvents', 'set',
                           ['after_accept', 'on_housekeeping'])
         self.o.add_option('logMessageDump', 'flag', False)
-        logger.debug(f'{self.o.component}/{self.o.config} initialized with: logEvents: {self.o.logEvents},  logMessageDump: {self.o.logMessageDump}')
+        logger.debug(
+            f'{self.o.component}/{self.o.config} initialized with: logEvents: {self.o.logEvents},  logMessageDump: {self.o.logMessageDump}')
         if self.o.component in ['sender']:
             self.action_verb = 'sent'
-        elif self.o.component in ['subscribe', 'sarra' ]:
+        elif self.o.component in ['subscribe', 'sarra']:
             self.action_verb = 'downloaded'
         elif self.o.component in ['post', 'poll', 'watch']:
             self.action_verb = 'noticed'
-        elif self.o.component in [ 'flow', 'shovel', 'winnow']:
+        elif self.o.component in ['flow', 'shovel', 'winnow']:
             self.action_verb = self.o.component + 'ed'
         else:
             self.action_verb = 'done'
         self.started = nowflt()
- 
-        self.rxTopicSeparator='.'
-        if hasattr(options,'broker') and options.broker and options.broker.url.scheme.startswith('mqtt'):
-            self.rxTopicSeparator='/'
+
+        self.rxTopicSeparator = '.'
+        if hasattr(options, 'broker') and options.broker and options.broker.url.scheme.startswith('mqtt'):
+            self.rxTopicSeparator = '/'
 
         self.__reset()
 
@@ -58,11 +60,12 @@ class Log(FlowCB):
         self.transferCount = 0
 
     def metricsReport(self):
-        return { 'lagMax': self.lagMax, 'lagTotal':self.lagTotal, 'lagMessageCount':self.msgCount, 'rejectCount':self.rejectCount }
+        return {'lagMax': self.lagMax, 'lagTotal': self.lagTotal,
+                'lagMessageCount': self.msgCount, 'rejectCount': self.rejectCount}
 
     def gather(self, messageCountMax):
         if set(['gather']) & self.o.logEvents:
-            logger.info( f' messageCountMax: {messageCountMax} ')
+            logger.info(f' messageCountMax: {messageCountMax} ')
 
         return (True, [])
 
@@ -72,41 +75,41 @@ class Log(FlowCB):
         else:
             return msg.getIDStr()
 
-    def _messageAcceptStr(self,msg):
+    def _messageAcceptStr(self, msg):
         if self.o.logMessageDump:
             return msg.dumps()
 
         s = " "
         if 'exchange' in msg:
-            s+= f"exchange: {msg['exchange']} "
+            s += f"exchange: {msg['exchange']} "
         if 'subtopic' in msg:
-            s+= f"subtopic: {self.rxTopicSeparator.join(msg['subtopic'])} "
+            s += f"subtopic: {self.rxTopicSeparator.join(msg['subtopic'])} "
         if 'fileOp' in msg:
-            op=','.join(msg['fileOp'].keys())
+            op = ','.join(msg['fileOp'].keys())
 
             if op in ['link']:
-                s+= f"a link to {msg['fileOp']['link']} with baseUrl: {msg['baseUrl']} "
+                s += f"a link to {msg['fileOp']['link']} with baseUrl: {msg['baseUrl']} "
             elif op in ['rename']:
-                s+= f"a rename {msg['fileOp']['rename']} with baseUrl: {msg['baseUrl']} "
+                s += f"a rename {msg['fileOp']['rename']} with baseUrl: {msg['baseUrl']} "
             else:
-                s+= f"a {op} with baseUrl: {msg['baseUrl']} "
+                s += f"a {op} with baseUrl: {msg['baseUrl']} "
         else:
-            s+= f"a file with baseUrl: {msg['baseUrl']} "
+            s += f"a file with baseUrl: {msg['baseUrl']} "
         if 'relPath' in msg:
-            s+= f"relPath: {msg['relPath']} "
+            s += f"relPath: {msg['relPath']} "
             if 'sundew_extension' in msg:
-                s+=f"sundew_extension: {msg['sundew_extension']} "
+                s += f"sundew_extension: {msg['sundew_extension']} "
         if 'retrievePath' in msg:
-            s+= f"retrievePath: {msg['retrievePath']} "
+            s += f"retrievePath: {msg['retrievePath']} "
         if 'rename' in msg:
-            s+= f"rename: {msg['rename']} "
+            s += f"rename: {msg['rename']} "
         if 'identity' in msg and 'value' in msg['identity']:
-            s+=f"id: {msg['identity']['value'][0:7]} "
+            s += f"id: {msg['identity']['value'][0:7]} "
         if 'size' in msg:
-            s+=f"size: {msg['size']} "
+            s += f"size: {msg['size']} "
         return s
-        
-    def _messagePostStr(self,msg):
+
+    def _messagePostStr(self, msg):
         if self.o.logMessageDump:
             return msg.dumps()
 
@@ -114,41 +117,41 @@ class Log(FlowCB):
         if 'posts' in msg:
             for p in msg['posts']:
                 if 'broker' in p:
-                    s+= f" {p['broker']}"
+                    s += f" {p['broker']}"
                 if 'exchange' in p and ('topic' in p) and \
-                    not p['topic'].startswith(p['exchange']) :
-                    s+= f",{p['exchange']}" 
+                        not p['topic'].startswith(p['exchange']):
+                    s += f",{p['exchange']}"
                 if 'topic' in p:
-                    s+= f",{p['topic']}"
+                    s += f",{p['topic']}"
         else:
-            s+= ' nowhere?'
-        s+=" "
+            s += ' nowhere?'
+        s += " "
 
         if 'fileOp' in msg:
-            op=','.join(msg['fileOp'].keys())
+            op = ','.join(msg['fileOp'].keys())
 
             if op in ['link']:
-                s+= f"a link to {msg['fileOp']['link']} "
+                s += f"a link to {msg['fileOp']['link']} "
             elif op in ['rename']:
-                s+= f"a rename {msg['fileOp']['rename']} "
+                s += f"a rename {msg['fileOp']['rename']} "
             else:
-                s+= f"a {op} "
+                s += f"a {op} "
         else:
-            s+= f"a file "
+            s += f"a file "
 
         if 'baseUrl' in msg:
-            s+= f"with baseUrl: {msg['baseUrl']} "
+            s += f"with baseUrl: {msg['baseUrl']} "
 
         if 'relPath' in msg:
-            s+= f"relPath: {msg['relPath']} "
+            s += f"relPath: {msg['relPath']} "
         if 'retrievePath' in msg:
-            s+= f"retrievePath: {msg['retrievePath']} "
+            s += f"retrievePath: {msg['retrievePath']} "
         if 'rename' in msg:
-            s+= f"rename: {msg['rename']} "
+            s += f"rename: {msg['rename']} "
         if 'size' in msg:
-            s+=f"size: {msg['size']} "
+            s += f"size: {msg['size']} "
         if 'identity' in msg and 'value' in msg['identity']:
-            s+=f"id: {msg['identity']['value'][0:7]} "
+            s += f"id: {msg['identity']['value'][0:7]} "
 
         return s
 
@@ -165,10 +168,10 @@ class Log(FlowCB):
                         self._messageAcceptStr(msg), msg['report']['code'], msg['report']['message']))
                 else:
                     logger.info("rejected: %s " % self._messageAcceptStr(msg))
-        
+
         elif 'nodupe' in self.o.logEvents:
             for msg in worklist.rejected:
-                if 'report' in msg and msg['report']['code'] in [ 304 ]:
+                if 'report' in msg and msg['report']['code'] in [304]:
                     logger.info(
                         "%s rejected: %d %s " %
                         (msg.getIDStr(), msg['report']['code'], msg['report']['message']))
@@ -177,11 +180,11 @@ class Log(FlowCB):
 
             lag = now - timestr2flt(msg['pubTime'])
             if not msg.isRetry():
-               self.lagTotal += lag
-               if lag > self.lagMax:
-                   self.lagMax = lag
+                self.lagTotal += lag
+                if lag > self.lagMax:
+                    self.lagMax = lag
             if set(['after_accept']) & self.o.logEvents:
-                logger.info( f"accepted: (lag: {lag:.2f} ) {self._messageAcceptStr(msg)}" )
+                logger.info(f"accepted: (lag: {lag:.2f} ) {self._messageAcceptStr(msg)}")
 
     def after_gather(self, worklist):
         if set(['after_gather']) & self.o.logEvents:
@@ -189,7 +192,6 @@ class Log(FlowCB):
                 logger.info("gathered: %s" % self._messagePostStr(msg))
             for msg in worklist.rejected:
                 logger.info("rejected: %s" % self._messagePostStr(msg))
-
 
     def after_post(self, worklist):
         if set(['after_post']) & self.o.logEvents:
@@ -212,7 +214,7 @@ class Log(FlowCB):
 
         elif 'nodupe' in self.o.logEvents:
             for msg in worklist.rejected:
-                if 'report' in msg and msg['report']['code'] in [ 304 ]:
+                if 'report' in msg and msg['report']['code'] in [304]:
                     logger.info(
                         "%s rejected: %d %s " %
                         (msg.getIDStr(), msg['report']['code'], msg['report']['message']))
@@ -220,12 +222,12 @@ class Log(FlowCB):
         for msg in worklist.ok:
             if 'size' in msg:
                 self.fileBytes += msg['size']
-                
+
             if not self.o.download:
                 continue
 
             if set(['after_work']) & self.o.logEvents:
-                if 'fileOp' in msg :
+                if 'fileOp' in msg:
                     if 'link' in msg['fileOp']:
                         verb = 'linked'
                     elif 'remove' in msg['fileOp']:
@@ -243,7 +245,7 @@ class Log(FlowCB):
                     logger.info("%s ok: %s " %
                                 (verb, msg['new_dir'] + '/' + msg['new_file']))
                 elif 'relPath' in msg:
-                    logger.info("%s ok: relPath: %s " % (verb, msg['relPath'] ))
+                    logger.info("%s ok: relPath: %s " % (verb, msg['relPath']))
 
                 if self.o.logMessageDump:
                     logger.info('message: %s' % msg.dumps())
@@ -259,25 +261,29 @@ class Log(FlowCB):
             rate = 0
 
         logger.info(
-            f"version: {__version__}, started: {naturalTime(nowflt()-self.started)}, last_housekeeping: {how_long:4.1f} seconds ago "
+            f"version: {__version__}, started: {
+                naturalTime(
+                    nowflt() -
+                    self.started)}, last_housekeeping: {
+                how_long:4.1f} seconds ago "
         )
         logger.info(
             "messages received: %d, accepted: %d, rejected: %d   rate accepted: %3.1f%% or %3.1f m/s"
             % (self.msgCount + self.rejectCount, self.msgCount,
                self.rejectCount, apc, rate))
-        logger.info( f"files transferred: {self.transferCount} " +\
-             f"bytes: {naturalSize(self.fileBytes)} " +\
-             f"rate: {naturalSize(self.fileBytes/how_long)}/sec" )
+        logger.info(f"files transferred: {self.transferCount} " +
+                    f"bytes: {naturalSize(self.fileBytes)} " +
+                    f"rate: {naturalSize(self.fileBytes / how_long)}/sec")
         if self.msgCount > 0:
             logger.info("lag: average: %.2f, maximum: %.2f " %
                         (self.lagTotal / self.msgCount, self.lagMax))
 
     def on_cleanup(self):
         logger.info("hello")
-    
+
     def on_declare(self):
         logger.info("hello")
-    
+
     def on_stop(self):
         if set(['on_stop']) & self.o.logEvents:
             self.stats()

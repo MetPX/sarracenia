@@ -5,7 +5,7 @@ S3 Cloud Sender - Plugin to send data into S3 buckets
 ======================================================
 
 This plugin lets you send local data into S3 buckets. It is based on the S3CloudPublisher plugin by Tom Kralidis
-and Tyson Kaufmann, found here: 
+and Tyson Kaufmann, found here:
 https://github.com/MetPX/sr3-examples/blob/main/cloud-publisher-s3/config/sr3/plugins/s3CloudPublisher.py
 
 This version is refactored into a Sender plugin (instead of Subscribe), and uses Sarracenia's normal config parser
@@ -108,13 +108,14 @@ from urllib.parse import unquote
 
 logger = logging.getLogger(__name__)
 
+
 class S3CloudSender(FlowCB):
     """ Sender to S3 destination.
     """
 
     def __init__(self, options):
         """initialize"""
-        
+
         super().__init__(options, logger)
 
         # Allow setting a logLevel *only* for this plugin in the config file:
@@ -125,9 +126,9 @@ class S3CloudSender(FlowCB):
         logger.debug("S3CloudSender starting up")
 
         # S3 sender specific config options
-        self.o.add_option('AWS_regionName',   kind='str', default_value=None) # optional
-        self.o.add_option('AWS_sessionToken', kind='str', default_value=None) # optional
-        self.o.add_option("post_urlType",     kind='str', default_value=None) # optional, overrides post_baseUrl
+        self.o.add_option('AWS_regionName', kind='str', default_value=None)  # optional
+        self.o.add_option('AWS_sessionToken', kind='str', default_value=None)  # optional
+        self.o.add_option("post_urlType", kind='str', default_value=None)  # optional, overrides post_baseUrl
 
         # post_urlType must be https or s3, and handle unknown cases
         if self.o.post_urlType and self.o.post_urlType not in ['https', 's3_uri']:
@@ -161,20 +162,19 @@ class S3CloudSender(FlowCB):
         if details.url.scheme != 's3':
             logger.warning(f"Using credentials with scheme ({details.url.scheme}) that is not s3")
 
-        netloc = details.url.netloc.rsplit(sep='@', maxsplit=1) # split on the rightmost @
+        netloc = details.url.netloc.rsplit(sep='@', maxsplit=1)  # split on the rightmost @
         usr_pwd = netloc[0].split(':')
 
-        # If any options are "None", make them None. This should allow creating a client using the default/auto settings.
-        self.s3_url = "https://"+netloc[1] if not (type(netloc[1]) == str and netloc[1] == "None") else None
-        self.access_key_id = usr_pwd[0] if not (type(usr_pwd[0]) == str and usr_pwd[0] == "None") else None
-        self.secret_access_key = usr_pwd[1] if not (type(usr_pwd[1]) == str and usr_pwd[1] == "None") else None
-        if self.secret_access_key:
-            # sometimes the key will have a slash in it, in that case, the slash should be changed to %2F in credentials.conf
-            self.secret_access_key = unquote(self.secret_access_key)
+        # If any options are "None", make them None. This should allow creating a
+        # client using the default/auto settings.
+self.s3_url = "https://" + netloc[1] if not (isinstance(netloc[1], self.s3_url="https://" + netloc[1] if not ()self.access_key_id=usr_pwd[0] if not (isinstance(usr_pwd[0], self.access_key_id=usr_pwd[0] if not ()self.secret_access_key=usr_pwd[1] if not (isinstance(usr_pwd[1], self.secret_access_key=usr_pwd[1] if not () if self.secret_access_key:
+            # sometimes the key will have a slash in it, in that case, the slash
+            # should be changed to %2F in credentials.conf
+            self.secret_access_key=unquote(self.secret_access_key)
 
         logger.info(f"Successfully loaded credentials for sendTo URL {self.o.sendTo}")
 
-        self.s3_client = boto3.client('s3', endpoint_url=self.s3_url, aws_access_key_id=self.access_key_id, 
+        self.s3_client=boto3.client('s3', endpoint_url=self.s3_url, aws_access_key_id=self.access_key_id,
                                       aws_secret_access_key=self.secret_access_key,
                                       region_name=self.o.AWS_regionName, aws_session_token=self.o.AWS_sessionToken)
 
@@ -186,15 +186,15 @@ class S3CloudSender(FlowCB):
 
         # Bucket name and (optional remote path) come from the directory setting in the config
         # remote path should not start with /
-        new_dir_parts = msg['new_dir'].strip('/').split('/')
-        s3_bucket_name = new_dir_parts[0]
-        if len(new_dir_parts) > 1: # new_dir (directory in config file) has more parts than just the bucket name
-            remote_path = os.path.normpath(os.path.join(*new_dir_parts[1:], msg['new_file']))
+        new_dir_parts=msg['new_dir'].strip('/').split('/')
+        s3_bucket_name=new_dir_parts[0]
+        if len(new_dir_parts) > 1:  # new_dir (directory in config file) has more parts than just the bucket name
+            remote_path=os.path.normpath(os.path.join(*new_dir_parts[1:], msg['new_file']))
         else:
-            remote_path = msg['new_file']
+            remote_path=msg['new_file']
 
         # Local file, from baseDir + relPath (relPath shouldn't start with a /)
-        local_file = os.path.join(self.o.baseDir, msg['relPath'].lstrip('/'))
+        local_file=os.path.join(self.o.baseDir, msg['relPath'].lstrip('/'))
         if not os.path.isfile(local_file):
             logger.error(f"File does not exist: {local_file} (baseDir: {self.o.baseDir}, relPath: {msg['relPath']})")
             return False
@@ -208,35 +208,36 @@ class S3CloudSender(FlowCB):
             logger.error(f"{e}")
             logger.debug("Exception details:", exc_info=True)
             return False
-        
+
         logger.info(f"Sent {local_file} into S3 bucket: {s3_bucket_name}, path: {remote_path}")
 
         # Update the message
-        msg['new_baseUrl'] = self.o.post_baseUrl
+        msg['new_baseUrl']=self.o.post_baseUrl
 
         if 'BUCKET_NAME' in msg['new_baseUrl']:
-            msg['new_baseUrl'] = msg['new_baseUrl'].replace('BUCKET_NAME', s3_bucket_name)
+            msg['new_baseUrl']=msg['new_baseUrl'].replace('BUCKET_NAME', s3_bucket_name)
 
         # Figure out the region when using https baseUrl
         if 'REGION' in msg['new_baseUrl']:
             try:
-                resp = self.s3_client.head_bucket(Bucket=s3_bucket_name)
-                region = resp['ResponseMetadata']['HTTPHeaders']['x-amz-bucket-region']
-                msg['new_baseUrl'] = msg['new_baseUrl'].replace('REGION', region)
+                resp=self.s3_client.head_bucket(Bucket=s3_bucket_name)
+                region=resp['ResponseMetadata']['HTTPHeaders']['x-amz-bucket-region']
+                msg['new_baseUrl']=msg['new_baseUrl'].replace('REGION', region)
             except Exception as e:
                 logger.error("Couldn't determine region for HTTPS URL, setting baseUrl = s3://")
                 logger.debug("Exception details", exc_info=True)
-                msg['new_baseUrl'] = "s3://"
+                msg['new_baseUrl']="s3://"
 
         # relPath depends on the type of URL posted
         if 's3://' in msg['new_baseUrl']:
-            msg['new_relPath'] = s3_bucket_name + '/' + remote_path
+            msg['new_relPath']=s3_bucket_name + '/' + remote_path
         elif s3_bucket_name in msg['new_baseUrl']:
-            msg['new_relPath'] = remote_path
+            msg['new_relPath']=remote_path
         else:
-            msg['new_baseUrl'] = 's3://'
-            msg['new_relPath'] = remote_path
-            logger.error(f"Couldn't determine baseUrl type for {msg['new_baseUrl']}, set to s3:// with relPath {msg['new_relPath']}")
+            msg['new_baseUrl']='s3://'
+            msg['new_relPath']=remote_path
+            logger.error(
+                f"Couldn't determine baseUrl type for {msg['new_baseUrl']}, set to s3:// with relPath {msg['new_relPath']}")
 
         logger.debug(f"Modified msg: {msg}")
 
@@ -244,4 +245,3 @@ class S3CloudSender(FlowCB):
 
     def __repr__(self):
         return '<S3CloudSender>'
-

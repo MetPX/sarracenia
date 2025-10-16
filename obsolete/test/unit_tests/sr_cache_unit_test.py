@@ -5,7 +5,7 @@ import tempfile
 try:
     from sr_cache import *
     from sr_config import *
-except:
+except BaseException:
     from sarra.sr_cache import *
     from sarra.sr_config import *
 
@@ -22,7 +22,7 @@ def self_test():
     tmpdirname = tempfile.TemporaryDirectory().name
     try:
         os.mkdir(tmpdirname)
-    except:
+    except BaseException:
         pass
     tmpfilname = 'cache_test_file'
     tmppath = tmpdirname + os.sep + 'cache_test_file'
@@ -62,8 +62,8 @@ def self_test():
         print("test 02: expecting 3 entries...")
         failed = True
 
-    #checking cache internals ...
-    #print("%s" % cache.cache_dict)
+    # checking cache internals ...
+    # print("%s" % cache.cache_dict)
 
     cache.close()
 
@@ -76,7 +76,7 @@ def self_test():
         failed = True
     cache.close()
 
-    #add 100 entries
+    # add 100 entries
     cache = sr_cache(cfg)
     cache.open(tmppath)
     cache.load()
@@ -99,7 +99,7 @@ def self_test():
 
     cache.close()
 
-    #add 10 entries
+    # add 10 entries
     cache = sr_cache(cfg)
     cache.open(tmppath)
     i = 0
@@ -156,7 +156,7 @@ def self_test():
 def main():
     try:
         self_test()
-    except:
+    except BaseException:
         print("sr_cache.py TEST FAILED")
         raise
 

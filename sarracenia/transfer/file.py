@@ -25,13 +25,17 @@ from sarracenia.transfer import Transfer
 
 import sarracenia
 
-import os, stat, subprocess, sys, time
+import os
+import stat
+import subprocess
+import sys
+import time
 
 import logging
 
 logger = logging.getLogger(__name__)
 
-#============================================================
+# ============================================================
 # file protocol in sarracenia supports/uses :
 #
 # connect
@@ -57,6 +61,7 @@ class File(Transfer):
         Transfer sub-class for local file i/o.
 
     """
+
     def __init__(self, proto, options):
         super().__init__(proto, options)
 
@@ -70,12 +75,12 @@ class File(Transfer):
     # cd
     def cd(self, path):
         """
-           proto classes are used for remote sessions, so this 
+           proto classes are used for remote sessions, so this
            cd is for REMOTE directory... when file remote as a protocol it is for the source.
            should not change the "local" working directory when downloading.
         """
         logger.debug("sr_file cd %s" % path)
-        #os.chdir(path)
+        # os.chdir(path)
         self.cwd = path
         self.path = path
 
@@ -103,7 +108,7 @@ class File(Transfer):
 
     # delete
     def delete(self, path):
-        p = os.path.join( self.cwd, path )
+        p = os.path.join(self.cwd, path)
         logger.debug("sr_file rm %s" % p)
         os.unlink(p)
 
@@ -118,7 +123,7 @@ class File(Transfer):
 
         remote_path = self.cwd + os.sep + remote_file
 
-        logger.debug( "get %s %s (cwd: %s) %d" % (remote_path,local_file,os.getcwd(), local_offset))
+        logger.debug("get %s %s (cwd: %s) %d" % (remote_path, local_file, os.getcwd(), local_offset))
 
         if not os.path.exists(remote_path):
             logger.warning("file to read not found %s" % (remote_path))
@@ -128,7 +133,8 @@ class File(Transfer):
         dst = self.local_write_open(local_file, local_offset)
 
         # initialize sumalgo
-        if self.sumalgo: self.sumalgo.set_path(remote_file)
+        if self.sumalgo:
+            self.sumalgo.set_path(remote_file)
 
         # download
         rw_length = self.read_write(src, dst, length)
@@ -161,13 +167,14 @@ class File(Transfer):
     def getcwd(self):
         return self.cwd
 
-    def stat(self,path,message=None):
+    def stat(self, path, message=None):
         spath = path if path[0] == '/' else self.path + '/' + path
         try:
-             return sarracenia.stat(spath)
-        except:
-             return None
+            return sarracenia.stat(spath)
+        except BaseException:
+            return None
     # ls
+
     def ls(self):
         logger.debug("sr_file ls")
         self.entries = {}
@@ -179,10 +186,12 @@ class File(Transfer):
         for x in os.listdir(dpath):
             dst = dpath + '/' + x
             if os.path.isdir(dst):
-                if self.recursive: self.ls_python(dst)
+                if self.recursive:
+                    self.ls_python(dst)
                 continue
             relpath = dst.replace(self.root, '', 1)
-            if relpath[0] == '/': relpath = relpath[1:]
+            if relpath[0] == '/':
+                relpath = relpath[1:]
 
             self.entries[relpath] = sarracenia.stat(dst)
 
@@ -195,7 +204,8 @@ def file_insert(options, msg):
     logger.debug("file_insert")
 
     fp = open(msg['relPath'], 'rb')
-    if msg.partflg == 'i': fp.seek(msg['offset'], 0)
+    if msg.partflg == 'i':
+        fp.seek(msg['offset'], 0)
 
     ok = file_write_length(fp, msg, options.bufSize, msg.filesize, options)
 
@@ -208,11 +218,11 @@ def file_link(msg):
 
     try:
         os.unlink(msg['new_file'])
-    except:
+    except BaseException:
         pass
     try:
-        os.link(msg['fileOp']['link'], os.path.join(self.cwd,msg['new_file']))
-    except:
+        os.link(msg['fileOp']['link'], os.path.join(self.cwd, msg['new_file']))
+    except BaseException:
         return False
 
     return True
@@ -241,7 +251,8 @@ def file_process(options):
     #
     # message (1) fails.. in previous version a bug was preventing an error (and causing file.txt rebirth with size 0)
     # In current version, returning that this message fails would put it under the retry process for ever and for nothing.
-    # I decided for the moment to warn and to return success... it preserves old behavior without the 0 byte file generated
+    # I decided for the moment to warn and to return success... it preserves
+    # old behavior without the 0 byte file generated
 
     if not os.path.isfile(msg['relPath']):
         logger.warning("%s moved or removed since announced" % msg['relPath'])
@@ -249,7 +260,7 @@ def file_process(options):
 
     try:
         curdir = self.cwd
-    except:
+    except BaseException:
         curdir = None
 
     if curdir != options.msg['new_dir']:
@@ -257,16 +268,16 @@ def file_process(options):
 
     # try link if no inserts
 
-    p=os.path.join(self.cwd,msg['relPath'])
+    p = os.path.join(self.cwd, msg['relPath'])
 
     if msg.partflg == '1' or \
-       (msg.partflg == 'p' and  msg.in_partfile) :
+       (msg.partflg == 'p' and msg.in_partfile):
         ok = file_link(msg)
         if ok:
             if options.delete:
                 try:
                     os.unlink(p)
-                except:
+                except BaseException:
                     logger.error("delete of link to %s failed" % p)
             return ok
 
@@ -281,12 +292,13 @@ def file_process(options):
             else:
                 try:
                     os.unlink(p)
-                except:
+                except BaseException:
                     logger.error("delete of %s after copy failed" % p)
 
-        if ok: return ok
+        if ok:
+            return ok
 
-    except:
+    except BaseException:
         logger.error('sr_file/file_process error')
         logger.debug('Exception details: ', exc_info=True)
 
@@ -306,7 +318,8 @@ def file_write_length(req, msg, bufsize, filesize, options):
 
     chk = msg.sumalgo
     logger.debug("file_write_length chk = %s" % chk)
-    if chk: chk.set_path(msg['new_file'])
+    if chk:
+        chk.set_path(msg['new_file'])
 
     # file should exists
     if not os.path.isfile(msg['new_file']):
@@ -315,7 +328,8 @@ def file_write_length(req, msg, bufsize, filesize, options):
 
     # file open read/modify binary
     fp = open(msg['new_file'], 'r+b')
-    if msg.local_offset != 0: fp.seek(msg.local_offset, 0)
+    if msg.local_offset != 0:
+        fp.seek(msg.local_offset, 0)
 
     nc = int(msg['length'] / bufsize)
     r = msg['length'] % bufsize
@@ -325,14 +339,16 @@ def file_write_length(req, msg, bufsize, filesize, options):
     while i < nc:
         chunk = req.read(bufsize)
         fp.write(chunk)
-        if chk: chk.update(chunk)
+        if chk:
+            chk.update(chunk)
         i = i + 1
 
     # remaining
     if r > 0:
         chunk = req.read(r)
         fp.write(chunk)
-        if chk: chk.update(chunk)
+        if chk:
+            chk.update(chunk)
 
     if fp.tell() >= msg.filesize:
         fp.truncate()
@@ -343,9 +359,10 @@ def file_write_length(req, msg, bufsize, filesize, options):
     if options.permCopy and 'mode' in h:
         try:
             mod = int(h['mode'], base=8)
-        except:
+        except BaseException:
             mod = 0
-        if mod > 0: os.chmod(msg['new_file'], mod)
+        if mod > 0:
+            os.chmod(msg['new_file'], mod)
 
     if options.timeCopy and 'mtime' in h and h['mtime']:
         os.utime(msg['new_file'],
@@ -367,7 +384,8 @@ def file_truncate(options, msg):
     # will do this when processing the last chunk
     # whenever that is
 
-    if (not options.randomize) and (not msg.lastchunk): return
+    if (not options.randomize) and (not msg.lastchunk):
+        return
 
     try:
         lstat = sarracenia.stat(msg['target_file'])
@@ -380,7 +398,7 @@ def file_truncate(options, msg):
 
         msg['subtopic'] = msg['relPath'].split(os.sep)[1:-1]
         msg['_deleteOnPost'] |= set(['subtopic'])
-        #msg.set_topic(options.post_topicPrefix,msg.target_relpath)
+        # msg.set_topic(options.post_topicPrefix,msg.target_relpath)
 
-    except:
+    except BaseException:
         pass

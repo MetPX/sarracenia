@@ -18,6 +18,7 @@ class PClean_F92(PClean):
 
      - it fails if one removal failed
     """
+
     def after_accept(self, worklist):
         import os
 

@@ -21,9 +21,10 @@ class MDelayLatest(FlowCB):
       In the meantime, the message is placed on the retry queue by marking it as failed.
 
     """
+
     def __init__(self, options):
 
-        super().__init__(options,logger)
+        super().__init__(options, logger)
         self.stop_requested = False
         self.suppressions = 0
         self.ok_delay = []
@@ -42,10 +43,10 @@ class MDelayLatest(FlowCB):
 
         new_incoming = []
         for m1 in worklist.incoming:
-            #logger.info('1 relPath=%s' %  m1['relPath'])
-            #logger.info('1 pubTime=%s' %  m1['pubTime'])
+            # logger.info('1 relPath=%s' %  m1['relPath'])
+            # logger.info('1 pubTime=%s' %  m1['pubTime'])
             elapsedtime = now - timestr2flt(m1['pubTime'])
-            #logger.info('1 Time=%s' %  str(elapsedtime))
+            # logger.info('1 Time=%s' %  str(elapsedtime))
             wait = False
 
             # If same message found in the delay list, replaced it with the one in ok list.
@@ -53,24 +54,24 @@ class MDelayLatest(FlowCB):
             for m2 in self.ok_delay:
                 if m1['relPath'] == m2['relPath']:
                     # an mkdir, rmdir, an rm, a rename, an ln: order important, publish immediately.
-                    if ('fileOp' in m2) or ('fileOp' in m1):  
+                    if ('fileOp' in m2) or ('fileOp' in m1):
                         if 'fileOp' in m2:
-                            op=m2['fileOp']
+                            op = m2['fileOp']
                         else:
-                            op=f"being later: {m1['fileOp']}"
+                            op = f"being later: {m1['fileOp']}"
 
-                        logger.info( f"critically ordered operation: {m2['relPath']} {op}")
+                        logger.info(f"critically ordered operation: {m2['relPath']} {op}")
                         new_incoming.append(m2)
                         new_ok_delay.append(m1)
                     else:
-                        logger.info( f"intermediate version suppressed: {m1['relPath']}")
+                        logger.info(f"intermediate version suppressed: {m1['relPath']}")
                         self.suppressions += 1
                         new_ok_delay.append(m1)
                         worklist.rejected.append(m2)
                     wait = True
                 else:
                     new_ok_delay.append(m2)
-                    #new_incoming.append(m1)
+                    # new_incoming.append(m1)
             self.ok_delay = new_ok_delay
 
             # If it's new, put it in delay list too.
@@ -88,13 +89,13 @@ class MDelayLatest(FlowCB):
         # Check message in the delay list
         new_ok_delay = []
         for m1 in self.ok_delay:
-            #logger.info('2 relPath=%s' %  m1['relPath'])
-            #logger.info('2 pubTime=%s' %  m1['pubTime'])
+            # logger.info('2 relPath=%s' %  m1['relPath'])
+            # logger.info('2 pubTime=%s' %  m1['pubTime'])
             elapsedtime = nowflt() - timestr2flt(m1['pubTime'])
-            #logger.info('Time=%s' %  str(elapsedtime))
+            # logger.info('Time=%s' %  str(elapsedtime))
             # if it's time, the message is putting back to the ok list to publish
             if elapsedtime >= self.o.mdelay:
-                #logger.info('OK')
+                # logger.info('OK')
                 worklist.incoming.append(m1)
             else:
                 new_ok_delay.append(m1)
@@ -110,4 +111,3 @@ class MDelayLatest(FlowCB):
             f'suppressions={self.suppressions} currently delay queue length:{len(self.ok_delay)}'
         )
         self.suppressions = 0
-

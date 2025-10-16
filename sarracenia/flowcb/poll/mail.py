@@ -1,7 +1,7 @@
 """
-Posts any new emails from an email server, connected to using 
-the specified protocol, either pop3 or imap. The imaplib/poplib 
-implementations in Python use the most secure SSL settings by 
+Posts any new emails from an email server, connected to using
+the specified protocol, either pop3 or imap. The imaplib/poplib
+implementations in Python use the most secure SSL settings by
 default: PROTOCOL_TLS, OP_NO_SSLv2, and OP_NO_SSLv3.
 Compatible with Python 2.7+.
 
@@ -20,11 +20,11 @@ usage:
         Full credentials must be in credentials.conf.
         If port is not specified it'll default to the ones above based on protocol/ssl setting.
 
-This posts what messages are available. A separate component is needed to 
+This posts what messages are available. A separate component is needed to
 download the message, which would need:
 
      callback download.mail_ingest
- 
+
 to process these posts.
 
 

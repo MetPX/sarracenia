@@ -2,12 +2,15 @@ import pytest
 from tests.conftest import *
 from unittest.mock import patch
 
-import os, types, copy
+import os
+import types
+import copy
 import fakeredis
 
 from sarracenia.flowcb.nodupe.redis import Redis as NoDupe_Redis
 from sarracenia.flowcb.nodupe.disk import Disk as NoDupe_Disk
 from sarracenia import Message as SR3Message
+
 
 class Options:
     def __init__(self):
@@ -23,32 +26,34 @@ class Options:
         self.fileAgeMax = 0
         self.fileAgeMin = 0
 
-    def add_option(self, option, type, default = None):
+    def add_option(self, option, type, default=None):
         if not hasattr(self, option):
             setattr(self, option, default)
     pass
 
+
 def make_message():
     m = SR3Message()
     m["pubTime"] = "20180118151049.356378078"
-    m["topic"] = [ "v02","post.sent_by_tsource2send" ]
+    m["topic"] = ["v02", "post.sent_by_tsource2send"]
     m["mtime"] = "20180118151048"
-    m["identity" ] = { 
-            "method": "md5", 
-            "value": "c35f14e247931c3185d5dc69c5cd543e" 
+    m["identity"] = {
+        "method": "md5",
+        "value": "c35f14e247931c3185d5dc69c5cd543e"
     }
-    m["atime"]= "20180118151049.356378078"
-    m["mode"]= "644"
-    m["size"]= "69"
-    m["source"]= "tsource"
-    m["identity"]= {  
-             "method" : "sha512", 
-             "value" : "C/HbD77eLraAoj/IWnoRFTzKZpVaT0YSebbUeKl2m103TbnkN5vukAlISgctTZkaCT/Mk2llOjcq5p\nW/5M1hIQ=="
+    m["atime"] = "20180118151049.356378078"
+    m["mode"] = "644"
+    m["size"] = "69"
+    m["source"] = "tsource"
+    m["identity"] = {
+        "method": "sha512",
+        "value": "C/HbD77eLraAoj/IWnoRFTzKZpVaT0YSebbUeKl2m103TbnkN5vukAlISgctTZkaCT/Mk2llOjcq5p\nW/5M1hIQ=="
     }
-    m["baseUrl"] =  "https://NotARealURL"
+    m["baseUrl"] = "https://NotARealURL"
     m["relPath"] = "ThisIsAPath/To/A/File.txt"
     m["_deleteOnPost"] = set()
     return m
+
 
 WorkList = types.SimpleNamespace()
 WorkList.ok = []
@@ -56,6 +61,7 @@ WorkList.incoming = []
 WorkList.rejected = []
 WorkList.failed = []
 WorkList.directories_ok = []
+
 
 @pytest.mark.depends(on=['sarracenia/flowcb/nodupe/disk_test.py', 'sarracenia/flowcb/nodupe/redis_test.py'])
 def test_on_housekeeping(tmp_path):
@@ -78,7 +84,7 @@ def test_on_housekeeping(tmp_path):
         message_2 = make_message()
         message_2['relPath'] = "Path/To/File/2.txt"
 
-        #Disk
+        # Disk
         nodupe_disk = NoDupe_Disk(BaseOptions)
         nodupe_disk.o.nodupe_ttl = 1
         nodupe_disk.now = message_now
@@ -89,12 +95,12 @@ def test_on_housekeeping(tmp_path):
 
         nodupe_disk.after_accept(worklist_disk)
 
-        #Redis
+        # Redis
         nodupe_redis = NoDupe_Redis(BaseOptions)
         nodupe_redis.o.nodupe_ttl = 1
         nodupe_redis.now = message_now
         nodupe_redis.on_start()
-        
+
         worklist_redis = copy.deepcopy(WorkList)
         worklist_redis.incoming = [message_1, message_2]
 
@@ -116,6 +122,7 @@ def test_on_housekeeping(tmp_path):
 
         assert len(worklist_disk.incoming) == len(worklist_redis.incoming) == 2
 
+
 @pytest.mark.depends(on=['sarracenia/flowcb/nodupe/disk_test.py', 'sarracenia/flowcb/nodupe/redis_test.py'])
 def test_restart(tmp_path):
     with patch(target="redis.from_url", new=fakeredis.FakeStrictRedis.from_url, ):
@@ -132,7 +139,7 @@ def test_restart(tmp_path):
         message_now = nowflt()
         message = make_message()
 
-        #Disk
+        # Disk
         nodupe_disk = NoDupe_Disk(BaseOptions)
         nodupe_disk.o.nodupe_ttl = 100000
         nodupe_disk.now = message_now
@@ -143,12 +150,12 @@ def test_restart(tmp_path):
 
         nodupe_disk.after_accept(worklist_disk)
 
-        #Redis
+        # Redis
         nodupe_redis = NoDupe_Redis(BaseOptions)
         nodupe_redis.o.nodupe_ttl = 100000
         nodupe_redis.now = message_now
         nodupe_redis.on_start()
-        
+
         worklist_redis = copy.deepcopy(WorkList)
         worklist_redis.incoming = [message, message, message]
 
@@ -157,7 +164,7 @@ def test_restart(tmp_path):
         assert len(worklist_disk.incoming) == len(worklist_redis.incoming) == 1
         assert len(worklist_disk.rejected) == len(worklist_redis.rejected) == 2
 
-        #Actual restart
+        # Actual restart
         nodupe_disk.on_stop()
         nodupe_disk.on_start()
         worklist_disk = copy.deepcopy(WorkList)
@@ -169,8 +176,9 @@ def test_restart(tmp_path):
         worklist_redis = copy.deepcopy(WorkList)
         worklist_redis.incoming = [message, message, message]
         nodupe_redis.after_accept(worklist_redis)
-        
+
         assert len(worklist_disk.rejected) == len(worklist_redis.rejected) == 3
+
 
 @pytest.mark.depends(on=['sarracenia/flowcb/nodupe/disk_test.py', 'sarracenia/flowcb/nodupe/redis_test.py'])
 def test_after_accept(tmp_path, capsys):
@@ -188,7 +196,7 @@ def test_after_accept(tmp_path, capsys):
         message_now = nowflt()
         message = make_message()
 
-        #Disk
+        # Disk
         nodupe_disk = NoDupe_Disk(BaseOptions)
         nodupe_disk.o.nodupe_ttl = 100000
         nodupe_disk.now = message_now
@@ -199,20 +207,20 @@ def test_after_accept(tmp_path, capsys):
 
         nodupe_disk.after_accept(worklist_disk)
 
-        #Redis
+        # Redis
         nodupe_redis = NoDupe_Redis(BaseOptions)
         nodupe_redis.o.nodupe_ttl = 100000
         nodupe_redis.now = message_now
         nodupe_redis.on_start()
-        
+
         worklist_redis = copy.deepcopy(WorkList)
         worklist_redis.incoming = [message, message, message]
 
         nodupe_redis.after_accept(worklist_redis)
 
-
         assert len(worklist_disk.incoming) == len(worklist_redis.incoming) == 1
         assert len(worklist_disk.rejected) == len(worklist_redis.rejected) == 2
+
 
 @pytest.mark.depends(on=['sarracenia/flowcb/nodupe/disk_test.py', 'sarracenia/flowcb/nodupe/redis_test.py'])
 def test_after_accept__WithFileAges(tmp_path, capsys):
@@ -236,7 +244,7 @@ def test_after_accept__WithFileAges(tmp_path, capsys):
         message_new = make_message()
         message_new['mtime'] = message_new_mtime
 
-        #Disk
+        # Disk
         nodupe_disk = NoDupe_Disk(BaseOptions)
         nodupe_disk.o.nodupe_ttl = 100000
         nodupe_disk.o.fileAgeMin = 1000
@@ -249,14 +257,14 @@ def test_after_accept__WithFileAges(tmp_path, capsys):
 
         nodupe_disk.after_accept(worklist_disk)
 
-        #Redis
+        # Redis
         nodupe_redis = NoDupe_Redis(BaseOptions)
         nodupe_redis.o.nodupe_ttl = 100000
         nodupe_redis.o.fileAgeMin = 1000
         nodupe_redis.o.fileAgeMax = 1000
         nodupe_redis.now = message_now
         nodupe_redis.on_start()
-        
+
         worklist_redis = copy.deepcopy(WorkList)
         worklist_redis.incoming = [message_old, message_new]
 
@@ -266,10 +274,11 @@ def test_after_accept__WithFileAges(tmp_path, capsys):
         assert worklist_disk.rejected[0]['reject'].count(message_old_mtime + " too old (nodupe check), oldest allowed") \
             == worklist_redis.rejected[0]['reject'].count(message_old_mtime + " too old (nodupe check), oldest allowed") \
             == 1
-        
+
         assert worklist_disk.rejected[1]['reject'].count(message_new_mtime + " too new (nodupe check), newest allowed") \
             == worklist_redis.rejected[1]['reject'].count(message_new_mtime + " too new (nodupe check), newest allowed") \
             == 1
+
 
 @pytest.mark.depends(on=['sarracenia/flowcb/nodupe/disk_test.py', 'sarracenia/flowcb/nodupe/redis_test.py'])
 def test_after_accept__InFlight(tmp_path, capsys):
@@ -293,7 +302,7 @@ def test_after_accept__InFlight(tmp_path, capsys):
         message_new = make_message()
         message_new['mtime'] = message_new_mtime
 
-        #Redis
+        # Redis
         nodupe_redis = NoDupe_Redis(BaseOptions)
         nodupe_redis.o.nodupe_ttl = 100000
         nodupe_redis.now = message_now
@@ -302,8 +311,8 @@ def test_after_accept__InFlight(tmp_path, capsys):
         worklist_redis = copy.deepcopy(WorkList)
         worklist_redis.incoming = [message_old, message_new]
         nodupe_redis.after_accept(worklist_redis)
-        
-        #Disk
+
+        # Disk
         nodupe_disk = NoDupe_Disk(BaseOptions)
         nodupe_disk.o.nodupe_ttl = 100000
         nodupe_disk.now = message_now
@@ -319,6 +328,6 @@ def test_after_accept__InFlight(tmp_path, capsys):
 
         # FIXME: Peter found these failing, and did not understand them enought to get them to pass.
         #    it looks like the nodupe classes changed and this didn't follow, so the test is now slightly wrong.
-        #assert worklist_redis.rejected[0]['reject'].count(message_new_mtime + " too new (nodupe check), newest allowed") \
+        # assert worklist_redis.rejected[0]['reject'].count(message_new_mtime + " too new (nodupe check), newest allowed") \
         #    == worklist_disk.rejected[0]['reject'].count(message_new_mtime + " too new (nodupe check), newest allowed") \
         #    == 1

@@ -18,8 +18,8 @@ logger = logging.getLogger(__name__)
 
 class Disk(NoDupe):
     """
-       generalised duplicate suppression for sr3 programs. It is used as a 
-       time based buffer that prevents, when activated, identical files (of some kinds) 
+       generalised duplicate suppression for sr3 programs. It is used as a
+       time based buffer that prevents, when activated, identical files (of some kinds)
        from being processed more than once, by rejecting files identified as duplicates.
 
        options:
@@ -39,22 +39,23 @@ class Disk(NoDupe):
                            may be referenced if it is an integer value.
 
        NoDupe supports/uses::
-       
+
            cache_file : default ~/.cache/sarra/'pgm'/'cfg'/recent_files_0001.cache
                         each line in file is
                         sum time path part
-       
+
            cache_dict : {}
                         cache_dict[key] = {path1: time1, path2: time2, ...}
-       
+
     """
+
     def __init__(self, options):
 
-        super().__init__(options,logger)
+        super().__init__(options, logger)
         logger.debug("NoDupe init")
         logging.basicConfig(format=self.o.logFormat, level=getattr(logging, self.o.logLevel.upper()))
 
-        self.o.add_option( 'nodupe_ttl', 'duration', 0 ) 
+        self.o.add_option('nodupe_ttl', 'duration', 0)
 
         self.cache_dict = {}
         self.cache_file = None
@@ -78,8 +79,8 @@ class Disk(NoDupe):
         new_count = self.count
 
         if new_count > 0:
-            logger.info( "was %d, but since %5.2f sec, increased up to %d, now saved %d entries"
-                 % (self.last_count, self.now - self.last_time, count, new_count))
+            logger.info("was %d, but since %5.2f sec, increased up to %d, now saved %d entries"
+                        % (self.last_count, self.now - self.last_time, count, new_count))
 
         self.last_time = self.now
         self.last_count = new_count
@@ -102,11 +103,9 @@ class Disk(NoDupe):
             self.count += 1
             return True
 
-         
-
-        logger.debug( f"entry already in NoDupe cache: key={key}" )
+        logger.debug(f"entry already in NoDupe cache: key={key}")
         kdict = self.cache_dict[key]
-        present = relpath in kdict and (kdict[relpath]+self.o.nodupe_ttl) >= self.now
+        present = relpath in kdict and (kdict[relpath] + self.o.nodupe_ttl) >= self.now
 
         kdict[relpath] = self.now
 
@@ -115,18 +114,18 @@ class Disk(NoDupe):
         self.count += 1
 
         if present:
-            logger.debug( f"updated time of old NoDupe entry: relpath={relpath}" )
+            logger.debug(f"updated time of old NoDupe entry: relpath={relpath}")
             self.cache_hit = relpath
             return False
         else:
-            logger.debug( f"added relpath={relpath}")
+            logger.debug(f"added relpath={relpath}")
 
         return True
 
-    def check_message(self, msg) -> bool :
+    def check_message(self, msg) -> bool:
         """
            derive keys to be looked up in cache of messages already seen.
-           then look them up in the cache, 
+           then look them up in the cache,
 
            return False if message is a dupe.
                   True if it is new.
@@ -139,7 +138,7 @@ class Disk(NoDupe):
         else:
             path = msg['relPath'].lstrip('/')
 
-        msg['noDupe'] = { 'key': key, 'path': path }
+        msg['noDupe'] = {'key': key, 'path': path}
         msg['_deleteOnPost'] |= set(['noDupe'])
 
         logger.debug("NoDupe calling check( %s, %s )" % (key, path))
@@ -161,18 +160,18 @@ class Disk(NoDupe):
             max_mtime = self.now + 100
 
         for m in worklist.incoming:
-            if ('mtime' in m) :
-                mtime=timestr2flt(m['mtime'])
+            if ('mtime' in m):
+                mtime = timestr2flt(m['mtime'])
                 if mtime < min_mtime:
                     m['_deleteOnPost'] |= set(['reject'])
                     m['reject'] = f"{m['mtime']} too old (nodupe check), oldest allowed {timeflt2str(min_mtime)}"
-                    m.setReport(406,  f"{m['mtime']} too old (nodupe check), oldest allowed {timeflt2str(min_mtime)}" )
+                    m.setReport(406, f"{m['mtime']} too old (nodupe check), oldest allowed {timeflt2str(min_mtime)}")
                     worklist.rejected.append(m)
                     continue
                 elif mtime > max_mtime:
                     m['_deleteOnPost'] |= set(['reject'])
                     m['reject'] = f"{m['mtime']} too new (nodupe check), newest allowed {timeflt2str(max_mtime)}"
-                    m.setReport(425,  f"{m['mtime']} too new (nodupe check), newest allowed {timeflt2str(max_mtime)}" )
+                    m.setReport(425, f"{m['mtime']} too new (nodupe check), newest allowed {timeflt2str(max_mtime)}")
                     worklist.rejected.append(m)
                     continue
 
@@ -186,7 +185,7 @@ class Disk(NoDupe):
 
         if self.fp:
             self.fp.flush()
-        logger.debug( f"items registered in duplicate suppression cache: {len(self.cache_dict.keys())}" )
+        logger.debug(f"items registered in duplicate suppression cache: {len(self.cache_dict.keys())}")
         worklist.incoming = new_incoming
 
     def on_start(self):
@@ -219,13 +218,15 @@ class Disk(NoDupe):
                 # expired or keep
                 t = kdict[value]
                 ttl = now - t
-                if ttl > self.o.nodupe_ttl: continue
+                if ttl > self.o.nodupe_ttl:
+                    continue
 
                 parts = value.split('*')
                 path = parts[0]
                 qpath = urllib.parse.quote(path)
 
-                if qpath == qdelpath: continue
+                if qpath == qdelpath:
+                    continue
 
                 ndict[value] = t
                 self.count += 1
@@ -233,7 +234,8 @@ class Disk(NoDupe):
                 if persist:
                     self.fp.write("%s %f %s\n" % (key, t, qpath))
 
-            if len(ndict) > 0: new_dict[key] = ndict
+            if len(ndict) > 0:
+                new_dict[key] = ndict
 
         # set cleaned cache_dict
         self.cache_dict = new_dict
@@ -305,7 +307,8 @@ class Disk(NoDupe):
         while True:
             # read line, parse words
             line = self.fp.readline()
-            if not line: break
+            if not line:
+                break
             lineno += 1
 
             # words  = [ sum, time, path ]
@@ -319,7 +322,8 @@ class Disk(NoDupe):
                 # skip expired entry
 
                 ttl = now - ctime
-                if ttl > self.o.nodupe_ttl: continue
+                if ttl > self.o.nodupe_ttl:
+                    continue
 
             except Exception as err:
                 err_msg_fmt = "load corrupted: lineno={}, cache_file={}, err={}"
@@ -329,10 +333,13 @@ class Disk(NoDupe):
 
             #  add info in cache
 
-            if key in self.cache_dict: kdict = self.cache_dict[key]
-            else: kdict = {}
+            if key in self.cache_dict:
+                kdict = self.cache_dict[key]
+            else:
+                kdict = {}
 
-            if not path in kdict: self.count += 1
+            if not path in kdict:
+                self.count += 1
 
             kdict[path] = ctime
             self.cache_dict[key] = kdict
@@ -351,7 +358,8 @@ class Disk(NoDupe):
         logger.debug("NoDupe save")
 
         # close,remove file
-        if self.fp: self.fp.close()
+        if self.fp:
+            self.fp.close()
         try:
             os.unlink(self.cache_file)
         except Exception as err:

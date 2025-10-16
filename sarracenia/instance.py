@@ -48,6 +48,7 @@ class instance:
 
        this is the main entry point launched from the sr3 cli, with arguments for it to turn into a specific configuration.
     """
+
     def __init__(self):
         self.running_instance = None
         original_sigint = signal.getsignal(signal.SIGINT)
@@ -55,13 +56,14 @@ class instance:
     def stop_signal(self, signum, stack):
         logging.info('signal %d received' % signum)
 
-        # stack trace dump from: https://stackoverflow.com/questions/132058/showing-the-stack-trace-from-a-running-python-application
+        # stack trace dump from:
+        # https://stackoverflow.com/questions/132058/showing-the-stack-trace-from-a-running-python-application
         if self.o.debug:
             logger.debug("when debug is on, we generate stack trace below to help debugging, but note that nothing has failed")
             id2name = dict([(th.ident, th.name) for th in threading.enumerate()])
             code = []
             for threadId, stack in sys._current_frames().items():
-                code.append("\n# Thread: %s(%d)" % (id2name.get(threadId,""), threadId))
+                code.append("\n# Thread: %s(%d)" % (id2name.get(threadId, ""), threadId))
                 for filename, lineno, name, line in traceback.extract_stack(stack):
                     code.append('File: "%s", line %d, in %s' % (filename, lineno, name))
                     if line:
@@ -74,19 +76,18 @@ class instance:
           Main element to run a single flow instance. It parses the command line arguments twice.
           the first pass, is to initialize the log file and debug level, and select the configuration file to parse.
           Once the log file is set, and output & error re-direction is in place, the second pass begins:
-    
+
           The configuration files are parsed, and then the options are parsed a second time to act
           as overrides to the configuration file content.
-          
+
           As all process management is handled by sr.py, the *action* here is not parsed, but always either
           *start* (daemon) or *foreground* (interactive)
-    
+
         """
         global logger
 
         logging.basicConfig(
-            format=
-            '%(asctime)s [%(levelname)s] %(process)d %(name)s %(funcName)s %(message)s',
+            format='%(asctime)s [%(levelname)s] %(process)d %(name)s %(funcName)s %(message)s',
             level=logging.INFO)
 
         # FIXME: honour SR_ variable for moving preferences...
@@ -94,17 +95,17 @@ class instance:
             sarracenia.config.Config.appdir_stuff['appname'],
             sarracenia.config.Config.appdir_stuff['appauthor'])
 
-        cfg_preparse=sarracenia.config.Config( \
+        cfg_preparse = sarracenia.config.Config(
             {
-               'acceptUnmatched':True, 'exchange':None, 'inline':False, 'inlineEncoding':'guess', 'logStdout': False,
-            } )
+                'acceptUnmatched': True, 'exchange': None, 'inline': False, 'inlineEncoding': 'guess', 'logStdout': False,
+            })
 
         defconfig = default_cfg_dir + os.sep + "default.conf"
         if os.path.exists(defconfig):
             cfg_preparse.parse_file(defconfig)
         cfg_preparse.parse_args()
 
-        #cfg_preparse.dump()
+        # cfg_preparse.dump()
 
         if cfg_preparse.action not in ['foreground', 'start']:
             logger.error('action must be one of: foreground or start')
@@ -132,9 +133,9 @@ class instance:
         else:
             hostdir = None
 
-        pidfilename = sarracenia.config.get_pid_filename( hostdir, component, config, cfg_preparse.no)
+        pidfilename = sarracenia.config.get_pid_filename(hostdir, component, config, cfg_preparse.no)
         # leave some time between checks during instance startup.
-        instance_gap=0.10
+        instance_gap = 0.10
 
         if not hasattr(cfg_preparse,
                        'no') and not (cfg_preparse.action == 'foreground'):
@@ -143,34 +144,31 @@ class instance:
         elif cfg_preparse.no > 1:
             # worker instances need give lead instance time to write subscriptions/queueNames/bindings
             # FIXME: might be better to loop here until lead instance .pid file exists?
-            leadpidfilename = sarracenia.config.get_pid_filename( hostdir, component, config, 1)
-            time.sleep(0.1+cfg_preparse.no*instance_gap)
+            leadpidfilename = sarracenia.config.get_pid_filename(hostdir, component, config, 1)
+            time.sleep(0.1 + cfg_preparse.no * instance_gap)
             while not os.path.isdir(os.path.dirname(leadpidfilename)):
                 logger.debug("waiting for lead instance to create state directory")
-                time.sleep(cfg_preparse.no*instance_gap)
+                time.sleep(cfg_preparse.no * instance_gap)
             while not os.path.isfile(leadpidfilename):
                 logger.debug("waiting for lead instance to create pid file: {leadpidfilename}")
-                time.sleep(cfg_preparse.no*instance_gap)
+                time.sleep(cfg_preparse.no * instance_gap)
 
-
-        if (len(cfg_preparse.configurations) > 1 ) and \
-           ( cfg_preparse.configurations[0].split(os.sep)[0] != 'post' ):
+        if (len(cfg_preparse.configurations) > 1) and \
+           (cfg_preparse.configurations[0].split(os.sep)[0] != 'post'):
             logger.critical("can only run one configuration in an instance")
             return
 
-
-        if cfg_preparse.logRotateInterval < (24*60*60):
-            logRotateInterval=int(cfg_preparse.logRotateInterval)
-            lr_when='s'
+        if cfg_preparse.logRotateInterval < (24 * 60 * 60):
+            logRotateInterval = int(cfg_preparse.logRotateInterval)
+            lr_when = 's'
         else:
-            logRotateInterval = int(cfg_preparse.logRotateInterval/(24*60*60))
-            lr_when='midnight'
-            
+            logRotateInterval = int(cfg_preparse.logRotateInterval / (24 * 60 * 60))
+            lr_when = 'midnight'
 
         # init logs here. need to know instance number and configuration and component before here.
-        if cfg_preparse.action in ['start','run'] :
+        if cfg_preparse.action in ['start', 'run']:
 
-            metricsfilename = sarracenia.config.get_metrics_filename( hostdir, component, config, cfg_preparse.no)
+            metricsfilename = sarracenia.config.get_metrics_filename(hostdir, component, config, cfg_preparse.no)
 
             dir_not_there = not os.path.exists(os.path.dirname(metricsfilename))
             while dir_not_there:
@@ -180,14 +178,14 @@ class instance:
                 except FileExistsError:
                     dir_not_there = False
                 except Exception as ex:
-                    logging.error( "makedirs {} failed err={}".format(os.path.dirname(metricsfilename),ex))
+                    logging.error("makedirs {} failed err={}".format(os.path.dirname(metricsfilename), ex))
                     logging.debug("Exception details:", exc_info=True)
 
             cfg_preparse.metricsFilename = metricsfilename
 
             if not cfg_preparse.logStdout:
 
-                logfilename = sarracenia.config.get_log_filename( hostdir, component, config, cfg_preparse.no)
+                logfilename = sarracenia.config.get_log_filename(hostdir, component, config, cfg_preparse.no)
                 dir_not_there = not os.path.exists(os.path.dirname(logfilename))
                 while dir_not_there:
                     try:
@@ -196,11 +194,11 @@ class instance:
                     except FileExistsError:
                         dir_not_there = False
                     except Exception as ex:
-                        logging.error( "makedirs {} failed err={}".format(os.path.dirname(logfilename),ex))
+                        logging.error("makedirs {} failed err={}".format(os.path.dirname(logfilename), ex))
                         logging.debug("Exception details:", exc_info=True)
                         time.sleep(0.1)
 
-                #log_format = '%(asctime)s [%(levelname)s] %(name)s %(funcName)s %(message)s'
+                # log_format = '%(asctime)s [%(levelname)s] %(name)s %(funcName)s %(message)s'
                 log_format = cfg_preparse.logFormat
                 if logging.getLogger().hasHandlers():
                     for h in logging.getLogger().handlers:
@@ -220,7 +218,7 @@ class instance:
 
                 if sarracenia.features['jsonlogs']['present'] and cfg_preparse.logJson:
                     jsonHandler = RedirectedTimedRotatingFileHandler(
-                        logfilename.replace('.log','.json'),
+                        logfilename.replace('.log', '.json'),
                         when=lr_when,
                         interval=logRotateInterval,
                         backupCount=cfg_preparse.logRotateCount)

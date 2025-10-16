@@ -34,7 +34,7 @@ logger = logging.getLogger(__name__)
 
 class Rootchown(FlowCB):
     def __init__(self, options):
-        super().__init__(options,logger)
+        super().__init__(options, logger)
         self.o.declare_option('rootChownMappingFile')
         self.mapping = {}
 
@@ -49,7 +49,8 @@ class Rootchown(FlowCB):
             f = open(mf_path, 'r')
             while True:
                 l = f.readline()
-                if not l: break
+                if not l:
+                    break
                 l2 = l.strip()
                 parts = l2.split()
                 if len(parts) != 2:
@@ -58,7 +59,7 @@ class Rootchown(FlowCB):
                 self.mapping[parts[0]] = parts[1]
             f.close()
             logger.info("ROOT_CHOWN mapping_file loaded  %s" % mf_path)
-        except:
+        except BaseException:
             logger.error("ROOT_CHOWN problem when parsing %s" % mf_path)
 
     def after_accept(self, worklist):
@@ -70,7 +71,7 @@ class Rootchown(FlowCB):
 
             # if remove ...
 
-            if 'fileOp' in message and ( ( 'remove' in message['fileOp'] ) or ( 'rename' in message['fileOp'] ) ):
+            if 'fileOp' in message and (('remove' in message['fileOp']) or ('rename' in message['fileOp'])):
                 continue
 
             # if move ... sr_watch sets new_dir new_file on destination file so we are ok
@@ -105,10 +106,10 @@ class Rootchown(FlowCB):
                 logger.debug("ROOT_CHOWN set ownership field %s" %
                              message['ownership'])
 
-            except:
+            except BaseException:
                 logger.error("ROOT_CHOWN could not set ownership  %s" %
                              local_file)
-                #FIXME should we do worklist.reject here?
+                # FIXME should we do worklist.reject here?
 
     def after_work(self, worklist):
         logger.debug("ROOT_CHOWN after_work")
@@ -144,8 +145,8 @@ class Rootchown(FlowCB):
                 os.chown(local_file, uid, gid)
                 logger.info("ROOT_CHOWN set ownership %s to %s" %
                             (ug, local_file))
-                #FIXME not sure if we add to worklist.ok here
+                # FIXME not sure if we add to worklist.ok here
 
-            except:
+            except BaseException:
                 logger.error("ROOT_CHOWN could not set %s to %s" %
                              (ug, local_file))

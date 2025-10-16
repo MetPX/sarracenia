@@ -12,10 +12,10 @@ import sys
 
 entry_points = [
 
-    'ack', 'after_accept', 'after_gather', 'after_post', 'after_work', 'destfn', 'do_poll', 
+    'ack', 'after_accept', 'after_gather', 'after_post', 'after_work', 'destfn', 'do_poll',
     'download', 'gather', 'metricsReport', 'on_cleanup', 'on_declare', 'on_features',
-    'on_housekeeping', 'on_sanity', 'on_start', 'on_stop', 
-    'please_stop', 'poll', 'post', 'report', 'send', 
+    'on_housekeeping', 'on_sanity', 'on_start', 'on_stop',
+    'please_stop', 'poll', 'post', 'report', 'send',
 
 ]
 
@@ -27,47 +27,47 @@ class FlowCB:
     Flow Callback is the main class for implementing plugin customization to flows.
 
     sample activation in a configuration file:
-    
+
     flowCallback sarracenia.flowcb.name.Name
-    
+
     will instantiate an object of that type whose appropriately name methods
     will be called at the right time.
-    
+
     __init__ accepts options as an argument.
-    
+
     options is a sarracenia.config.Config object, used to override default behaviour
-    
+
     a setting is declared in a configuration file like so::
-    
+
         set sarracenia.flowcb.filter.log.Log.level debug
-    
+
     (the prefix for the setting matches the type hierarchy in flowCallback)
     the plugin should get the setting::
-    
+
         options.level = 'debug'
-    
-    
+
+
     worklist given to on_plugins...
-    
+
     * worklist.incoming --> new messages to continue processing
     * worklist.ok       --> successfully processed
     * worklist.rejected --> messages to not be further processed.
     * worklist.failed   --> messages for which processing failed. Failed messages will be retried.
     * worklist.directories_ok --> list of directories created during processing.
-    
+
     Initially, all messages are placed in incoming.
     if a plugin entry_point decides:
-    
-    - a message is not relevant, it is moved to the rejected worklist. 
+
+    - a message is not relevant, it is moved to the rejected worklist.
     - all processing has been done, it moves it to the ok worklist
     - an operation failed and it should be retried later, append it to the failed
       worklist
-    
+
     Do not remove any message from all lists, only move messages between them.
     it is necessary to put rejected messages in the appropriate worklist
     so they can be acknowledged as received. Messages can only removed after ack.
-    
-    
+
+
     def __init__(self,options) -> None::
 
         Task: initialization of the flowCallback at instantiation time.
@@ -84,8 +84,8 @@ class FlowCB:
 
         Task: gather messages from a source... return a tuple:
 
-              * gather_more ... bool whether to continue gathering 
-              * messages ... list of messages 
+              * gather_more ... bool whether to continue gathering
+              * messages ... list of messages
 
               or just return a list of messages.
 
@@ -110,12 +110,12 @@ class FlowCB:
          Task: operate on worklist.incoming to help decide which messages to process further.
          Move messages to worklist.rejected to prevent further processing.
 
-         Should only really be used for special use cases when message processing 
+         Should only really be used for special use cases when message processing
          needs to be done before going through `filter` of the flow algorithm.
 
          Otherwise, after_accept entry point should be used.
 
- 
+
     def after_work(self,worklist) -> None::
 
         Task: operate on worklist.ok (files which have arrived.)
@@ -138,7 +138,7 @@ class FlowCB:
 
     def download(self,msg) -> bool::
 
-         Task: looking at msg['new_dir'], msg['new_file'], msg['new_inflight_file'] 
+         Task: looking at msg['new_dir'], msg['new_file'], msg['new_inflight_file']
                and the self.o options perform a download of a single file.
                return True on a successful transfer, False otherwise.
 
@@ -147,7 +147,7 @@ class FlowCB:
 
          This replaces built-in download functionality, providing an override.
          for individual file transfers. ideally you set checksums as you download.
-            
+
     def metricsReport(self) -> dict:
 
         Return a dictionary of metrics. Example: number of messages remaining in retry queues.
@@ -170,8 +170,8 @@ class FlowCB:
          before any message transfer occurs.
 
     def on_stop(self) -> None::
-        
-         what it says on the tin... clean up processing when stopping.         
+
+         what it says on the tin... clean up processing when stopping.
 
     def poll(self) -> list::
 
@@ -184,7 +184,7 @@ class FlowCB:
         return []
 
     def post(self,worklist) -> None::
-         
+
          Task: operate on worklist.ok, and worklist.failed. modifies them appropriately.
                message acknowledgement has already occurred before they are called.
 
@@ -207,17 +207,17 @@ class FlowCB:
          before the full stop happens.
 
     """
+
     def __init__(self, options, class_logger=None):
         self.o = options
         self.stop_requested = False
 
-        if hasattr(self.o,'logFormat'):
+        if hasattr(self.o, 'logFormat'):
             logging.basicConfig(format=self.o.logFormat,
-                            level=getattr(logging, self.o.logLevel.upper()))
+                                level=getattr(logging, self.o.logLevel.upper()))
 
-        if hasattr(self.o,'logLevel') and class_logger:
+        if hasattr(self.o, 'logLevel') and class_logger:
             class_logger.setLevel(getattr(logging, self.o.logLevel.upper()))
-
 
     def please_stop(self):
         """
@@ -226,10 +226,11 @@ class FlowCB:
         """
         self.stop_requested = True
 
+
 def load_library(factory_path, options):
     """
-       Loading the entry points for a python module. It searches 
-       the normal python module path using the importlib module. 
+       Loading the entry points for a python module. It searches
+       the normal python module path using the importlib module.
 
        the factory_path is a combined file specification with a dot separator
        with a special last entry being the name of the class within the file.
@@ -237,14 +238,14 @@ def load_library(factory_path, options):
        factory_path  a.b.c.C
 
        means import the module named a.b.c and instantiate an object of type
-       C. In that class-C object, look for the known callback entry points. 
+       C. In that class-C object, look for the known callback entry points.
 
        or C might be guessed by the last class in the path not following
        python convention by not starting with a capital letter, in which case,
        it will just guess.
 
        re
-       note that the ~/.config/sr3/plugins will also be in the python library 
+       note that the ~/.config/sr3/plugins will also be in the python library
        path, so modules placed there will be found, in addition to those in the
        package itself in the *sarracenia/flowcb*  directory
 
@@ -254,12 +255,12 @@ def load_library(factory_path, options):
        callback foo.bar -> foo.bar.Bar
                            sarracenia.flowcb.foo.bar.Bar
                            foo.bar
-                           sarracenia.flowcb.foo.bar 
+                           sarracenia.flowcb.foo.bar
     """
 
     if not '.' in factory_path:
         packagename = factory_path
-        classname =factory_path.capitalize()
+        classname = factory_path.capitalize()
     else:
         if factory_path.split('.')[-1][0].islower():
             packagename = factory_path
@@ -273,7 +274,7 @@ def load_library(factory_path, options):
     except ModuleNotFoundError:
         module = importlib.import_module('sarracenia.flowcb.' + packagename)
         class_ = getattr(module, classname)
- 
+
     if hasattr(options, 'settings'):
         opt = copy.deepcopy(options)
         # strip off the class prefix.

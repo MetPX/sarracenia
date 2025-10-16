@@ -25,7 +25,8 @@ import sarracenia.config
 from sarracenia.flowcb import FlowCB
 import sarracenia.transfer
 import stat
-import sys, time
+import sys
+import time
 
 logger = logging.getLogger(__name__)
 
@@ -34,17 +35,20 @@ def file_size_fix(str_value) -> int:
     try:
 
         factor = 1
-        if str_value[-1] in 'bB': str_value = str_value[:-1]
+        if str_value[-1] in 'bB':
+            str_value = str_value[:-1]
         elif str_value[-1] in 'kK': factor = 1024
-        elif str_value[-1] in 'mM': factor = 1024 * 1024
+        elif str_value[-1] in 'mM':
+            factor = 1024 * 1024
         elif str_value[-1] in 'gG': factor = 1024 * 1024 * 1024
-        elif str_value[-1] in 'tT': factor = 1024 * 1024 * 1024 * 1024
+        elif str_value[-1] in 'tT':
+            factor = 1024 * 1024 * 1024 * 1024
         if str_value[-1].isalpha(): str_value = str_value[:-1]
 
         fsize = float(str_value) * factor
         isize = int(fsize)
 
-    except:
+    except BaseException:
         logger.debug("bad size %s" % str_value)
         return -1
 
@@ -64,9 +68,11 @@ file_type_dict = {
 
 def modstr2num(m) -> int:
     mode = 0
-    if (m[0] == 'r'): mode += 4
+    if (m[0] == 'r'):
+        mode += 4
     if (m[1] == 'w'): mode += 2
-    if (m[2] == 'x'): mode += 1
+    if (m[2] == 'x'):
+        mode += 1
     return mode
 
 
@@ -89,7 +95,7 @@ def fileid(self, id) -> int:
 class Poll(FlowCB):
     """
       The Poll flow callback class implements the main logic for polling remote resources.
-      the *poll* routine returns a list of messages for new files to be filtered. 
+      the *poll* routine returns a list of messages for new files to be filtered.
 
       when instantiated with options, the options honoured include:
 
@@ -102,7 +108,7 @@ class Poll(FlowCB):
         derived from the accept/reject clauses, but filtering should happen later.
         entire directories are listed at this point.
 
-      * timezone - interpret listings from an FTP server as being in the given timezone 
+      * timezone - interpret listings from an FTP server as being in the given timezone
         (as per `pytz <pypi.org/project/pytz>`_
 
       * chmod - used to identify the minimum permissions to accept for a file to
@@ -115,14 +121,14 @@ class Poll(FlowCB):
 
       * options are passed to sarracenia.Transfer classes for their use as well.
 
-      Poll uses sarracenia.transfer (ftp, sftp, https, etc... )classes to 
-      requests lists of files using those protocols using built-in logic.  
+      Poll uses sarracenia.transfer (ftp, sftp, https, etc... )classes to
+      requests lists of files using those protocols using built-in logic.
 
       Internally, Poll normalizes the listings received by placing them into paramiko.SFTPAttributes
       metadata records (similar to stat records) and builds a Sarracenia.Message from them.
       The *poll* routine does one pass of this, returning a list of Sarracenia.Messages.
 
-      To customize: 
+      To customize:
 
       * one can add new sarracenia.transfer protocols, each implementing the *ls* entry point
         to be compatible with this polling routine, ideally the entry point would return a
@@ -130,7 +136,7 @@ class Poll(FlowCB):
         This can be used to implement polling of structured remote resources such as S3 or webdav.
 
       * one can deal with different formats of HTTP pages by overriding the handle_data entry point,
-        as done in `nasa_mls_nrt.py <nasa_mls_nrt.py>`_ plugin 
+        as done in `nasa_mls_nrt.py <nasa_mls_nrt.py>`_ plugin
 
       * for traditional file servers, the listing format should be decypherable with the built-in processing.
 
@@ -143,13 +149,14 @@ class Poll(FlowCB):
 
 
     """
+
     def handle_starttag(self, tag, attrs):
         if tag == "table":
-            self.tabular_format=True
+            self.tabular_format = True
         elif tag == "tr":
-            self.table_column=0
+            self.table_column = 0
         elif tag == "td":
-            self.table_column +=1
+            self.table_column += 1
         else:
             for attr in attrs:
                 c, n = attr
@@ -174,21 +181,22 @@ class Poll(FlowCB):
            Other web servers put their file indices in a tabular format,  where there is a number
            of cells per row:
            <tr><td></td><td href=filename>filename</td><td>yyyy-mm-dd hh:mm</td><td>size</td>
-           This handle_data supports both formats... 
+           This handle_data supports both formats...
            the tabular format is provided by a vanilla apache2 on a debian derived system.
 
         """
-        logger.debug( f"handling_data {data} column={self.table_column}" )
+        logger.debug(f"handling_data {data} column={self.table_column}")
 
         if self.tabular_format:
             if self.table_column == 2:
-                self.myfname=data
+                self.myfname = data
                 return
             elif self.table_column != 3:
-                return 
-            sdate=data.strip()
+                return
+            sdate = data.strip()
         else:
-            if self.myfname == None: return
+            if self.myfname == None:
+                return
             if self.myfname == data: return
 
             words = data.split()
@@ -198,15 +206,15 @@ class Poll(FlowCB):
                 return
 
             sdate = words[0] + ' ' + words[1]
- 
+
         if len(sdate) < 10:
             return
 
         entry = paramiko.SFTPAttributes()
 
-        t=None
-        for f in [  '%d-%b-%Y %H:%M', '%Y-%m-%d %H:%M' ]:
-            logger.debug( f" try parsing +{sdate}+ using {f}" )
+        t = None
+        for f in ['%d-%b-%Y %H:%M', '%Y-%m-%d %H:%M']:
+            logger.debug(f" try parsing +{sdate}+ using {f}")
             try:
                 t = time.strptime(sdate, f)
                 break
@@ -218,7 +226,7 @@ class Poll(FlowCB):
             entry.st_mtime = time.mktime(t)
 
         # size is rounded, need a way to be more precise.
-        #entry.st_size = file_size_fix(words[-1])
+        # entry.st_size = file_size_fix(words[-1])
 
         if self.myfname[-1] != '/':
             entry.st_mode = 0o755
@@ -235,12 +243,12 @@ class Poll(FlowCB):
         """
         self.entries = {}
         self.myfname = None
-        self.tabular_format=False
-        self.table_column=0
+        self.tabular_format = False
+        self.table_column = 0
 
         self.parser.feed(data)
         self.parser.close()
-        
+
         return self.entries
 
     def on_html_parser_init(self):
@@ -254,9 +262,9 @@ class Poll(FlowCB):
 
     """
 
-    def __init__(self, options,class_logger=logger):
+    def __init__(self, options, class_logger=logger):
 
-        super().__init__(options,class_logger)
+        super().__init__(options, class_logger)
 
         # check pollUrl
 
@@ -265,13 +273,14 @@ class Poll(FlowCB):
             ok, self.details = sarracenia.config.Config.credentials.get(
                 self.o.pollUrl)
 
-        if self.o.pollUrl is None or self.details == None:
+        if self.o.pollUrl is None or self.details is None:
             logger.error("pollUrl option incorrect or missing\n")
             sys.exit(1)
-        
+
         if self.o.post_baseUrl is None:
             self.o.post_baseUrl = self.details.url.geturl()
-            if self.o.post_baseUrl[-1] != '/': self.o.post_baseUrl += '/'
+            if self.o.post_baseUrl[-1] != '/':
+                self.o.post_baseUrl += '/'
             if self.o.post_baseUrl.startswith('file:'):
                 self.o.post_baseUrl = 'file:'
             if self.details.url.password:
@@ -289,8 +298,8 @@ class Poll(FlowCB):
         # rebuild mask as pulls instructions
         # pulls[directory] = [mask1,mask2...]
 
-        #self.pulls = {}
-        #for mask in self.o.masks:
+        # self.pulls = {}
+        # for mask in self.o.masks:
         #    pattern, maskDir, maskFileOption, mask_regexp, accepting, mirror, strip, pstrip, flatten = mask
         #    logger.debug(mask)
         #    if not maskDir in self.pulls:
@@ -301,7 +310,7 @@ class Poll(FlowCB):
         self.on_html_parser_init()
 
     def metricsReset(self) -> None:
-        self.metrics = { 'transferRxBytes': 0 }
+        self.metrics = {'transferRxBytes': 0}
 
     def metricsReport(self) -> dict:
         return self.metrics
@@ -310,26 +319,27 @@ class Poll(FlowCB):
         try:
             self.dest.cd(path)
             return True
-        except:
+        except BaseException:
             logger.warning("sr_poll/cd: could not cd to directory %s" % path)
         return False
 
     def filedate(self, line):
 
         if not features['ftppoll']['present']:
-           logger.error('need dateparser library to deal with polling of ftp servers, no date parsed')
-           return 0
+            logger.error('need dateparser library to deal with polling of ftp servers, no date parsed')
+            return 0
 
         line_split = line.split()
         file_date = line_split[5] + " " + line_split[6] + " " + line_split[7]
         current_date = datetime.datetime.now(pytz.utc)
         # case 1: the date contains '-' implies the date is in 1 string not 3 seperate ones, and H:M is also provided
-        if "-" in file_date: file_date = line_split[5] + " " + line_split[6]
+        if "-" in file_date:
+            file_date = line_split[5] + " " + line_split[6]
         standard_date_format = dateparser.parse(
             file_date,
             settings={
                 'RELATIVE_BASE': datetime.datetime(current_date.year, 1, 1),
-                'TIMEZONE': self.o.timezone,  #turn this into an option - should be EST for mtl
+                'TIMEZONE': self.o.timezone,  # turn this into an option - should be EST for mtl
                 'TO_TIMEZONE': 'UTC'
             })
         if standard_date_format is not None:
@@ -352,31 +362,31 @@ class Poll(FlowCB):
             # assume windows...
             parts = line.split()
             sftp_obj = paramiko.SFTPAttributes()
-            ldate = dateparser.parse( ' '.join(parts[0:2]), settings={ 'TIMEZONE': self.o.timezone, 'TO_TIMEZONE':'UTC' } )
+            ldate = dateparser.parse(' '.join(parts[0:2]), settings={
+                                     'TIMEZONE': self.o.timezone, 'TO_TIMEZONE': 'UTC'})
             sftp_obj.st_mtime = ldate.timestamp()
             sftp_obj.st_size = file_size_fix(parts[2])
             sftp_obj.longname = ' '.join(line[3:])
-            sftp_obj.st_mode = 0o644 # just make it work... no permission info provided.
-            #logger.info( f"windows line parsing result: {sftp_obj}")
+            sftp_obj.st_mode = 0o644  # just make it work... no permission info provided.
+            # logger.info( f"windows line parsing result: {sftp_obj}")
         elif type(line) is str and len(line.split()) > 7:
 
             parts = line.split()
             sftp_obj = paramiko.SFTPAttributes()
-            sftp_obj.st_mode = filemode(self,parts[0])
-            sftp_obj.st_uid = fileid(self,parts[2])
-            sftp_obj.st_gid = fileid(self,parts[3])
+            sftp_obj.st_mode = filemode(self, parts[0])
+            sftp_obj.st_uid = fileid(self, parts[2])
+            sftp_obj.st_gid = fileid(self, parts[3])
 
-            if file_size_fix(parts[4]) >= 0: # normal linux/unix ftp server case.
+            if file_size_fix(parts[4]) >= 0:  # normal linux/unix ftp server case.
                 sftp_obj.st_size = file_size_fix(parts[4])
                 sftp_obj.filename = line[8:]
                 sftp_obj.st_mtime = self.filedate(line)
-            else: # university of wisconsin (some special file system? has third ownship field before size) 
+            else:  # university of wisconsin (some special file system? has third ownship field before size)
                 sftp_obj.st_size = file_size_fix(parts[5])
                 sftp_obj.filename = line[9:]
                 sftp_obj.st_mtime = self.filedate(line[1:])
 
             sftp_obj.longname = sftp_obj.filename
-
 
         # assert at this point we have an sftp_obj...
         # filter out files we don't have the necessary permissions for.
@@ -397,12 +407,14 @@ class Poll(FlowCB):
 
             new_ls = {}
             new_dir = {}
-            # del ls['']  # For some reason with FTP the first line of the ls causes an index out of bounds error becuase it contains only "total ..." in line_mode.py
+            # del ls['']  # For some reason with FTP the first line of the ls causes
+            # an index out of bounds error becuase it contains only "total ..." in
+            # line_mode.py
 
             # apply selection on the list
 
             for f in ls:
-                logger.debug( f"line to parse: {f}" )
+                logger.debug(f"line to parse: {f}")
                 matched = False
                 line = ls[f]
 
@@ -423,18 +435,20 @@ class Poll(FlowCB):
 
     def poll_directory(self, pdir):
 
-        #logger.debug("poll_directory %s %s" % (pdir))
+        # logger.debug("poll_directory %s %s" % (pdir))
         msgs = []
 
         # cd to that directory
         logger.debug(" cd %s" % pdir)
         ok = self.cd(pdir)
-        if not ok: return []
+        if not ok:
+            return []
 
         # ls that directory
 
         ok, file_dict, dir_dict = self.lsdir()
-        if not ok: return []
+        if not ok:
+            return []
 
         filelst = file_dict.keys()
         desclst = file_dict
@@ -453,9 +467,10 @@ class Poll(FlowCB):
         if self.o.recursive:
             sdir = sorted(dir_dict.keys())
             for d in sdir:
-                if d == '.' or d == '..': continue
+                if d == '.' or d == '..':
+                    continue
 
-                #d_lspath = lspath + '_' + d
+                # d_lspath = lspath + '_' + d
                 d_pdir = pdir + os.sep + d
 
                 msgs.extend(self.poll_directory(d_pdir))
@@ -471,7 +486,7 @@ class Poll(FlowCB):
             if os.path.isfile(path) or os.path.islink(path):
                 try:
                     lstat = sarracenia.stat(path)
-                except:
+                except BaseException:
                     lstat = None
 
                 ok = sarracenia.Message.fromFileInfo(path, self.o, lstat)
@@ -479,22 +494,22 @@ class Poll(FlowCB):
                     if 'size' in msg:
                         del msg['size']
                     if not self.o.follow_symlinks:
-                        try: 
-                            ok['fileOp'] = { 'link': os.readlink(path) } 
+                        try:
+                            ok['fileOp'] = {'link': os.readlink(path)}
                             if 'Identity' in msg:
-                                 del ok['Identity']
-                        except:
+                                del ok['Identity']
+                        except BaseException:
                             logger.error("cannot read link %s message dropped" % path)
                             logger.debug('Exception details: ', exc_info=True)
-                            ok=None
+                            ok = None
                 return ok
 
         post_relPath = destDir + '/' + remote_file
 
         logger.debug('desc: type: %s, value: %s' % (type(desc), desc))
 
-        if type(desc) == str:
-            line = desc.split()
+
+if isinstance(desc,         if )            line = desc.split()
             st = paramiko.SFTPAttributes()
             st.st_size = file_size_fix(line[4])
             # actionally only need to convert normalized time to number here...
@@ -511,16 +526,16 @@ class Poll(FlowCB):
             if 'mkdir' not in self.o.fileEvents:
                 return None
 
-            msg['fileOp'] = { 'directory':'' }
-             
+            msg['fileOp'] = { 'directory': '' }
+
         elif stat.S_ISLNK(desc.st_mode):
             if 'link' not in self.o.fileEvents:
                 return None
 
             if not self.o.follow_symlinks:
-                try: 
-                    msg['fileOp'] = { 'link': self.dest.readlink(path) }
-                except:
+                try:
+                    msg['fileOp'] = {'link': self.dest.readlink(path) }
+                except BaseException:
                     logger.error("cannot read link %s message dropped" % post_relPath)
                     logger.debug('Exception details: ', exc_info=True)
                     return None
@@ -533,7 +548,7 @@ class Poll(FlowCB):
             msg['identity'] = {'method': m, 'value': v}
 
         # If there is a file operation, and it isn't a rename, then some fields are irrelevant/wrong.
-        if 'fileOp' in msg and 'rename' not in msg['fileOp']: 
+        if 'fileOp' in msg and 'rename' not in msg['fileOp']:
             if 'identity' in msg:
                 del msg['identity']
             if 'size' in msg:
@@ -548,7 +563,7 @@ class Poll(FlowCB):
 
         for idx, remote_file in enumerate(filelst):
             desc = desclst[remote_file]
- 
+
             new_msgs = self.poll_file_post(desc, destDir, remote_file)
             if new_msgs:
                 msgs.extend(new_msgs)
@@ -566,12 +581,12 @@ class Poll(FlowCB):
 
         try:
             self.dest.connect()
-        except:
+        except BaseException:
             # connection did not work
             logger.error("sr_poll/post_new_url: unable to connect to %s" %
                          self.o.pollUrl)
             logger.debug('Exception details: ', exc_info=True)
-            nap=15
+            nap = 15
             logger.error("Sleeping {nap} secs and retry")
             time.sleep(nap)
             return []
@@ -580,7 +595,8 @@ class Poll(FlowCB):
 
             currentDir = self.o.variableExpansion(destDir)
 
-            if currentDir == '': currentDir = destDir
+            if currentDir == '':
+                currentDir = destDir
             msgs.extend(self.poll_directory(currentDir))
             logger.debug('poll_directory returned: %s' % len(msgs))
 
@@ -588,7 +604,7 @@ class Poll(FlowCB):
 
         try:
             self.dest.close()
-        except:
+        except BaseException:
             pass
 
         return msgs

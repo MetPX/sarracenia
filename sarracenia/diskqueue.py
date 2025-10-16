@@ -12,7 +12,12 @@
 
 from _codecs import decode, encode
 
-import jsonpickle, os, os.path, sarracenia, sys, time
+import jsonpickle
+import os
+import os.path
+import sarracenia
+import sys
+import time
 
 import logging
 
@@ -31,12 +36,12 @@ class DiskQueue():
 
     so continuous, but append-only io... with an occasional housekeeping cycle.
     to resolve them
-   
+
     not clear if we need multi-task safety... just one task writes to each queue.
 
-    retry_ttl how long 
+    retry_ttl how long
 
-    self.retry_cache 
+    self.retry_cache
 
     * a dictionary indexed by some sort of key to prevent duplicate messages being stored in it.
 
@@ -45,29 +50,30 @@ class DiskQueue():
     with various suffixes:
 
     .new -- messages added to the retry list are appended to this file.
-            
-    whenever a message is added to the retry_cache, it is appended to a 
-    cumulative list of entries to add to the retry list.  
+
+    whenever a message is added to the retry_cache, it is appended to a
+    cumulative list of entries to add to the retry list.
 
     every housekeeping interval, the two files are consolidated.
 
-    note that the *ack_id* of messages retreived from the retry list, is 
-    removed. Files must be acked around the time they are placed on the 
+    note that the *ack_id* of messages retreived from the retry list, is
+    removed. Files must be acked around the time they are placed on the
     retry_list, as reception from the source should have already been acknowledged.
 
     FIXME:  would be fun to look at performance of this thing and compare it to
         python persistent queue.  the differences:
 
-        This class does no locking (presumed single threading.) 
+        This class does no locking (presumed single threading.)
         could add locks... and they would be coarser grained than stuff in persistentqueue
         this should be faster than persistent queue, but who knows what magic they did.
         This class doesn't implement in-memory queue... it is entirely on disk...
-        saves memory, optimal for large queues.  
+        saves memory, optimal for large queues.
         probably good, since retries should be slow...
 
         not sure what will run better.
-   
+
     """
+
     def __init__(self, options, name):
 
         logger.debug(" %s __init__" % name)
@@ -79,7 +85,7 @@ class DiskQueue():
         if not hasattr(self.o, 'retry_ttl'):
             self.o.retry_ttl = None
 
-        #logging.basicConfig(format=self.o.logFormat,
+        # logging.basicConfig(format=self.o.logFormat,
         #                    level=getattr(logging, self.o.logLevel.upper()))
         logger.setLevel(getattr(logging, self.o.logLevel.upper()))
 
@@ -129,8 +135,6 @@ class DiskQueue():
             else:
                 self.msg_count_new = self._count_msgs(self.new_path)
 
-
-
     def put(self, message_list):
         """
           add messages to the end of the queue.
@@ -160,16 +164,16 @@ class DiskQueue():
         """
         try:
             self.housekeeping_fp.close()
-        except:
+        except BaseException:
             pass
         try:
             os.fsync(self.new_fp)
             self.new_fp.close()
-        except:
+        except BaseException:
             pass
         try:
             self.queue_fp.close()
-        except:
+        except BaseException:
             pass
         self.housekeeping_fp = None
         self.new_fp = None
@@ -194,7 +198,7 @@ class DiskQueue():
             with open(file_path, mode='r') as f:
                 for line in f:
                     if "{" in line:
-                        count +=1
+                        count += 1
             logger.debug(f"counted {count} msgs in {file_path}")
 
         return count
@@ -209,7 +213,7 @@ class DiskQueue():
         Returns:
             int: number of messages in the DiskQueue.
         """
-        return max(0,self.msg_count) + self.msg_count_new
+        return max(0, self.msg_count) + self.msg_count_new
 
     def msgFromJSON(self, line):
         try:
@@ -248,16 +252,16 @@ class DiskQueue():
             if not message:
                 try:
                     os.unlink(self.queue_file)
-                except:
+                except BaseException:
                     pass
                 self.queue_fp = None
                 self.msg_count = 0
-                #logger.debug("MG DEBUG retry get return None")
+                # logger.debug("MG DEBUG retry get return None")
                 break
 
             if self.is_expired(message):
                 self.msg_count -= 1
-                #logger.error("MG invalid %s" % message)
+                # logger.error("MG invalid %s" % message)
                 continue
 
             if 'ack_id' in message:
@@ -272,7 +276,7 @@ class DiskQueue():
         if self.msg_count == 0:
             try:
                 os.unlink(self.queue_file)
-            except:
+            except BaseException:
                 pass
             self.queue_fp = None
 
@@ -303,7 +307,8 @@ class DiskQueue():
         if 'parts' in message:
             cache_key += ' ' + message['parts']
 
-        if cache_key in self.retry_cache: return True
+        if cache_key in self.retry_cache:
+            return True
         self.retry_cache[cache_key] = True
         return False
 
@@ -312,8 +317,10 @@ class DiskQueue():
           return is the given message expired ?
         """
         # no expiry
-        if self.o.retry_ttl is None: return False
-        if self.o.retry_ttl <= 0: return False
+        if self.o.retry_ttl is None:
+            return False
+        if self.o.retry_ttl <= 0:
+            return False
 
         # compute message age
         msg_time = sarracenia.timestr2flt(message['pubTime'])
@@ -324,9 +331,9 @@ class DiskQueue():
 
     def needs_requeuing(self, message) -> bool:
         """
-           return 
-           * True if message is not expired, and not already in queue. 
-           * False otherwise.   
+           return
+           * True if message is not expired, and not already in queue.
+           * False otherwise.
         """
         if self.in_cache(message):
             logger.info("discarding duplicate message (in %s cache) %s" %
@@ -346,7 +353,8 @@ class DiskQueue():
             read a message from the state file.
         """
         if fp is None:
-            if not os.path.isfile(path): return None, None
+            if not os.path.isfile(path):
+                return None, None
             logger.debug("DEBUG %s open read" % path)
             fp = open(path, 'r')
 
@@ -354,13 +362,14 @@ class DiskQueue():
         if not line:
             try:
                 fp.close()
-            except:
+            except BaseException:
                 pass
             return None, None
 
         msg = self.msgFromJSON(line)
         # a corrupted line : go to the next
-        if msg is None: return self.msg_get_from_file(fp, path)
+        if msg is None:
+            return self.msg_get_from_file(fp, path)
 
         return fp, msg
 
@@ -371,7 +380,7 @@ class DiskQueue():
                  - check if message is duplicate or expired.
                  - write to .hk
 
-           read .new file, 
+           read .new file,
                  - check if message is duplicate or expired.
                  - writing to .hk (housekeeping)
 
@@ -382,8 +391,12 @@ class DiskQueue():
 
         # finish retry before reshuffling all retries entries
 
-        if (os.path.isfile(self.queue_file) and self.queue_fp != None) or self.msg_count != 0:
-            logger.info(f"still {self.msg_count} messages in {self.name} list. Resuming retries with {self.queue_file}")
+        if (os.path.isfile(self.queue_file) and self.queue_fp is not None) or self.msg_count != 0:
+            logger.info(
+                f"still {
+                    self.msg_count} messages in {
+                    self.name} list. Resuming retries with {
+                    self.queue_file}")
             return
 
         self.now = sarracenia.nowflt()
@@ -396,7 +409,7 @@ class DiskQueue():
             self.close()
             try:
                 os.unlink(self.housekeeping_path)
-            except:
+            except BaseException:
                 pass
             fp = open(self.housekeeping_path, 'w')
             fp.close()
@@ -413,15 +426,17 @@ class DiskQueue():
             # remaining of retry to housekeeping
             while True:
                 fp, message = self.msg_get_from_file(fp, self.queue_file)
-                if not message: break
+                if not message:
+                    break
                 i = i + 1
-                if not self.needs_requeuing(message): continue
+                if not self.needs_requeuing(message):
+                    continue
                 self.housekeeping_fp.write(self.msgToJSON(message))
                 N = N + 1
 
             try:
                 fp.close()
-            except:
+            except BaseException:
                 pass
 
             i = 0
@@ -431,17 +446,19 @@ class DiskQueue():
             # append new to housekeeping.
             while True:
                 fp, message = self.msg_get_from_file(fp, self.new_path)
-                if not message: break
+                if not message:
+                    break
                 i = i + 1
                 logger.debug("DEBUG message %s" % message)
-                if not self.needs_requeuing(message): continue
+                if not self.needs_requeuing(message):
+                    continue
 
-                #logger.debug("MG DEBUG flush retry to state %s" % message)
+                # logger.debug("MG DEBUG flush retry to state %s" % message)
                 self.housekeeping_fp.write(self.msgToJSON(message))
                 N = N + 1
             try:
                 fp.close()
-            except:
+            except BaseException:
                 pass
 
             logger.debug("retrieved %d from the %d retry" %
@@ -460,7 +477,7 @@ class DiskQueue():
             logger.debug("%s No retry in list" % self.name)
             try:
                 os.unlink(self.housekeeping_path)
-            except:
+            except BaseException:
                 pass
 
         # housekeeping file becomes new retry
@@ -469,14 +486,14 @@ class DiskQueue():
             logger.info("%s Number of messages in retry list %d" % (self.name, N))
             try:
                 os.rename(self.housekeeping_path, self.queue_file)
-            except:
+            except BaseException:
                 logger.error("Something went wrong with rename")
 
         # cleanup
         self.msg_count_new = 0
         try:
             os.unlink(self.new_path)
-        except:
+        except BaseException:
             pass
 
         elapse = sarracenia.nowflt() - self.now

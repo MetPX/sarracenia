@@ -19,9 +19,10 @@ from sarracenia.flowcb import FlowCB
 
 logger = logging.getLogger(__name__)
 
+
 class RenameDMF(FlowCB):
     def __init__(self, options):
-        super().__init__(options,logger)
+        super().__init__(options, logger)
 
     def after_accept(self, worklist):
         for message in worklist.incoming:

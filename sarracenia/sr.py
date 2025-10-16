@@ -50,13 +50,13 @@ import sarracenia.moth
 import sarracenia.rabbitmq_admin
 
 if sarracenia.features['process']['present']:
-   import psutil
+    import psutil
 
 import urllib.parse
 
 logger = logging.getLogger(__name__)
 
-empty_metrics={ 
+empty_metrics = {
     "byteConnectPercent": 0, "byteRate": 0, "byteTotal": 0, "connectPercent": 0, "messageLast": 0, "msgRate": 0,
     "msgRateCpu": 0, "retry": 0, "time_base": 0, "transferLast": 0, "brokerQueuedMessageCount": 0, "byteRate": 0,
     "connected": True, "cpuTime": 0, "disconnectTime": 0, "lagMax": 0, "lagMean": 0, "lagMessageCount": 0,
@@ -64,35 +64,51 @@ empty_metrics={
     "msgs_in_post_retry": 0, "msgs_in_post_retry": 0, "rejectCount": 0, "rejectPercent": 0, "rxBadCount": 0,
     "rxByteCount": 0, "rxGoodCount": 0, "rxLast": 0, "transferConnected": True, "transferConnectTime": 0,
     "transferRxByteRate": 0, "transferRxBytes": 0, "transferRxFiles": 0, "transferRxLast": 0, "transferTxByteRate": 0,
-    "transferTxBytes": 0, "transferTxFiles": 0, "transferTxLast": 0, "txBadCount": 0, "txByteCount": 0, 
+    "transferTxBytes": 0, "transferTxFiles": 0, "transferTxLast": 0, "txBadCount": 0, "txByteCount": 0,
     "txGoodCount": 0, "txLast": 0
-    }
+}
 
-sr3_tools_entry_points = [ "sr3_action_convert", "sr3_action_remove", "sr3_commit", "sr3_pull", "sr3_push", "sr3_remove", "sr3_scp", "sr3_ssh", "sr3_utils", "sr3d", "sr3l", "sr3r" ]
+sr3_tools_entry_points = [
+    "sr3_action_convert",
+    "sr3_action_remove",
+    "sr3_commit",
+    "sr3_pull",
+    "sr3_push",
+    "sr3_remove",
+    "sr3_scp",
+    "sr3_ssh",
+    "sr3_utils",
+    "sr3d",
+    "sr3l",
+     "sr3r"]
+
 
 def ageOfFile(lf) -> int:
     """ return number of seconds since a file was modified as a floating point number of seconds.
-        FIXME: mocked here for now. 
+        FIXME: mocked here for now.
     """
-    st=os.stat(lf)
+    st = os.stat(lf)
     return st.st_mtime
 
-def signal_pid( pid, sig ) -> int:
+
+def signal_pid(pid, sig) -> int:
     """
         wrap os.kill in a try/except for cleaner error messages and avoid control jumping somewhere
         unexpected.
     """
     try:
-       os.kill(pid, sig)
-       return 0
+        os.kill(pid, sig)
+        return 0
     except ProcessLookupError:
         return -2
 
     except Exception as ex:
-       logger.warning('sending kill signal to pid:%s failed: %s' % ( pid, ex))
-       return -1
+        logger.warning('sending kill signal to pid:%s failed: %s' % (pid, ex))
+        return -1
 
 # noinspection PyArgumentList
+
+
 class sr_GlobalState:
     """
        build a global state of all sarra processes running on the system for this user.
@@ -103,16 +119,17 @@ class sr_GlobalState:
 
        naming: routines that start with *read* don't modify anything on disk.
                routines that start with clean do...
-          
+
     """
+
     def _find_component_path(self, c):
         """
             return the string to be used to run a component in Popen.
         """
-        if c in [ 'flow',
-                'poll', 'report', 'sarra', 'sender', 'shovel', 'subscribe',
-                'watch', 'winnow'
-        ]:
+        if c in ['flow',
+                  'poll', 'report', 'sarra', 'sender', 'shovel', 'subscribe',
+                  'watch', 'winnow'
+                  ]:
             c = 'flow'
         if c[0] != 'c':  # python components
             s = self.bin_dir + os.sep + 'sr_' + c
@@ -142,23 +159,23 @@ class sr_GlobalState:
 
                 lfn += os.sep + 'log' + os.sep + c + '_' + cfg + "_%02d" % i + '.log'
 
-                dir_not_there = not os.path.exists( os.path.dirname(lfn) )
+                dir_not_there = not os.path.exists(os.path.dirname(lfn))
 
                 while dir_not_there:
                     try:
                         os.makedirs(os.path.dirname(lfn), exist_ok=True)
-                        dir_not_there = False 
+                        dir_not_there = False
                     except FileExistsError:
-                        dir_not_there = False 
+                        dir_not_there = False
                     except Exception as ex:
-                        logging.error( "makedirs {} failed err={}".format(os.path.dirname(lfn),ex))
+                        logging.error("makedirs {} failed err={}".format(os.path.dirname(lfn), ex))
                         logging.debug("Exception details:", exc_info=True)
                         time.sleep(0.1)
-                
-        if c in [ 'flow',
-                'poll', 'post', 'report', 'sarra', 'sender', 'shovel',
-                'subscribe', 'watch', 'winnow'
-        ]:
+
+        if c in ['flow',
+                  'poll', 'post', 'report', 'sarra', 'sender', 'shovel',
+                  'subscribe', 'watch', 'winnow'
+                  ]:
             component_path = os.path.dirname(
                 component_path) + os.sep + 'instance.py'
             cmd = [sys.executable, component_path, '--no', "%d" % i]
@@ -185,9 +202,9 @@ class sr_GlobalState:
             else:  # C components
                 cmd = [component_path, 'start', cfg]
 
-        #print("launching +%s+  re-directed to: %s" % (cmd, lfn), flush=True)
+        # print("launching +%s+  re-directed to: %s" % (cmd, lfn), flush=True)
         if self.options.dry_run:
-            print( f"dry_run would launch: {cmd} >{lfn} 2>&1")
+            print(f"dry_run would launch: {cmd} >{lfn} 2>&1")
             return
 
         try:
@@ -196,10 +213,10 @@ class sr_GlobalState:
             else:
                 with open(lfn, "a") as lf:
                     subprocess.Popen(cmd,
-                                 stdin=subprocess.DEVNULL,
-                                 stdout=lf,
-                                 stderr=subprocess.STDOUT)
-            #print( f"launched: {cmd}" )
+                                     stdin=subprocess.DEVNULL,
+                                     stdout=lf,
+                                     stderr=subprocess.STDOUT)
+            # print( f"launched: {cmd}" )
         except Exception as ex:
             print("failed to launch: %s >%s >2&1 (reason: %s) " %
                   (' '.join(cmd), lfn, ex))
@@ -221,12 +238,12 @@ class sr_GlobalState:
                 f.write(
                     json.dumps(proc.as_dict(
                         ['pid', 'cmdline', 'name', 'username', 'create_time', 'memory_info', 'cpu_times']),
-                               ensure_ascii=False) + '\n')
+                        ensure_ascii=False) + '\n')
 
     def _filter_sr_proc(self, p):
 
-        #print( 'sr0? name=%s, pid=%s, cmdline=%s' % ( p['name'], p['pid'], p['cmdline'] ) )
-        if self.me != p['username'] :
+        # print( 'sr0? name=%s, pid=%s, cmdline=%s' % ( p['name'], p['pid'], p['cmdline'] ) )
+        if self.me != p['username']:
             return
 
         # defunct children waiting reap have no command line.
@@ -241,29 +258,30 @@ class sr_GlobalState:
             if n == 'instance.py':
                 n = 'sr3_' + p['cmdline'][-1].split(os.sep)[0] + '.py'
             p['name'] = n
-        
-        if p['name'][0:2] != 'sr' :
+
+        if p['name'][0:2] != 'sr':
             return
 
         if list(filter(p['name'].startswith, sr3_tools_entry_points)) != []:
-            print( f"skipping sr3_tools process: {p['name']}" )
+            print(f"skipping sr3_tools process: {p['name']}")
             return
 
-        #print( 'sr? name=%s, pid=%s, cmdline=%s' % ( p['name'], p['pid'], p['cmdline'] ) )
-        if ( sys.platform == 'win32') and ( p['name'][-4:].lower() == '.exe' ):
+        # print( 'sr? name=%s, pid=%s, cmdline=%s' % ( p['name'], p['pid'], p['cmdline'] ) )
+        if (sys.platform == 'win32') and (p['name'][-4:].lower() == '.exe'):
             # on windows, it seems to fork .exe and then there is a -script.py which is the right pid
             # .e.g sr_subscribe.exe -> sr_subscribe-script.py ... If you kill the -script, the .exe goes away.
             return
- 
+
         if p['name'].startswith('sr3_'):
-            #print( f"starts with sr3_ cmdline={p['cmdline']}" )
+            # print( f"starts with sr3_ cmdline={p['cmdline']}" )
             p['memory'] = p['memory_full_info']._asdict()
             p['cpu'] = p['cpu_times']._asdict()
-            del p['memory_full_info'] 
+            del p['memory_full_info']
             del p['cpu_times']
             self.procs[p['pid']] = p
-            self.procs[p['pid']]['claimed'] =   (p['name'][-4:] == 'post') or \
-                    any( item in [ 'declare', 'edit', 'foreground', 'sanity', 'setup', 'status' ] for item in  p['cmdline'] )
+            self.procs[p['pid']]['claimed'] = (p['name'][-4:] == 'post') or \
+                    any(item in ['declare', 'edit', 'foreground', 'sanity', 'setup', 'status']
+                        for item in p['cmdline'])
 
     def read_proc_file(self, File="procs.json"):
         """
@@ -278,7 +296,8 @@ class sr_GlobalState:
                 p = json.loads(pj)
                 self._filter_sr_proc(p)
                 pcount += 1
-                if pcount % 100 == 0: print('.', end='', flush=True)
+                if pcount % 100 == 0:
+                    print('.', end='', flush=True)
         print(' Done! Read %d procs' % (pcount), flush=True)
 
     def _read_procs(self):
@@ -294,8 +313,8 @@ class sr_GlobalState:
                 self._filter_sr_proc(
                     proc.as_dict(
                         ['pid', 'cmdline', 'name', 'username', 'create_time', 'memory_full_info', 'cpu_times']))
-            except:
-                pass # the process went away while iterating. avoid spurious message.
+            except BaseException:
+                pass  # the process went away while iterating. avoid spurious message.
 
     def _read_configs(self):
         # read in configurations.
@@ -335,8 +354,8 @@ class sr_GlobalState:
                             'action': self.options.action,
                             'directory': '${PWD}'
                         })
-                        cfgbody.applyComponentDefaults( c )
-                        cfgbody.parse_file(cfg,c)
+                        cfgbody.applyComponentDefaults(c)
+                        cfgbody.parse_file(cfg, c)
                         cfgbody.finalize(c, cfg)
                         self.configs[c][cbase]['options'] = cfgbody
 
@@ -345,16 +364,16 @@ class sr_GlobalState:
                             if hasattr(cfgbody,
                                        'sleep') and cfgbody.sleep not in [
                                            '-', '0'
-                                       ]:
+                                ]:
                                 numi = 1
                         elif hasattr(cfgbody, 'instances'):
                             numi = int(cfgbody.instances)
                         else:
                             numi = 1
-                        if ( numi > 1 ) and \
-                           hasattr(cfgbody,'exchangeSplit'):
-                            print( 'exchange: %s split: %d' % \
-                               (cfgbody.exchange, numi) )
+                        if (numi > 1) and \
+                           hasattr(cfgbody, 'exchangeSplit'):
+                            print('exchange: %s split: %d' %
+                                   (cfgbody.exchange, numi))
                             l = []
                             for i in range(0, numi):
                                 l.append(cfgbody.exchange + '%02d' % i)
@@ -382,7 +401,7 @@ class sr_GlobalState:
                     sno += 1
 
     def save_configs(self, savename):
-        """ DEVELOPER only... copy configuration to an alternate tree 
+        """ DEVELOPER only... copy configuration to an alternate tree
         """
         os.chdir(self.user_config_dir)
         other_config_dir = sarracenia.user_config_dir(savename, self.appauthor)
@@ -405,7 +424,8 @@ class sr_GlobalState:
                 if not os.path.exists(other_c_dir):
                     os.mkdir(other_c_dir)
                 for cfg in os.listdir():
-                    if cfg[0] == '.': continue
+                    if cfg[0] == '.':
+                        continue
                     to = other_c_dir + os.sep + cfg
                     print('save_configs copying: %s %s' % (cfg, to))
                     shutil.copyfile(cfg, to)
@@ -431,13 +451,15 @@ class sr_GlobalState:
                 if not os.path.exists(other_c_dir):
                     os.mkdir(other_c_dir)
                 for cfg in os.listdir():
-                    if cfg[0] == '.': continue
+                    if cfg[0] == '.':
+                        continue
                     os.chdir(cfg)
                     other_cfg_dir = other_c_dir + os.sep + cfg
                     if not os.path.exists(other_cfg_dir):
                         os.mkdir(other_cfg_dir)
                     for f in os.listdir():
-                        if f[0] == '.': continue
+                        if f[0] == '.':
+                            continue
                         to = other_cfg_dir + os.sep + f
                         print('save_states copying: %s %s' % (f, to))
                         shutil.copyfile(f, to)
@@ -460,91 +482,91 @@ class sr_GlobalState:
         os.chdir(dir1)
 
         # some operating is pending, unwise to make changes.
-        self.flux={}
+        self.flux = {}
 
         for c in self.components:
             if c not in self.configs:
                 continue
             for cfg in self.configs[c]:
-                    #print( f" {self.configs[c][cfg]['statehost']=} " )
-                    if 'options' in self.configs[c][cfg] and self.configs[c][cfg]['options'].statehost:
-                        state_dir=self.user_cache_dir + os.sep + self.hostdir + os.sep + c + os.sep + cfg
-                    else:
-                        state_dir=self.user_cache_dir + os.sep + c + os.sep + cfg
+                   # print( f" {self.configs[c][cfg]['statehost']=} " )
+                if 'options' in self.configs[c][cfg] and self.configs[c][cfg]['options'].statehost:
+                    state_dir = self.user_cache_dir + os.sep + self.hostdir + os.sep + c + os.sep + cfg
+                else:
+                    state_dir = self.user_cache_dir + os.sep + c + os.sep + cfg
 
-                    if not os.path.isdir(state_dir):
-                        if c in self.configs and cfg in self.configs[c]:
-                            if c in ['post', 'cpost'] and not self._post_can_be_daemon(c, cfg): 
-                                 self.configs[c][cfg]['status'] = 'interactive'
-                            else:
-                                 self.configs[c][cfg]['status'] = 'new'
-                    else:
-                        os.chdir(state_dir)
-                        self.states[c][cfg] = {}
-                        self.states[c][cfg]['instance_pids'] = {}
-                        self.states[c][cfg]['queueName'] = None
-                        self.configs[c][cfg]['status'] = 'stopped'
-                        if c in self.configs:
-                            if cfg not in self.configs[c]:
-                                self.states[c][cfg]['status'] = 'removed'
-
-                        self.states[c][cfg]['has_state'] = False
-                        self.states[c][cfg]['noVip'] = None
-                        
-                        if os.path.exists('subscriptions.json'):
-                            s = Subscriptions()
-                            self.states[c][cfg]['subscriptions'] = s.read( \
-                                self.configs[c][cfg]['options'], 'subscriptions.json')
-
-                        if c in ['post', 'cpost'] and not self._post_can_be_daemon(c, cfg): 
+                if not os.path.isdir(state_dir):
+                    if c in self.configs and cfg in self.configs[c]:
+                        if c in ['post', 'cpost'] and not self._post_can_be_daemon(c, cfg):
                             self.configs[c][cfg]['status'] = 'interactive'
-                        if os.path.exists('starting'):
-                            self.states[c][cfg]['status'] = 'starting'
-                            self.flux[ f"{c}/{cfg}" ] = 'starting'
-                        elif os.path.exists('shutdown'):
-                            self.states[c][cfg]['status'] = 'shutdown'
-                            self.flux[ f"{c}/{cfg}" ] = 'shutdown'
-
-                        state_files = os.listdir() 
-                        if len(state_files) == 0:
+                        else:
                             self.configs[c][cfg]['status'] = 'new'
-                            continue
+                else:
+                    os.chdir(state_dir)
+                    self.states[c][cfg] = {}
+                    self.states[c][cfg]['instance_pids'] = {}
+                    self.states[c][cfg]['queueName'] = None
+                    self.configs[c][cfg]['status'] = 'stopped'
+                    if c in self.configs:
+                        if cfg not in self.configs[c]:
+                            self.states[c][cfg]['status'] = 'removed'
 
-                        for pathname in state_files:
-                            p = pathlib.Path(pathname)
-                            if p.suffix in ['.pid', '.qname', '.state', '.noVip']:
-                                if sys.version_info[0] > 3 or sys.version_info[
-                                        1] > 4:
-                                    t = p.read_text().strip()
-                                else:
-                                    with p.open() as f:
-                                        t = f.read().strip()
-                                #print( 'read pathname:%s len: %d contents:%s' % ( pathname, len(t), t[0:10] ) )
-                                if len(t) == 0:
+                    self.states[c][cfg]['has_state'] = False
+                    self.states[c][cfg]['noVip'] = None
+
+                    if os.path.exists('subscriptions.json'):
+                        s = Subscriptions()
+                        self.states[c][cfg]['subscriptions'] = s.read(
+                            self.configs[c][cfg]['options'], 'subscriptions.json')
+
+                    if c in ['post', 'cpost'] and not self._post_can_be_daemon(c, cfg):
+                        self.configs[c][cfg]['status'] = 'interactive'
+                    if os.path.exists('starting'):
+                        self.states[c][cfg]['status'] = 'starting'
+                        self.flux[f"{c}/{cfg}"] = 'starting'
+                    elif os.path.exists('shutdown'):
+                        self.states[c][cfg]['status'] = 'shutdown'
+                        self.flux[f"{c}/{cfg}"] = 'shutdown'
+
+                    state_files = os.listdir()
+                    if len(state_files) == 0:
+                        self.configs[c][cfg]['status'] = 'new'
+                        continue
+
+                    for pathname in state_files:
+                        p = pathlib.Path(pathname)
+                        if p.suffix in ['.pid', '.qname', '.state', '.noVip']:
+                            if sys.version_info[0] > 3 or sys.version_info[
+                                    1] > 4:
+                                t = p.read_text().strip()
+                            else:
+                                with p.open() as f:
+                                    t = f.read().strip()
+                            # print( 'read pathname:%s len: %d contents:%s' % ( pathname, len(t), t[0:10] ) )
+                            if len(t) == 0:
+                                continue
+
+                            if pathname[-4:] == '.pid':
+                                i = self._instance_num_from_pidfile(pathname, c, cfg)
+                                if i < 0:
                                     continue
+                                if t.isdigit():
+                                    # print( "pid assignment: {c}/{cfg} instance: {i}, pid: {t}" )
+                                    self.states[c][cfg]['instance_pids'][i] = int(t)
+                            elif pathname[-6:] == '.qname':
+                                self.states[c][cfg]['queueName'] = t
+                            elif pathname[-6:] == '.noVip':
+                                self.states[c][cfg]['noVip'] = t
+                            elif pathname[-8:] == '.metrics':
+                                i = int(pathname[-10:-8])
+                                if not 'instance_metrics' in self.states[c][cfg]:
+                                    self.states[c][cfg]['instance_metrics'] = {}
+                                try:
+                                    self.states[c][cfg]['instance_metrics'][i] = json.loads(t)
+                                    self.states[c][cfg]['instance_metrics'][i]['status'] = {'mtime': ageOfFile(p)}
+                                except BaseException:
+                                    logger.error(f"corrupt metrics file {pathname}: {t}")
 
-                                if pathname[-4:] == '.pid':
-                                    i = self._instance_num_from_pidfile(pathname, c, cfg)
-                                    if i < 0:
-                                        continue
-                                    if t.isdigit():
-                                        #print( "pid assignment: {c}/{cfg} instance: {i}, pid: {t}" )
-                                        self.states[c][cfg]['instance_pids'][i] = int(t)
-                                elif pathname[-6:] == '.qname':
-                                    self.states[c][cfg]['queueName'] = t
-                                elif pathname[-6:] == '.noVip':
-                                    self.states[c][cfg]['noVip'] = t
-                                elif pathname[-8:] == '.metrics':
-                                    i = int(pathname[-10:-8])
-                                    if not 'instance_metrics' in self.states[c][cfg]:
-                                        self.states[c][cfg]['instance_metrics'] = {}
-                                    try:
-                                        self.states[c][cfg]['instance_metrics'][i] = json.loads(t)
-                                        self.states[c][cfg]['instance_metrics'][i]['status'] = { 'mtime':ageOfFile(p) }
-                                    except:
-                                        logger.error( f"corrupt metrics file {pathname}: {t}" )
-
-    def _read_metrics_dir(self,metrics_parent_dir):
+    def _read_metrics_dir(self, metrics_parent_dir):
         # read in metrics files
 
         dir1 = metrics_parent_dir + os.sep + 'metrics'
@@ -558,13 +580,13 @@ class sr_GlobalState:
             if not l.endswith('.json'):
                 continue
 
-            ll = os.path.basename(l.replace('.json','')).split('_')
+            ll = os.path.basename(l.replace('.json', '')).split('_')
             if len(ll) < 3:
                 continue
 
-            c= ll[0]
+            c = ll[0]
             cfg = '_'.join(ll[1:-1])
-            i = int(ll[-1].replace('i',''))
+            i = int(ll[-1].replace('i', ''))
 
             if (not c in self.components) or (not cfg in self.states[c]):
                 continue
@@ -578,10 +600,9 @@ class sr_GlobalState:
                     t = f.read().strip()
 
                 self.states[c][cfg]['instance_metrics'][i] = json.loads(t)
-                self.states[c][cfg]['instance_metrics'][i]['status'] = { 'mtime':ageOfFile(p) }
-            except:
-                logger.error( f"corrupt metrics file {dir1+os.sep+l}: {t}" )
-
+                self.states[c][cfg]['instance_metrics'][i]['status'] = {'mtime': ageOfFile(p)}
+            except BaseException:
+                logger.error(f"corrupt metrics file {dir1 + os.sep + l}: {t}")
 
     def _read_states(self):
         self.states = {}
@@ -589,7 +610,7 @@ class sr_GlobalState:
             self.states[c] = {}
 
         self._read_state_dir()
-        #self._read_state_dir(self.user_cache_dir + os.sep + self.hostdir)
+        # self._read_state_dir(self.user_cache_dir + os.sep + self.hostdir)
         self._read_metrics_dir(self.user_cache_dir)
         self._read_metrics_dir(self.user_cache_dir + os.sep + self.hostdir)
 
@@ -605,30 +626,35 @@ class sr_GlobalState:
         for c in self.components:
             c_dir = os.path.join(dir, c)
             if os.path.isdir(c_dir):
-                if c not in self.configs: continue
+                if c not in self.configs:
+                    continue
                 os.chdir(c_dir)
                 for cfg in os.listdir():
-                    if cfg[0] == '.': continue
-                    
-                    if cfg not in self.configs[c]: continue
-                    
+                    if cfg[0] == '.':
+                        continue
+
+                    if cfg not in self.configs[c]:
+                        continue
+
                     cfg_dir = os.path.join(c_dir, cfg)
                     if os.path.isdir(cfg_dir):
                         os.chdir(cfg_dir)
 
-                        if os.path.exists("disabled"): # double check, if disabled should ignore state.
+                        if os.path.exists("disabled"):  # double check, if disabled should ignore state.
                             continue
 
                         if not 'status' in self.configs[c][cfg]:
                             continue
 
-                        if self.configs[c][cfg]['status'] in [ 'disabled', 'interactive', 'new', 'stopped', 'stopping', 'starting' ]:
+                        if self.configs[c][cfg]['status'] in ['disabled',
+                            'interactive', 'new', 'stopped', 'stopping', 'starting']:
                             continue
 
-                        if hasattr(self.configs[c][cfg]['options'],'statehost') and (statehost != self.configs[c][cfg]['options'].statehost):
+                        if hasattr(self.configs[c][cfg]['options'], 'statehost') and (
+                            statehost != self.configs[c][cfg]['options'].statehost):
                             continue
 
-                        i_found=[]
+                        i_found = []
                         for filename in os.listdir():
                             # look at pid files, find ones where process is missing.
                             if filename[-4:] == '.pid':
@@ -652,12 +678,12 @@ class sr_GlobalState:
                                         missing.append([c, cfg, i])
 
                         # find instances missing that don't have pid files.
-                        for i in range(1,self.configs[c][cfg]['instances']+1):
+                        for i in range(1, self.configs[c][cfg]['instances'] + 1):
                             if i not in i_found:
-                               missing.append([c, cfg, i])
+                                missing.append([c, cfg, i])
 
-                    os.chdir(c_dir) # back to component dir containing configs
-                os.chdir(dir) # back to dir containing components
+                    os.chdir(c_dir)  # back to component dir containing configs
+                os.chdir(dir)  # back to dir containing components
 
         self.missing.extend(missing)
 
@@ -723,11 +749,12 @@ class sr_GlobalState:
             # the additional _ breaks this logic, can't be bothered to fix it yet... to unusual a case to worry about.
             # just patched to not crash for now.
             for lf in os.listdir():
-                if lf[0] == '.': continue  # hidden, ignore.
+                if lf[0] == '.':
+                    continue  # hidden, ignore.
                 lff = lf.split('_')
                 if len(lff) > 2:
                     c = lff[0]
-                    if ( c == 'sr' ) or ( c not in self.components): 
+                    if (c == 'sr') or (c not in self.components):
                         continue  # old or inapplicable log, ignore.
                     cfg = '_'.join(lff[1:-1])
 
@@ -737,14 +764,14 @@ class sr_GlobalState:
                         if (suffix[1] == 'log') and len(suffix) < 3:
                             try:
                                 inum = int(suffix[0])
-                            except:
+                            except BaseException:
                                 inum = 0
                             age = ageOfFile(lf)
                             if cfg not in self.states[c]:
                                 self.states[c][cfg] = {}
                             if 'logAge' not in self.states[c][cfg]:
                                 self.states[c][cfg]['logAge'] = {}
-                            self.states[c][cfg]['logAge'][inum] = now-age
+                            self.states[c][cfg]['logAge'][inum] = now - age
 
     def _read_logs(self):
         self._read_logs_dir(self.user_cache_dir)
@@ -769,25 +796,26 @@ class sr_GlobalState:
     def _resolve_brokers(self):
         """ make a map of dependencies
 
-            on a given broker, 
-                 exchanges exist, 
+            on a given broker,
+                 exchanges exist,
                       with publishers: [ 'c/cfg', 'c/cfg' ... ]
                       with queues: [ 'qname', 'qname', ... ]
                       for each queue: [ 'c/cfg', 'c/cfg', ... ]
         """
         self.brokers = {}
 
-        o=self.default_cfg
+        o = self.default_cfg
         if hasattr(o, 'admin') and (o.admin is not None):
+
+
             # FIXME: sometimes o.admin is a string... no idea why.. upstream cause should be addressed.
-            if o.admin.url is not None and type(o.admin.url) == str:
-                o.admin.url = urllib.parse(o.admin.url)
+if o.admin.url is not None and isinstance(o.admin.url,             if o.admin.url is not None and)                o.admin.url = urllib.parse(o.admin.url)
             host = self._init_broker_host(o.admin.url.netloc)
             self.brokers[host]['admin'] = o.admin
             if hasattr(o, 'declared_exchanges'):
                 for x in o.declared_exchanges:
                     if not x in self.brokers[host]['exchanges']:
-                        self.brokers[host]['exchanges'][x] = [ 'declared' ]
+                        self.brokers[host]['exchanges'][x] = ['declared']
                     else:
                         if not 'declared' in self.brokers[host]['exchanges'][x]:
                             self.brokers[host]['exchanges'][x].append(
@@ -810,12 +838,12 @@ class sr_GlobalState:
 
                 if hasattr(o, 'subscriptions') and len(o.subscriptions):
                     for s in o.subscriptions:
-                        #logger.critical( f" {s=}  ")
+                        # logger.critical( f" {s=}  ")
                         host = self._init_broker_host(s['broker'].url.netloc)
-                        xl=[]
+                        xl = []
                         for b in s['bindings']:
                             xl.append(b['exchange'])
-                        #logger.critical( f" {xl=}  ")
+                        # logger.critical( f" {xl=}  ")
                         q = s['queue']['name']
 
                         for exch in xl:
@@ -823,13 +851,13 @@ class sr_GlobalState:
                                 self.brokers[host]['exchanges'][exch].append(q)
                             else:
                                 self.brokers[host]['exchanges'][exch] = [q]
-                        
+
                             if q in self.brokers[host]['queues']:
                                 self.brokers[host]['queues'][q].append(name)
                             else:
                                 self.brokers[host]['queues'][q] = [name]
 
-                if hasattr(o,'publishers') and len(o.publishers):
+                if hasattr(o, 'publishers') and len(o.publishers):
                     for p in o.publishers:
                         host = self._init_broker_host(p['broker'].url.netloc)
                         if 'exchange' in self.brokers[host]:
@@ -864,25 +892,25 @@ class sr_GlobalState:
         now = time.time()
 
         # comparing states and configs to find missing instances, and correct state.
-        self.resources={ 'uss': 0, 'rss': 0, 'vms':0, 'user_cpu': 0, 'system_cpu':0 }
-        self.cumulative_stats={ 
-                'flowNameWidth': 20, 'latestTransferWidth': 4, 
-                'rxLagTime':0, 'rxLagCount':0, 
-                'rxMessageQueued':0, 'rxMessageRetry':0, 
-                'txMessageQueued':0, 'txMessageRetry':0, 
-                'rxMessageRate':0, 'rxMessageRateCpu':0, 'rxDataRate':0, 'rxFileRate':0, 'rxMessageByteRate':0, 
-                'txMessageRate':0, 'txDataRate':0, 'txFileRate':0, 'txMessageByteRate':0
-                }
+        self.resources = { 'uss': 0, 'rss': 0, 'vms':0, 'user_cpu': 0, 'system_cpu':0 }
+        self.cumulative_stats ={ 
+                'flowNameWidth': 20, 'latestTransferWidth': 4,
+                'rxLagTime': 0, 'rxLagCount':0, 
+                'rxMessageQueued': 0, 'rxMessageRetry':0, 
+                'txMessageQueued': 0, 'txMessageRetry':0, 
+                'rxMessageRate': 0, 'rxMessageRateCpu':0, 'rxDataRate':0, 'rxFileRate':0, 'rxMessageByteRate':0, 
+                'txMessageRate': 0, 'txDataRate':0, 'txFileRate':0, 'txMessageByteRate':0
+            }
         for c in self.components:
             if (c not in self.states) or (c not in self.configs):
                 continue
 
             for cfg in self.configs[c]:
-                if len( f"{c}/{cfg}" ) > self.cumulative_stats['flowNameWidth']:
-                    self.cumulative_stats['flowNameWidth'] = len( f"{c}/{cfg}" ) 
+                if len(f"{c}/{cfg}" ) > self.cumulative_stats['flowNameWidth']:
+                    self.cumulative_stats['flowNameWidth'] = len(f"{c}/{cfg}" ) 
 
                 if cfg not in self.states[c]:
-                    logger.debug('no existing state files for %s/%s' % (c,cfg))
+                    logger.debug('no existing state files for %s/%s' % (c, cfg))
                     self.states[c][cfg] = {}
                     self.states[c][cfg]['instance_pids'] = {}
                     self.states[c][cfg]['queueName'] = None
@@ -892,7 +920,7 @@ class sr_GlobalState:
 
                 if os.path.exists(self.user_cache_dir + os.sep + c + os.sep + cfg + os.sep + 'disabled'):
                     self.configs[c][cfg]['status'] = 'disabled'
-                if c in ['post', 'cpost'] and not self._post_can_be_daemon(c, cfg): 
+                if c in ['post', 'cpost'] and not self._post_can_be_daemon(c, cfg):
                     self.configs[c][cfg]['status'] = 'interactive'
                 if os.path.exists(self.user_cache_dir + os.sep + c + os.sep + cfg + os.sep + 'starting'):
                     self.configs[c][cfg]['status'] = 'starting'
@@ -902,41 +930,41 @@ class sr_GlobalState:
                     self.configs[c][cfg]['status'] = 'running'
                 if 'instance_metrics' in self.states[c][cfg]:
                     if 'housekeeping' in self.configs[c][cfg]:
-                        expiry = now - self.configs[c][cfg]['housekeeping']*1.5
+                        expiry = now - self.configs[c][cfg]['housekeeping'] *1.5
                     else:
                         expiry = now - 300
 
                     # cumulate per instance metrics into overall ones for the configuration.
 
-                    metrics=copy.deepcopy(empty_metrics)
+                    metrics = copy.deepcopy(empty_metrics)
                     for i in self.states[c][cfg]['instance_metrics']:
                         if self.states[c][cfg]['instance_metrics'][i]['status']['mtime'] < expiry:
-                            logger.debug( f"metrics for {c}/{cfg}/ instance {i} too old ignoring." )
+                            logger.debug(f"metrics for {c}/{cfg}/ instance {i} too old ignoring." )
                             continue
 
-                        #print( f"states of {c}/{cfg}: {self.states[c][cfg]} " )
-                        #print( f"instance metrics states of {c}/{cfg}: {self.states[c][cfg]['instance_metrics']} " )
+                        # print( f"states of {c}/{cfg}: {self.states[c][cfg]} " )
+                        # print( f"instance metrics states of {c}/{cfg}: {self.states[c][cfg]['instance_metrics']} " )
                         for j in self.states[c][cfg]['instance_metrics'][i]:
-                            #print( f"i={i}, j={j}, c={c}, cfg={cfg}" )
+                            # print( f"i={i}, j={j}, c={c}, cfg={cfg}" )
                             for k in self.states[c][cfg]['instance_metrics'][i][j]:
-                                #print( f"k={k}" )
+                                # print( f"k={k}" )
                                 if k in metrics:
                                     newval = self.states[c][cfg]['instance_metrics'][i][j][k]
-                                    #print( f"k={k}, type={type(newval)} newval={newval}" )
-                                    if k in [ "lagMax" ]:
+                                    # print( f"k={k}, type={type(newval)} newval={newval}" )
+                                    if k in ["lagMax" ]:
                                         if newval > metrics[k]:
                                             metrics[k] = newval
-                                    elif k in [ "connected", "transferConnected" ]:
+                                    elif k in ["connected", "transferConnected" ]:
                                         if not newval:
                                             metrics[k] = False
-                                    elif k in [ "last_housekeeping" ]:
-                                        if metrics[k] == 0 or newval < metrics[k] :
+                                    elif k in ["last_housekeeping" ]:
+                                        if metrics[k] == 0 or newval < metrics[k]:
                                             metrics[k] = newval
-                                    elif k in [ "transferRxLast", "transferTxLast"  ]:
+                                    elif k in ["transferRxLast", "transferTxLast"  ]:
                                         newval = sarracenia.timestr2flt(newval)
                                         if 'transferLast' not in metrics or (newval > metrics['transferLast']):
                                             metrics['transferLast'] = newval
-                                    elif k in [ "rxLast", "txLast"  ]:
+                                    elif k in ["rxLast", "txLast"  ]:
                                         newval = sarracenia.timestr2flt(newval)
                                         if k == 'rxLast' and 'rxLast' not in metrics or (newval > metrics['rxLast']):
                                             metrics['rxLast'] = newval
@@ -944,174 +972,175 @@ class sr_GlobalState:
                                             metrics['txLast'] = newval
                                         if 'messageLast' not in metrics or (newval > metrics['messageLast']):
                                             metrics['messageLast'] = newval
-                                    elif k in [ "cpuTime" ]:
+                                    elif k in ["cpuTime" ]:
                                         metrics['cpuTime'] += newval
                                     else:
                                         metrics[k] += newval
-                                #else:
+                                # else:
                                 #    print( f'skipping {k}')
 
                         if 'transferConnectTime' in metrics:
-                            metrics['transferConnectTime'] = metrics['transferConnectTime'] / len(self.states[c][cfg]['instance_metrics']) 
+                            metrics['transferConnectTime'] = metrics['transferConnectTime'] / len(self.states[c][cfg]['instance_metrics'])
                         if 'disconnectTime' in metrics:
-                            metrics['disconnectTime'] = metrics['disconnectTime'] / len(self.states[c][cfg]['instance_metrics']) 
+                            metrics['disconnectTime'] = metrics['disconnectTime'] / len(self.states[c][cfg]['instance_metrics'])
 
                         m = metrics
                         m['messagesQueued'] = -1
-                        if m[ "lagMessageCount" ] > 0:
-                            m['lagMean'] = m[ "lagTotal" ] / m[ "lagMessageCount" ]
-                            self.cumulative_stats['rxLagTime'] += m[ "lagTotal" ]
-                            self.cumulative_stats['rxLagCount'] +=  m[ "lagMessageCount" ]
+                        if m["lagMessageCount" ] > 0:
+                            m['lagMean'] = m["lagTotal" ] / m[ "lagMessageCount" ]
+                            self.cumulative_stats['rxLagTime'] += m["lagTotal" ]
+                            self.cumulative_stats['rxLagCount'] +=  m["lagMessageCount" ]
                         else:
                             m['lagMean'] = 0
-                    
-                        m['retry'] = m[ "msgs_in_download_retry" ] + m["msgs_in_post_retry" ]
+
+                        m['retry'] = m["msgs_in_download_retry" ] + m["msgs_in_post_retry" ]
                         self.cumulative_stats['rxMessageRetry'] += m['retry']
-    
+
                         if 'brokerQueuedMessageCount' in m:
                             m['messagesQueued'] = m['brokerQueuedMessageCount']
                             self.cumulative_stats['rxMessageQueued'] += m['messagesQueued']
-    
+
                         m['latestTransfer'] = "n/a"
                         if "transferLast" in m and m['transferLast'] > 0:
                             m['latestTransfer'] = durationToString(now - m['transferLast'])
                         elif "messageLast" in m and m['messageLast'] > 0:
                             m['latestTransfer'] = durationToString(now - m['messageLast'])
-                        
+
                         if len(m['latestTransfer']) > self.cumulative_stats['latestTransferWidth']:
                             self.cumulative_stats['latestTransferWidth'] = len(m['latestTransfer'])
-    
+
                         if "last_housekeeping" in m and m["last_housekeeping"] > 0:
-                            m['time_base'] = now - m[ "last_housekeeping" ] 
+                            m['time_base'] = now - m["last_housekeeping" ] 
                             time_base = m['time_base']
                             byteTotal = 0
                             if 'rxByteCount' in m:
                                 byteTotal += m["rxByteCount"]
-            
+
                             if 'txByteCount' in m:
                                 byteTotal += m["txByteCount"]
-                                self.cumulative_stats['txMessageByteRate'] +=  m["txByteCount"]/time_base
-            
-                            m['byteRate'] = byteTotal/time_base
-                            m['msgRate']  = (m["rxGoodCount"]+m["rxBadCount"])/time_base
+                                self.cumulative_stats['txMessageByteRate'] +=  m["txByteCount"] /time_base
+
+                            m['byteRate'] = byteTotal /time_base
+                            m['msgRate']  = (m["rxGoodCount"] +m["rxBadCount"]) /time_base
                             if m['cpuTime'] > 0:
-                                m['msgRateCpu'] = (m["rxGoodCount"]+m["rxBadCount"])/m['cpuTime']
+                                m['msgRateCpu'] = (m["rxGoodCount"] +m["rxBadCount"]) /m['cpuTime']
                             else:
                                 m['msgRateCpu'] = 0
 
                             self.cumulative_stats['rxMessageByteRate'] += m['byteRate']
-                            self.cumulative_stats['rxMessageRate'] +=  m['msgRate']
-                            self.cumulative_stats['rxMessageRateCpu'] +=  m['msgRateCpu']
-    
-                            m['transferRxByteRate'] = m['transferRxBytes']/time_base
-                            m['transferRxFileRate'] = m['transferRxFiles']/time_base
-                            m['transferTxByteRate'] = m['transferTxBytes']/time_base
-                            m['transferTxFileRate'] = m['transferTxFiles']/time_base
-    
+                            self.cumulative_stats['rxMessageRate'] += m['msgRate']
+                            self.cumulative_stats['rxMessageRateCpu'] += m['msgRateCpu']
+
+                            m['transferRxByteRate'] = m['transferRxBytes'] /time_base
+                            m['transferRxFileRate'] = m['transferRxFiles'] /time_base
+                            m['transferTxByteRate'] = m['transferTxBytes'] /time_base
+                            m['transferTxFileRate'] = m['transferTxFiles'] /time_base
+
                             self.cumulative_stats['rxFileRate'] += m['transferRxFileRate']
                             self.cumulative_stats['rxDataRate'] += m['transferRxByteRate']
                             self.cumulative_stats['txFileRate'] += m['transferTxFileRate']
                             self.cumulative_stats['txDataRate'] += m['transferTxByteRate']
-                            
-    
-    
+
+
                             if 'transferConnectTime' in m:
-                                m['byteConnectPercent'] = int(100*(m['transferConnectTime'])/time_base)
+                                m['byteConnectPercent'] = int(100 *(m['transferConnectTime']) /time_base)
                             else:
                                 m['byteConnectPercent'] = 0
-    
+
                             if 'disconnectTime' in m:
-                                m['connectPercent'] = int(100*(time_base-m['disconnectTime'])/time_base)
+                                m['connectPercent'] = int(100 *(time_base -m['disconnectTime']) /time_base)
                             else:
-                                m['connectPercent']= 0
-    
-                            self.cumulative_stats['txMessageRate'] +=  (m["txGoodCount"]+m["txBadCount"])/time_base
+                                m['connectPercent'] = 0
+
+                            self.cumulative_stats['txMessageRate'] +=  (m["txGoodCount"] +m["txBadCount"]) /time_base
                         if m["rxGoodCount"] > 0:
-                            m['rejectPercent'] = ((m['rejectCount']+m['rxBadCount'])/(m['rxGoodCount']+m['rxBadCount']))*100
+                            m['rejectPercent'] = ((m['rejectCount'] +m['rxBadCount']) /(m['rxGoodCount'] +m['rxBadCount'])) *100
                             if m['rejectPercent'] > 100:
-                                m['rejectPercent']=100
+                                m['rejectPercent'] = 100
                         else:
                             m['rejectPercent'] = 0
 
                     self.states[c][cfg]['metrics'] = metrics
                 else:
                     self.states[c][cfg]['metrics'] = empty_metrics
-                    
+
                 if ('instance_pids' in self.states[c][cfg]) and (len(self.states[c][cfg]['instance_pids']) >= 0):
                     self.states[c][cfg]['missing_instances'] = []
                     self.states[c][cfg]['hung_instances'] = []
                     observed_instances = 0
-                    hung_instances=0
-                    resource_usage={ 'uss': 0, 'rss': 0, 'vms':0, 'user_cpu': 0.0, 'system_cpu':0.0 }
-                    nvip=False
+                    hung_instances = 0
+                    resource_usage = { 'uss': 0, 'rss': 0, 'vms':0, 'user_cpu': 0.0, 'system_cpu':0.0 }
+                    nvip = False
                     for i in self.states[c][cfg]['instance_pids']:
                         if self.states[c][cfg]['instance_pids'][i] not in self.procs:
                             self.states[c][cfg]['missing_instances'].append(i)
                         else:
                             observed_instances += 1
                             pid = self.states[c][cfg]['instance_pids'][i]
-                            self.procs[ pid ]['claimed'] = True
-                            resource_usage[ 'uss' ] += self.procs[pid]['memory']['uss'] 
-                            self.resources[ 'uss' ] += self.procs[pid]['memory']['uss'] 
-                            resource_usage[ 'rss' ] += self.procs[pid]['memory']['rss'] 
-                            self.resources[ 'rss' ] += self.procs[pid]['memory']['rss'] 
-                            resource_usage[ 'vms' ] += self.procs[pid]['memory']['vms'] 
-                            self.resources[ 'vms' ] += self.procs[pid]['memory']['vms'] 
-                            resource_usage[ 'user_cpu' ] += self.procs[pid]['cpu']['user'] 
-                            self.resources[ 'user_cpu' ] += self.procs[pid]['cpu']['user'] 
-                            resource_usage[ 'system_cpu' ] += self.procs[pid]['cpu']['system'] 
-                            self.resources[ 'system_cpu' ] += self.procs[pid]['cpu']['system'] 
+                            self.procs[pid ]['claimed'] = True
+                            resource_usage['uss' ] += self.procs[pid]['memory']['uss'] 
+                            self.resources['uss' ] += self.procs[pid]['memory']['uss'] 
+                            resource_usage['rss' ] += self.procs[pid]['memory']['rss'] 
+                            self.resources['rss' ] += self.procs[pid]['memory']['rss'] 
+                            resource_usage['vms' ] += self.procs[pid]['memory']['vms'] 
+                            self.resources['vms' ] += self.procs[pid]['memory']['vms'] 
+                            resource_usage['user_cpu' ] += self.procs[pid]['cpu']['user'] 
+                            self.resources['user_cpu' ] += self.procs[pid]['cpu']['user'] 
+                            resource_usage['system_cpu' ] += self.procs[pid]['cpu']['system'] 
+                            self.resources['system_cpu' ] += self.procs[pid]['cpu']['system'] 
 
                             # GitHub 1480 - Add metrics check to verify if instance is hung
-                            if ('logAge' in self.states[c][cfg]) and (i in self.states[c][cfg]['logAge'] ) and \
-                                    (('instance_metrics' in self.states[c][cfg]) and (i in self.states[c][cfg]['instance_metrics'] ) and \
-                                    ('status' in self.states[c][cfg]['instance_metrics'][i] )):
-                                # Metrics file and log file need to both be outdated to have an instance be marked as hung
-                                if ( now - self.states[c][cfg]['instance_metrics'][i]['status']['mtime'] > self.configs[c][cfg]['options'].runStateThreshold_hung ) and \
-                                    ( self.states[c][cfg]['logAge'][i] > self.configs[c][cfg]['options'].runStateThreshold_hung):
+                            if ('logAge' in self.states[c][cfg]) and (i in self.states[c][cfg]['logAge']) and \
+                                    (('instance_metrics' in self.states[c][cfg]) and (i in self.states[c][cfg]['instance_metrics'] ) and
+                                     ('status' in self.states[c][cfg]['instance_metrics'][i] )):
+                                # Metrics file and log file need to both be outdated to have an instance
+                                # be marked as hung
+                                if (now - self.states[c][cfg]['instance_metrics'][i]['status']['mtime'] > self.configs[c][cfg]['options'].runStateThreshold_hung ) and \
+                                    (self.states[c][cfg]['logAge'][i] > self.configs[c][cfg]['options'].runStateThreshold_hung):
                                     hung_instances += 1
                                     self.states[c][cfg]['hung_instances'].append(i)
 
-                    if self.configs[c][cfg]['status'] in [ 'disabled', 'interactive', 'new', 'starting', 'shutdown', 'running' ]:
+                    if self.configs[c][cfg]['status'] in ['disabled', 'interactive', 'new', 'starting', 'shutdown', 'running' ]:
                         flow_status = self.configs[c][cfg]['status']
                     else:
                         flow_status = 'unknown'
- 
-                    if hasattr(self.configs[c][cfg]['options'],'download') and self.configs[c][cfg]['options'].download and \
-                         (self.states[c][cfg]['metrics']['retry']+self.states[c][cfg]['metrics']['messagesQueued'] > 0 ) :
+
+                    if hasattr(self.configs[c][cfg]['options'], 'download') and self.configs[c][cfg]['options'].download and \
+                    (self.states[c][cfg]['metrics']['retry']+self.states[c][cfg]['metrics']['messagesQueued'] > 0 ) :
                         if not self.states[c][cfg]['metrics']['transferConnected']:
-                            flow_status='down'
-                        elif (self.states[c][cfg]['metrics']['connectPercent']< self.configs[c][cfg]['options'].runStateThreshold_disconnected/100):
-                            flow_status='disconnected'
+                            flow_status = 'down'
+                        elif (self.states[c][cfg]['metrics']['connectPercent'] < self.configs[c][cfg]['options'].runStateThreshold_disconnected/100):
+                            flow_status = 'disconnected'
                     elif not self.states[c][cfg]['metrics']['connected']:
-                        flow_status='disconnected'
-                    elif (self.states[c][cfg]['metrics']['byteConnectPercent']>0) and (self.states[c][cfg]['metrics']['byteConnectPercent']< self.configs[c][cfg]['options'].runStateThreshold_disconnected/100):
-                        flow_status='down'
+                        flow_status = 'disconnected'
+                    elif (self.states[c][cfg]['metrics']['byteConnectPercent'] >0) and (self.states[c][cfg]['metrics']['byteConnectPercent']< self.configs[c][cfg]['options'].runStateThreshold_disconnected/100):
+                        flow_status = 'down'
 
                     if hung_instances > 0 and (observed_instances > 0):
-                         flow_status = 'hung'
+                        flow_status = 'hung'
                     elif observed_instances < int(self.configs[c][cfg]['instances']):
-                        if (c == 'post') and (('sleep' not in self.states[c][cfg]) or self.states[c][cfg]['sleep'] <= 0):
-                            if self.configs[c][cfg]['status'] not in [ 'disabled', 'new', 'interactive' ]:
+                        if (c == 'post') and (
+                            ('sleep' not in self.states[c][cfg]) or self.states[c][cfg]['sleep'] <= 0):
+                            if self.configs[c][cfg]['status'] not in ['disabled', 'new', 'interactive' ]:
                                 flow_status = 'stopped'
                         else:
-                            if observed_instances > 0 and flow_status not in ['starting','shutdown']:
+                            if observed_instances > 0 and flow_status not in ['starting', 'shutdown']:
                                 flow_status = 'partial'
-                                for i in range(1, int(self.configs[c][cfg]['instances'])+1 ):
+                                for i in range(1, int(self.configs[c][cfg]['instances'])+1):
                                     if not i in self.states[c][cfg]['instance_pids']:
-                                         self.states[c][cfg]['missing_instances'].append(i)
+                                        self.states[c][cfg]['missing_instances'].append(i)
                             else:
                                 if self.configs[c][cfg]['status'] != 'disabled':
-                                    if flow_status not in [ 'interactive', 'new', 'running'] and len(self.states[c][cfg]['instance_pids']) == 0 :
-                                        flow_status = 'stopped' 
+                                    if flow_status not in ['interactive', 'new', 'running'] and len(self.states[c][cfg]['instance_pids']) == 0 :
+                                        flow_status = 'stopped'
                                     else:
-                                        if flow_status not in [ 'interactive', 'new', 'shutdown', 'starting' ]:
-                                            flow_status = 'missing' 
-                                        for i in range(1, int(self.configs[c][cfg]['instances'])+1 ):
+                                        if flow_status not in ['interactive', 'new', 'shutdown', 'starting' ]:
+                                            flow_status = 'missing'
+                                        for i in range(1, int(self.configs[c][cfg]['instances'])+1):
                                             if not i in self.states[c][cfg]['instance_pids']:
-                                                 self.states[c][cfg]['missing_instances'].append(i)
+                                                self.states[c][cfg]['missing_instances'].append(i)
                     elif observed_instances == 0:
-                        if flow_status not in ['interactive','new']:
+                        if flow_status not in ['interactive', 'new']:
                             flow_status = 'stopped' if len(self.states[c][cfg]['instance_pids']) == 0 else "missing"
                     elif self.states[c][cfg]['noVip']:
                         flow_status = 'waitVip'
@@ -1119,7 +1148,7 @@ class sr_GlobalState:
                         flow_status = 'slow'
                     elif self.states[c][cfg]['metrics']['retry'] > self.configs[c][cfg]['options'].runStateThreshold_retry:
                         if self.configs[c][cfg]['options'].attempts == 0:
-                            flow_status='standby'
+                            flow_status = 'standby'
                         else:
                             flow_status = 'retry'
                     elif self.states[c][cfg]['metrics']['lagMean'] > self.configs[c][cfg]['options'].runStateThreshold_lag:
@@ -1127,19 +1156,19 @@ class sr_GlobalState:
                     elif self.states[c][cfg]['metrics']['rejectPercent'] > self.configs[c][cfg]['options'].runStateThreshold_reject:
                         flow_status = 'reject'
                     elif self.configs[c][cfg]['options'].attempts == 0:
-                        flow_status='standby'
-                    elif flow_status in [ 'down', 'disconnected' ]:
+                        flow_status = 'standby'
+                    elif flow_status in ['down', 'disconnected' ]:
                         pass
-                    elif hasattr(self.configs[c][cfg]['options'],'publishers') and len(self.configs[c][cfg]['options'].publishers) \
-                            and (now-self.states[c][cfg]['metrics']['txLast']) > self.configs[c][cfg]['options'].runStateThreshold_idle:
+                    elif hasattr(self.configs[c][cfg]['options'], 'publishers') and len(self.configs[c][cfg]['options'].publishers) \
+                            and (now -self.states[c][cfg]['metrics']['txLast']) > self.configs[c][cfg]['options'].runStateThreshold_idle:
                         flow_status = 'idle'
-                    elif  hasattr(self.configs[c][cfg]['options'],'download') and self.configs[c][cfg]['options'].download \
-                            and (now-self.states[c][cfg]['metrics']['transferLast']) > self.configs[c][cfg]['options'].runStateThreshold_idle:
+                    elif  hasattr(self.configs[c][cfg]['options'], 'download') and self.configs[c][cfg]['options'].download \
+                            and (now -self.states[c][cfg]['metrics']['transferLast']) > self.configs[c][cfg]['options'].runStateThreshold_idle:
                         flow_status = 'idle'
-                    elif (now-self.states[c][cfg]['metrics']['rxLast']) > self.configs[c][cfg]['options'].runStateThreshold_idle:
+                    elif (now -self.states[c][cfg]['metrics']['rxLast']) > self.configs[c][cfg]['options'].runStateThreshold_idle:
                         flow_status = 'idle'
                     elif self.states[c][cfg]['metrics']['msgRate'] > 0 and \
-                           self.states[c][cfg]['metrics']['msgRateCpu'] < self.configs[c][cfg]['options'].runStateThreshold_cpuSlow:
+                    self.states[c][cfg]['metrics']['msgRateCpu'] < self.configs[c][cfg]['options'].runStateThreshold_cpuSlow:
                         flow_status = 'cpuSlow'
                     else:
 
@@ -1148,10 +1177,9 @@ class sr_GlobalState:
                     self.states[c][cfg]['resource_usage'] = copy.deepcopy(resource_usage)
                     self.configs[c][cfg]['status'] = flow_status
 
-
         # FIXME: missing check for too many instances.
-        if self.cumulative_stats['rxLagCount']  > 0:
-            self.cumulative_stats['lagMean'] = self.cumulative_stats['rxLagTime'] / self.cumulative_stats['rxLagCount'] 
+        if self.cumulative_stats['rxLagCount'] > 0:
+            self.cumulative_stats['lagMean'] = self.cumulative_stats['rxLagTime'] / self.cumulative_stats['rxLagCount']
         else:
             self.cumulative_stats['lagMean'] = 0
 
@@ -1167,7 +1195,7 @@ class sr_GlobalState:
           put all the ones that do not match in leftovers.
         """
 
-        logging.debug( 'starting match_patterns with: %s' % patterns )
+        logging.debug('starting match_patterns with: %s' % patterns )
         self.filtered_configurations = []
         self.leftovers = []
         leftover_matches = {}
@@ -1178,48 +1206,48 @@ class sr_GlobalState:
             self.v2_config = patterns
             return
 
-        candidates=[]
+        candidates = []
         for c in self.components:
             if (c not in self.configs):
                 continue
             for cfg in self.configs[c]:
                 fcc = c + os.sep + cfg
                 candidates.append(fcc)
-    
+
         self.all_configs = candidates
-        logger.debug( f"candidates: {candidates}" )
-        new_patterns=[]
+        logger.debug(f"candidates: {candidates}" )
+        new_patterns = []
         for p in patterns:
-            if p in [ 'examples','eg','ie', 'flow_callback','flowcb','fcb','v2plugins','v2p']:
-                new_patterns.append(p)         
+            if p in [ 'examples', 'eg','ie', 'flow_callback','flowcb','fcb','v2plugins','v2p']:
+                new_patterns.append(p)
             elif os.sep not in p:
                 p = 'flow/' + p
-                new_patterns.append(p)         
+                new_patterns.append(p)
             else:
-                new_patterns.append(p)         
+                new_patterns.append(p)
             leftover_matches[p] = 0
-        patterns=new_patterns
+        patterns = new_patterns
 
-        logger.debug( f"patterns: {patterns}" )
+        logger.debug(f"patterns: {patterns}" )
         for fcc in candidates:
             if (patterns is None) or (len(patterns) < 1):
                 self.filtered_configurations.append(fcc)
             else:
                 for p in patterns:
-                    if p in [ 'examples','eg','ie','flow_callback','flowcb','fcb','v2plugins','v2p']:
+                    if p in [ 'examples', 'eg','ie','flow_callback','flowcb','fcb','v2plugins','v2p']:
                         continue
                     if fnmatch.fnmatch(fcc, p):
                         self.filtered_configurations.append(fcc)
                         leftover_matches[p] += 1
 
-                    if fcc[-5:] == '.conf' and fcc[0:-5] == p :
+                    if fcc[-5:] == '.conf' and fcc[0:-5] == p:
                         self.filtered_configurations.append(fcc)
                         leftover_matches[p] += 1
- 
-                    if fcc[-4:] == '.inc' and fcc[0:-4] == p :
+
+                    if fcc[-4:] == '.inc' and fcc[0:-4] == p:
                         self.filtered_configurations.append(fcc)
                         leftover_matches[p] += 1
- 
+
                     # 22/11/01... pas thinks this is wrong and backwards, but not sure..
                     if p[-5:] == '.conf' and fnmatch.fnmatch(fcc, p[0:-5]):
                         self.filtered_configurations.append(fcc)
@@ -1240,7 +1268,8 @@ class sr_GlobalState:
                 if self.leftovers[0] == 'examples':
                     for c in self.components:
                         d = self.package_lib_dir + os.sep + 'examples' + os.sep + c
-                        if not os.path.exists(d): continue
+                        if not os.path.exists(d):
+                            continue
                         l = os.listdir(d)
                         candidates.extend(
                             list(
@@ -1262,8 +1291,8 @@ class sr_GlobalState:
                         if fnmatch.fnmatch(fcc, p):
                             self.filtered_configurations.append(fcc)
 
-        logging.debug( 'match_patterns result filtered_configurations: %s' % self.filtered_configurations )
-        logging.debug( 'match_patterns result leftovers: %s' % self.leftovers )
+        logging.debug('match_patterns result filtered_configurations: %s' % self.filtered_configurations )
+        logging.debug('match_patterns result leftovers: %s' % self.leftovers )
 
     # FIXME: this should be in config.py
     @property
@@ -1274,9 +1303,9 @@ class sr_GlobalState:
     def appname(self, n):
         self.__appname = n
         self.user_config_dir = sarracenia.user_config_dir(self.appname,
-                                                       self.appauthor)
+                                                          self.appauthor)
         self.user_cache_dir = sarracenia.user_cache_dir(self.appname,
-                                                     self.appauthor)
+                                                        self.appauthor)
 
     def __init__(self, opt, config_fnmatches=None):
         """
@@ -1291,7 +1320,7 @@ class sr_GlobalState:
         self.appname = os.getenv('SR_DEV_APPNAME')
         self.hostname = socket.getfqdn()
         self.hostdir = self.hostname.split('.')[0]
-        self.please_stop=False
+        self.please_stop = False
         self.users = opt.users
         self.declared_users = opt.declared_users
 
@@ -1300,18 +1329,17 @@ class sr_GlobalState:
 
         if self.appname is None:
             self.appname = 'sr3'
-        #else:
+        # else:
         #    print(
         #        'DEVELOPMENT using alternate application name: %s, bindir=%s' %
         #        (self.appname, self.bin_dir))
 
-
         if not os.path.isdir(self.user_config_dir):
-            print( f'INFO: No {self.appname} configuration found. creating an empty one {self.user_config_dir}' )
+            print(f'INFO: No {self.appname} configuration found. creating an empty one {self.user_config_dir}' )
             os.makedirs(self.user_config_dir)
-     
+
         if not os.path.isdir(self.user_cache_dir):
-            print( f'INFO: No {self.appname} state or log files found. Creating an empty one {self.user_cache_dir}' )
+            print(f'INFO: No {self.appname} state or log files found. Creating an empty one {self.user_cache_dir}' )
             os.makedirs(self.user_cache_dir)
 
         self.components = [
@@ -1319,12 +1347,12 @@ class sr_GlobalState:
             'sender', 'shovel', 'subscribe', 'watch', 'winnow'
         ]
         # active means >= 1 process exists on the node.
-        self.status_active =  ['cpuSlow', 'disconnected', 'down', 'hung', 'idle', 'lagging', 'partial', 'reject', 'retry', 'running', 'slow', 'standby', 'starting', 'shutdown', 'waitVip' ]
-        self.status_values = self.status_active + [ 'disabled', 'include', 'interactive', 'missing', 'new', 'stopped', 'unknown' ]
+        self.status_active =  ['cpuSlow', 'disconnected', 'down', 'hung', 'idle', 'lagging', 'partial', 'reject', 'retry', 'running', 'slow', 'standby', 'starting', 'shutdown', 'waitVip']
+        self.status_values = self.status_active + ['disabled', 'include', 'interactive', 'missing', 'new', 'stopped', 'unknown' ]
 
         self.bin_dir = os.path.dirname(os.path.realpath(__file__))
 
-        #print('gathering global state: ', flush=True)
+        # print('gathering global state: ', flush=True)
 
         self.log_dir = self.user_cache_dir + os.sep + 'log'
         pf = self.user_cache_dir + os.sep + "procs.json"
@@ -1333,23 +1361,23 @@ class sr_GlobalState:
         else:
             self._read_procs()
 
-        #print('procs, ', end='', flush=True)
+        # print('procs, ', end='', flush=True)
         self._read_configs()
-        #print('got configs from %s' % self.user_config_dir, flush=True)
+        # print('got configs from %s' % self.user_config_dir, flush=True)
         self._read_states()
-        #print('got state files from %s, ' % self.user_cache_dir , flush=True)
+        # print('got state files from %s, ' % self.user_cache_dir , flush=True)
         self._read_logs()
-        #print('logs, ', end='', flush=True)
+        # print('logs, ', end='', flush=True)
         self._resolve()
         self._find_missing_instances()
-        #print('analysis - Done. ', flush=True)
+        # print('analysis - Done. ', flush=True)
         # True if the user did ``sr3 action`` with no configs/components specified
         self._action_all_configs = (config_fnmatches is None or len(config_fnmatches) == 0)
         self._match_patterns(config_fnmatches)
         os.chdir(self.invoking_directory)
 
     def _start_missing(self):
-        max_instance=0
+        max_instance = 0
         for instance in self.missing:
             if self.please_stop:
                 break
@@ -1360,34 +1388,35 @@ class sr_GlobalState:
             if component_path == '':
                 continue
             if max_instance < i:
-                max_instance=i 
+                max_instance = i 
             self._launch_instance(component_path, c, cfg, i)
-        time.sleep(0.2+max_instance*0.1)
-        
+        time.sleep(0.2 +max_instance *0.1)
 
     def _stop_signal(self, signum, stack):
         logging.info('signal %d received' % signum)
         logging.info("Stopping config...")
 
-        # stack trace dump from: https://stackoverflow.com/questions/132058/showing-the-stack-trace-from-a-running-python-application
+        # stack trace dump from:
+        # https://stackoverflow.com/questions/132058/showing-the-stack-trace-from-a-running-python-application
         if self.options.debug:
-            logger.debug("the following stack trace does not mean anything is wrong. When debug is enabled, we print a stack trace to help, even for normal termination")
+            logger.debug(
+                "the following stack trace does not mean anything is wrong. When debug is enabled, we print a stack trace to help, even for normal termination")
 
             id2name = dict([(th.ident, th.name) for th in threading.enumerate()])
             code = []
             for threadId, stack in sys._current_frames().items():
-                code.append("\n# Thread: %s(%d)" % (id2name.get(threadId,""), threadId))
+                code.append("\n# Thread: %s(%d)" % (id2name.get(threadId, ""), threadId))
                 for filename, lineno, name, line in traceback.extract_stack(stack):
                     code.append('File: "%s", line %d, in %s' % (filename, lineno, name))
                     if line:
                         code.append("  %s" % (line.strip()))
             logging.debug('\n'.join(code))
-        self.please_stop=True
+        self.please_stop = True
         # Signal is also sent to subprocesses. Once they exit, subprocess.run returns and sr.py should terminate.
 
     def _active_stop_signal(self, signum, stack):
         logging.info('signal %d received' % signum)
-        logging.info( f"Stopping config... {self.filtered_configurations}")
+        logging.info(f"Stopping config... {self.filtered_configurations}")
         # Signal is also sent to subprocesses. Once they exit, subprocess.run returns and sr.py should terminate.
         self._read_procs()
         self._find_missing_instances()
@@ -1421,7 +1450,7 @@ class sr_GlobalState:
 
         if not hasattr(self, 'leftovers') or (len(self.leftovers) == 0):
             if len(self.filtered_configurations) > 0:
-               logging.info( f"matched existing {self.filtered_configurations}" )
+                logging.info(f"matched existing {self.filtered_configurations}" )
             logging.error("nothing specified to add")
 
         for l in self.leftovers:
@@ -1454,9 +1483,9 @@ class sr_GlobalState:
                     break
             if not found:
                 logger.info("did not find anything to copy for: %s. creating an empty one." % l)
-                if cfg[-5:] not in [ '.inc', '.conf' ]:
+                if cfg[-5:] not in ['.inc', '.conf' ]:
                     cfg = cfg + '.conf'
-                with open( destdir + os.sep + cfg, 'w' ) as f:
+                with open(destdir + os.sep + cfg, 'w' ) as f:
                     f.write('')
 
     def declare(self):
@@ -1489,7 +1518,7 @@ class sr_GlobalState:
                     filtered_users.append(f"{o.report_broker.url.username}@{o.report_broker.url.hostname}")
 
         # add users (?)
-        if self.users: # check if users exist in the configuration (?)
+        if self.users:  # check if users exist in the configuration (?)
             for h in self.brokers:
                 if self.please_stop:
                     break
@@ -1499,12 +1528,13 @@ class sr_GlobalState:
                             self.user_config_dir + os.sep + 'credentials.conf',
                             'r') as config_file:
                         for cfl in config_file.readlines():
-                            if not cfl.strip(): continue
+                            if not cfl.strip():
+                                continue
                             if cfl.lstrip()[0] == '#': continue
                             u_urlstr = cfl.split()[0]
                             try:
                                 u_url = urllib.parse.urlparse(u_urlstr)
-                            except:
+                            except BaseException:
                                 continue
                             if not u_url.username:
                                 continue
@@ -1513,35 +1543,35 @@ class sr_GlobalState:
                             if u_url.hostname != h:
                                 continue
                             if u_url.username in self.default_cfg.declared_users:
-                                #print( 'u_url : user:%s, pw:%s, role: %s netloc: %s, host:%s' % \
+                                # print( 'u_url : user:%s, pw:%s, role: %s netloc: %s, host:%s' % \
                                 #    (u_url.username, u_url.password, self.default_cfg.declared_users[u_url.username],
                                 #     u_url.netloc, u_url.hostname ))
-                                
+
                                 user = f"{u_url.username}@{h}"
 
                                 if filtered_users and user not in filtered_users:
                                     logger.debug(f"not adding {user}")
                                     continue
 
-                                sarracenia.rabbitmq_admin.add_user( \
-                                    self.brokers[h]['admin'].url, \
+                                sarracenia.rabbitmq_admin.add_user(
+                                    self.brokers[h]['admin'].url,
                                     self.default_cfg.declared_users[u_url.username],
-                                    u_url.username, u_url.password, self.options.dry_run )
+                                    u_url.username, u_url.password, self.options.dry_run)
 
         # declare admin exchanges.
-        if hasattr(self,'default_cfg') and self.default_cfg.admin:
-            logger.info( f"Declaring exchanges for admin.conf using {self.default_cfg.admin} ")
+        if hasattr(self, 'default_cfg') and self.default_cfg.admin:
+            logger.info(f"Declaring exchanges for admin.conf using {self.default_cfg.admin} ")
             if hasattr(self.default_cfg, 'declared_exchanges'):
                 xdc = sarracenia.moth.Moth.pubFactory(
                     {
                         'broker': self.default_cfg.admin,
                         'dry_run': self.options.dry_run,
                         'exchange': self.default_cfg.declared_exchanges,
-                        'message_strategy': { 'stubborn':True }
+                        'message_strategy': { 'stubborn': True }
                     })
                 xdc.putSetup()
                 xdc.close()
-                
+
         # declare exchanges first.
         for f in self.filtered_configurations:
             if self.please_stop:
@@ -1551,18 +1581,18 @@ class sr_GlobalState:
             if not 'options' in self.configs[c][cfg]:
                 continue
             logging.info('looking at %s/%s ' % (c, cfg))
-            if hasattr(self.configs[c][cfg]['options'],'publishers'):
+            if hasattr(self.configs[c][cfg]['options'], 'publishers'):
                 for p in self.configs[c][cfg]['options'].publishers:
-                     if 'exchange' in p:
-                         xdc = sarracenia.moth.Moth.pubFactory(
-                            {   
-                                'broker': p['broker'],
-                                'dry_run': self.options.dry_run,
-                                'exchange': p['exchange'],
-                                'message_strategy': { 'stubborn':True }
-                            })
-                         xdc.putSetup()
-                         xdc.close()
+                    if 'exchange' in p:
+                        xdc = sarracenia.moth.Moth.pubFactory(
+                           {
+                               'broker': p['broker'],
+                               'dry_run': self.options.dry_run,
+                               'exchange': p['exchange'],
+                               'message_strategy': { 'stubborn': True }
+                           })
+                        xdc.putSetup()
+                        xdc.close()
 
         # then declare and bind queues....
         for f in self.filtered_configurations:
@@ -1575,16 +1605,16 @@ class sr_GlobalState:
                 continue
             logging.info('looking at %s/%s ' % (c, cfg))
             o = self.configs[c][cfg]['options']
-            if not hasattr(o,'subscriptions'):
+            if not hasattr(o, 'subscriptions'):
                 continue
 
-            i=0
+            i = 0
             for s in o.subscriptions:
                 od = o.dictify()
                 od['broker'] = s['broker']
                 od['queueName'] = s['queue']['name']
                 od['dry_run'] = self.options.dry_run
-                od['subscription_index']=i
+                od['subscription_index'] = i
                 qdc = sarracenia.moth.Moth.subFactory(od)
                 qdc.getSetup()
                 qdc.close()
@@ -1601,18 +1631,18 @@ class sr_GlobalState:
                 continue
 
             o = self.configs[c][cfg]['options']
-            o.no=0
+            o.no = 0
             o.finalize()
-            if c not in [ 'cpost', 'cpump' ]:
+            if c not in ['cpost', 'cpump' ]:
                 flow = sarracenia.flow.Flow.factory(o)
                 flow.loadCallbacks()
                 flow.runCallbacksTime('on_declare')
                 del flow
-                flow=None
+                flow = None
 
     def disable(self):
         if len(self.leftovers) > 0 and not self._action_all_configs:
-            logging.error( f"{self.leftovers} configuration not found" )
+            logging.error(f"{self.leftovers} configuration not found" )
             return
 
         for f in self.filtered_configurations:
@@ -1627,7 +1657,7 @@ class sr_GlobalState:
                 logging.error("cannot disable %s while it is running! " % f)
                 continue
 
-            self._tag_progress( c, cfg, 'disabled', ending=False )
+            self._tag_progress(c, cfg, 'disabled', ending=False )
 
     def edit(self):
 
@@ -1669,7 +1699,7 @@ class sr_GlobalState:
 
     def enable(self):
         if len(self.leftovers) > 0 and not self._action_all_configs:
-            logging.error( f'{self.leftovers} configuration not found' )
+            logging.error(f'{self.leftovers} configuration not found' )
             return
         # declare exchanges first.
         for f in self.filtered_configurations:
@@ -1700,39 +1730,38 @@ class sr_GlobalState:
                 continue
 
             o = self.configs[c][cfg]['options']
-            o.no=0
+            o.no = 0
             o.finalize()
-            if c not in [ 'cpost', 'cpump' ]:
+            if c not in ['cpost', 'cpump' ]:
                 flow = sarracenia.flow.Flow.factory(o)
                 flow.loadCallbacks()
                 flow.runCallbacksTime('on_features')
                 del flow
-                flow=None
+                flow = None
 
-        features_present=[]
-        print( f"\n{'Status:':10} {'feature:':10} {'python imports:':20} {'Description:'} ")
-        features_absent=[]
+        features_present = []
+        print(f"\n{'Status:':10} {'feature:':10} {'python imports:':20} {'Description:'} ")
+        features_absent = []
         for x in sarracenia.features.keys():
             if x == 'all':
                 continue
             if sarracenia.features[x]['present']:
-                word1="Installed"
-                desc=sarracenia.features[x]['rejoice']
+                word1 = "Installed"
+                desc = sarracenia.features[x]['rejoice']
             else:
                 if 'Needed' in sarracenia.features[x]:
-                     word1="MISSING"
+                    word1 = "MISSING"
                 else:
-                     word1="Absent"
-                desc=sarracenia.features[x]['lament']
+                    word1 = "Absent"
+                desc = sarracenia.features[x]['lament']
 
-            print( f"{word1:10} {x:10} {','.join(sarracenia.features[x]['modules_needed']):20} {desc}" )
+            print(f"{word1:10} {x:10} {','.join(sarracenia.features[x]['modules_needed']):20} {desc}" )
 
-        if not (sarracenia.features['amqp']['present'] or sarracenia.features['mqtt']['present'] ):
-            print( "ERROR: need at least one of: amqp or mqtt" )
+        if not (sarracenia.features['amqp']['present'] or sarracenia.features['mqtt']['present']):
+            print("ERROR: need at least one of: amqp or mqtt" )
 
-        print( f"\n state dir: {self.user_cache_dir} " )
-        print( f" config dir: {self.user_config_dir} " )
-
+        print(f"\n state dir: {self.user_cache_dir} " )
+        print(f" config dir: {self.user_config_dir} " )
 
     def foreground(self):
 
@@ -1747,10 +1776,11 @@ class sr_GlobalState:
             if component_path == '':
                 continue
 
-            if self.configs[c][cfg]['status'] in ['stopped','new','interactive','missing']:
+            if self.configs[c][cfg]['status'] in ['stopped', 'new','interactive','missing']:
                 numi = self.configs[c][cfg]['instances']
                 for i in range(1, numi + 1):
-                    if pcount % 10 == 0: print('.', end='', flush=True)
+                    if pcount % 10 == 0:
+                        print('.', end='', flush=True)
                     pcount += 1
 
             if pcount != 0:
@@ -1759,10 +1789,10 @@ class sr_GlobalState:
 
                 cfgfile = self.user_config_dir + os.sep + c + os.sep + cfg + '.conf'
 
-                if c in [ 'flow',
-                        'poll', 'post', 'report', 'sarra', 'sender', 'shovel', 
-                        'subscribe', 'watch', 'winnow'
-                ]:
+                if c in ['flow',
+                        'poll', 'post', 'report', 'sarra', 'sender', 'shovel',
+                          'subscribe', 'watch', 'winnow'
+                          ]:
                     component_path = os.path.dirname(
                         component_path) + os.sep + 'instance.py'
                     cmd = [sys.executable, component_path, '--no', "0"]
@@ -1772,10 +1802,10 @@ class sr_GlobalState:
                          this feels hacky... but I can't think of a case that won't work.
                     """
                     if '--config' in cmd:
-                        cmd[ cmd.index( '--config' )+1 ] = f
+                        cmd[cmd.index( '--config' )+1 ] = f
                     elif '-c' in cmd:
-                        cmd[ cmd.index( '-c' )+1 ] = f
-                    elif c not in [ 'post', 'watch' ]:
+                        cmd[cmd.index( '-c' )+1 ] = f
+                    elif c not in ['post', 'watch' ]:
                         cmd[-1] = f
 
                 elif c[0] != 'c':  # python components
@@ -1793,22 +1823,22 @@ class sr_GlobalState:
     def cleanup(self) -> bool:
 
         if len(self.leftovers) > 0 and not self._action_all_configs:
-            logging.error( f'{self.leftovers} configuration not found' )
+            logging.error(f'{self.leftovers} configuration not found' )
             return
 
-        if len(self.filtered_configurations) > 1 :
+        if len(self.filtered_configurations) > 1:
             if len(self.filtered_configurations) != self.options.dangerWillRobinson:
                 logging.error(
-                        f"specify --dangerWillRobinson=<number> of configs to cleanup (actual: {len(self.filtered_configurations)}, given: {self.options.dangerWillRobinson} ) when cleaning more than one")
+                    f"specify --dangerWillRobinson=<number> of configs to cleanup (actual: {len(self.filtered_configurations)}, given: {self.options.dangerWillRobinson} ) when cleaning more than one")
                 return False
 
-        all_stopped=True
+        all_stopped = True
         for f in self.filtered_configurations:
             (c, cfg) = f.split(os.sep)
             if self.configs[c][cfg]['status'] in self.status_active:
-                logger.error( f"{c}/{cfg} is in {self.configs[c][cfg]['status']} state. Stop it first.")
-                all_stopped=False
- 
+                logger.error(f"{c}/{cfg} is in {self.configs[c][cfg]['status']} state. Stop it first.")
+                all_stopped = False
+
         if not all_stopped:
             return False
 
@@ -1826,16 +1856,15 @@ class sr_GlobalState:
             for s in o.subscriptions:
                 q = s['queue']
                 if 'name' in q:
-                    if type(o.broker) == str:
-                        ok, broker = o.credentials.get( o.broker )
+if isinstance(o.broker,                     if )                        ok, broker = o.credentials.get(o.broker )
                     else:
-                        broker=o.broker
+                        broker = o.broker
 
                     if not broker:
-                        print( f" could not resolve broker: {o.broker} " )
+                        print(f" could not resolve broker: {o.broker} " )
                         continue
 
-                    print('deleting: %s is: %s @ %s' % (f, q['name'], broker.url.hostname ))
+                    print('deleting: %s is: %s @ %s' % (f, q['name'], broker.url.hostname))
                     qdc = sarracenia.moth.Moth.subFactory(
                         {
                             'broker': broker,
@@ -1843,8 +1872,8 @@ class sr_GlobalState:
                             'credentials': o.credentials,
                             'echangeDeclare': False,
                             'subscription_index': 0,
-                            'subscriptions' : [ s ],
-                            'message_strategy': { 'stubborn':True }
+                            'subscriptions' : [s ],
+                            'message_strategy': { 'stubborn': True }
                         })
                     qdc.getSetup()
                     qdc.getCleanUp()
@@ -1857,8 +1886,9 @@ class sr_GlobalState:
             for qd in queues_to_delete:
                 if self.please_stop:
                     break
-                if qd[0].url.hostname != h: continue
-                
+                if qd[0].url.hostname != h:
+                    continue
+
                 for x in self.brokers[h]['exchanges']:
                     xx = self.brokers[h]['exchanges'][x]
                     if qd[1] in xx:
@@ -1880,7 +1910,7 @@ class sr_GlobalState:
                                         'exchange': p['exchange'],
                                         'dry_run': self.options.dry_run,
                                         'broker': self.brokers[h]['admin'],
-                                        'message_strategy': { 'stubborn':True }
+                                        'message_strategy': { 'stubborn': True }
                                     })
                                 if qdc:
                                     qdc.putSetup()
@@ -1895,22 +1925,22 @@ class sr_GlobalState:
             (c, cfg) = f.split(os.sep)
 
             if self.configs[c][cfg]['status'] in self.status_active:
-                #logger.warning( f"cannot clean running configuration, skipping {c}/{cfg}")
+                # logger.warning( f"cannot clean running configuration, skipping {c}/{cfg}")
                 continue
 
             if not 'options' in self.configs[c][cfg]:
                 continue
 
             o = self.configs[c][cfg]['options']
-            o.no=0
+            o.no = 0
             o.finalize()
-            if c not in [ 'cpost', 'cpump' ]:
+            if c not in ['cpost', 'cpump' ]:
                 flow = sarracenia.flow.Flow.factory(o)
                 flow.loadCallbacks()
                 flow.runCallbacksTime('on_cleanup')
                 del flow
-                flow=None
-        
+                flow = None
+
         # cleanup statefiles
         for f in self.filtered_configurations:
             if self.please_stop:
@@ -1919,7 +1949,7 @@ class sr_GlobalState:
             (c, cfg) = f.split(os.sep)
 
             if self.configs[c][cfg]['status'] in self.status_active:
-                #logger.warning( f"cannot clean running configuration, skipping {c}/{cfg}")
+                # logger.warning( f"cannot clean running configuration, skipping {c}/{cfg}")
                 continue
 
             if self.configs[c][cfg]['options'].statehost:
@@ -1934,7 +1964,7 @@ class sr_GlobalState:
                     if state_file[0] == '.':
                         continue
 
-                    if state_file in [ 'disabled' ]:
+                    if state_file in ['disabled' ]:
                         continue
 
                     asf = cache_dir + os.sep + state_file
@@ -1955,7 +1985,8 @@ class sr_GlobalState:
             if os.path.basename(root) == '__pycache__':
                 continue
             for f in filenames:
-                if f in ['__init__.py']: continue
+                if f in ['__init__.py']:
+                    continue
                 l.append(os.path.join(root, f))
 
         return l
@@ -1967,7 +1998,7 @@ class sr_GlobalState:
         if not os.path.isdir(configdir) or (len(os.listdir(configdir)) == 0):
             return
 
-        #print("%s: ( %s )" % (prefix,configdir))
+        # print("%s: ( %s )" % (prefix,configdir))
         term = shutil.get_terminal_size((80, 20))
         columns = term.columns
         count = 0
@@ -1976,7 +2007,7 @@ class sr_GlobalState:
             if confname[0] == '.' or confname[
                     -1] == '~' or confname == '__init__.py':
                 continue
-            #if os.path.isdir(configdir + os.sep + confname): continue
+            # if os.path.isdir(configdir + os.sep + confname): continue
             if (((sr_GlobalState.print_column + 1) * 33) >= columns):
                 print('')
                 sr_GlobalState.print_column = 0
@@ -1998,13 +2029,14 @@ class sr_GlobalState:
         if not os.path.isdir(configdir) or (len(os.listdir(configdir)) == 0):
             return
 
-        #print("%s: ( %s )" % (prefix,configdir))
+        # print("%s: ( %s )" % (prefix,configdir))
         term = shutil.get_terminal_size((80, 20))
         columns = term.columns
         count = 0
 
         for confname in sorted(os.listdir(configdir)):
-            if confname[0] == '.' or confname[-1] == '~': continue
+            if confname[0] == '.' or confname[-1] == '~':
+                continue
             if os.path.isdir(configdir + os.sep + confname): continue
             if (((sr_GlobalState.print_column + 1) * 33) >= columns):
                 print('')
@@ -2073,15 +2105,15 @@ class sr_GlobalState:
                 continue
 
             o = self.configs[c][cfg]['options']
-            o.no=0
+            o.no = 0
             o.finalize()
-            if c not in [ 'cpost', 'cpump' ]:
+            if c not in ['cpost', 'cpump' ]:
                 flow = sarracenia.flow.Flow.factory(o)
                 flow.loadCallbacks()
                 print('\nConfig of %s/%s: (with callbacks)' % (c, cfg))
                 flow.o.dump()
                 del flow
-                flow=None
+                flow = None
             else:
                 print('\nConfig of %s/%s: ' % (c, cfg))
                 o.dump()
@@ -2089,14 +2121,14 @@ class sr_GlobalState:
     def remove(self):
 
         if len(self.leftovers) > 0 and not self._action_all_configs:
-            logging.error( f"{self.leftovers} configuration not found" )
+            logging.error(f"{self.leftovers} configuration not found" )
             return
 
-        if len(self.filtered_configurations) > 1 :
+        if len(self.filtered_configurations) > 1:
             if len(self.filtered_configurations) != self.options.dangerWillRobinson:
-                logging.error( f"specify --dangerWillRobinson=<n> of configs to remove "
-                   f"when > 1 involved. (actual: {len(self.filtered_configurations)}, "
-                   f"given: {self.options.dangerWillRobinson}")
+                logging.error(f"specify --dangerWillRobinson=<n> of configs to remove "
+                               f"when > 1 involved. (actual: {len(self.filtered_configurations)}, "
+                               f"given: {self.options.dangerWillRobinson}")
                 return
 
         for f in self.filtered_configurations:
@@ -2113,27 +2145,26 @@ class sr_GlobalState:
 
             if ('instance_pids' in self.states[c][cfg]) and len(
                     self.states[c][cfg]['instance_pids']) > 0:
-                running=0
-                for p in self.states[c][cfg]['instance_pids'] :
+                running = 0
+                for p in self.states[c][cfg]['instance_pids']:
                     if p in self.procs:
-                        running +=1
+                        running += 1
                 if running > 0:
-                    logging.error("cannot remove %s/%s while it is running! " % ( c, cfg ) )
+                    logging.error("cannot remove %s/%s while it is running! " % (c, cfg ) )
                     continue
 
             cfgfile = self.user_config_dir + os.sep + c + os.sep + cfg + '.conf'
             statefile = self.user_cache_dir + os.sep + c + os.sep + cfg
 
             if self.options.dry_run:
-                logging.info('removing (dry run) %s/%s ' % ( c, cfg ))
+                logging.info('removing (dry run) %s/%s ' % (c, cfg ))
             else:
-                logging.info('removing %s/%s' % ( c, cfg ))
+                logging.info('removing %s/%s' % (c, cfg ))
                 os.unlink(cfgfile)
                 try:
                     shutil.rmtree(statefile)
                 except Exception as ex:
-                    print( f" rmtree failed: {ex} " )
-
+                    print(f" rmtree failed: {ex} " )
 
     def maint(self, action):
         """
@@ -2169,7 +2200,6 @@ class sr_GlobalState:
             (outs, errs) = p.communicate()
             print(outs.decode('utf8'))
 
- 
 
     def sanity(self):
         """ Run sanity by finding and starting missing instances
@@ -2177,20 +2207,20 @@ class sr_GlobalState:
         :return:
         """
         if len(self.leftovers) > 0 and not self._action_all_configs:
-            logging.error( f"{self.leftovers} configuration not found" )
+            logging.error(f"{self.leftovers} configuration not found" )
             return
 
         if self.flux:
             if len(self.flux) > 10:
-                logging.warning( f"Not interfering with more than 10 operations in progress" )
+                logging.warning(f"Not interfering with more than 10 operations in progress" )
             else:
-                logging.warning( f"Not interfering with operations in progress: {self.flux}" )
+                logging.warning(f"Not interfering with operations in progress: {self.flux}" )
             return
 
         self._tag_sanity(ending=False)
 
         pcount = 0
-        kill_hung=[]
+        kill_hung = []
         for f in self.filtered_configurations:
             (c, cfg) = f.split(os.sep)
             component_path = self._find_component_path(c)
@@ -2199,16 +2229,17 @@ class sr_GlobalState:
             if self.configs[c][cfg]['status'] in ['missing', 'partial']:
                 numi = self.configs[c][cfg]['instances']
                 for i in range(1, numi + 1):
-                    if pcount % 10 == 0: print('.', end='', flush=True)
+                    if pcount % 10 == 0:
+                        print('.', end='', flush=True)
                     pcount += 1
             if 'hung_instances' in self.states[c][cfg] and len(self.states[c][cfg]['hung_instances']) > 0:
                 for i in self.states[c][cfg]['hung_instances']:
-                    kill_pid=self.states[c][cfg]['instance_pids'][i]
-                    print( f'\nfound hung {c}/{cfg}/{i} pid: {kill_pid}' )
-                    kill_hung.append(  kill_pid )
+                    kill_pid = self.states[c][cfg]['instance_pids'][i]
+                    print(f'\nfound hung {c}/{cfg}/{i} pid: {kill_pid}' )
+                    kill_hung.append(kill_pid )
                     pcount += 1
-        
-        if (len(kill_hung) > 0) and not self.options.dry_run :
+
+        if (len(kill_hung) > 0) and not self.options.dry_run:
             print('killing hung processes... (no point in SIGTERM if it is hung)')
             for pid in kill_hung:
                 signal_pid(pid, signal.SIGKILL)
@@ -2233,18 +2264,17 @@ class sr_GlobalState:
         else:
             logger.info('no missing processes found')
 
- 
         if len(self.strays) > 0:
             print('killing strays...')
             for pid in self.strays:
-                print( f"pid: {pid} \"{self.strays[pid]}\"  does not match any configured instance, sending it TERM" )
+                print(f"pid: {pid} \"{self.strays[pid]}\"  does not match any configured instance, sending it TERM" )
                 if not self.options.dry_run:
                     signal_pid(pid, signal.SIGTERM)
         else:
             logger.info('no stray processes found')
 
-        #It is enough to have it *features* not needed in sanity.
-        #for l in sarracenia.features.keys():
+        # It is enough to have it *features* not needed in sanity.
+        # for l in sarracenia.features.keys():
         #    if not sarracenia.features[l]['present']:
         #        print( f"notice: python module {l} is missing: {sarracenia.features[l]['lament']}" )
 
@@ -2259,27 +2289,26 @@ class sr_GlobalState:
                 continue
 
             o = self.configs[c][cfg]['options']
-            o.no=0
+            o.no = 0
             o.finalize()
-            if c not in [ 'cpost', 'cpump' ]:
+            if c not in ['cpost', 'cpump' ]:
                 flow = sarracenia.flow.Flow.factory(o)
                 flow.loadCallbacks()
                 flow.runCallbacksTime('on_sanity')
                 del flow
-                flow=None
+                flow = None
 
         self._tag_sanity(ending=True)
-        
-    def _pid_file_count(self,c,cfg) -> int:
-        d = self.user_cache_dir 
+
+    def _pid_file_count(self, c,cfg) -> int:
+        d = self.user_cache_dir
         if self.configs[c][cfg]['options'].statehost:
             d += os.sep + self.hostdir
         d += os.sep + c + os.sep + cfg
         if os.path.exists(d):
-            return sum( [ i[-4:] == '.pid' for i in os.listdir(d) ] )
+            return sum([ i[-4:] == '.pid' for i in os.listdir(d) ] )
         else:
             return 0
-
 
     def start(self):
         """ Starting all components
@@ -2288,20 +2317,20 @@ class sr_GlobalState:
         """
 
         if len(self.leftovers) > 0 and not self._action_all_configs:
-            logging.error( f"{self.leftovers} configuration not found" )
+            logging.error(f"{self.leftovers} configuration not found" )
             return
-        
-        count=0
+
+        count = 0
         while self._check_sanitizing():
             if self.please_stop:
                 return
             if count % 10 == 0:
-                logger.info( "sanitizing in progress, please wait." )
+                logger.info("sanitizing in progress, please wait." )
             count += 1
             time.sleep(1)
- 
+
         if count > 0:
-            logger.info( "sanitize complete, proceeding with start" )
+            logger.info("sanitize complete, proceeding with start" )
 
         has_disabled_config = False
 
@@ -2309,7 +2338,7 @@ class sr_GlobalState:
         if not self._action_all_configs:
             for f in self.filtered_configurations:
                 (c, cfg) = f.split(os.sep)
-            
+
                 if self.configs[c][cfg]['status'] == 'disabled':
                     has_disabled_config = True
                     logger.error(f"Config {c}/{cfg} is disabled. It must be enabled before starting.")
@@ -2319,65 +2348,70 @@ class sr_GlobalState:
                 return
 
         pcount = 0
-        max_instances=0
+        max_instances = 0
         for f in self.filtered_configurations:
 
             (c, cfg) = f.split(os.sep)
 
             # skip posts that cannot run as daemons
-            if c in ['post', 'cpost'] and not self._post_can_be_daemon(c, cfg): continue
+            if c in ['post', 'cpost'] and not self._post_can_be_daemon(c, cfg):
+                continue
 
             # Skip disabled configurations
-            if self.configs[c][cfg]['status'] in ['disabled']: continue
+            if self.configs[c][cfg]['status'] in ['disabled']:
+                continue
 
             component_path = self._find_component_path(c)
             if component_path == '':
                 continue
 
-            if self.configs[c][cfg]['status'] in [ 'missing', 'interactive', 'new', 'stopped']:
+            if self.configs[c][cfg]['status'] in ['missing', 'interactive', 'new', 'stopped']:
                 numi = self.configs[c][cfg]['instances']
                 if numi > max_instances:
-                    max_instances=numi
-                self._tag_progress( c, cfg, 'starting', ending=False )
+                    max_instances = numi
+                self._tag_progress(c, cfg, 'starting', ending=False )
                 for i in range(1, numi + 1):
-                    if pcount % 10 == 0: print('.', end='', flush=True)
+                    if pcount % 10 == 0:
+                        print('.', end='', flush=True)
                     pcount += 1
                     self._launch_instance(component_path, c, cfg, i)
- 
-        instance_gap=0.10
-        time.sleep(1+max_instances*instance_gap) 
+
+        instance_gap = 0.10
+        time.sleep(1+max_instances*instance_gap)
 
         for f in self.filtered_configurations:
             (c, cfg) = f.split(os.sep)
 
-            pid_count = self._pid_file_count(c,cfg)
-            partial=False
-            if c in ['post', 'cpost'] and not self._post_can_be_daemon(c, cfg): 
-                 continue
+            pid_count = self._pid_file_count(c, cfg)
+            partial = False
+            if c in ['post', 'cpost'] and not self._post_can_be_daemon(c, cfg):
+                continue
 
-            if self.configs[c][cfg]['status'] in ['disabled']: continue
+            if self.configs[c][cfg]['status'] in ['disabled']:
+                continue
 
             while pid_count < self.configs[c][cfg]['options'].instances:
 
-                 if self.please_stop:
-                     return
+                if self.please_stop:
+                    return
 
-                 partial=True
-                 logger.debug( f"{pid_count}/{self.configs[c][cfg]['options'].instances} instances started." )
-                 time.sleep(5)
-                 pid_count = self._pid_file_count(c,cfg)
+                partial = True
+                logger.debug(f"{pid_count}/{self.configs[c][cfg]['options'].instances} instances started." )
+                time.sleep(5)
+                pid_count = self._pid_file_count(c, cfg)
 
-            logger.debug( f"{c}/{cfg}: {pid_count}/{self.configs[c][cfg]['options'].instances} instances started." )
+            logger.debug(f"{c}/{cfg}: {pid_count}/{self.configs[c][cfg]['options'].instances} instances started." )
 
             # skip posts that cannot run as daemons
-            if c in ['post', 'cpost'] and not self._post_can_be_daemon(c, cfg): continue
+            if c in ['post', 'cpost'] and not self._post_can_be_daemon(c, cfg):
+                continue
 
             component_path = self._find_component_path(c)
             if component_path == '':
                 continue
 
-            self._tag_progress( c, cfg, 'starting', ending=True )
-            self._tag_progress( c, cfg, 'running', ending=False )
+            self._tag_progress(c, cfg, 'starting', ending=True )
+            self._tag_progress(c, cfg, 'running', ending=False )
 
         print('( %d ) Done' % pcount)
 
@@ -2392,35 +2426,35 @@ class sr_GlobalState:
         try:
             waitret = os.wait()
             while waitret is not None:
-                print( f'pid {waitret[0]} just exited, waiting for others.')
+                print(f'pid {waitret[0]} just exited, waiting for others.')
                 time.sleep(2)
                 waitret = os.wait()
         except ChildProcessError:
-            print( f'All done!')
+            print(f'All done!')
         except Exception as ex:
-            print( f" wait failed: {ex} " )
-        
+            print(f" wait failed: {ex} " )
+
     def stop(self):
         """
-           stop all of this users sr_ processes. 
+           stop all of this users sr_ processes.
            return 0 on success, non-zero on failure.
         """
 
         if len(self.leftovers) > 0 and not self._action_all_configs:
-            logging.error( f"{self.leftovers} configuration not found" )
+            logging.error(f"{self.leftovers} configuration not found" )
             return
 
-        count=0
+        count = 0
         while self._check_sanitizing():
             if self.please_stop:
                 return
             if count % 10 == 0:
-                logger.info( "sanitizing in progress, please wait.." )
+                logger.info("sanitizing in progress, please wait.." )
             count += 1
             time.sleep(1)
 
         if count > 0:
-            logger.info( "sanitize complete, proceeding with stop" )
+            logger.info("sanitize complete, proceeding with stop" )
 
         self._clean_missing_proc_state()
 
@@ -2431,10 +2465,10 @@ class sr_GlobalState:
         print('sending SIGTERM ', end='', flush=True)
         pcount = 0
         fg_instances = set()
-        pids_signalled=set([])
+        pids_signalled = set([])
 
         for pid in self.strays:
-            print( f"pid: {pid} \"{self.strays[pid]}\" does not match any configured instance, killing" )
+            print(f"pid: {pid} \"{self.strays[pid]}\" does not match any configured instance, killing" )
             signal_pid(pid, signal.SIGTERM)
             pids_signalled |= set([pid])
 
@@ -2444,24 +2478,24 @@ class sr_GlobalState:
             # exclude foreground instances unless --dangerWillRobinson specified
             if (not self.options.dangerWillRobinson) and self._cfg_running_foreground(c, cfg):
                 fg_instances.add(f"{c}/{cfg}")
-                logger.warning( f"skipping foreground flow: {c}/{cfg}")
+                logger.warning(f"skipping foreground flow: {c}/{cfg}")
                 continue
 
             if self.configs[c][cfg]['status'] in self.status_active:
 
                 if not self.options.dry_run:
-                    self._tag_progress( c, cfg, 'running', ending=True )
-                    self._tag_progress( c, cfg, 'shutdown', ending=False )
+                    self._tag_progress(c, cfg, 'running', ending=True )
+                    self._tag_progress(c, cfg, 'shutdown', ending=False )
 
                 for i in self.states[c][cfg]['instance_pids']:
-                    #print( "for %s/%s - %s signal_pid( %s, SIGTERM )" % \
+                    # print( "for %s/%s - %s signal_pid( %s, SIGTERM )" % \
                     #    ( c, cfg, i, self.states[c][cfg]['instance_pids'][i] ) )
-                    p=self.states[c][cfg]['instance_pids'][i]
+                    p = self.states[c][cfg]['instance_pids'][i]
                     if p in self.procs:
                         if self.options.dry_run:
-                            print( f"kill -TERM {p} # {c}/{cfg}[{i}] " )
+                            print(f"kill -TERM {p} # {c}/{cfg}[{i}] " )
                         else:
-                            signal_pid( p, signal.SIGTERM )
+                            signal_pid(p, signal.SIGTERM )
                             pids_signalled |= set([p])
                             print('.', end='', flush=True)
                         pcount += 1
@@ -2479,13 +2513,13 @@ class sr_GlobalState:
         while attempts < attempts_max:
             for pid in self.procs:
                 if (not self.procs[pid]['claimed']) and (
-                    (now - self.procs[pid]['create_time']) > 50 and pid not in pids_signalled):
-                    print( f"pid: {pid} \"{' '.join(self.procs[pid]['cmdline'])}\" does not match any configured instance, sending it TERM" )
+                        (now - self.procs[pid]['create_time']) > 50 and pid not in pids_signalled):
+                    print(f"pid: {pid} \"{' '.join(self.procs[pid]['cmdline'])}\" does not match any configured instance, sending it TERM" )
                     signal_pid(pid, signal.SIGTERM)
                     pids_signalled |= set([pid])
 
             ttw = 1 << attempts
-            print( f"Waiting {ttw} sec. to check if {running_pids} processes stopped (try: {attempts})" )
+            print(f"Waiting {ttw} sec. to check if {running_pids} processes stopped (try: {attempts})" )
             time.sleep(ttw)
             # update to reflect killed processes.
             self._read_procs()
@@ -2503,13 +2537,13 @@ class sr_GlobalState:
                     continue
                 running_pids += len(self.states[c][cfg]['instance_pids'])
 
-            if (running_pids == 0) and len(self.strays)==0:
+            if (running_pids == 0) and len(self.strays) ==0:
                 for f in self.filtered_configurations:
                     (c, cfg) = f.split(os.sep)
                     # exclude foreground instances unless --dangerWillRobinson specified
                     if (not self.options.dangerWillRobinson) and self._cfg_running_foreground(c, cfg):
                         continue
-                    self._tag_progress( c, cfg, 'shutdown', ending=True )
+                    self._tag_progress(c, cfg, 'shutdown', ending=True )
                 print('All stopped after try %d' % attempts)
                 if len(fg_instances) > 0:
                     print(f"Foreground instances {fg_instances} are running and were not stopped.")
@@ -2518,7 +2552,7 @@ class sr_GlobalState:
             attempts += 1
 
         print('doing SIGKILL this time')
-        
+
         for f in self.filtered_configurations:
             (c, cfg) = f.split(os.sep)
             # exclude foreground instances unless --dangerWillRobinson specified
@@ -2528,14 +2562,14 @@ class sr_GlobalState:
             if self.configs[c][cfg]['status'] in self.status_active:
                 for i in self.states[c][cfg]['instance_pids']:
                     if self.states[c][cfg]['instance_pids'][i] in self.procs:
-                        p=self.states[c][cfg]['instance_pids'][i]
-                        print( f"signal_pid( {p} \"{' '.join(self.procs[p]['cmdline'])}\", SIGKILL )")
+                        p = self.states[c][cfg]['instance_pids'][i]
+                        print(f"signal_pid( {p} \"{' '.join(self.procs[p]['cmdline'])}\", SIGKILL )")
                         signal_pid(p, signal.SIGKILL)
                         pids_signalled |= set([p])
                         print('.', end='')
 
         for pid in self.strays:
-            print( f"pid: {pid} \"{self.strays[pid]}\" does not match any configured instance, killing" )
+            print(f"pid: {pid} \"{self.strays[pid]}\" does not match any configured instance, killing" )
             signal_pid(pid, signal.SIGKILL)
             pids_signalled |= set([pid])
 
@@ -2560,7 +2594,7 @@ class sr_GlobalState:
                     print("failed to kill: %s/%s instance: %s, pid: %s )" %
                           (c, cfg, i, self.states[c][cfg]['instance_pids'][i]))
 
-            self._tag_progress( c, cfg, 'shutdown', ending=True )
+            self._tag_progress(c, cfg, 'shutdown', ending=True )
 
         if len(self.procs) == 0:
             print('All stopped after KILL')
@@ -2573,117 +2607,117 @@ class sr_GlobalState:
             for p in self.procs:
                 # exclude foreground instances from printing unless --dangerWillRobinson specified
                 if p in pids_signalled:
-                    if not self._pid_running_foreground(p): 
-                         print( f"\t{p}: \"{' '.join(self.procs[p]['cmdline'])}\"" )
-                    elif self.options.dangerWillRobinson: 
-                         print( f"\tforeground {p}: \"{' '.join(self.procs[p]['cmdline'])}\"" )
+                    if not self._pid_running_foreground(p):
+                        print(f"\t{p}: \"{' '.join(self.procs[p]['cmdline'])}\"" )
+                    elif self.options.dangerWillRobinson:
+                        print(f"\tforeground {p}: \"{' '.join(self.procs[p]['cmdline'])}\"" )
                 else:
-                    logger.debug( f"\tdid not even try to kill: {p}: \"{' '.join(self.procs[p]['cmdline'])}\"" )
+                    logger.debug(f"\tdid not even try to kill: {p}: \"{' '.join(self.procs[p]['cmdline'])}\"" )
             return 1
 
-    def dump(self): 
+    def dump(self):
         """ Printing all running processes, configs, states
         :return:
         """
         print('{\n')
         print('\n\n"Processes" : { \n\n')
 
-        #procs_length = len(self.procs)
-        #for index,pid in enumerate(self.procs):
+        # procs_length = len(self.procs)
+        # for index,pid in enumerate(self.procs):
         #    print('\t\"%s\": %s' % (pid, json.dumps(self.procs[pid], sort_keys=True, indent=4)), end='')
         #    if procs_length-1 > index:
         #        print(',')
 
-        print(','.join( map( lambda pid: f'"{pid}": {json.dumps(self.procs[pid], sort_keys=True, indent=1)}' , self.procs.keys() ) ))
-        print('},') 
+        print(','.join(map( lambda pid: f'"{pid}": {json.dumps(self.procs[pid], sort_keys=True, indent=1)}' , self.procs.keys() ) ))
+        print('},')
 
         print('\n\n"Configs\" : {\n\n')
         configLength = len(self.configs)
-        for indexConfig,c in enumerate(self.configs):
+        for indexConfig, c in enumerate(self.configs):
             lengthSelfConfigC = len(self.configs[c])
             print('\t\"%s\": { ' % c)
-            for indexC,cfg in enumerate(self.configs[c]):
-                self.configs[c][cfg]['options']={ 'omitted': 'use show' }
-                self.configs[c][cfg]['credentials']=[ 'omitted' ]
-                print('\t\t\"%s\" : %s ' % (cfg, json.dumps(self.configs[c][cfg])),end="")
-                if lengthSelfConfigC-1 > indexC:
-                   print(',')
-            print('}',end="")
-            if configLength-1 > indexConfig or configLength == 0:
-               print(',')
+            for indexC, cfg in enumerate(self.configs[c]):
+                self.configs[c][cfg]['options'] = { 'omitted': 'use show' }
+                self.configs[c][cfg]['credentials'] = [ 'omitted' ]
+                print('\t\t\"%s\" : %s ' % (cfg, json.dumps(self.configs[c][cfg])), end="")
+                if lengthSelfConfigC -1 > indexC:
+                    print(',')
+            print('}', end="")
+            if configLength -1 > indexConfig or configLength == 0:
+                print(',')
 
         print('},\n\n"States": { \n\n')
         lengthSelfStates = len(self.states)
-        for indexSelfStates,c in enumerate(self.states):
+        for indexSelfStates, c in enumerate(self.states):
             print('\t\"%s\": { ' % c)
             lengthC = len(self.states[c])
-            for indexC,cfg in enumerate(self.states[c]):
+            for indexC, cfg in enumerate(self.states[c]):
                 print('\t\t\"%s\" :  %s ' % (cfg, json.dumps(self.states[c][cfg])))
-                if lengthC -1 > indexC:
-                   print(',')
-            print( "\t}", end="")
-            if lengthSelfStates -1 > indexSelfStates:
+                if lengthC - 1 > indexC:
+                    print(',')
+            print("\t}", end="")
+            if lengthSelfStates - 1 > indexSelfStates:
                 print(',')
         print('},')
 
         print('\n\n"Bindings": { \n\n')
         lengthSelfBrokers = len(self.brokers)
         print("\n\"host\":{\n\t", end="")
-        for indexSelfBrokers,h in enumerate(self.brokers):
+        for indexSelfBrokers, h in enumerate(self.brokers):
             print("\"%s\": { \n" % h)
             print("\n\t\t\"exchanges\": { ", end="")
             lengthExchange = len(self.brokers[h]['exchanges'])
-            for indexExchange,x in enumerate(self.brokers[h]['exchanges']):
+            for indexExchange, x in enumerate(self.brokers[h]['exchanges']):
                 print("\"%s\":  %s " % (x, json.dumps(self.brokers[h]['exchanges'][x])), end="")
-                if lengthExchange -1 > indexExchange:
-                   print(',')
+                if lengthExchange - 1 > indexExchange:
+                    print(',')
             print("},\n\t\t\"queues\": {")
             lengthBrokersQueues = len(self.brokers[h]['queues'])
-            for indexBrokerQueues,q in enumerate(self.brokers[h]['queues']):
+            for indexBrokerQueues, q in enumerate(self.brokers[h]['queues']):
                 print("\t\"%s\":  \"%s\" " % (q, self.brokers[h]['queues'][q]), end="")
-                if lengthBrokersQueues -1 > indexBrokerQueues:
-                   print(',')
-            print( " \n}\n}",end="")
+                if lengthBrokersQueues - 1 > indexBrokerQueues:
+                    print(',')
+            print( " \n}\n}", end="")
             if lengthSelfBrokers - 1 > indexSelfBrokers:
-               print(',') 
+                print(',')
 
         print('}\n},\n"broker summaries": {\n\n')
         lengthSelfBroker = len(self.brokers)
         print('\n\"broker\": {')
-        for indexSelfBroker,h in enumerate(self.brokers):
+        for indexSelfBroker, h in enumerate(self.brokers):
             if 'admin' in self.brokers[h]:
                 admin_url = self.brokers[h]['admin'].url
-                admin_urlstr = "%s://%s@%s" % ( admin_url.scheme, \
-                   admin_url.username, admin_url.hostname)
+                admin_urlstr = "%s://%s@%s" % (admin_url.scheme, \
+                                                admin_url.username, admin_url.hostname)
                 if admin_url.port:
                     admin_urlstr += ":" + str(admin_url.port)
                 a = 'admin: %s' % admin_urlstr
             else:
                 a = 'admin: none'
             print('\"%s\":{' % (h))
-            
-            print('\n\"URL\": \"%s\",\n\"exchanges\": [ ' %(a), end='')
-            lengthExchangeSummary  = len(self.exchange_summary[h])
-            for indexSummary,x in enumerate(self.exchange_summary[h]):
+
+            print('\n\"URL\": \"%s\",\n\"exchanges\": [ ' % (a), end='')
+            lengthExchangeSummary = len(self.exchange_summary[h])
+            for indexSummary, x in enumerate(self.exchange_summary[h]):
                 print("\"%s-%d\" " % (x, self.exchange_summary[h][x]), end='')
-                if lengthExchangeSummary -1 > indexSummary:
-                   print(',')
+                if lengthExchangeSummary - 1 > indexSummary:
+                    print(',')
             print('],"queues\": [', end="")
             lengthBrokersQueues = len(self.brokers[h]['queues'])
-            for indexBrokersSummary,q in enumerate(self.brokers[h]['queues']):
-                print("\"%s-%d\" " % (q, len(self.brokers[h]["queues"][q])),end="")
-                if lengthBrokersQueues -1 > indexBrokersSummary:
-                   print(',')
+            for indexBrokersSummary, q in enumerate(self.brokers[h]['queues']):
+                print("\"%s-%d\" " % (q, len(self.brokers[h]["queues"][q])), end="")
+                if lengthBrokersQueues - 1 > indexBrokersSummary:
+                    print(',')
             print(']\n}', end="")
-            if lengthSelfBroker -1 > indexSelfBroker:
-               print(',')
+            if lengthSelfBroker - 1 > indexSelfBroker:
+                print(',')
         print('}\n},\n\n\"Missing instances\" : [\n\n')
         lengthMissing = len(self.missing)
-        for indexMissing,instance in enumerate(self.missing):
+        for indexMissing, instance in enumerate(self.missing):
             (c, cfg, i) = instance
-            print('\t\t\"%s/%s_%d\"' % (c, cfg, i),end="")
+            print('\t\t\"%s/%s_%d\"' % (c, cfg, i), end="")
             if lengthMissing - 1 > indexMissing:
-               print(',')
+                print(',')
         print('] }')
 
     def status(self):
@@ -2691,51 +2725,51 @@ class sr_GlobalState:
         """
 
         if len(self.leftovers) > 0 and not self._action_all_configs:
-            logging.error( f"{self.leftovers} configuration not found" )
+            logging.error(f"{self.leftovers} configuration not found" )
             return
 
-        flowNameWidth=self.cumulative_stats['flowNameWidth']
-        latestTransferWidth=self.cumulative_stats['latestTransferWidth']
+        flowNameWidth = self.cumulative_stats['flowNameWidth']
+        latestTransferWidth = self.cumulative_stats['latestTransferWidth']
 
         lfmt = f"%-{flowNameWidth}s %-49s %s"
-        line = lfmt % ("Component/Config", "Processes", "Rates" )
+        line = lfmt % ("Component/Config", "Processes", "Rates")
 
         if self.options.displayFull:
-            line += "%10s %-40s %17s %33s %40s" % ("", "Counters (per housekeeping)", "", "Data Counters", "" )
-            line += "%s %-21s " % (" ", "Memory" ) 
+            line += "%10s %-40s %17s %33s %40s" % ("", "Counters (per housekeeping)", "", "Data Counters", "")
+            line += "%s %-21s " % (" ", "Memory" )
 
         if self.options.displayFull:
-            line += "%10s %10s " % ( " ", "CPU Time" )
+            line += "%10s %10s " % (" ", "CPU Time" )
 
         try:
             print(line)
 
-            lfmt      = f"%-{flowNameWidth}s %-5s %5s %5s %4s %7s %{latestTransferWidth + 1}s %7s %9s %9s " 
-            line      =  lfmt % ("", "State", "Run", "Retry", "Que", "Lag", "Last", "%rej", "messages", "Data" )
-            underline =  lfmt % ("", "-----", "---", "-----", "---", "---", "----", "----", "--------", "----" )
+            lfmt      = f"%-{flowNameWidth}s %-5s %5s %5s %4s %7s %{latestTransferWidth + 1}s %7s %9s %9s "
+            line      =  lfmt % ("", "State", "Run", "Retry", "Que", "Lag", "Last", "%rej", "messages", "Data")
+            underline =  lfmt % ("", "-----", "---", "-----", "---", "---", "----", "----", "--------", "----")
 
             if self.options.displayFull:
-                line      += "%10s %10s %10s %10s %10s %10s %10s %10s %10s %10s %10s %10s %8s " % \
-                        ( "Msg/scpu", "subBytes", "Accepted", "Rejected", "Malformed", "pubBytes", "pubMsgs", "pubMal", "rxData", "rxFiles", "txData", "txFiles", "Since" )
+                line += "%10s %10s %10s %10s %10s %10s %10s %10s %10s %10s %10s %10s %8s " % \
+                        ("Msg/scpu", "subBytes", "Accepted", "Rejected", "Malformed", "pubBytes", "pubMsgs", "pubMal", "rxData", "rxFiles", "txData", "txFiles", "Since" )
                 underline += "%10s %10s %10s %10s %10s %10s %10s %10s %10s %10s %10s %10s %8s " % \
-                        ( "-------", "--------", "--------", "---------", "-------", "------", "-----", "-----", "-------", "------", "-------", "-----", "---" )
+                        ("-------", "--------", "--------", "---------", "-------", "------", "-----", "-----", "-------", "------", "-------", "-----", "---" )
 
-                line      += "%10s %10s %10s " % ( "uss", "rss", "vms"  )
-                underline += "%10s %10s %10s " % ( "---", "---", "---"  )
+                line      += "%10s %10s %10s " % ("uss", "rss", "vms"  )
+                underline += "%10s %10s %10s " % ("---", "---", "---"  )
 
             if self.options.displayFull:
-                line      += "%10s %10s " % ( "user", "system" )
-                underline += "%10s %10s " % ( "----", "------" )
+                line      += "%10s %10s " % ("user", "system" )
+                underline += "%10s %10s " % ("----", "------" )
 
             print(line)
             print(underline)
-        except:
+        except BaseException:
             return
 
         configs_running = 0
         now = time.time()
 
-        configs_extant=0                
+        configs_extant = 0                
         for c in sorted(self.configs):
             for cfg in sorted(self.configs[c]):
                 f = c + os.sep + cfg
@@ -2743,16 +2777,16 @@ class sr_GlobalState:
                     continue
                 if self.configs[c][cfg]['status'] == 'include':
                     continue
-                configs_extant+=1
+                configs_extant += 1
 
                 if not (c in self.states and cfg in self.states[c]):
                     continue
 
-                #find running and missing instances for this config.
-                missing_instances=[]
-                running_instances=[]
+                # find running and missing instances for this config.
+                missing_instances = []
+                running_instances = []
                 if 'instance_pids' in self.states[c][cfg]:
-                    instance_pids=self.states[c][cfg]['instance_pids'].values()
+                    instance_pids = self.states[c][cfg]['instance_pids'].values()
 
                     for p in instance_pids:
                         if p in self.procs.keys():
@@ -2760,7 +2794,7 @@ class sr_GlobalState:
                         else:
                             missing_instances.append(p)
 
-                if self.configs[c][cfg]['status'] not in [ 'stopped', 'new' ]:
+                if self.configs[c][cfg]['status'] not in ['stopped', 'new' ]:
                     expected = self.configs[c][cfg]['instances']
                     running = len(running_instances)
                     if running > 0:
@@ -2773,126 +2807,125 @@ class sr_GlobalState:
                 cfg_status = self.configs[c][cfg]['status'][0:4]
                 if cfg_status == "runn" and self._cfg_running_foreground(c, cfg):
                     cfg_status = "fore"
-                if cfg_status == "lagg" :
+                if cfg_status == "lagg":
                     cfg_status = "lag"
-                if cfg_status == "retr" :
+                if cfg_status == "retr":
                     cfg_status = "rtry"
-                if cfg_status == "runn" :
+                if cfg_status == "runn":
                     cfg_status = "run"
-                if cfg_status == "stan" :
+                if cfg_status == "stan":
                     cfg_status = "stby"
                 elif cfg_status == 'wait':
                     cfg_status = 'wVip'
 
-                process_status = "%d/%d" % ( running, expected ) 
-                lfmt      = f"%-{flowNameWidth}s %-5s %5s "
-                line= lfmt % (f, cfg_status, process_status ) 
+                process_status = "%d/%d" % (running, expected ) 
+                lfmt = f"%-{flowNameWidth}s %-5s %5s "
+                line = lfmt % (f, cfg_status, process_status ) 
 
                 if 'metrics' in self.states[c][cfg]:
-                    m=self.states[c][cfg]['metrics']
+                    m = self.states[c][cfg]['metrics']
                     lfmt = f"%4d %4d %8s %{latestTransferWidth + 1}s %6.1f%% %6s/s %8s/s "
-                    line += lfmt % ( m['retry'], \
-                            m['messagesQueued'], durationToString(m['lagMean']), m['latestTransfer'], m['rejectPercent'],\
-                            naturalSize(m['msgRate']).replace("B","m").replace("mytes","m"), \
-                            naturalSize(m['transferRxByteRate'] + m['transferTxByteRate']).replace("Bytes","B")) 
-                            
+                    line += lfmt % (m['retry'], \
+                            m['messagesQueued'], durationToString(m['lagMean']), m['latestTransfer'], m['rejectPercent'], \
+                            naturalSize(m['msgRate']).replace("B", "m").replace("mytes","m"), \
+                            naturalSize(m['transferRxByteRate'] + m['transferTxByteRate']).replace("Bytes", "B")) 
 
-                    if self.options.displayFull :
-                        line += "%10s %10s %10s %10s %10s %10s %10s %10s %10s %10s %10s %10s %7.2fs " % ( \
-                            naturalSize(m['msgRateCpu']).replace("B","m").replace("mytes","m/s"), \
-                            naturalSize(m['rxByteCount']).replace("Bytes","B"), \
-                            naturalSize(m['rxGoodCount']).replace("B","m").replace("mytes","m"), \
-                            naturalSize(m["rejectCount"]).replace("B","m").replace("mytes","m"), \
-                            naturalSize(m["rxBadCount"]).replace("B","m").replace("mytes","m"), \
-                            naturalSize(m['txByteCount']).replace("Bytes","B"), 
-                            naturalSize(m['txGoodCount']).replace("B","m").replace("mytes","m"), \
-                            naturalSize(m["txBadCount"]).replace("B","m").replace("mytes","m"), \
-                            naturalSize(m["transferRxBytes"]).replace("Bytes","B"), \
-                            naturalSize(m["transferRxFiles"]).replace("B","F").replace("Fytes","f"), \
-                            naturalSize(m["transferTxBytes"]).replace("Bytes","B"), \
-                            naturalSize(m["transferTxFiles"]).replace("B","F").replace("Fytes","f"), \
-                            m["time_base"] )
+                    if self.options.displayFull:
+                        line += "%10s %10s %10s %10s %10s %10s %10s %10s %10s %10s %10s %10s %7.2fs " % (
+                            naturalSize(m['msgRateCpu']).replace("B", "m").replace("mytes","m/s"), \
+                            naturalSize(m['rxByteCount']).replace("Bytes", "B"), \
+                            naturalSize(m['rxGoodCount']).replace("B", "m").replace("mytes","m"), \
+                            naturalSize(m["rejectCount"]).replace("B", "m").replace("mytes","m"), \
+                            naturalSize(m["rxBadCount"]).replace("B", "m").replace("mytes","m"), \
+                            naturalSize(m['txByteCount']).replace("Bytes", "B"), 
+                            naturalSize(m['txGoodCount']).replace("B", "m").replace("mytes","m"), \
+                            naturalSize(m["txBadCount"]).replace("B", "m").replace("mytes","m"), \
+                            naturalSize(m["transferRxBytes"]).replace("Bytes", "B"), \
+                            naturalSize(m["transferRxFiles"]).replace("B", "F").replace("Fytes","f"), \
+                            naturalSize(m["transferTxBytes"]).replace("Bytes", "B"), \
+                            naturalSize(m["transferTxFiles"]).replace("B", "F").replace("Fytes","f"), \
+                            m["time_base"])
                 else:
-                    line += "%4s %4s %7s %6s %7s %7s %11s " % ( "-", "-", "-", "-", "-", "-", "-" )
+                    line += "%4s %4s %7s %6s %7s %7s %11s " % ("-", "-", "-", "-", "-", "-", "-" )
                     if self.options.displayFull:
                         line += "%8s %7s %10s %10s %10s %10s %10s %10s %10s %10s %10s %10s" % \
-                            ( "-", "-", "-", "-", "-", "-", "-", "-", "-", "-", "-", "-" )
+                            ("-", "-", "-", "-", "-", "-", "-", "-", "-", "-", "-", "-" )
 
-                if ('instance_pids' in self.states[c][cfg]) and (len(self.states[c][cfg]['instance_pids']) >= 0) and ('resource_usage' in self.states[c][cfg]):
-                    ru = self.states[c][cfg]['resource_usage'] 
+                if ('instance_pids' in self.states[c][cfg]) and (
+                    len(self.states[c][cfg]['instance_pids']) >= 0) and ('resource_usage' in self.states[c][cfg]):
+                    ru = self.states[c][cfg]['resource_usage']
 
-                    
                     if self.options.displayFull:
-                        line += "%10s %10s %10s " % (\
-                             naturalSize( ru['uss'] ), naturalSize( ru['rss'] ), naturalSize( ru['vms'] )  \
-                             )
-                        line += "%10.2f %10.2f " % (\
-                             ru['user_cpu'], ru['system_cpu'] \
-                             )
+                        line += "%10s %10s %10s " % (
+                             naturalSize(ru['uss'] ), naturalSize( ru['rss'] ), naturalSize( ru['vms'] )  \
+                            )
+                        line += "%10.2f %10.2f " % (
+                            ru['user_cpu'], ru['system_cpu'] \
+                            )
                 else:
                     if self.options.displayFull:
-                        line += "%10s %10s %10s" % ( "-", "-", "-" )
-                        line += "%10s %10s" % ( "-", "-" )
+                        line += "%10s %10s %10s" % ("-", "-", "-" )
+                        line += "%10s %10s" % ("-", "-" )
                 try:
-                     print(line)
-                except:
-                     return
+                    print(line)
+                except BaseException:
+                    return
         stray = 0
         try:
             for pid in self.strays:
                 stray += 1
                 bad = 1
-                print( f"pid:{pid} \"{self.strays[pid]}\" is not a configured instance" )
+                print(f"pid:{pid} \"{self.strays[pid]}\" is not a configured instance" )
 
             print('      Total Running Configs: %3d/%d ( Processes: %d missing: %d stray: %d )' %
-                (configs_running, configs_extant, len(self.procs), len(self.missing), stray ) )
-            print('                     Memory: uss:%s rss:%s vms:%s ' % ( \
-                  naturalSize( self.resources['uss'] ), \
-                  naturalSize( self.resources['rss'] ), naturalSize( self.resources['vms'] )\
+                  (configs_running, configs_extant, len(self.procs), len(self.missing), stray ) )
+            print('                     Memory: uss:%s rss:%s vms:%s ' % (
+                  naturalSize(self.resources['uss'] ), \
+                  naturalSize(self.resources['rss'] ), naturalSize( self.resources['vms'] )\
                   ))
-            print('                   CPU Time: User:%.2fs System:%.2fs ' % ( \
-                  self.resources['user_cpu'] , self.resources['system_cpu'] \
+            print('                   CPU Time: User:%.2fs System:%.2fs ' % (
+                  self.resources['user_cpu'] , self.resources['system_cpu']
                   ))
 
-            print( '\t   Pub/Sub Received: %s/s (%s/s), Sent:  %s/s (%s/s) Queued: %d Retry: %d, Mean lag: %02.2fs' % ( 
-                    naturalSize(self.cumulative_stats['rxMessageRate']).replace("B","m").replace("mytes","m"), \
-                    naturalSize(self.cumulative_stats['rxMessageByteRate']).replace("Bytes","B"),\
-                    naturalSize(self.cumulative_stats['txMessageRate']).replace("B","m").replace("mytes","m"),\
-                    naturalSize(self.cumulative_stats['txMessageByteRate']).replace("Bytes","B"),
-                    self.cumulative_stats['rxMessageQueued'], self.cumulative_stats['rxMessageRetry'], self.cumulative_stats['lagMean']
-                ))
-            print( '\t      Data Received: %s/s (%s/s), Sent: %s/s (%s/s) ' % (
-                   naturalSize(self.cumulative_stats['rxFileRate']).replace("B","F").replace("Fytes","f") ,
-                   naturalSize(self.cumulative_stats['rxDataRate']).replace("Bytes","B"),
-                   naturalSize( self.cumulative_stats['txFileRate']).replace("B","F").replace("Fytes","f"),
-                   naturalSize(self.cumulative_stats['txDataRate']).replace("Bytes","B") ) )
+            print('\t   Pub/Sub Received: %s/s (%s/s), Sent:  %s/s (%s/s) Queued: %d Retry: %d, Mean lag: %02.2fs' % ( 
+                    naturalSize(self.cumulative_stats['rxMessageRate']).replace("B", "m").replace("mytes","m"), \
+                    naturalSize(self.cumulative_stats['rxMessageByteRate']).replace("Bytes", "B"),\
+                    naturalSize(self.cumulative_stats['txMessageRate']).replace("B", "m").replace("mytes","m"),\
+                    naturalSize(self.cumulative_stats['txMessageByteRate']).replace("Bytes", "B"),
+                self.cumulative_stats['rxMessageQueued'], self.cumulative_stats['rxMessageRetry'], self.cumulative_stats['lagMean']
+            ))
+            print('\t      Data Received: %s/s (%s/s), Sent: %s/s (%s/s) ' % (
+                   naturalSize(self.cumulative_stats['rxFileRate']).replace("B", "F").replace("Fytes","f") ,
+                   naturalSize(self.cumulative_stats['rxDataRate']).replace("Bytes", "B"),
+                   naturalSize( self.cumulative_stats['txFileRate']).replace("B", "F").replace("Fytes","f"),
+                   naturalSize(self.cumulative_stats['txDataRate']).replace("Bytes", "B") ) )
 
             # FIXME: does not seem to find any stray exchange (with no bindings...) hmm...
             for h in self.brokers:
                 for x in self.exchange_summary[h]:
                     if self.exchange_summary[h][x] == 0:
                         print("exchange with no bindings: %s-%s " % (h, x), end='')
-        except:
+        except BaseException:
             pass
 
     def convert(self):
 
-        print( f"v2_config: {self.v2_config}")
+        print(f"v2_config: {self.v2_config}")
         if len(self.v2_config) == 0:
             print("need to specify what to convert from v2")
             return
 
         conversion_targets = self.v2_config
         if self.options.wololo and len(conversion_targets) > 1:
-            if len(conversion_targets) != self.options.dangerWillRobinson :
-                print( f" will not overwrite multiple configurations unless really sure" )
-                print( f" If you are really sure, use --dangerWillRobinson={len(conversion_targets)}" )
+            if len(conversion_targets) != self.options.dangerWillRobinson:
+                print(f" will not overwrite multiple configurations unless really sure" )
+                print(f" If you are really sure, use --dangerWillRobinson={len(conversion_targets)}" )
                 return
 
         for c in conversion_targets:
             self.convert1(c)
 
-    def convert1(self,cfg):
+    def convert1(self, cfg):
         """
           converts one config.
         """
@@ -2919,34 +2952,34 @@ class sr_GlobalState:
             os.makedirs(base_v3 + component)
 
         if self.options.wololo:
-            logger.warning("Wololo!" )
-        elif os.path.exists(v3_config_path): 
-            logger.error( f"{component}/{cfg} already exists in v3. To overwrite, use --wololo" )
+            logger.warning("Wololo!")
+        elif os.path.exists(v3_config_path):
+            logger.error(f"{component}/{cfg} already exists in v3. To overwrite, use --wololo" )
             return
 
         synonyms = sarracenia.config.Config.synonyms
-        accept_all_seen=False
-        post_broker_seen=False
-        inflight_seen=False
-        acceptUnmatched_explicit=False
-        pos_args_present=False
+        accept_all_seen = False
+        post_broker_seen = False
+        inflight_seen = False
+        acceptUnmatched_explicit = False
+        pos_args_present = False
         with open(v3_config_path, 'w') as v3_cfg:
-            v3_cfg.write( f'# created by: sr3 convert {cfg}\n')
-            if component in [ 'shovel', 'winnow' ]:
+            v3_cfg.write(f'# created by: sr3 convert {cfg}\n')
+            if component in ['shovel', 'winnow' ]:
                 v3_cfg.write('# topicCopy on is only there for bug-for-bug compat with v2. Leave it off if you can.\n')
                 v3_cfg.write('#topicCopy on\n')
 
-            if component in [ 'sarra', 'sender', 'subscribe' ]:
-                v3_cfg.write(' \n#\n#v2 sftp handling is always absolute, sr3 is relative. might need this, remove when all sr3:\n')
+            if component in ['sarra', 'sender', 'subscribe' ]:
+                v3_cfg.write(
+                    ' \n#\n#v2 sftp handling is always absolute, sr3 is relative. might need this, remove when all sr3:\n')
                 v3_cfg.write('#flowcb accept.sftp_absolute\n')
 
-            queueName=None
+            queueName = None
 
-            #1st prep pass (for cases when re-ordering needed.)
-            already_moved=False
-            verbs_to_move =  [ 'auto_delete', 'durable', 'expire', 'message_ttl', 'prefetch', \
-                    'qos', 'queueBind',  'exchangeDeclare' ]
-
+            # 1st prep pass (for cases when re-ordering needed.)
+            already_moved = False
+            verbs_to_move =  ['auto_delete', 'durable', 'expire', 'message_ttl', 'prefetch', \
+                               'qos', 'queueBind',  'exchangeDeclare' ]
 
             with open(v2_config_path, 'r') as v2_cfg:
                 for input_line in v2_cfg.readlines():
@@ -2958,25 +2991,27 @@ class sr_GlobalState:
                     k = line[0]
                     if k in synonyms:
                         k = synonyms[k]
-                    if k in [ 'post_broker' ]:
-                        post_broker_seen=True
-                    if k in [ 'inflight' ]:
-                        inflight_seen=True
-                    if k in [ 'queueName' ]:
-                        queueName=line[1]
+                    if k in ['post_broker' ]:
+                        post_broker_seen = True
+                    if k in ['inflight' ]:
+                        inflight_seen = True
+                    if k in ['queueName' ]:
+                        queueName = line[1]
                     if k in verbs_to_move:
                         if not already_moved:
-                            v3_cfg.write(f" \n#\n#Move formerly global options ({','.join(verbs_to_move)} to start of config file.\n")
-                            alread_moved=True
-                        v3_cfg.write(input_line+"\n")
-                        
+                            v3_cfg.write(
+    f" \n#\n#Move formerly global options ({
+        ','.join(verbs_to_move)} to start of config file.\n")
+                            alread_moved = True
+                        v3_cfg.write(input_line +"\n")
 
-            if not inflight_seen and post_broker_seen and component in [ 'sarra', 'sender', 'subscribe' ]:
+
+            if not inflight_seen and post_broker_seen and component in ['sarra', 'sender', 'subscribe' ]:
                 v3_cfg.write(' \n#\n#sr3 inflight defaults to None, v2 defaulted to .tmp when post_broker set.\n')
                 v3_cfg.write('inflight .tmp\n')
-                
-            #2nd re-write pass.
-            subtopicFound=False
+
+            # 2nd re-write pass.
+            subtopicFound = False
             with open(v2_config_path, 'r') as v2_cfg:
                 for line in v2_cfg.readlines():
                     if len(line.strip()) < 1:
@@ -2988,7 +3023,7 @@ class sr_GlobalState:
                     line = line.strip().split()
                     k = line[0]
 
-                    if k in verbs_to_move: # moved to start of file.
+                    if k in verbs_to_move:  # moved to start of file.
                         continue
                     if k in synonyms:
                         k = synonyms[k]
@@ -2999,29 +3034,29 @@ class sr_GlobalState:
                             v3_cfg.write('permCopy off\n')
                         else:
                             k = 'sendTo'
-                    elif (k == 'get' ) and (component == 'poll'):
+                    elif (k == 'get') and (component == 'poll'):
                         k = 'accept'
                         if not line[1].startswith('.*'):
                             if line[1][0] == '^':
-                                line[1] = '.*/'+line[1][1:]
+                                line[1] = '.*/' +line[1][1:]
                             else:
-                                line[1] = '.*'+line[1]
+                                line[1] = '.*' +line[1]
                     elif (k == 'broker') and (component == 'poll'):
                         k = 'post_broker'
-                    elif (k == 'directory' ) and (component == 'poll'):
+                    elif (k == 'directory') and (component == 'poll'):
                         k = 'path'
-                    elif k in [ 'identity', 'integrity' ]:
+                    elif k in ['identity', 'integrity' ]:
                         if line[1][0] in sum_algo_v2tov3:
-                           method=sum_algo_v2tov3[line[1][0]]
-                           if method == 'cod':
-                               if line[1][3] in sum_algo_v2tov3:
-                                   value=sum_algo_v2tov3[line[1][3]]
-                                   line[1]=f"{method},{value}"
-                               else:
-                                   logger.error( f"unknown checksum spec: {line}")
-                                   continue
+                            method = sum_algo_v2tov3[line[1][0]]
+                            if method == 'cod':
+                                if line[1][3] in sum_algo_v2tov3:
+                                    value = sum_algo_v2tov3[line[1][3]]
+                                    line[1] = f"{method},{value}"
+                                else:
+                                    logger.error(f"unknown checksum spec: {line}")
+                                    continue
                         else:
-                            logger.error( f"unknown checksum spec: {line}")
+                            logger.error(f"unknown checksum spec: {line}")
                             continue
                     elif k == 'queueName':
                         if subtopicFound or not queueName:
@@ -3029,22 +3064,22 @@ class sr_GlobalState:
                     elif k == 'subtopic':
                         if queueName:
                             v3_cfg.write(f'queueName {queueName}\n')
-                            queueName=None
-                    if (k == 'accept') :
+                            queueName = None
+                    if (k == 'accept'):
                         if line[1] == '.*':
-                            accept_all_seen=True
+                            accept_all_seen = True
                             continue
-                    elif ( k == 'acceptUnmatched' ):
-                            acceptUnmatched_explicit=line[1]
-                            continue
-                    elif ( k == 'post_baseUrl' ) and line[1][-1] != '/':
-                            line[1]+='/'
-                            # see: https://github.com/MetPX/sarracenia/issues/841
-                    elif (k == 'sleep' ) and (component == 'poll'):
+                    elif (k == 'acceptUnmatched' ):
+                        acceptUnmatched_explicit = line[1]
+                        continue
+                    elif (k == 'post_baseUrl' ) and line[1][-1] != '/':
+                        line[1] += '/'
+                        # see: https://github.com/MetPX/sarracenia/issues/841
+                    elif (k == 'sleep') and (component == 'poll'):
                         k = 'scheduled_interval'
                     if k in convert_to_v3:
-                        if convert_to_v3[k] == [ 'continue' ]:
-                            logger.info( f"obsolete v2 keyword: {k}" )
+                        if convert_to_v3[k] == ['continue' ]:
+                            logger.info(f"obsolete v2 keyword: {k}" )
                             continue
 
                         if len(line) > 1:
@@ -3055,8 +3090,8 @@ class sr_GlobalState:
                                     logger.info("obsolete v2: " + k)
                                     continue
                             else:
-                                logger.warning( f"unknown {k} {v}, manual conversion required.")
-                                v3_cfg.write( f"# PROBLEM: unknown {k} {v}, manual conversion required.\n")
+                                logger.warning(f"unknown {k} {v}, manual conversion required.")
+                                v3_cfg.write(f"# PROBLEM: unknown {k} {v}, manual conversion required.\n")
                         else:
                             line = convert_to_v3[k]
                             k = line[0]
@@ -3064,13 +3099,13 @@ class sr_GlobalState:
                     else:
                         line[0] = k
 
-                    if k in [ 'logEvents', 'fileEvents' ]: # set option semantics changed as per https://github.com/MetPX/sarracenia/issues/608 
+                    if k in ['logEvents', 'fileEvents' ]: # set option semantics changed as per https://github.com/MetPX/sarracenia/issues/608 
                         if 'none' in line[1].lower():
-                            v=line[1]
+                            v = line[1]
                         else:
-                            if line[1][0] not in ['+','-']:
-                                line[1]= '+' + line[1]
-                            v=line[1]
+                            if line[1][0] not in ['+', '-']:
+                                line[1] = '+' + line[1]
+                            v = line[1]
 
                     if k == 'continue':
                         continue
@@ -3078,22 +3113,21 @@ class sr_GlobalState:
                     if len(line) > 1:
                         for p in convert_patterns_to_v3:
                             while p in line[1]:
-                               line[1] = line[1].replace(p,convert_patterns_to_v3[p])
+                                line[1] = line[1].replace(p, convert_patterns_to_v3[p])
 
-                    if not pos_args_present and re.search( r'\${[0-9]}', ' '.join(line[1:]) ):
-                         pos_args_present=True
-                         v3_cfg.write('sundew_compat_regex_first_match_is_zero True\n')
-                    v3_cfg.write(' '.join(line)+'\n')
+                    if not pos_args_present and re.search(r'\${[0-9]}', ' '.join(line[1:]) ):
+                        pos_args_present = True
+                        v3_cfg.write('sundew_compat_regex_first_match_is_zero True\n')
+                    v3_cfg.write(' '.join(line) +'\n')
                 if accept_all_seen:
                     pass
-                    #v3_cfg.write('accept .*\n')
+                    # v3_cfg.write('accept .*\n')
                 elif acceptUnmatched_explicit:
-                    v3_cfg.write( f"acceptUnmatched {acceptUnmatched_explicit}")
-                elif component in [ 'subscribe', 'poll', 'sender' ]: # accomodate change of default from v2 to sr3
-                    v3_cfg.write( f"acceptUnmatched False")
+                    v3_cfg.write(f"acceptUnmatched {acceptUnmatched_explicit}")
+                elif component in ['subscribe', 'poll', 'sender' ]: # accomodate change of default from v2 to sr3
+                    v3_cfg.write(f"acceptUnmatched False")
 
-        logger.info( f'wrote conversion from v2 {cfg} to sr3' )
-
+        logger.info(f'wrote conversion from v2 {cfg} to sr3' )
 
     def overview(self):
         """ v2 Printing statuses for each component/configs found
@@ -3102,11 +3136,10 @@ class sr_GlobalState:
         """
 
         if len(self.leftovers) > 0 and not self._action_all_configs:
-            logging.error( f"{self.leftovers} configuration not found" )
+            logging.error(f"{self.leftovers} configuration not found" )
             return
 
         bad = 0
-
 
         print('%-10s %-10s %-6s %3s %s' %
               ('Component', 'State', 'Good?', 'Qty',
@@ -3135,12 +3168,12 @@ class sr_GlobalState:
                 if not (c in self.states and cfg in self.states[c]):
                     continue
 
-                if self.configs[c][cfg]['status'] not in [ 'stopped', 'new' ]:
+                if self.configs[c][cfg]['status'] not in ['stopped', 'new' ]:
                     m = sum(map(
                         lambda x: c in x and cfg in x,
-                        self.missing))  #perhaps expensive, but I am lazy FIXME
-                    sfx += '-i%d/%d' % ( \
-                        len(self.states[c][cfg]['instance_pids']) - m, \
+                        self.missing))  # perhaps expensive, but I am lazy FIXME
+                    sfx += '-i%d/%d' % (
+                        len(self.states[c][cfg]['instance_pids']) - m,
                         self.configs[c][cfg]['instances'])
                 status[self.configs[c][cfg]['status']].append(cfg + sfx)
 
@@ -3154,8 +3187,8 @@ class sr_GlobalState:
                           status['running'])))
             elif len(status['running']) == (len(self.configs[c]) -
                                             len(status['disabled'])):
-                print('%-10s %-10s %-6s %-3d %s' % (c, 'most', 'OKd', \
-                    len(self.configs[c]) - len(status['disabled']),  ', '.join(status['running'] )))
+                print('%-10s %-10s %-6s %-3d %s' % (c, 'most', 'OKd',
+                                                    len(self.configs[c]) - len(status['disabled']),  ', '.join(status['running'] )))
             else:
                 print('%-10s %-10s %-6s %3d' %
                       (c, 'mixed', 'mult', len(self.configs[c])))
@@ -3172,10 +3205,10 @@ class sr_GlobalState:
             if not self.procs[pid]['claimed']:
                 stray += 1
                 bad = 1
-                print( f"pid: {pid}-\"{' '.join(self.procs[pid]['cmdline'])}\" is not a configured instance" )
+                print(f"pid: {pid}-\"{' '.join(self.procs[pid]['cmdline'])}\" is not a configured instance" )
 
-        print('      total running configs: %3d ( processes: %d missing: %d stray: %d )' % \
-            (configs_running, len(self.procs), len(self.missing), stray))
+        print('      total running configs: %3d ( processes: %d missing: %d stray: %d )' %
+              (configs_running, len(self.procs), len(self.missing), stray))
 
         # FIXME: does not seem to find any stray exchange (with no bindings...) hmm...
         for h in self.brokers:
@@ -3251,75 +3284,74 @@ class sr_GlobalState:
 
     def _check_sanitizing(self) -> bool:
         """
-           return true if sr3 sanity is running somewhere... 
+           return true if sr3 sanity is running somewhere...
         """
 
         d1 = self.user_cache_dir
 
         d2 = d1 + os.sep + self.hostdir
 
-        sanitizing=False
-        for d in [ d1, d2 ]:
+        sanitizing = False
+        for d in [d1, d2 ]:
             f = d + os.sep + "sanitizing"
             if os.path.exists(f):
-                sanitizing=True
+                sanitizing = True
         return sanitizing
 
-    def _tag_sanity( self, ending: bool ):
+    def _tag_sanity(self, ending: bool ):
 
-        dir_list = [ self.user_cache_dir + os.sep + self.hostdir, self.user_cache_dir ]
+        dir_list = [self.user_cache_dir + os.sep + self.hostdir, self.user_cache_dir ]
 
         for d in dir_list:
-            if not os.path.exists( d ):
-                 os.makedirs(d, exist_ok=True)
-            
+            if not os.path.exists(d ):
+                os.makedirs(d, exist_ok=True)
+
             fname = d + os.sep + "sanitizing"
 
             if ending:
                 if os.path.exists(fname):
-                    os.unlink( fname )
+                    os.unlink(fname )
             else:
                 with open(fname, "w") as f:
                     f.write(nowstr())
-                    
-            
-    def _tag_progress( self, c: str, cfg: str, what_is_in_progress: str, ending: bool ):
-        """ mark a configuration as being in flux, to disable sr3 sanity.
-            Do that by creating a file in the state directory. 
 
-            sample call: 
+
+    def _tag_progress(self, c: str, cfg: str, what_is_in_progress: str, ending: bool ):
+        """ mark a configuration as being in flux, to disable sr3 sanity.
+            Do that by creating a file in the state directory.
+
+            sample call:
                  self._tag_progress( \
-                     c='subscribe', 
-                     cfg='amis', 
-                     what_is_in_progress='shutdown', 
-                     ending=False 
+                     c='subscribe',
+                     cfg='amis',
+                     what_is_in_progress='shutdown',
+                     ending=False
                  ) ...
- 
+
             results in a file named: *~/.cache/sr3/subscribe/amis/shutdown* being created.
 
             if the *ending* argument is true, then the corresponding state file is removed
             to indicate that the operation completed.
         """
         if 'options' in self.configs[c][cfg] and self.configs[c][cfg]['options'].statehost:
-            state_dir=self.user_cache_dir + os.sep + self.hostdir + os.sep + c + os.sep + cfg
+            state_dir = self.user_cache_dir + os.sep + self.hostdir + os.sep + c + os.sep + cfg
         else:
-            state_dir=self.user_cache_dir + os.sep + c + os.sep + cfg
+            state_dir = self.user_cache_dir + os.sep + c + os.sep + cfg
 
-        fname =  f"{state_dir}{os.sep}{what_is_in_progress}"
+        fname = f"{state_dir}{os.sep}{what_is_in_progress}"
         if ending:
             if os.path.exists(fname):
-                os.unlink( fname )
+                os.unlink(fname )
         else:
             if not os.path.exists(state_dir):
-                 os.makedirs(state_dir, exist_ok=True)
+                os.makedirs(state_dir, exist_ok=True)
 
-            if os.path.exists( fname ):
-                 logger.error( f" {c}/{cfg} already tagged: {what_is_in_progress}" )
-                 return
+            if os.path.exists(fname ):
+                logger.error(f" {c}/{cfg} already tagged: {what_is_in_progress}" )
+                return
 
             with open(fname, "w") as f:
                 f.write(nowstr())
-
 
 
 def main():
@@ -3356,8 +3388,8 @@ def main():
 
     cfg.parse_args()
 
-    #FIXME... hmm... so...
-    #cfg.finalize()
+    # FIXME... hmm... so...
+    # cfg.finalize()
 
     if not hasattr(cfg, 'action'):
         print('USAGE: %s [ -h ] (%s)' % (sys.argv[0], '|'.join(actions)))
@@ -3366,14 +3398,14 @@ def main():
     action = cfg.action
 
     if cfg.logStdout:
-       logging.basicConfig(
-           format= '%(asctime)s [%(levelname)s] %(process)d %{processName}s %(name)s %(funcName)s %(message)s' )
+        logging.basicConfig(
+            format= '%(asctime)s [%(levelname)s] %(process)d %{processName}s %(name)s %(funcName)s %(message)s')
 
     gs = sr_GlobalState(cfg, cfg.configurations)
 
-    #print("filtered_config: %s" % gs.filtered_configurations )
+    # print("filtered_config: %s" % gs.filtered_configurations )
     # testing proc file i/o
-    #gs.read_proc_file()
+    # gs.read_proc_file()
 
     if action in ['add']:
         print('%s: ' % action, end='', flush=True)

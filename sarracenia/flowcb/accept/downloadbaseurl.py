@@ -19,16 +19,18 @@ import urllib.request
 from sarracenia.flowcb import FlowCB
 logger = logging.getLogger(__name__)
 
+
 class DownloadBaseUrl(FlowCB):
     def __init__(self, options):
-        super().__init__(options,logger)
+        super().__init__(options, logger)
 
     def after_accept(self, worklist):
         for message in worklist.incoming:
             # if mirror is set to True, comment these two lines out
-            #TODO: this self.o.new_dir could be instead message['new_dir'] I think.. to see..
+            # TODO: this self.o.new_dir could be instead message['new_dir'] I think.. to see..
             keypath, key = os.path.split(self.o.new_dir + message['new_file'])
-            if not os.path.exists(keypath): os.makedirs(keypath)
+            if not os.path.exists(keypath):
+                os.makedirs(keypath)
 
             with open(keypath + '/' + key, 'wb') as f:
                 with urllib.request.urlopen(message['baseUrl']) as k:

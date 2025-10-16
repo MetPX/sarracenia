@@ -6,7 +6,12 @@
 # This program reads all routing entries related to sender.conf
 # Than it reads in
 
-import os, re, sys
+import time
+import subprocess
+import datetime
+import os
+import re
+import sys
 
 # config , path and client name
 
@@ -17,7 +22,7 @@ client = client.replace('.conf', '')
 
 # find routing table pattern match for that client
 
-#print("client = %s" % client)
+# print("client = %s" % client)
 
 table_pattern_list = []
 
@@ -32,25 +37,30 @@ for table in sys.argv[1:-2]:
     tablefile = open(table, 'r')
 
     for line in tablefile:
-        if line == None: continue
+        if line is None:
+            continue
         line = line.strip()
-        if line == '': continue
-        if line[0] == '#': continue
+        if line == '':
+            continue
+        if line[0] == '#':
+            continue
 
         try:
             words = line.split()
             product_client_list = words[2].split(',')
-        except:
+        except BaseException:
             print("\nproblem with file: %s" % table, file=sys.stderr)
             print("line: %s" % line, file=sys.stderr)
             continue
 
         for fclient in client_search_list:
-            if not fclient in product_client_list: continue
+            if not fclient in product_client_list:
+                continue
             if words[0] == 'clientAlias':
-                if words[1] in client_search_list: continue
+                if words[1] in client_search_list:
+                    continue
                 client_search_list.append(words[1])
-                #print("alias = %s" % words[1])
+                # print("alias = %s" % words[1])
             elif words[0] == 'key':
                 print("key %s" % words[1])
                 pattern = '.*' + words[1].replace('_', '.*') + '.*'
@@ -60,7 +70,7 @@ for table in sys.argv[1:-2]:
 
     tablefile.close()
 
-## load accept reject from client
+# load accept reject from client
 
 config_pattern_list = []
 
@@ -77,10 +87,13 @@ class Swallow_Config(object):
         print("\n%s parsing of %s\n" % (client, os.path.basename(path)))
         configfile = open(path, 'r')
         for line in configfile:
-            if line == None: continue
+            if line is None:
+                continue
             line = line.strip()
-            if line == '': continue
-            if line[0] == '#': continue
+            if line == '':
+                continue
+            if line[0] == '#':
+                continue
             words = line.split()
             try:
                 if words[0] == 'include':
@@ -94,13 +107,15 @@ class Swallow_Config(object):
                 elif words[0] in ['accept', 'reject']:
                     ar = words[0] == 'accept'
                     ptrn = words[1]
-                    if ptrn[0:1] != '.*': ptrn = '.*' + ptrn
+                    if ptrn[0:1] != '.*':
+                        ptrn = '.*' + ptrn
                     optn = None
-                    if len(words) > 2: optn = words[2]
+                    if len(words) > 2:
+                        optn = words[2]
                     entry = (ptrn, re.compile(ptrn), self.fname, self.dname,
                              ar, optn)
                     config_pattern_list.append(entry)
-            except:
+            except BaseException:
                 print("\nproblem with file: %s" % path, file=sys.stderr)
                 print("line: %s" % line, file=sys.stderr)
 
@@ -119,7 +134,6 @@ resulting_dict = {}
 # get the number of lines of products to show progress
 
 cmd = 'wc -l ' + sys.argv[-2]
-import datetime, subprocess, time
 answer = subprocess.check_output(cmd.split(' '))
 parts = answer.split(b' ')
 NL = int(parts[0].decode('utf-8'))
@@ -170,7 +184,8 @@ for productline in productfile:
 
         # routing table not matching this product to this client...
 
-        if not rpattern.match(product): continue
+        if not rpattern.match(product):
+            continue
 
         # ok matched routing table ... see how it goes with sender config
 
@@ -178,7 +193,8 @@ for productline in productfile:
             ptrn, cpattern, fname, dname, accept, optn = entry
 
             # product not configured in sender
-            if not cpattern.match(product): continue
+            if not cpattern.match(product):
+                continue
 
             # ok this product matched and accept/reject pattern
 
@@ -186,7 +202,7 @@ for productline in productfile:
 
             # HERE COMMENT IF YOU WANT rejects to be analysed too
 
-            #if not accept : break
+            # if not accept : break
 
             # ok it matched an accept or reject
 
@@ -197,11 +213,13 @@ for productline in productfile:
             subtopic = dirname.replace('/', '.')
             if subtopic[-1] == '.':
                 subtopic += '#'
-                if dirname[-1] != '*': dirname += '*'
+                if dirname[-1] != '*':
+                    dirname += '*'
             else:
                 subtopic += '.#'
                 dirname += '/*'
-                if dirname[-1] != '*': dirname += '/*'
+                if dirname[-1] != '*':
+                    dirname += '/*'
             dirname = dirname.replace('*', '.*')
 
             # preparing to add some results
@@ -216,12 +234,14 @@ for productline in productfile:
 
             ardict = rdict[subtopic]
 
-            if dirname[-2:] == '.*': dirname = dirname[:-2]
+            if dirname[-2:] == '.*':
+                dirname = dirname[:-2]
 
             # product accepted
             if accept:
                 arline = "accept  %s%s" % (dirname, ptrn)
-                if optn: arline += ' ' + optn
+                if optn:
+                    arline += ' ' + optn
 
             # product rejected
             else:
@@ -235,7 +255,8 @@ for productline in productfile:
             break
 
         # product matched
-        if matched: break
+        if matched:
+            break
 
 #
 productfile.close()
@@ -261,7 +282,8 @@ class Convert_Config(object):
         fp = configfile = open(path, 'w')
 
         for line in oldconfigfile:
-            if line == None: continue
+            if line is None:
+                continue
             tline = line.strip()
             if tline == '':
                 fp.write(line)
@@ -284,18 +306,25 @@ class Convert_Config(object):
                     self.idname = words[1]
                 elif words[0] in ['accept', 'reject']:
                     ioptn = None
-                    if len(words) > 2: ioptn = words[2]
+                    if len(words) > 2:
+                        ioptn = words[2]
                     iaccept = words[0] == 'accept'
                     matched = False
                     iptrn = words[1]
-                    if iptrn[0:1] != '.*': iptrn = '.*' + iptrn
+                    if iptrn[0:1] != '.*':
+                        iptrn = '.*' + iptrn
                     for entry in resulting_dict:
                         ptrn, cpattern, fname, dname, accept, optn = entry
-                        if dname != self.idname: continue
-                        if fname != self.ifname: continue
-                        if accept != iaccept: continue
-                        if ptrn != iptrn: continue
-                        if optn != ioptn: continue
+                        if dname != self.idname:
+                            continue
+                        if fname != self.ifname:
+                            continue
+                        if accept != iaccept:
+                            continue
+                        if ptrn != iptrn:
+                            continue
+                        if optn != ioptn:
+                            continue
 
                         matched = True
                         rdict = resulting_dict[entry]
@@ -311,7 +340,7 @@ class Convert_Config(object):
 
                 else:
                     fp.write(line)
-            except:
+            except BaseException:
                 print("problem when converting: %s" % line, file=sys.stderr)
 
         oldconfigfile.close()

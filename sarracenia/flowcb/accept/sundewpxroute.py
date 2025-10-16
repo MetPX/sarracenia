@@ -42,9 +42,9 @@ class SundewPxRoute(FlowCB):
         elif not os.path.exists(self.o.pxRouting):
             logger.error("sundew_pxroute pxRouting file (%s) not found" % self.o.pxRouting)
             return
-        
+
         self.ahls_to_route = {}
-        
+
         pxrf = open(self.o.pxRouting, 'r')
         possible_references = self.o.pxClient.split(',')
         logger.info("sundew_pxroute, target clients: %s" % possible_references)
@@ -60,7 +60,9 @@ class SundewPxRoute(FlowCB):
                 for i in possible_references:
                     if i in expansion:
                         possible_references.append(words[1])
-                        logger.debug("sundew_pxroute adding clientAlias %s to possible_reference %s" % (words[1], possible_references))
+                        logger.debug(
+                            "sundew_pxroute adding clientAlias %s to possible_reference %s" %
+                            (words[1], possible_references))
                         continue
 
             if words[0] == 'key':
@@ -70,7 +72,8 @@ class SundewPxRoute(FlowCB):
                         self.ahls_to_route[words[1]] = True
         pxrf.close()
 
-        logger.debug("sundew_pxroute For %s, the following headers are routed %s" % (self.o.pxClient, self.ahls_to_route.keys()))
+        logger.debug("sundew_pxroute For %s, the following headers are routed %s" %
+                     (self.o.pxClient, self.ahls_to_route.keys()))
 
     def after_accept(self, worklist):
         new_incoming = []

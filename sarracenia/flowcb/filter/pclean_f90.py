@@ -1,4 +1,4 @@
-""" 
+"""
    msg_pclean_f90 module: file propagation test for Sarracenia components (in flow test)
    https://github.com/MetPX/sr_insects/
 
@@ -17,7 +17,7 @@ logger = logging.getLogger(__name__)
 
 
 class PClean_F90(PClean):
-    """ 
+    """
      functionality within the flow_tests of the sr_insects project.
      This plugin class receive a msg from xflow_public and check propagation of the underlying file
 
@@ -29,6 +29,7 @@ class PClean_F90(PClean):
     When a product is not fully propagated, the error is reported and the test is considered as a
     failure. It also checks if the file differs from original
     """
+
     def after_accept(self, worklist):
 
         logger.info("start len(worklist.incoming) = %d" %

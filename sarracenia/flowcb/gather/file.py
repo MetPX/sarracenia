@@ -65,11 +65,12 @@ class File(FlowCB):
 
     It will fail horribly for large trees. Need to re-formulate to replace recursion with interation.
     perhaps a good time to use python iterators.
-  
+
     also should likely switch from listdir to scandir
     """
+
     def on_add(self, event, src, dst):
-        logger.debug("%s %s %s" % ( event, src, dst ) )
+        logger.debug("%s %s %s" % (event, src, dst))
         self.new_events['%s %s' % (src, dst)] = (event, src, dst)
 
     def on_created(self, event):
@@ -96,14 +97,14 @@ class File(FlowCB):
         self.on_add('move', event.src_path, event.dest_path)
 
     def __init__(self, options):
-        """ 
+        """
         """
 
-        super().__init__(options,logger)
+        super().__init__(options, logger)
 
         if not features['watch']['present']:
             logger.critical("watchdog module must be installed to watch directories")
-            
+
         logger.debug("%s used to be overwrite_defaults" % self.o.component)
 
         self.obs_watched = []
@@ -114,25 +115,25 @@ class File(FlowCB):
         self.new_events = OrderedDict()
         self.left_events = OrderedDict()
 
-        #self.o.blockSize = 200 * 1024 * 1024
+        # self.o.blockSize = 200 * 1024 * 1024
         self.o.create_modify = ('create' in self.o.fileEvents) or (
             'modify' in self.o.fileEvents)
 
-    def post_delete(self, path, key=None, value=None,is_directory=False):
-        #logger.debug("post_delete %s (%s,%s)" % (path, key, value))
+    def post_delete(self, path, key=None, value=None, is_directory=False):
+        # logger.debug("post_delete %s (%s,%s)" % (path, key, value))
 
         msg = sarracenia.Message.fromFileInfo(path, self.o, None)
 
-        msg['fileOp'] = { 'remove':'' }
+        msg['fileOp'] = {'remove': ''}
 
-        if is_directory: 
+        if is_directory:
             msg['fileOp']['directory'] = ''
 
         # partstr
         partstr = None
 
         # used when moving a file
-        if key != None:
+        if key is not None:
             msg[key] = value
             if key == 'newname' and self.o.post_baseDir:
                 msg['new_dir'] = os.path.dirname(value)
@@ -142,7 +143,7 @@ class File(FlowCB):
         return [msg]
 
     def post_file(self, path, lstat, key=None, value=None):
-        #logger.debug("start  %s" % path)
+        # logger.debug("start  %s" % path)
 
         # check the value of blockSize
 
@@ -156,13 +157,13 @@ class File(FlowCB):
 
         msg = sarracenia.Message.fromFileData(path, self.o, lstat)
 
-        if not msg: # failed to create message
+        if not msg:  # failed to create message
             return []
 
         # used when moving a file
-        if key != None:
+        if key is not None:
             if not 'fileOp' in msg:
-                msg['fileOp'] = { key : value }
+                msg['fileOp'] = {key: value}
             else:
                 msg['fileOp'][key] = value
 
@@ -194,25 +195,25 @@ class File(FlowCB):
                             "encoding": "utf-8",
                             "value": d.decode('utf-8')
                         }
-                    except:
+                    except BaseException:
                         msg["content"] = {
                             "encoding": "base64",
                             "value": b64encode(d).decode('utf-8')
                         }
             else:
                 if self.o.inlineOnly:
-                    logger.error('skipping file %s too large (%d bytes > %d bytes max)) for inlining' % \
-                       ( path, fsiz, self.o.inlineByteMax )  )
+                    logger.error('skipping file %s too large (%d bytes > %d bytes max)) for inlining' %
+                                 (path, fsiz, self.o.inlineByteMax))
                     return []
 
         return [msg]
 
     def post_file_in_parts(self, path, lstat):
-        #logger.info("start %s" % path )
+        # logger.info("start %s" % path )
 
         msg = sarracenia.Message.fromFileInfo(path, self.o, lstat)
 
-        logger.debug( f"initial msg:{msg}" )
+        logger.debug(f"initial msg:{msg}")
         # check the value of blockSize
 
         fsiz = lstat.st_size
@@ -222,16 +223,17 @@ class File(FlowCB):
 
         block_count = int(fsiz / chunksize)
         remainder = fsiz % chunksize
-        if remainder > 0: block_count = block_count + 1
+        if remainder > 0:
+            block_count = block_count + 1
 
-        #logger.debug( f" fiz:{fsiz}, chunksize:{chunksize}, block_count:{block_count}, remainder:{remainder}" )
+        # logger.debug( f" fiz:{fsiz}, chunksize:{chunksize}, block_count:{block_count}, remainder:{remainder}" )
 
         # loop on blocks
 
         blocks = list(range(0, block_count))
         if self.o.randomize:
             random.shuffle(blocks)
-            #blocks = [8, 3, 1, 2, 9, 6, 0, 7, 4, 5] # Testing
+            # blocks = [8, 3, 1, 2, 9, 6, 0, 7, 4, 5] # Testing
             logger.info('Sending partitions in the following order: ' +
                         str(blocks))
 
@@ -241,7 +243,7 @@ class File(FlowCB):
             'number': -1,
             'manifest': {}
         }
-        logger.debug( f" blocks:{blocks} " )
+        logger.debug(f" blocks:{blocks} ")
 
         for current_block in blocks:
 
@@ -254,21 +256,20 @@ class File(FlowCB):
             if last and remainder > 0:
                 length = remainder
 
-            msg['size']=length
+            msg['size'] = length
 
             # set partstr
             try:
-                msg.computeIdentity(path, self.o, offset=offset )
+                msg.computeIdentity(path, self.o, offset=offset)
             except Exception as ex:
-                logger.error( f"could not identify {path}: {ex}" )
+                logger.error(f"could not identify {path}: {ex}")
                 return []
 
-            msg['blocks']['manifest'][current_block] = { 'size':length, 'identity': msg['identity']['value'] }
+            msg['blocks']['manifest'][current_block] = {'size': length, 'identity': msg['identity']['value']}
 
-        
         if features['reassembly']['present'] and \
            (not hasattr(self.o, 'block_manifest_delete') or not self.o.block_manifest_delete):
-            with sarracenia.blockmanifest.BlockManifest( path ) as bm:
+            with sarracenia.blockmanifest.BlockManifest(path) as bm:
                 bm.set(msg['blocks'])
 
         messages = []
@@ -278,14 +279,14 @@ class File(FlowCB):
             msg['size'] = msg['blocks']['manifest'][current_block]['size']
             msg['identity']['value'] = msg['blocks']['manifest'][current_block]['identity']
 
-            #logger.info( f" size: {msg['size']} blocks: {msg['blocks']}, offset: {offset} identity: {msg['identity']} " )
+            # logger.info( f" size: {msg['size']} blocks: {msg['blocks']}, offset: {offset} identity: {msg['identity']} " )
 
             messages.append(copy.deepcopy(msg))
 
         return messages
 
     def post_link(self, path, key='link', value=None):
-        #logger.debug("post_link %s" % path )
+        # logger.debug("post_link %s" % path )
 
         msg = sarracenia.Message.fromFileInfo(path, self.o, None)
 
@@ -296,14 +297,14 @@ class File(FlowCB):
 
         # used when moving a file
         if not 'fileOp' in msg:
-           msg['fileOp'] = { key: value }
+            msg['fileOp'] = {key: value}
         else:
-           msg['fileOp'][key] = value
+            msg['fileOp'][key] = value
 
         return [msg]
 
     def post_move(self, src, dst):
-        #logger.debug("post_move %s %s" % (src,dst) )
+        # logger.debug("post_move %s %s" % (src,dst) )
 
         # watchdog funny ./ added at end of directory path ... removed
 
@@ -319,7 +320,7 @@ class File(FlowCB):
         # file
 
         if os.path.isfile(dst):
-            if hasattr(self.o,'v2compatRenameDoublePost') and self.o.v2compatRenameDoublePost:
+            if hasattr(self.o, 'v2compatRenameDoublePost') and self.o.v2compatRenameDoublePost:
                 messages.extend(self.post_delete(src, 'newname', dst))
             messages.extend(self.post_file(dst, sarracenia.stat(dst), 'rename', src))
             return messages
@@ -327,7 +328,7 @@ class File(FlowCB):
         # link
 
         if os.path.islink(dst):
-            if hasattr(self.o,'v2compatRenameDoublePost') and self.o.v2compatRenameDoublePost:
+            if hasattr(self.o, 'v2compatRenameDoublePost') and self.o.v2compatRenameDoublePost:
                 messages.extend(self.post_delete(src, 'newname', dst))
             messages.extend(self.post_link(dst, 'rename', src))
             return messages
@@ -385,19 +386,19 @@ class File(FlowCB):
                     if sys.platform == 'win32':
                         rpath = rpath.replace('\\', '/')
 
-                except:
+                except BaseException:
                     return messages
 
                 lstat = None
-                if os.path.exists(rpath): 
-                   lstat = sarracenia.stat(rpath)
+                if os.path.exists(rpath):
+                    lstat = sarracenia.stat(rpath)
 
                 messages.extend(self.post1file(rpath, lstat))
 
         # path deleted
 
-        elif lstat == None:
-            messages.extend(self.post_delete(path,key=None,value=None,is_directory=is_directory))
+        elif lstat is None:
+            messages.extend(self.post_delete(path, key=None, value=None, is_directory=is_directory))
 
         # path is a file
 
@@ -407,7 +408,7 @@ class File(FlowCB):
         return messages
 
     def post1move(self, src, dst):
-        #logger.debug("post1move %s %s" % (src,dst) )
+        # logger.debug("post1move %s %s" % (src,dst) )
 
         self.move_dir_lst = []
 
@@ -415,7 +416,7 @@ class File(FlowCB):
 
         for tup in self.move_dir_lst:
             src, dst = tup
-            #logger.debug("deleting moved directory %s" % src )
+            # logger.debug("deleting moved directory %s" % src )
             messages.extend(self.post_delete(src, 'newname', dst))
 
         return messages
@@ -423,19 +424,19 @@ class File(FlowCB):
     def process_event(self, event, src, dst):
         """
           return a tuple: pop? + list of messages.
-          
+
 
         """
-        #logger.debug("process_event %s %s %s " % (event,src,dst) )
+        # logger.debug("process_event %s %s %s " % (event,src,dst) )
 
         # delete
 
-        if event == 'delete' :
+        if event == 'delete':
             if event in self.o.fileEvents:
                 return (True, self.post1file(src, None))
             return (True, [])
 
-        if event == 'rmdir' :
+        if event == 'rmdir':
             if event in self.o.fileEvents:
                 return (True, self.post1file(src, None, is_directory=True))
             return (True, [])
@@ -449,7 +450,7 @@ class File(FlowCB):
         # create or modify
 
         # directory : skipped, its content is watched
-        #if self.o.recursive and os.path.isdir(src):
+        # if self.o.recursive and os.path.isdir(src):
         #    dirs = list(map(lambda x: x[1][1], self.inl.items()))
         #    #logger.debug("skipping directory %s list: %s" % (src, dirs))
 
@@ -463,21 +464,22 @@ class File(FlowCB):
         # file : must exists
         #       (may have been deleted since event caught)
 
-        if not os.path.exists(src): return (True, [])
+        if not os.path.exists(src):
+            return (True, [])
 
         # file : must be old enough
 
         lstat = sarracenia.stat(src)
 
-        if lstat and hasattr(lstat,'st_mtime'):
+        if lstat and hasattr(lstat, 'st_mtime'):
             age = time.time() - lstat.st_mtime
 
             if age < self.o.fileAgeMin:
-                logger.debug("%d vs (fileAgeMin setting) %d seconds. Too New! %s" % (age,self.o.fileAgeMin,src) )
+                logger.debug("%d vs (fileAgeMin setting) %d seconds. Too New! %s" % (age, self.o.fileAgeMin, src))
                 return (False, [])
 
             if self.o.fileAgeMax > 0 and age > self.o.fileAgeMax:
-                logger.debug("%d vs (fileAgeMax setting) %d seconds. Too Old! %s" % (age,self.o.fileAgeMax,src) )
+                logger.debug("%d vs (fileAgeMax setting) %d seconds. Too Old! %s" % (age, self.o.fileAgeMax, src))
                 return (True, [])
         else:
             logger.debug(f"lstat or st_mtime problem? lstat={lstat}")
@@ -488,8 +490,8 @@ class File(FlowCB):
         if event == 'mkdir':
             if 'mkdir' in self.o.fileEvents:
                 return (True, self.post1file(src, lstat, is_directory=True))
-            return(True,[])
-        elif self.o.create_modify: 
+            return (True, [])
+        elif self.o.create_modify:
             return (True, self.post1file(src, lstat))
         return (True, [])
 
@@ -497,17 +499,17 @@ class File(FlowCB):
 
         tfactor = 50 * 1024 * 1024
 
-        if bssetting == 0:  ## default blockSize
+        if bssetting == 0:  # default blockSize
             return tfactor
 
-        elif bssetting == 1:  ## send file as one piece.
+        elif bssetting == 1:  # send file as one piece.
             return fsiz
 
-        else:  ## partstr=i
+        else:  # partstr=i
             return bssetting
 
     def wakeup(self):
-        #logger.debug("wakeup")
+        # logger.debug("wakeup")
 
         # FIXME: Tiny potential for events to be dropped during copy.
         #     these lists might need to be replaced with watchdog event queues.
@@ -528,7 +530,7 @@ class File(FlowCB):
 
         messages = []
         for key in self.cur_events:
-            event_done=False
+            event_done = False
             event, src, dst = self.cur_events[key]
             try:
                 (event_done, new_messages) = self.process_event(event, src, dst)
@@ -538,12 +540,12 @@ class File(FlowCB):
                   This message is reduced to debug priority because it often happens when files
                   are too transitory (they disappear before we have a chance to post them)
                   not sure if it should be an error message or not.
-                  
+
                 """
                 logger.debug("skipping event that could not be processed: ({}): {}".format(
                     event, err))
                 logger.debug("Exception details:", exc_info=True)
-                event_done=True
+                event_done = True
             if event_done:
                 self.left_events.pop(key)
         return messages
@@ -564,7 +566,7 @@ class File(FlowCB):
         messages = []
 
         # need to post root of tree first, so mode bits get propagated on creation.
-        if src == self.o.post_baseDir :
+        if src == self.o.post_baseDir:
             logger.debug("skip posting of post_baseDir {src}")
         else:
             messages.extend(self.post1file(src, sarracenia.stat(src), is_directory=True))
@@ -584,12 +586,11 @@ class File(FlowCB):
                 if os.path.exists(path):
                     messages.extend(self.post1file(path, sarracenia.stat(path)))
 
-
         return messages
 
     def walk_priming(self, p):
         """
-         Find all the subdirectories of the given path, start watches on them. 
+         Find all the subdirectories of the given path, start watches on them.
          deal with symbolically linked directories correctly
         """
         if os.path.islink(p):
@@ -624,7 +625,7 @@ class File(FlowCB):
                 logger.info(
                     "sr_watch priming watch (instance=%d) scheduled for: %s " %
                     (len(self.obs_watched), d))
-            except:
+            except BaseException:
                 logger.warning("sr_watch priming watch: %s failed, deferred." %
                                d)
                 logger.debug('Exception details:', exc_info=True)
@@ -685,19 +686,19 @@ class File(FlowCB):
 
     def gather(self, messageCountMax):
         """
-           from sr_post.py/run 
+           from sr_post.py/run
 
            FIXME: really bad performance with large trees: It scans an entire tree
            before emitting any messages. Need to re-factor with iterator style so produce
            result in batch sized chunks incrementally.
         """
-        #logger.debug("%s run partflg=%s, sum=%s, nodupe_ttl=%s basis=%s pbd=%s" % \
+        # logger.debug("%s run partflg=%s, sum=%s, nodupe_ttl=%s basis=%s pbd=%s" % \
         #      ( self.o.component, self.o.partflg, self.o.sumflg, self.o.nodupe_ttl,
         #        self.o.nodupe_basis, self.o.post_baseDir ))
-        #logger.debug("%s realpathPost=%s follow_links=%s force_polling=%s batch=%s"  % \
+        # logger.debug("%s realpathPost=%s follow_links=%s force_polling=%s batch=%s"  % \
         #      ( self.o.component, self.o.realpathPost, self.o.follow_symlinks, \
         #        self.o.force_polling, self.o.batch ) )
-        #logger.info("%s len(self.queued_messages)=%d" % \
+        # logger.info("%s len(self.queued_messages)=%d" % \
         #     ( self.o.component, len(self.queued_messages) ) )
 
         pbd = self.o.post_baseDir
@@ -724,9 +725,10 @@ class File(FlowCB):
         for d in self.o.postpath:
 
             # convert relative path to absolute.
-            if d[0] != os.sep: d = cwd + os.sep + d
+            if d[0] != os.sep:
+                d = cwd + os.sep + d
 
-            d=self.o.variableExpansion(d)
+            d = self.o.variableExpansion(d)
             logger.debug("postpath = %s" % d)
 
             if self.o.sleep > 0:

@@ -4,7 +4,8 @@
 
 """
 import sys
-import urllib, urllib.parse
+import urllib
+import urllib.parse
 import base64
 import logging
 import os
@@ -12,16 +13,16 @@ import re
 import socket
 import subprocess
 
-#rabbitmqadmin = '.' + os.sep + 'rabbitmqadmin'
+# rabbitmqadmin = '.' + os.sep + 'rabbitmqadmin'
 rabbitmqadmin = 'rabbitmqadmin'
 
 logger = logging.getLogger(__name__)
 
-#logger.setLevel( logging.DEBUG )
+# logger.setLevel( logging.DEBUG )
 
-#===========================
+# ===========================
 # rabbitmqadmin
-#===========================
+# ===========================
 
 
 def exec_rabbitmqadmin(url, options, simulate=False):
@@ -42,7 +43,8 @@ def exec_rabbitmqadmin(url, options, simulate=False):
         logger.debug("command = %s" % command)
         if sys.version_info.major < 3 or (sys.version_info.major == 3
                                           and sys.version_info.minor < 5):
-            if logger: logger.debug("using subprocess.getstatusoutput")
+            if logger:
+                logger.debug("using subprocess.getstatusoutput")
 
             if simulate:
                 print("dry_run: %s" % ' '.join(command))
@@ -63,17 +65,21 @@ def exec_rabbitmqadmin(url, options, simulate=False):
             rclass = subprocess.run(cmdlst, stdout=subprocess.PIPE)
             if rclass.returncode == 0:
                 output = rclass.stdout
-                if type(output) == bytes: output = output.decode("utf-8")
+
+
+if isinstance(output,                 if )                    output = output.decode("utf-8")
                 return rclass.returncode, output
             return rclass.returncode, None
-    except:
+    except BaseException:
         if sys.version_info.major < 3 or (sys.version_info.major == 3
                                           and sys.version_info.minor < 5):
-            if logger: logger.error("trying run command %s %s" % command)
+            if logger:
+                logger.error("trying run command %s %s" % command)
         else:
             if logger:
                 logger.error("trying run command %s %s" % ' '.join(cmdlst))
-        if logger: logger.debug('Exception details:', exc_info=True)
+        if logger:
+            logger.debug('Exception details:', exc_info=True)
 
     return 0, None
 
@@ -85,9 +91,12 @@ def add_user(url, role, user, passwd, simulate):
 
     declare = "declare user name='%s' password=" % user
 
-    if passwd != None: declare += "\'%s\'" % urllib.parse.unquote(passwd)
-    if role == 'admin': declare += " tags=administrator "
-    else: declare += ' tags="" '
+    if passwd is not None:
+        declare += "\'%s\'" % urllib.parse.unquote(passwd)
+    if role == 'admin':
+        declare += " tags=administrator "
+    else:
+        declare += ' tags="" '
 
     dummy = run_rabbitmqadmin(url, declare, simulate)
 
@@ -163,10 +172,10 @@ def get_users(url):
     return run_rabbitmqadmin(url, cmd)
 
 
-#===========================
+# ===========================
 # direct access to rabbitmq management plugin
 # this is what rabbitmqadmin does under the cover
-#===========================
+# ===========================
 
 
 def broker_get_exchanges(url, ssl_key_file=None, ssl_cert_file=None):
@@ -204,20 +213,21 @@ def broker_get_exchanges(url, ssl_key_file=None, ssl_cert_file=None):
 
     for i in lst:
         ex = i["name"]
-        if ex == '': continue
+        if ex == '':
+            continue
         exchanges.append(ex)
 
     return exchanges
 
 
 def user_access(url, user):
-    """ 
+    """
       Given an administrative URL, return a list of exchanges and queues the user can access.
 
       lox = list of exchanges, just a list of names.
       loq = array of queues, where the value of each is the number of messages ready.
 
-      return value:: 
+      return value::
 
          { 'exchanges': { 'configure': lox, 'write': lox, 'read': lox },
            'queues' : { 'configure': loq, 'write': loq, 'read': loq },
@@ -235,7 +245,7 @@ def user_access(url, user):
             re_wr = re.compile(p['write'])
             re_rd = re.compile(p['read'])
 
-    #exchanges = rabbitmq_broker_get_exchanges(url)
+    # exchanges = rabbitmq_broker_get_exchanges(url)
     x_cf = []
     x_wr = []
     x_rd = []
@@ -244,7 +254,7 @@ def user_access(url, user):
             map(lambda x: x['name'],
                 json.loads(exec_rabbitmqadmin(url,
                                               "list exchanges name")[1]))):
-        #print( "x: %s\n" % x )
+        # print( "x: %s\n" % x )
         if re_cf.match(x):
             x_cf += [x]
             continue
@@ -260,7 +270,7 @@ def user_access(url, user):
     q_rd = {}
 
     for qq in json.loads(exec_rabbitmqadmin(url, "list queues")[1]):
-        #print( "qq name=%s ready=%d\n\n" % (qq['name'], qq['messages_ready_ram'])  )
+        # print( "qq name=%s ready=%d\n\n" % (qq['name'], qq['messages_ready_ram'])  )
         q = qq['name']
         nq = qq['messages_ready_ram']
         if re_cf.match(q):
@@ -275,11 +285,11 @@ def user_access(url, user):
 
     b = {}
     for bb in json.loads(exec_rabbitmqadmin(url, "list bindings")[1]):
-        #print("\n binding: %s" % bb )
+        # print("\n binding: %s" % bb )
         if bb['source'] != '':
             q = bb['destination']
             if (q in q_cf) or (q in q_wr) or (q in q_rd):
-                #print(" exchange: %s, queue: %s, topic: %s" % ( bb['source'], q, bb['routing_key']  ) )
+                # print(" exchange: %s, queue: %s, topic: %s" % ( bb['source'], q, bb['routing_key']  ) )
                 if not q in b:
                     b[q] = {'exchange': bb['source'], 'key': bb['routing_key']}
                 else:
@@ -289,9 +299,9 @@ def user_access(url, user):
                     }
 
 
-    return( { 'exchanges': { 'configure' : x_cf , 'write': x_wr, 'read': x_rd }, \
-               'queues':   { 'configure' : q_cf , 'write': q_wr, 'read': q_rd }, \
-               'bindings':  b } )
+    return({'exchanges': { 'configure' : x_cf , 'write': x_wr, 'read': x_rd }, \
+             'queues':   {'configure' : q_cf , 'write': q_wr, 'read': q_rd }, \
+               'bindings':  b})
 
 
 if __name__ == "__main__":
@@ -309,7 +319,7 @@ if __name__ == "__main__":
     up = rabbitmq_user_access(url, u)
     print("permissions for %s: \nqueues: %s\nexchanges: %s\nbindings %s" %
           (u, up['queues'], up['exchanges'], up['bindings']))
-    #print( "\n\nbindings: %s" % json.loads(exec_rabbitmqadmin(url,"list bindings")[1]) )
+    # print( "\n\nbindings: %s" % json.loads(exec_rabbitmqadmin(url,"list bindings")[1]) )
 
 
 def run_rabbitmqadmin(url, options, simulate=False):
@@ -322,24 +332,26 @@ def run_rabbitmqadmin(url, options, simulate=False):
     try:
         (status, answer) = exec_rabbitmqadmin(url, options, simulate)
 
-        if simulate: return
+        if simulate:
+            return
 
-        if status != 0 or answer == None or len(
+        if status != 0 or answer is None or len(
                 answer) == 0 or 'error' in answer:
             logger.error("run_rabbitmqadmin invocation failed")
             return []
 
-        if answer == None or len(answer) == 0: return []
+        if answer is None or len(answer) == 0:
+            return []
 
         lst = []
         try:
             lst = eval(answer)
-        except:
+        except BaseException:
             pass
 
         return lst
 
-    except:
+    except BaseException:
         logger.error("sr_rabbit/run_rabbitmqadmin failed with option '%s'" %
                      options)
         logger.debug('Exception details: ', exc_info=True)

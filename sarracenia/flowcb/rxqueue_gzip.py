@@ -19,13 +19,13 @@ logger = logging.getLogger(__name__)
 
 class RxQueue_gzip(FlowCB):
 
-    def __init__(self,options):
+    def __init__(self, options):
 
-        super().__init__(options,logger)
-        self.o.add_option( option='rxq_name', kind='str' )
+        super().__init__(options, logger)
+        self.o.add_option(option='rxq_name', kind='str')
 
     def on_start(self):
-        if not hasattr(self.o,'rxq_name'):
+        if not hasattr(self.o, 'rxq_name'):
             logger.error("Missing rxq_name parameter")
             return
         self.rxq = persistqueue.SQLiteQueue(self.o.rxq_name, auto_commit=True)
@@ -38,12 +38,12 @@ class RxQueue_gzip(FlowCB):
             if os.path.exists(fname):
                 # Only try this if the uncompressed file actually exists
                 gzf = gzip.open(tname, 'wb')
-                gzf.write(open(fname,'rb').read())
+                gzf.write(open(fname, 'rb').read())
                 gzf.close()
                 os.rename(tname, gzname)
                 os.unlink(fname)
-                self.rxq.put( gzname )
+                self.rxq.put(gzname)
             else:
-                self.rxq.put( fname )
+                self.rxq.put(fname)
 
         return None

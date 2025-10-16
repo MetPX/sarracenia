@@ -1,6 +1,6 @@
 """
 Plugin save.py:
-    Converts a consuming component into one that writes the queue into a file. 
+    Converts a consuming component into one that writes the queue into a file.
     If there is some sort of problem with a component, then add callback save and restart.
 
     The messages will accumulate in a save file in ~/.cache/<component>/<config>/ ??<instance>.save

@@ -16,7 +16,7 @@
 
   and then in that class file, there is a Sample class, the sample class
   contains the destfn method, or entry_point.
- 
+
   The destfn routine consults the fields in the given message, and based on them,
   return a new file name for the file to have after transfer (download or send.)
 
@@ -35,12 +35,12 @@ from sarracenia.flowcb import FlowCB
 
 logger = logging.getLogger(__name__)
 
+
 class Sample(FlowCB):
 
-      def destfn(self,msg) -> str:
+    def destfn(self, msg) -> str:
 
-          logger.info('before: m=%s' % msg )
-          relPath = msg["relPath"].split('/')
-          msg['destfn_added_prefix'] = 'renamed_'
-          return 'renamed_' + relPath[-1]
-
+        logger.info('before: m=%s' % msg)
+        relPath = msg["relPath"].split('/')
+        msg['destfn_added_prefix'] = 'renamed_'
+        return 'renamed_' + relPath[-1]

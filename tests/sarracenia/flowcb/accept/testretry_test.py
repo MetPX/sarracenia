@@ -1,20 +1,22 @@
+from sarracenia.flowcb.accept.testretry import TestRetry
+import sarracenia.config
+from sarracenia import Message as SR3Message
 import pytest
 import types
 
-#useful for debugging tests
+# useful for debugging tests
+
+
 def pretty(*things, **named_things):
     import pprint
     for t in things:
         pprint.PrettyPrinter(indent=2, width=200).pprint(t)
-    for k,v in named_things.items():
+    for k, v in named_things.items():
         print(str(k) + ":")
         pprint.PrettyPrinter(indent=2, width=200).pprint(v)
 
-from sarracenia.flowcb.accept.testretry import TestRetry
-from sarracenia import Message as SR3Message
-import sarracenia.config
 
-def make_message(isRetry = False):
+def make_message(isRetry=False):
     m = SR3Message()
     m['baseUrl'] = 'http://NotAReal.url'
     m['relPath'] = 'a/rel/Path/file.txt'
@@ -23,6 +25,7 @@ def make_message(isRetry = False):
         m['isRetry'] = True
 
     return m
+
 
 def make_worklist():
     WorkList = types.SimpleNamespace()
@@ -33,16 +36,18 @@ def make_worklist():
     WorkList.directories_ok = []
     return WorkList
 
+
 def test___init__():
     options = sarracenia.config.default_config()
     options.logLevel = 'DEBUG'
-    #options.pxClient = 'meadow,foobar'
+    # options.pxClient = 'meadow,foobar'
     testretry = TestRetry(options)
-    assert testretry.sendTo == testretry.msg_baseUrl_good == testretry.details_bad== None
+    assert testretry.sendTo == testretry.msg_baseUrl_good == testretry.details_bad is None
+
 
 @pytest.mark.depends(on=['test___init__'])
 def test_after_accept(caplog, mocker):
-    #Set 1 - When random is True, with a message having isRetry
+    # Set 1 - When random is True, with a message having isRetry
     caplog.clear()
     options = sarracenia.config.default_config()
     options.sendTo = 'http://options.sendTo.url'
@@ -55,8 +60,7 @@ def test_after_accept(caplog, mocker):
     assert len(worklist.incoming) == 0
     assert "return from testretry after_accept" in caplog.messages
 
-
-    #Set 2 - When random is True, with a message having isRetry
+    # Set 2 - When random is True, with a message having isRetry
     caplog.clear()
     options = sarracenia.config.default_config()
     options.sendTo = 'http://options.sendTo.url'
@@ -72,8 +76,7 @@ def test_after_accept(caplog, mocker):
     assert options.sendTo == 'http://testretry.sendTo.url'
     assert options.details.url.netloc == 'testretry.sendTo.url'
 
-
-    #Set 3 - When random is False, there's nothing that gets retried
+    # Set 3 - When random is False, there's nothing that gets retried
     caplog.clear()
     options = sarracenia.config.default_config()
     options.sendTo = 'https://TestUsername:TestPassword@options.sendTo.url/Path/File.txt'
@@ -91,8 +94,7 @@ def test_after_accept(caplog, mocker):
     assert options.details.url.username == 'TestUsername'
     assert "making it bad 1" in caplog.messages
 
-
-    #Set 4 - When random is True, without a message having isRetry, and component is watch
+    # Set 4 - When random is True, without a message having isRetry, and component is watch
     caplog.clear()
     options = sarracenia.config.default_config()
     options.sendTo = 'https://TestUsername:TestPassword@options.sendTo.url/Path/File.txt'
@@ -107,4 +109,3 @@ def test_after_accept(caplog, mocker):
     assert len(worklist.incoming) == 0
     assert options.details.url.username == 'ruser'
     assert "making it bad 2" in caplog.messages
-

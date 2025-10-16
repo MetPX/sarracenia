@@ -1,9 +1,12 @@
 import pytest
 from tests.conftest import *
-import os, types, copy
+import os
+import types
+import copy
 
 from sarracenia.flowcb.nodupe.disk import Disk
 from sarracenia import Message as SR3Message
+
 
 class Options:
     def __init__(self):
@@ -18,29 +21,31 @@ class Options:
         self.fileAgeMin = 0
         self.fileAgeMax = 0
 
-    def add_option(self, option, type, default = None):
+    def add_option(self, option, type, default=None):
         if not hasattr(self, option):
             setattr(self, option, default)
     pass
 
+
 def make_message():
     m = SR3Message()
     m["pubTime"] = "20180118151049.356378078"
-    m["topic"] = [ "v02", "post", "sent_by_tsource2send" ]
+    m["topic"] = ["v02", "post", "sent_by_tsource2send"]
     m["mtime"] = "20180118151048"
-    m["identity"] = { 
-            "method": "md5", 
-            "value": "c35f14e247931c3185d5dc69c5cd543e" 
-         }
+    m["identity"] = {
+        "method": "md5",
+        "value": "c35f14e247931c3185d5dc69c5cd543e"
+    }
     m["atime"] = "20180118151049.356378078"
     m["from_cluster"] = "localhost"
     m["mode"] = "644"
     m["source"] = "tsource"
     m["to_clusters"] = "localhost"
-    m["baseUrl"] =  "https://NotARealURL"
+    m["baseUrl"] = "https://NotARealURL"
     m["relPath"] = "ThisIsAPath/To/A/File.txt"
     m["_deleteOnPost"] = set()
     return m
+
 
 WorkList = types.SimpleNamespace()
 WorkList.ok = []
@@ -48,6 +53,7 @@ WorkList.incoming = []
 WorkList.rejected = []
 WorkList.failed = []
 WorkList.directories_ok = []
+
 
 def test_deriveKey(tmp_path):
     BaseOptions = Options()
@@ -77,9 +83,10 @@ def test_deriveKey(tmp_path):
     del thismsg["identity"]
     assert nodupe.deriveKey(thismsg) == thismsg["relPath"] + "," + thismsg["mtime"]
     thismsg['size'] = 28234
-    assert nodupe.deriveKey(thismsg) == thismsg["relPath"] + "," + thismsg["mtime"] + ",28234" 
+    assert nodupe.deriveKey(thismsg) == thismsg["relPath"] + "," + thismsg["mtime"] + ",28234"
     del thismsg['mtime']
-    assert nodupe.deriveKey(thismsg) == thismsg["relPath"] + "," + thismsg['pubTime'] + ",28234" 
+    assert nodupe.deriveKey(thismsg) == thismsg["relPath"] + "," + thismsg['pubTime'] + ",28234"
+
 
 def test_open__WithoutFile(tmp_path):
     BaseOptions = Options()
@@ -92,6 +99,7 @@ def test_open__WithoutFile(tmp_path):
     assert nodupe.cache_file == str(tmp_path) + os.sep + 'recent_files_005.cache'
     assert os.path.isfile(nodupe.cache_file) == True
     assert len(nodupe.cache_dict) == 0
+
 
 def test_open__WithFile(tmp_path):
     BaseOptions = Options()
@@ -109,8 +117,10 @@ def test_open__WithFile(tmp_path):
     assert os.path.isfile(nodupe.cache_file) == True
     assert len(nodupe.cache_dict) == 0
 
+
 def test_open__WithData(tmp_path, caplog):
-    import urllib, time
+    import urllib
+    import time
     BaseOptions = Options()
     BaseOptions.pid_filename = str(tmp_path) + os.sep + "pidfilename.txt"
     BaseOptions.cfg_run_dir = str(tmp_path)
@@ -143,6 +153,7 @@ def test_open__WithData(tmp_path, caplog):
     assert len(nodupe.cache_dict) == 5
     assert log_found_loadcorrupted == True
 
+
 @pytest.mark.depends(on=['test_open__WithoutFile', 'test_open__WithFile', 'test_open__WithData'])
 def test_on_start(tmp_path):
     BaseOptions = Options()
@@ -168,8 +179,9 @@ def test_on_stop(tmp_path):
 
     nodupe.on_stop()
 
-    assert nodupe.fp == None
+    assert nodupe.fp is None
     assert len(nodupe.cache_dict) == 0
+
 
 @pytest.mark.depends(on=['test_on_start'])
 def test_close(tmp_path):
@@ -182,9 +194,10 @@ def test_close(tmp_path):
     nodupe.on_start()
 
     nodupe.close()
-    assert nodupe.fp == None
+    assert nodupe.fp is None
     assert nodupe.cache_dict == {}
     assert nodupe.count == 0
+
 
 @pytest.mark.depends(on=['test_on_start'])
 def test_close__ErrorThrown(tmp_path, caplog):
@@ -207,10 +220,11 @@ def test_close__ErrorThrown(tmp_path, caplog):
         if "did not close" in record.message:
             log_found_notclose = True
 
-    assert nodupe.fp == None
+    assert nodupe.fp is None
     assert nodupe.cache_dict == {}
     assert nodupe.count == 0
     assert log_found_notclose == True
+
 
 @pytest.mark.depends(on=['test_on_start'])
 def test_close__Unlink(tmp_path):
@@ -223,14 +237,15 @@ def test_close__Unlink(tmp_path):
     nodupe.on_start()
 
     nodupe.close(unlink=True)
-    assert nodupe.fp == None
+    assert nodupe.fp is None
     assert nodupe.cache_dict == {}
     assert nodupe.count == 0
     assert os.path.isfile(nodupe.cache_file) == False
 
+
 @pytest.mark.depends(on=['test_on_start'])
 def test_close__Unlink_ErrorThrown(tmp_path, caplog):
-    
+
     BaseOptions = Options()
     BaseOptions.pid_filename = str(tmp_path) + os.sep + "pidfilename.txt"
     BaseOptions.cfg_run_dir = str(tmp_path)
@@ -250,13 +265,15 @@ def test_close__Unlink_ErrorThrown(tmp_path, caplog):
     for record in caplog.records:
         if "did not unlink" in record.message:
             log_found_notunlink = True
-    
-    assert nodupe.fp == None
+
+    assert nodupe.fp is None
     assert nodupe.cache_dict == {}
     assert nodupe.count == 0
     assert log_found_notunlink == True
 
-#@pytest.mark.depends(on=['test_open__WithoutFile'])
+# @pytest.mark.depends(on=['test_open__WithoutFile'])
+
+
 def test_clean(tmp_path, capsys):
     import time
     BaseOptions = Options()
@@ -267,18 +284,19 @@ def test_clean(tmp_path, capsys):
     nodupe.o.nodupe_ttl = 100000
 
     nodupe.cache_dict = {
-        'key1': {'/some/path/to/file1.txt': float(time.time() - 1000)}, 
-        'key2': {'/some/path/to/file2.txt': float(time.time() - 1000)}, 
-        'key3': {'/some/path/to/file3.txt': float(time.time() - 1000)}, 
-        'key4': {'/some/path/to/file4.txt': float(time.time() - 1000)}, 
-        'key5': {   
-            '/some/path/to/file5a.txt': float(time.time() - 1000), 
-            '/some/path/to/file5b.txt': float(time.time() - 1000)}, 
+        'key1': {'/some/path/to/file1.txt': float(time.time() - 1000)},
+        'key2': {'/some/path/to/file2.txt': float(time.time() - 1000)},
+        'key3': {'/some/path/to/file3.txt': float(time.time() - 1000)},
+        'key4': {'/some/path/to/file4.txt': float(time.time() - 1000)},
+        'key5': {
+            '/some/path/to/file5a.txt': float(time.time() - 1000),
+            '/some/path/to/file5b.txt': float(time.time() - 1000)},
         'key6': {'/some/path/to/file6.txt': float(time.time() - 1000000)}}
     nodupe.clean()
 
     assert len(nodupe.cache_dict) == 5
     assert nodupe.count == 6
+
 
 @pytest.mark.depends(on=['test_open__WithoutFile'])
 def test_clean__Persist_DelPath(tmp_path, capsys):
@@ -293,20 +311,20 @@ def test_clean__Persist_DelPath(tmp_path, capsys):
     nodupe.open()
 
     nodupe.cache_dict = {
-        'key1': {'/some/path/to/file1.txt': float(time.time() - 1000)}, 
-        'key2': {'/some/path/to/file2.txt': float(time.time() - 1000)}, 
-        'key3': {'/some/path/to/file3.txt': float(time.time() - 1000)}, 
-        'key4': {'/some/path/to/file4.txt': float(time.time() - 1000)}, 
-        'key5': {   
-            '/some/path/to/file5a.txt': float(time.time() - 1000), 
-            '/some/path/to/file5b.txt': float(time.time() - 1000)}, 
+        'key1': {'/some/path/to/file1.txt': float(time.time() - 1000)},
+        'key2': {'/some/path/to/file2.txt': float(time.time() - 1000)},
+        'key3': {'/some/path/to/file3.txt': float(time.time() - 1000)},
+        'key4': {'/some/path/to/file4.txt': float(time.time() - 1000)},
+        'key5': {
+            '/some/path/to/file5a.txt': float(time.time() - 1000),
+            '/some/path/to/file5b.txt': float(time.time() - 1000)},
         'key6': {'/some/path/to/file6.txt': float(time.time() - 1000000)}}
 
     nodupe.clean(persist=True, delpath="/some/path/to/file1.txt")
 
     assert len(nodupe.cache_dict) == 4
     assert nodupe.count == 5
-    #File hasn't been flushed at this point, so the number of lines 0, despite the count being 5
+    # File hasn't been flushed at this point, so the number of lines 0, despite the count being 5
     assert len(open(str(tmp_path) + os.sep + 'recent_files_005.cache').readlines()) == 0
 
 
@@ -323,21 +341,22 @@ def test_save(tmp_path, capsys):
     nodupe.open()
 
     nodupe.cache_dict = {
-        'key1': {'/some/path/to/file1.txt': float(time.time() - 1000)}, 
-        'key2': {'/some/path/to/file2.txt': float(time.time() - 1000)}, 
-        'key3': {'/some/path/to/file3.txt': float(time.time() - 1000)}, 
-        'key4': {'/some/path/to/file4.txt': float(time.time() - 1000)}, 
-        'key5': {   
-            '/some/path/to/file5a.txt': float(time.time() - 1000), 
-            '/some/path/to/file5b.txt': float(time.time() - 1000)}, 
+        'key1': {'/some/path/to/file1.txt': float(time.time() - 1000)},
+        'key2': {'/some/path/to/file2.txt': float(time.time() - 1000)},
+        'key3': {'/some/path/to/file3.txt': float(time.time() - 1000)},
+        'key4': {'/some/path/to/file4.txt': float(time.time() - 1000)},
+        'key5': {
+            '/some/path/to/file5a.txt': float(time.time() - 1000),
+            '/some/path/to/file5b.txt': float(time.time() - 1000)},
         'key6': {'/some/path/to/file6.txt': float(time.time() - 1000000)}}
 
     nodupe.save()
 
     assert len(nodupe.cache_dict) == 5
     assert nodupe.count == 6
-    #File hasn't been flushed at this point, so the number of lines 0, despite the count being 5
+    # File hasn't been flushed at this point, so the number of lines 0, despite the count being 5
     assert len(open(str(tmp_path) + os.sep + 'recent_files_005.cache').readlines()) == 0
+
 
 @pytest.mark.depends(on=['test_open__WithoutFile', 'test_clean__Persist_DelPath'])
 def test_save__Unlink_Error(tmp_path, caplog):
@@ -352,13 +371,13 @@ def test_save__Unlink_Error(tmp_path, caplog):
     nodupe.open()
 
     nodupe.cache_dict = {
-        'key1': {'/some/path/to/file1.txt': float(time.time() - 1000)}, 
-        'key2': {'/some/path/to/file2.txt': float(time.time() - 1000)}, 
-        'key3': {'/some/path/to/file3.txt': float(time.time() - 1000)}, 
-        'key4': {'/some/path/to/file4.txt': float(time.time() - 1000)}, 
-        'key5': {   
-            '/some/path/to/file5a.txt': float(time.time() - 1000), 
-            '/some/path/to/file5b.txt': float(time.time() - 1000)}, 
+        'key1': {'/some/path/to/file1.txt': float(time.time() - 1000)},
+        'key2': {'/some/path/to/file2.txt': float(time.time() - 1000)},
+        'key3': {'/some/path/to/file3.txt': float(time.time() - 1000)},
+        'key4': {'/some/path/to/file4.txt': float(time.time() - 1000)},
+        'key5': {
+            '/some/path/to/file5a.txt': float(time.time() - 1000),
+            '/some/path/to/file5b.txt': float(time.time() - 1000)},
         'key6': {'/some/path/to/file6.txt': float(time.time() - 1000000)}}
 
     os.unlink(nodupe.cache_file)
@@ -371,7 +390,7 @@ def test_save__Unlink_Error(tmp_path, caplog):
 
     assert len(nodupe.cache_dict) == 5
     assert nodupe.count == 6
-    #File hasn't been flushed at this point, so the number of lines 0, despite the count being 5
+    # File hasn't been flushed at this point, so the number of lines 0, despite the count being 5
     assert len(open(str(tmp_path) + os.sep + 'recent_files_005.cache').readlines()) == 0
     assert log_found_notunlink == True
 
@@ -389,13 +408,13 @@ def test_save__Open_Error(tmp_path, caplog):
     nodupe.open()
 
     nodupe.cache_dict = {
-        'key1': {'/some/path/to/file1.txt': float(time.time() - 1000)}, 
-        'key2': {'/some/path/to/file2.txt': float(time.time() - 1000)}, 
-        'key3': {'/some/path/to/file3.txt': float(time.time() - 1000)}, 
-        'key4': {'/some/path/to/file4.txt': float(time.time() - 1000)}, 
-        'key5': {   
-            '/some/path/to/file5a.txt': float(time.time() - 1000), 
-            '/some/path/to/file5b.txt': float(time.time() - 1000)}, 
+        'key1': {'/some/path/to/file1.txt': float(time.time() - 1000)},
+        'key2': {'/some/path/to/file2.txt': float(time.time() - 1000)},
+        'key3': {'/some/path/to/file3.txt': float(time.time() - 1000)},
+        'key4': {'/some/path/to/file4.txt': float(time.time() - 1000)},
+        'key5': {
+            '/some/path/to/file5a.txt': float(time.time() - 1000),
+            '/some/path/to/file5b.txt': float(time.time() - 1000)},
         'key6': {'/some/path/to/file6.txt': float(time.time() - 1000000)}}
 
     nodupe.cache_file = "/root/foobar.cache"
@@ -407,8 +426,9 @@ def test_save__Open_Error(tmp_path, caplog):
             log_found_notopen = True
 
     assert len(nodupe.cache_dict) == 6
-    #File hasn't been flushed at this point, so the number of lines 0, despite the count being 5
+    # File hasn't been flushed at this point, so the number of lines 0, despite the count being 5
     assert log_found_notopen == True
+
 
 @pytest.mark.depends(on=['test_save'])
 def test_on_housekeeping(tmp_path, caplog):
@@ -423,13 +443,13 @@ def test_on_housekeeping(tmp_path, caplog):
     nodupe.open()
 
     nodupe.cache_dict = {
-        'key1': {'/some/path/to/file1.txt': float(time.time() - 1000)}, 
-        'key2': {'/some/path/to/file2.txt': float(time.time() - 1000)}, 
-        'key3': {'/some/path/to/file3.txt': float(time.time() - 1000)}, 
-        'key4': {'/some/path/to/file4.txt': float(time.time() - 1000)}, 
-        'key5': {   
-            '/some/path/to/file5a.txt': float(time.time() - 1000), 
-            '/some/path/to/file5b.txt': float(time.time() - 1000)}, 
+        'key1': {'/some/path/to/file1.txt': float(time.time() - 1000)},
+        'key2': {'/some/path/to/file2.txt': float(time.time() - 1000)},
+        'key3': {'/some/path/to/file3.txt': float(time.time() - 1000)},
+        'key4': {'/some/path/to/file4.txt': float(time.time() - 1000)},
+        'key5': {
+            '/some/path/to/file5a.txt': float(time.time() - 1000),
+            '/some/path/to/file5b.txt': float(time.time() - 1000)},
         'key6': {'/some/path/to/file6.txt': float(time.time() - 1000000)}}
 
     nodupe.on_housekeeping()
@@ -441,8 +461,9 @@ def test_on_housekeeping(tmp_path, caplog):
 
     assert len(nodupe.cache_dict) == 5
     assert nodupe.count == 6
-    #File hasn't been flushed at this point, so the number of lines 0, despite the count being 5
+    # File hasn't been flushed at this point, so the number of lines 0, despite the count being 5
     assert log_found == True
+
 
 @pytest.mark.depends(on=['test_open__WithoutFile'])
 def test__not_in_cache(tmp_path, caplog):
@@ -460,19 +481,19 @@ def test__not_in_cache(tmp_path, caplog):
     nodupe.count = 7
 
     nodupe.cache_dict = {
-        'key1': {'/some/path/to/file1.txt': float(time.time() - 1000)}, 
-        'key2': {'/some/path/to/file2.txt': float(time.time() - 1000)}, 
-        'key3': {'/some/path/to/file3.txt': float(time.time() - 1000)}, 
-        'key4': {'/some/path/to/file4.txt': float(time.time() - 1000)}, 
-        'key5': {   
-            '/some/path/to/file5a.txt': float(time.time() - 1000), 
-            '/some/path/to/file5b.txt': float(time.time() - 1000)}, 
+        'key1': {'/some/path/to/file1.txt': float(time.time() - 1000)},
+        'key2': {'/some/path/to/file2.txt': float(time.time() - 1000)},
+        'key3': {'/some/path/to/file3.txt': float(time.time() - 1000)},
+        'key4': {'/some/path/to/file4.txt': float(time.time() - 1000)},
+        'key5': {
+            '/some/path/to/file5a.txt': float(time.time() - 1000),
+            '/some/path/to/file5b.txt': float(time.time() - 1000)},
         'key6': {'/some/path/to/file6.txt': float(time.time() - 1000000)}}
 
     assert nodupe._not_in_cache("key3", "/some/path/to/file3.txt") == False
     assert nodupe.count == 8
     assert nodupe.cache_hit == "/some/path/to/file3.txt"
-    assert nodupe.cache_dict['key3']["/some/path/to/file3.txt"] == nodupe.now 
+    assert nodupe.cache_dict['key3']["/some/path/to/file3.txt"] == nodupe.now
 
     assert nodupe._not_in_cache("key7", "/some/path/to/file7a.txt") == True
     assert nodupe.count == 9
@@ -480,7 +501,8 @@ def test__not_in_cache(tmp_path, caplog):
 
     assert nodupe._not_in_cache("key7", "/some/path/to/file7b.txt") == True
     assert nodupe.count == 10
-    assert nodupe.cache_dict['key7']["/some/path/to/file7b.txt"] == nodupe.now 
+    assert nodupe.cache_dict['key7']["/some/path/to/file7b.txt"] == nodupe.now
+
 
 @pytest.mark.depends(on=['test__not_in_cache'])
 def test_check_message(tmp_path, capsys):
@@ -498,21 +520,22 @@ def test_check_message(tmp_path, capsys):
     nodupe.count = 4
 
     nodupe.cache_dict = {
-        'key1': {'/some/path/to/file1.txt': float(time.time() - 1000)}, 
-        'key5': {   
-            '/some/path/to/file5a.txt': float(time.time() - 1000), 
-            '/some/path/to/file5b.txt': float(time.time() - 1000)}, 
+        'key1': {'/some/path/to/file1.txt': float(time.time() - 1000)},
+        'key5': {
+            '/some/path/to/file5a.txt': float(time.time() - 1000),
+            '/some/path/to/file5b.txt': float(time.time() - 1000)},
         'key6': {'/some/path/to/file6.txt': float(time.time() - 1000000)}}
 
     message = make_message()
 
     assert nodupe.check_message(message) == True
-    #assert nodupe.cache_dict[message['relPath']+","+message['mtime']][message['relPath']] == nodupe.now
+    # assert nodupe.cache_dict[message['relPath']+","+message['mtime']][message['relPath']] == nodupe.now
 
     message['nodupe_override'] = {"path": message['relPath'].split('/')[-1], "key": message['relPath'].split('/')[-1]}
     assert nodupe.check_message(message) == True
     assert nodupe.cache_dict[message['nodupe_override']['key']][message['nodupe_override']['path']] == nodupe.now
     assert nodupe.count == 6
+
 
 @pytest.mark.depends(on=['test_check_message'])
 def test_after_accept(tmp_path, capsys):
@@ -530,7 +553,7 @@ def test_after_accept(tmp_path, capsys):
     nodupe.now = nowflt()
 
     message = make_message()
-    
+
     after_accept_worklist = copy.deepcopy(WorkList)
     after_accept_worklist.incoming = [message, message, message]
 
@@ -539,7 +562,8 @@ def test_after_accept(tmp_path, capsys):
     assert len(after_accept_worklist.incoming) == 1
     assert len(after_accept_worklist.rejected) == 2
     # test wrong ... no, the cache key comes the identity field in the message, not this.
-    #assert nodupe.cache_dict[message['relPath'] + "," + message['mtime']][message['relPath']] == nodupe.now
+    # assert nodupe.cache_dict[message['relPath'] + "," + message['mtime']][message['relPath']] == nodupe.now
+
 
 @pytest.mark.depends(on=['test_check_message'])
 def test_after_accept__WithFileAges(tmp_path, capsys):
@@ -563,16 +587,18 @@ def test_after_accept__WithFileAges(tmp_path, capsys):
     message_old['mtime'] = timeflt2str(nodupe.now - 10000)
     message_new = make_message()
     message_new['mtime'] = nowstr()
-    
+
     after_accept_worklist__WithFileAges = copy.deepcopy(WorkList)
     after_accept_worklist__WithFileAges.incoming = [message_old, message_new]
 
     nodupe.after_accept(after_accept_worklist__WithFileAges)
 
     assert len(after_accept_worklist__WithFileAges.rejected) == 2
-    assert after_accept_worklist__WithFileAges.rejected[0]['reject'].count(message_old['mtime'] + " too old (nodupe check), oldest allowed")
-    #PS do not know what this is or why it is failing.
-    #assert after_accept_worklist__WithFileAges.rejected[1]['reject'].count(message_new['mtime'] + " too new (nodupe check), newest allowed")
+    assert after_accept_worklist__WithFileAges.rejected[0]['reject'].count(
+        message_old['mtime'] + " too old (nodupe check), oldest allowed")
+    # PS do not know what this is or why it is failing.
+    # assert after_accept_worklist__WithFileAges.rejected[1]['reject'].count(message_new['mtime'] + " too new (nodupe check), newest allowed")
+
 
 @pytest.mark.depends(on=['test_check_message'])
 def test_after_accept__InFlight(tmp_path, capsys):
@@ -594,7 +620,7 @@ def test_after_accept__InFlight(tmp_path, capsys):
     message_old['mtime'] = timeflt2str(nodupe.now - 10000)
     message_new = make_message()
     message_new['mtime'] = nowstr()
-    
+
     test_after_accept__InFlight = copy.deepcopy(WorkList)
     test_after_accept__InFlight.incoming = [message_old, message_new]
 
@@ -605,5 +631,4 @@ def test_after_accept__InFlight(tmp_path, capsys):
     assert test_after_accept__InFlight.incoming[0]['mtime'] == message_old['mtime']
     # PS do not know what this is testing, but it fails... no idea how to fix.
     #   implementation changed... message formats were misunderstood... tests slightly wrong.
-    #assert test_after_accept__InFlight.rejected[0]['reject'].count(message_new['mtime'] + " too new (nodupe check), newest allowed")
-
+    # assert test_after_accept__InFlight.rejected[0]['reject'].count(message_new['mtime'] + " too new (nodupe check), newest allowed")

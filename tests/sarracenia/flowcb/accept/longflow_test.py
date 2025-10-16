@@ -1,25 +1,27 @@
+from sarracenia.flowcb.accept.longflow import LongFlow
+import sarracenia.config
+from sarracenia import Message as SR3Message
 import pytest
-import types, re
+import types
+import re
 
 
-#useful for debugging tests
+# useful for debugging tests
 def pretty(*things, **named_things):
     import pprint
     for t in things:
         pprint.PrettyPrinter(indent=2, width=200).pprint(t)
-    for k,v in named_things.items():
+    for k, v in named_things.items():
         print(str(k) + ":")
         pprint.PrettyPrinter(indent=2, width=200).pprint(v)
 
-from sarracenia.flowcb.accept.longflow import LongFlow
-from sarracenia import Message as SR3Message
-import sarracenia.config
 
 def make_message():
     m = SR3Message()
     m['headers'] = {}
 
     return m
+
 
 def make_worklist():
     WorkList = types.SimpleNamespace()
@@ -30,9 +32,10 @@ def make_worklist():
     WorkList.directories_ok = []
     return WorkList
 
+
 def test_after_accept():
     longflow = LongFlow(sarracenia.config.default_config())
-    
+
     worklist = make_worklist()
     worklist.incoming = [make_message(), make_message()]
 

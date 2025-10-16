@@ -31,7 +31,8 @@ import json
 
 from sarracenia.transfer import Transfer
 
-import boto3, botocore
+import boto3
+import botocore
 from boto3.s3.transfer import TransferConfig
 
 logger = logging.getLogger(__name__)
@@ -39,10 +40,10 @@ logger = logging.getLogger(__name__)
 
 class S3(Transfer):
     """
-    Simple Storage Service (S3)  ( https://en.wikipedia.org/wiki/Amazon_S3 ) 
+    Simple Storage Service (S3)  ( https://en.wikipedia.org/wiki/Amazon_S3 )
 
 
-    built with: 
+    built with:
         boto3's S3 client (https://boto3.amazonaws.com/v1/documentation/api/latest/reference/services/s3.html)
     """
 
@@ -55,19 +56,17 @@ class S3(Transfer):
         logger.debug("sr_s3 __init__")
 
         self.s3_client_config = botocore.config.Config(
-                user_agent_extra= 'Sarracenia/' + sarracenia.__version__
-            )
+            user_agent_extra='Sarracenia/' + sarracenia.__version__
+        )
 
         self.s3_transfer_config = TransferConfig()
         if hasattr(self.o, 'byteRateMax'):
             self.s3_transfer_config.max_bandwidth = self.o.byteRateMax
 
-
         self.__init()
-    
 
-    ##  --------------------- PRIVATE METHODS ---------------------
-        
+    # --------------------- PRIVATE METHODS ---------------------
+
     def __init(self):
         Transfer.init(self)
 
@@ -109,18 +108,17 @@ class S3(Transfer):
             # equivalent to --no-sign-request with the s3 CLI
             if hasattr(details, 's3_anonymous') and details.s3_anonymous:
                 self.s3_client_config = self.s3_client_config.merge(
-                                            botocore.config.Config(signature_version=botocore.UNSIGNED))
+                    botocore.config.Config(signature_version=botocore.UNSIGNED))
 
             return True
 
-        except:
+        except BaseException:
             logger.error("sr_s3/credentials: unable to get credentials for %s" % self.sendTo)
             logger.debug('Exception details: ', exc_info=True)
 
         return False
-    
 
-    ##  ---------------------- PUBLIC METHODS ---------------------
+    # ---------------------- PUBLIC METHODS ---------------------
 
     def cd(self, path):
         logger.debug("sr_s3 cd %s" % path)
@@ -147,7 +145,7 @@ class S3(Transfer):
     def chmod(self, perms):
         logger.debug(f"sr_s3 chmod {perms}")
         return
-        
+
     def close(self):
         logger.debug("sr_s3 close")
         self.connected = False
@@ -164,7 +162,7 @@ class S3(Transfer):
 
         try:
             self.client = boto3.client('s3', config=self.s3_client_config, **self.client_args)
-            
+
             # does the bucket exist?
             exists = False
             response = None
@@ -174,7 +172,7 @@ class S3(Transfer):
                 logger.debug(f"bucket exists: {response}")
             except botocore.exceptions.ClientError:
                 exists = False
-            
+
             # try to create the bucket if it doesn't exist
             if not exists:
                 try:
@@ -190,7 +188,7 @@ class S3(Transfer):
             if exists and response is not None:
                 try:
                     loc = response['ResponseMetadata']['HTTPHeaders']['x-amz-bucket-region']
-                except:
+                except BaseException:
                     loc = 'Unknown Location'
                 logger.info(f"Connected to bucket {self.bucket} in {loc}")
 
@@ -202,8 +200,8 @@ class S3(Transfer):
             logger.error(f"unable to establish boto3 connection, no credentials: {e}")
         except Exception as e:
             logger.error(f"Something else happened: {e}", exc_info=True)
-            
-        return False 
+
+        return False
 
     def delete(self, path):
         logger.debug("deleting %s" % path)
@@ -216,13 +214,17 @@ class S3(Transfer):
             remote_offset=0,
             local_offset=0,
             length=0, exactLength=False) -> int:
-        
+
         logger.debug("sr_s3 get; self.path %s" % self.path)
 
         file_key = self.path + remote_file
         logger.debug(f"get s3://{self.bucket}/{file_key} to {local_file}")
 
-        self.client.download_file(Bucket=self.bucket, Key=file_key, Filename=local_file, Config=self.s3_transfer_config)
+        self.client.download_file(
+            Bucket=self.bucket,
+            Key=file_key,
+            Filename=local_file,
+            Config=self.s3_transfer_config)
 
         rw_length = os.stat(local_file).st_size
 
@@ -233,14 +235,14 @@ class S3(Transfer):
             return self.cwd
         else:
             return None
-    
+
     def ls(self):
         logger.debug(f"ls-ing items in {self.bucket}/{self.path}")
 
         self.entries = {}
 
         paginator = self.client.get_paginator('list_objects_v2')
-        page_iterator  = paginator.paginate(Bucket=self.bucket, Prefix=self.path, Delimiter='/')
+        page_iterator = paginator.paginate(Bucket=self.bucket, Prefix=self.path, Delimiter='/')
 
         for page in page_iterator:
             if 'Contents' in page:
@@ -248,7 +250,7 @@ class S3(Transfer):
                     filename = obj['Key'].replace(self.path, '', 1)
                     if filename == "":
                         continue
-                    
+
                     entry = paramiko.SFTPAttributes()
 
                     obj_metadata = self.client.head_object(Bucket=self.bucket, Key=obj['Key'])['Metadata']
@@ -257,15 +259,14 @@ class S3(Transfer):
                         sr_metadata = json.loads(obj_metadata[self._Metadata_Key])
                         entry.sr_mtime = sr_metadata['mtime']
                         entry.sr_identity = sr_metadata['identity']
-                    
+
                     if 'LastModified' in obj:
                         t = obj["LastModified"].timestamp()
                         entry.st_atime = t
                         entry.st_mtime = t
                     if 'Size' in obj:
                         entry.st_size = obj['Size']
-                        
-                    
+
                     entry.st_mode = 0o644
 
                     self.entries[filename] = entry
@@ -280,12 +281,12 @@ class S3(Transfer):
 
                     entry = paramiko.SFTPAttributes()
                     entry.st_mode = 0o755 | stat.S_IFDIR
-        
+
                     self.entries[filename] = entry
 
         logger.debug(f"self.entries={self.entries}")
         return self.entries
-    
+
     def mkdir(self, remote_dir):
         logger.debug(f"mkdir {remote_dir}; {self.path}")
         return
@@ -306,17 +307,23 @@ class S3(Transfer):
         extra_args = {
             'Metadata': {
                 self._Metadata_Key: json.dumps({
-                        'identity': msg['identity'],
-                        'mtime': msg['mtime'],
-                    })
+                    'identity': msg['identity'],
+                    'mtime': msg['mtime'],
+                })
             }
         }
 
         # upload
         try:
-            self.client.upload_file( Filename=local_file, Bucket=self.bucket, Key=file_key, Config=self.s3_transfer_config, ExtraArgs=extra_args)
+            self.client.upload_file(
+                Filename=local_file,
+                Bucket=self.bucket,
+                Key=file_key,
+                Config=self.s3_transfer_config,
+                ExtraArgs=extra_args)
 
-            write_size = self.client.get_object_attributes(Bucket=self.bucket, Key=file_key, ObjectAttributes=['ObjectSize'])['ObjectSize']
+            write_size = self.client.get_object_attributes(
+                Bucket=self.bucket, Key=file_key, ObjectAttributes=['ObjectSize'])['ObjectSize']
             return write_size
         except Exception as e:
             logger.error(f"Something went wrong with the upload: {e}", exc_info=True)
@@ -324,12 +331,12 @@ class S3(Transfer):
 
     def registered_as() -> list:
         return ['s3']
-    
+
     def rename(self, remote_old, remote_new):
         logger.debug(f"remote_old={remote_old}; remote_new={remote_new}")
         self.client.copy_object(Bucket=self.bucket, CopySource=self.bucket + "/" + remote_old, Key=remote_new)
         self.client.delete_object(Bucket=self.bucket, Key=remote_old)
-    
+
     def rmdir(self, path):
         logger.debug("%s" % path)
         paginator = self.client.get_paginator('list_objects_v2')

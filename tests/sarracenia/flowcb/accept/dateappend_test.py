@@ -1,17 +1,20 @@
 import pytest
 from tests.conftest import *
 
-import types, re
+import types
+import re
 
 from sarracenia.flowcb.accept.dateappend import Dateappend
 from sarracenia import Message as SR3Message
 import sarracenia.config
+
 
 def make_message():
     m = SR3Message()
     m["new_file"] = './SK/s0000684_f.xml'
 
     return m
+
 
 def make_worklist():
     WorkList = types.SimpleNamespace()
@@ -22,9 +25,10 @@ def make_worklist():
     WorkList.directories_ok = []
     return WorkList
 
+
 def test_after_accept():
     dateappend = Dateappend(sarracenia.config.default_config())
-    
+
     worklist = make_worklist()
     worklist.incoming = [make_message(), make_message()]
 

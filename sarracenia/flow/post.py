@@ -21,13 +21,14 @@ default_options = {
     'nodupe_ttl': 0
 }
 
-#'sumflg': 'sha512',
+# 'sumflg': 'sha512',
 
 
 class Post(Flow):
     """
-       post messages about local files. 
+       post messages about local files.
     """
+
     def __init__(self, options):
 
         super().__init__(options)

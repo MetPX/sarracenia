@@ -4,7 +4,7 @@ import tempfile
 
 try:
     from sr_util import *
-except:
+except BaseException:
     from sarra.sr_util import *
 
 # ===================================
@@ -79,7 +79,8 @@ def self_test():
             failed = True
 
         i = i + 1
-        if i == 10: told = True
+        if i == 10:
+            told = True
 
     args, action, config, old = startup_args(testing_args[11])
     if args != [] or action != taction or config != tconfig or old != told:
@@ -116,10 +117,11 @@ def self_test():
         status = 4
         alarm_set(1)
         time.sleep(2)
-    except:
+    except BaseException:
         status = 0
 
-    if status == 4: print("test 13: alarm_set 1 NOT OK")
+    if status == 4:
+        print("test 13: alarm_set 1 NOT OK")
 
     try:
         status = 0
@@ -127,10 +129,11 @@ def self_test():
         time.sleep(1)
         alarm_cancel()
         time.sleep(1)
-    except:
+    except BaseException:
         status = 4
 
-    if status == 4: print("test 14: alarm_cancel 2 NOT OK")
+    if status == 4:
+        print("test 14: alarm_cancel 2 NOT OK")
 
     ###### missing coverage ######
     # class raw_message
@@ -152,7 +155,7 @@ def self_test():
 def main():
     try:
         self_test()
-    except:
+    except BaseException:
         print("sr_util.py TEST FAILED")
         raise
 

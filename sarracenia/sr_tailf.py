@@ -1,4 +1,4 @@
-#/usr/bin/env python3
+# /usr/bin/env python3
 """
 
 replacement for tail -f to use on Windows systems that don't have it.
@@ -9,7 +9,9 @@ started with: https://gist.github.com/amitsaha/5990310
 
 #!/usr/bin/python3
 
-import os, sys, time
+import os
+import sys
+import time
 
 
 def tail_file(filename, nlines):
@@ -42,7 +44,7 @@ def tail_file(filename, nlines):
 
 def main():
     filename = sys.argv[1]
-    #nlines = int(sys.argv[2])
+    # nlines = int(sys.argv[2])
     tail_file(filename, 10)
 
 

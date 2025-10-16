@@ -11,7 +11,6 @@ from sarracenia.featuredetection import features
 import sys
 
 
-
 logger = logging.getLogger(__name__)
 
 default_options = {
@@ -46,46 +45,54 @@ class Poll(Flow):
        the sarracenia.flowcb.poll class is used to implement the remote querying,
        and is highly customizable to that effect.
 
-       if the vip option is set, 
+       if the vip option is set,
        * subscribe to the same settings that are being posted to.
        * consume all the messages posted, keeping new file duplicate cache updated.
-          
+
     """
+
     def __init__(self, options):
 
         super().__init__(options)
 
-        if hasattr(self.o,'publishers') and hasattr(self.o,'subscriptions') and \
-            len(self.o.subscriptions) > 0 and len(self.o.publishers) > 0:
+        if hasattr(self.o, 'publishers') and hasattr(self.o, 'subscriptions') and \
+                len(self.o.subscriptions) > 0 and len(self.o.publishers) > 0:
             px = self.o.publishers[0]['exchange'][0]
-            sx = self.o.subscriptions[0]['bindings'][0]['exchange'] 
+            sx = self.o.subscriptions[0]['bindings'][0]['exchange']
             if px != sx:
-                logger.warning( f"post_exchange: {px} is different from exchange: {sx}. The settings need for multiple instances to share a poll." )
+                logger.warning(
+                    f"post_exchange: {px} is different from exchange: {sx}. The settings need for multiple instances to share a poll.")
             else:
-                logger.debug( f"Good! post_exchange: {px} and exchange: {sx} match so multiple instances to share a poll." )
+                logger.debug(
+                    f"Good! post_exchange: {px} and exchange: {sx} match so multiple instances to share a poll.")
 
         if not 'scheduled' in ','.join(self.plugins['load']):
             self.plugins['load'].append('sarracenia.flowcb.scheduled.poll.Poll')
 
         if options.vip:
-            self.plugins['load'].insert( 0, 'sarracenia.flowcb.gather.message.Message')
+            self.plugins['load'].insert(0, 'sarracenia.flowcb.gather.message.Message')
 
-        self.plugins['load'].insert( 0, 'sarracenia.flowcb.post.message.Message')
+        self.plugins['load'].insert(0, 'sarracenia.flowcb.post.message.Message')
 
         if self.o.nodupe_ttl < self.o.fileAgeMax:
-            logger.warning( f"nodupe_ttl < fileAgeMax means some files could age out of the cache and be re-ingested ( see : https://github.com/MetPX/sarracenia/issues/904")
+            logger.warning(
+                f"nodupe_ttl < fileAgeMax means some files could age out of the cache and be re-ingested ( see : https://github.com/MetPX/sarracenia/issues/904")
 
         if not features['ftppoll']['present']:
-            if hasattr( self.o, 'pollUrl' ) and ( self.o.pollUrl.startswith('ftp') ):
-                logger.critical( f"attempting to configure an FTP poll pollUrl={self.o.pollUrl}, but missing python modules: {' '.join(features['ftppoll']['modules_needed'])}" )
+            if hasattr(self.o, 'pollUrl') and (self.o.pollUrl.startswith('ftp')):
+                logger.critical(
+                    f"attempting to configure an FTP poll pollUrl={
+                        self.o.pollUrl}, but missing python modules: {
+                        ' '.join(
+                            features['ftppoll']['modules_needed'])}")
 
     def on_start(self):
 
         if 'poll' not in self.plugins or not self.plugins['poll']:
-            logger.info( f"adding built-in poll plugin, because no other poll provided from: {self.plugins['load']}" ) 
+            logger.info(f"adding built-in poll plugin, because no other poll provided from: {self.plugins['load']}")
 
             self.plugins['load'].append('sarracenia.flowcb.poll.Poll')
             plugin = sarracenia.flowcb.load_library("sarracenia.flowcb.poll.Poll", self.o)
-            self.plugins['poll'] = [ getattr(plugin, 'poll') ]
+            self.plugins['poll'] = [getattr(plugin, 'poll')]
         else:
-            logger.info( f"not adding built-in poll, because already present: {self.plugins['poll']} " )
+            logger.info(f"not adding built-in poll, because already present: {self.plugins['poll']} ")

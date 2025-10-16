@@ -2,23 +2,28 @@
 """
   assume directories are named
   YYYYMMDDHHTHH
- 
+
   after the UTC date when the first product within it is received.
-   
+
   this script looks at the list of directories and removes the ones older
   than requested.  Sample invocation:
- 
+
    python3 old_hour_dirs.py "5 hours ago" /Project/web_root
- 
+
 """
 
-import dateparser, os, random, shutil, sys, time
+import dateparser
+import os
+import random
+import shutil
+import sys
+import time
 
 how_many_hours = sys.argv[1]
 
 try:
     os.chdir(sys.argv[2])
-except:
+except BaseException:
     print("Second argument should directory I can visit")
     exit(2)
 

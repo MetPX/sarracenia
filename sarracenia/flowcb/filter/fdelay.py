@@ -27,7 +27,7 @@ logger = logging.getLogger(__name__)
 class Fdelay(FlowCB):
     def __init__(self, options):
 
-        super().__init__(options,logger)
+        super().__init__(options, logger)
 
         logging.basicConfig(format=self.o.logFormat,
                             level=getattr(logging, self.o.logLevel.upper()))
@@ -35,10 +35,9 @@ class Fdelay(FlowCB):
         self.o.add_option('msg_fdelay', 'duration', 60)
         self.o.add_option('fdelay', 'duration', 60)
 
-        #parent.declare_option('fdelay')
+        # parent.declare_option('fdelay')
         if hasattr(self.o, 'msg_fdelay'):
             self.o.fdelay = self.o.msg_fdelay
-
 
     def after_accept(self, worklist):
         # Prepare msg delay test
@@ -47,7 +46,7 @@ class Fdelay(FlowCB):
             # Test msg delay
             elapsedtime = nowflt() - timestr2flt(m['pubTime'])
 
-            if 'fileOp' in m and 'remove' in m['fileOp'] :
+            if 'fileOp' in m and 'remove' in m['fileOp']:
                 # 'remove' msg will be removed by itself
                 worklist.rejected.append(m)
                 logger.debug('marked rejected 0 (file removal)')

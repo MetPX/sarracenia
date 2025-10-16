@@ -15,7 +15,7 @@ logger = logging.getLogger(__name__)
 class V02(PostFormat):
     """
        A class for controlling the format of messages are sent.
-       internally All messages are represented as v03. 
+       internally All messages are represented as v03.
        post format implement translations to other protocols for interop.
 
    """
@@ -29,7 +29,7 @@ class V02(PostFormat):
         """
           return true if the message is in this post format.
        """
-        if content_type == V02.content_type() :
+        if content_type == V02.content_type():
             return True
 
         # all the other formats are JSON based. only v02 has plain-text body.
@@ -39,7 +39,7 @@ class V02(PostFormat):
         # in the v02, we used topic to identify message format. (not reliable for other formats.)
         if headers['topic'].startswith('v02.'):
             return True
-        
+
         return False
 
     @staticmethod
@@ -53,11 +53,11 @@ class V02(PostFormat):
         msg = sarracenia.Message()
         msg["_format"] = __name__.split('.')[-1].lower()
         msg.copyDict(headers)
-    
+
         try:
             pubTime, baseUrl, relPath = body.split(' ')[0:3]
         except Exception as ex:
-            logger.error( f"body should have three space separated fields: {body}, error: {ex}" )
+            logger.error(f"body should have three space separated fields: {body}, error: {ex}")
             return None
 
         msg['pubTime'] = sarracenia.timev2tov3str(pubTime)
@@ -72,10 +72,10 @@ class V02(PostFormat):
 
         for t in ['atime', 'mtime']:
             if t in msg:
-                try: 
+                try:
                     msg[t] = sarracenia.timev2tov3str(msg[t])
                 except Exception as ex:
-                    logger.warning( f"invalid time field: {t} value: {msg['t']}, error: {ex}" )
+                    logger.warning(f"invalid time field: {t} value: {msg['t']}, error: {ex}")
         try:
             if 'sum' in msg:
                 sum_algo_map = {
@@ -99,7 +99,7 @@ class V02(PostFormat):
                     sv = encode(decode(msg["sum"][2:], 'hex'),
                                 'base64').decode('utf-8').strip()
                 if 'oldname' in msg:
-                    msg['fileOp'] = { 'rename': msg['oldname'] }
+                    msg['fileOp'] = {'rename': msg['oldname']}
                     del msg['oldname']
                     if sm in ['mkdir']:
                         msg['fileOp']['mkdir'] = ''
@@ -108,41 +108,41 @@ class V02(PostFormat):
                     else:
                         msg["identity"] = {"method": sm, "value": sv}
                 elif sm == 'remove':
-                    msg['fileOp'] = { 'remove': '' }
+                    msg['fileOp'] = {'remove': ''}
                 elif sm == 'mkdir':
-                    msg['fileOp'] = { 'directory': '' }
+                    msg['fileOp'] = {'directory': ''}
                 elif sm == 'rmdir':
-                    msg['fileOp'] = { 'remove':'', 'directory': '' }
+                    msg['fileOp'] = {'remove': '', 'directory': ''}
                 elif 'link' in msg:
-                    msg['fileOp'] = { 'link': msg['link'] }
+                    msg['fileOp'] = {'link': msg['link']}
                     del msg['link']
                 elif sm == 'md5name':
                     pass
                 else:
                     msg["identity"] = {"method": sm, "value": sv}
-    
+
                 del msg['sum']
         except Exception as ex:
-            logger.warning( f"sum field corrupt: {msg['sum']} ignored: {ex}" )
+            logger.warning(f"sum field corrupt: {msg['sum']} ignored: {ex}")
 
         try:
             if 'parts' in msg:
                 (style, chunksz, block_count, remainder,
                  current_block) = msg['parts'].split(',')
-                if style in ['i', 'p']: # FIXME: v2 partitioning scheme kind of broken/dead code here.
-                    logger.error( "v2 partitioned transfers not supported in sr3: guaranteed corruption" )
-                    #msg['blocks'] = {}
-                    #msg['blocks']['method'] = { 'i': 'inplace', 'p': 'partitioned' }[style]
-                    #msg['blocks']['size'] = int(chunksz)
-                    #msg['blocks']['count'] = int(block_count)
-                    #msg['blocks']['remainder'] = int(remainder)
-                    #msg['blocks']['number'] = int(current_block)
+                if style in ['i', 'p']:  # FIXME: v2 partitioning scheme kind of broken/dead code here.
+                    logger.error("v2 partitioned transfers not supported in sr3: guaranteed corruption")
+                    # msg['blocks'] = {}
+                    # msg['blocks']['method'] = { 'i': 'inplace', 'p': 'partitioned' }[style]
+                    # msg['blocks']['size'] = int(chunksz)
+                    # msg['blocks']['count'] = int(block_count)
+                    # msg['blocks']['remainder'] = int(remainder)
+                    # msg['blocks']['number'] = int(current_block)
                 else:
                     msg['size'] = int(chunksz)
                 del msg['parts']
         except Exception as ex:
-            logger.warning( f"parts field corrupt: {msg['parts']}, ignored: {ex}" )
-    
+            logger.warning(f"parts field corrupt: {msg['parts']}, ignored: {ex}")
+
         return msg
 
     @staticmethod
@@ -151,16 +151,15 @@ class V02(PostFormat):
            given a v03 (internal) message, produce an encoded version.
        """
         v2m = copy.deepcopy(v2wrapper.Message(body))
-                                
 
         # v2wrapp
         for h in [
-                    'pubTime', 'baseUrl', 'fileOp', 'relPath', 'size', 
-                    'blocks', 'content', 'identity', 'publisher_index', 
+            'pubTime', 'baseUrl', 'fileOp', 'relPath', 'size',
+            'blocks', 'content', 'identity', 'publisher_index',
         ]:
             if h in v2m.headers:
-                    del v2m.headers[h]
+                del v2m.headers[h]
 
-        v2m.headers['topic'] = PostFormat.topicDerive( body, options )
+        v2m.headers['topic'] = PostFormat.topicDerive(body, options)
 
         return v2m.notice, v2m.headers, V02.content_type()

@@ -22,7 +22,7 @@ Examples:
        CZEG AIRMET E1 VALID 080105/080505 CWEG-
 
        Output filename: WACN07_CWAO_082327__CZEG_00001
-    
+
     Another RAW Ninjo file
        FTCN32 CWAO 100500 AAM
        (...)
@@ -39,13 +39,13 @@ Examples:
        Output filename: CACN00_CWAO_141600__PQU_00003
 
     A ISA binary bulletin
-       Input filename: ISAA41_CYZX_162000__00035 
+       Input filename: ISAA41_CYZX_162000__00035
 
        Contents:
         ISAA41_CYZX_162000
         BUFR
 
-       Output filename: ISAA41_CYZX_162000___00004  
+       Output filename: ISAA41_CYZX_162000___00004
 
 Usage:
     callback rename.raw2bulletin
@@ -70,19 +70,20 @@ import datetime
 
 logger = logging.getLogger(__name__)
 
+
 class Raw2bulletin(FlowCB):
 
-    def __init__(self,options) :
-        super().__init__(options,logger)
+    def __init__(self, options):
+        super().__init__(options, logger)
         self.seq = 0
         self.binary = 0
         self.bulletinHandler = Bulletin(self.o)
         # Need to redeclare these options to have their default values be initialized.
         self.o.add_option('inputCharset', 'str', 'utf-8')
-        self.o.add_option('binaryInitialCharacters', 'list', [b'BUFR' , b'GRIB', b'\211PNG'])
+        self.o.add_option('binaryInitialCharacters', 'list', [b'BUFR', b'GRIB', b'\211PNG'])
 
     # If file was converted, get rid of extensions it had
-    def after_gather(self,worklist):
+    def after_gather(self, worklist):
 
         new_worklist = []
 
@@ -98,7 +99,8 @@ class Raw2bulletin(FlowCB):
 
                 # Also accept bulletins that only have one line (health check bulletins)
                 if len(data.splitlines()) == 1 or data.splitlines()[1][:4] in self.o.binaryInitialCharacters:
-                    # Decode data, only text. The raw binary data contains the header in which we're interested. Only get that header.
+                    # Decode data, only text. The raw binary data contains the header in which
+                    # we're interested. Only get that header.
                     data = data.splitlines()[0].decode('ascii')
                 else:
                     # Data is not binary
@@ -108,43 +110,43 @@ class Raw2bulletin(FlowCB):
                 worklist.rejected.append(msg)
                 continue
 
-
             if not data:
                 logger.error("No data was found. Skipping message")
                 worklist.rejected.append(msg)
                 continue
-            
-            lines  = data.split('\n')
-            #first_line  = lines[0].strip('\r')
-            #first_line  = first_line.strip(' ')
-            #first_line  = first_line.strip('\t')
-            first_line  = lines[0].split(' ')
+
+            lines = data.split('\n')
+            # first_line  = lines[0].strip('\r')
+            # first_line  = first_line.strip(' ')
+            # first_line  = first_line.strip('\t')
+            first_line = lines[0].split(' ')
 
             # Sometimes bulletins have carriage returns at the end of the first line. Remove if applicable
-            first_line[-1]  = first_line[-1].replace('\r', '')
+            first_line[-1] = first_line[-1].replace('\r', '')
 
             # Build header from bulletin
             header = self.bulletinHandler.buildHeader(first_line)
-            if header == None:
+            if header is None:
                 logger.error("Unable to fetch header contents. Skipping message")
                 worklist.rejected.append(msg)
                 continue
-            
+
             # Get the station timestamp from bulletin
             if len(header.split('_')) == 2:
                 ddhhmm = self.bulletinHandler.getTime(data)
-                if ddhhmm == None:
+                if ddhhmm is None:
                     logger.error("Unable to get julian time.")
             else:
                 ddhhmm = ''
-            
+
             # Get the BBB from bulletin
             BBB = self.bulletinHandler.getBBB(first_line)
 
             # Get the station ID from bulletin
             if not len(data.splitlines()) == 1:
                 stn_id = self.bulletinHandler.getStation(data)
-            else: stn_id = ''
+            else:
+                stn_id = ''
 
             # Generate a sequence (random ints)
             seq = self.bulletinHandler.getRandom()
@@ -153,19 +155,19 @@ class Raw2bulletin(FlowCB):
             if 'isProblem' not in msg:
                 msg['isProblem'] = False
 
-
             # Rename file with data fetched
             try:
                 # We can't disseminate bulletins downstream if they're missing the timestamp, but we want to keep the bulletins to troubleshoot source problems
                 # We'll append "_PROBLEM" to the filename to be able to identify erronous bulletins
-                if ddhhmm == None or msg['isProblem']:
+                if ddhhmm is None or msg['isProblem']:
                     timehandler = datetime.datetime.now()
 
                     # Add current time as new timestamp to filename
-                    new_file = header + "_" + timehandler.strftime('%d%H%M') + "_" + BBB + "_" + stn_id + "_" + seq + "_PROBLEM"
+                    new_file = header + "_" + \
+                        timehandler.strftime('%d%H%M') + "_" + BBB + "_" + stn_id + "_" + seq + "_PROBLEM"
                     logger.error(f"New filename (for problem file): {new_file}")
 
-                elif stn_id == None:
+                elif stn_id is None:
                     new_file = header + "_" + BBB + "_" + '' + "_" + seq + "_PROBLEM"
                     logger.error(f"New filename (for problem file): {new_file}")
                 elif ddhhmm == '':
@@ -175,13 +177,13 @@ class Raw2bulletin(FlowCB):
 
                 # No longer needed
                 if 'isProblem' in msg:
-                    del(msg['isProblem'])
+                    del (msg['isProblem'])
 
                 msg['rename'] = new_file
 
                 logger.info(f"New filename: {new_file}")
                 new_worklist.append(msg)
-                
+
             except Exception as e:
                 logger.error(f"Error in renaming the filename. Error message: {e}")
                 worklist.rejected.append(msg)

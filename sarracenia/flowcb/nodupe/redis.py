@@ -20,8 +20,8 @@ logger = logging.getLogger(__name__)
 
 class Redis(NoDupe):
     """
-    generalised duplicate suppression for sr3 programs. It is used as a 
-    time based buffer that prevents, when activated, identical files (of some kinds) 
+    generalised duplicate suppression for sr3 programs. It is used as a
+    time based buffer that prevents, when activated, identical files (of some kinds)
     from being processed more than once, by rejecting files identified as duplicates.
 
     options:
@@ -45,16 +45,24 @@ class Redis(NoDupe):
     # ----------- magic Methods ------------
     def __init__(self, options):
 
-        super().__init__(options,logger)
+        super().__init__(options, logger)
         logger.debug("NoDupe_Redis init")
         logging.basicConfig(format=self.o.logFormat, level=getattr(logging, self.o.logLevel.upper()))
 
-        self.o.add_option( 'nodupe_ttl', 'duration', 0 ) 
+        self.o.add_option('nodupe_ttl', 'duration', 0)
 
         logger.info('time_to_live=%d, ' % (self.o.nodupe_ttl))
 
-        self.o.add_option( 'nodupe_redis_serverurl', 'str')
-        self.o.add_option( 'nodupe_redis_keybase', 'str', 'sr3.nodupe.' + self.o.component + '.' + self.o.config.replace(".","_")) 
+        self.o.add_option('nodupe_redis_serverurl', 'str')
+        self.o.add_option(
+            'nodupe_redis_keybase',
+            'str',
+            'sr3.nodupe.' +
+            self.o.component +
+            '.' +
+            self.o.config.replace(
+                ".",
+                "_"))
 
         self._rkey_base = self.o.nodupe_redis_keybase
         self._rkey_count = self._rkey_base + ".count"
@@ -69,17 +77,17 @@ class Redis(NoDupe):
         self._redis.set(self._rkey_count, 0, nx=True)
         self._last_count = self._count()
 
-
     # ----------- Private Methods -----------
+
     def _hash(self, text) -> str:
         from hashlib import blake2b
         h = blake2b(key=bytes(self._rkey_base, 'utf-8'), digest_size=16)
         h.update(bytes(text, 'utf-8'))
         return h.hexdigest()
-    
-    def _is_new(self, message) -> bool :
+
+    def _is_new(self, message) -> bool:
         """
-        Derive keys to be looked up in cache of messages already seen, then look them up in the cache, 
+        Derive keys to be looked up in cache of messages already seen, then look them up in the cache,
 
         return False if message is a dupe.
                 True if it is new.
@@ -92,7 +100,7 @@ class Redis(NoDupe):
         else:
             path = message['relPath'].lstrip('/')
 
-        message['noDupe'] = { 'key': key, 'path': path }
+        message['noDupe'] = {'key': key, 'path': path}
         message['_deleteOnPost'] |= set(['noDupe'])
 
         logger.debug("checking (%s, %s)" % (key, path))
@@ -106,26 +114,26 @@ class Redis(NoDupe):
 
         got = self._redis.get(redis_key)
 
-        #logger.debug("ttl type =%s" % (type(self.o.nodupe_ttl)) )
+        # logger.debug("ttl type =%s" % (type(self.o.nodupe_ttl)) )
         self._redis.set(redis_key, str(self.now) + "|" + path_quoted, ex=int(self.o.nodupe_ttl))
-        
-        if got != None:
-            logger.debug("entry already in cache: key=%s" % (redis_key) )
-            logger.debug("updated time entry: time=%s" % (str(self.now)) )
+
+        if got is not None:
+            logger.debug("entry already in cache: key=%s" % (redis_key))
+            logger.debug("updated time entry: time=%s" % (str(self.now)))
             self.cache_hit = path_quoted
             return False
         else:
-            logger.debug("adding entry to cache; key=%s" % (redis_key) )
-            #self._redis.incr(self._rkey_count)
+            logger.debug("adding entry to cache; key=%s" % (redis_key))
+            # self._redis.incr(self._rkey_count)
             return True
 
     def _count(self):
         count = self._redis.get(self._rkey_count)
-        if count == None:
+        if count is None:
             return 0
         else:
             return int(count)
-        
+
     # ----------- Public Methods -----------
     def on_housekeeping(self):
 
@@ -133,8 +141,9 @@ class Redis(NoDupe):
 
         new_count = len(self._redis.keys(self._rkey_base + ":*"))
         self.now = nowflt()
-        
-        logger.info("cache size was %d items %5.2f sec ago, now saved %d entries" % (self._last_count, self.now - self._last_time, new_count))
+
+        logger.info("cache size was %d items %5.2f sec ago, now saved %d entries" %
+                    (self._last_count, self.now - self._last_time, new_count))
 
         self._last_time = self.now
 
@@ -150,7 +159,7 @@ class Redis(NoDupe):
 
         if self.o.fileAgeMin > 0:
             max_mtime = self.now - self.o.fileAgeMin
-        elif type(self.o.inflight) in [ int, float ] and self.o.inflight > 0:
+        elif type(self.o.inflight) in [int, float] and self.o.inflight > 0:
             max_mtime = self.now - self.o.inflight
         else:
             # FIXME: should we add some time here to allow for different clocks?
@@ -158,18 +167,18 @@ class Redis(NoDupe):
             max_mtime = self.now + 100
 
         for m in worklist.incoming:
-            if ('mtime' in m) :
-                mtime=timestr2flt(m['mtime'])
+            if ('mtime' in m):
+                mtime = timestr2flt(m['mtime'])
                 if mtime < min_mtime:
                     m['_deleteOnPost'] |= set(['reject'])
                     m['reject'] = f"{m['mtime']} too old (nodupe check), oldest allowed {timeflt2str(min_mtime)}"
-                    m.setReport(406,  f"{m['mtime']} too old (nodupe check), oldest allowed {timeflt2str(min_mtime)}" )
+                    m.setReport(406, f"{m['mtime']} too old (nodupe check), oldest allowed {timeflt2str(min_mtime)}")
                     worklist.rejected.append(m)
                     continue
                 elif mtime > max_mtime:
                     m['_deleteOnPost'] |= set(['reject'])
                     m['reject'] = f"{m['mtime']} too new (nodupe check), newest allowed {timeflt2str(max_mtime)}"
-                    m.setReport(425,  f"{m['mtime']} too new (nodupe check), newest allowed {timeflt2str(max_mtime)}" )
+                    m.setReport(425, f"{m['mtime']} too new (nodupe check), newest allowed {timeflt2str(max_mtime)}")
                     worklist.rejected.append(m)
                     continue
 
@@ -181,13 +190,12 @@ class Redis(NoDupe):
                 m.setReport(304, 'Not modified 1 (nodupe check)')
                 worklist.rejected.append(m)
 
-        logger.debug("items registered in duplicate suppression cache: %d" % (len(self._redis.keys(self._rkey_base + ":*"))) )
+        logger.debug("items registered in duplicate suppression cache: %d" %
+                     (len(self._redis.keys(self._rkey_base + ":*"))))
         worklist.incoming = new_incoming
 
     def on_start(self):
         self._last_count = len(self._redis.keys(self._rkey_base + ":*"))
-        
 
     def on_stop(self):
         self._last_count = None
-

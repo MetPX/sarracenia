@@ -14,8 +14,8 @@ cfg.topicPrefix = ['v02', 'post']
 cfg.component = 'subscribe'
 cfg.config = 'flow_demo'
 cfg.action = 'foreground'
-bindings = [ {'exchange':'xpublic', 'prefix':['v02', 'post'],
-                'sub':['*.WXO-DD.observations.swob-ml.#']}]
+bindings = [{'exchange': 'xpublic', 'prefix': ['v02', 'post'],
+             'sub': ['*.WXO-DD.observations.swob-ml.#']}]
 cfg.queueName = 'q_${BROKER_USER}_${HOSTNAME}_${QUEUESHARE}'
 cfg.download = True
 cfg.batch = 1
@@ -25,8 +25,7 @@ cfg.messageCountMax = 5
 cfg.queueShare = 'SomethingSessionfulToYou'
 
 
-cfg.settings = { 'sarracenia.moth.amqp.AMQP': { 'logLevel':'debug' } }
-
+cfg.settings = {'sarracenia.moth.amqp.AMQP': {'logLevel': 'debug'}}
 
 
 # Note: queue name must start with q_<username> because server is configured to deny anything else.
@@ -34,22 +33,22 @@ cfg.settings = { 'sarracenia.moth.amqp.AMQP': { 'logLevel':'debug' } }
 
 queue = {'name': 'q_anonymous_' + socket.getfqdn() + '_' + cfg.queueShare,
          'template': cfg.queueName,
-         'auto_delete' : False, # AO == amqp only
-         'durable': True, # AO: queue should survive broker reboots
+         'auto_delete': False,  # AO == amqp only
+         'durable': True,  # AO: queue should survive broker reboots
          'expire': 600,  # MO: seconds until queue with no consumers disappears.
          'prefetch': 5,
          'qos': 1,
          'tlsRigour': 'normal',
          'bind': True,  # whether to bind queues/subscriptions
-         'declare': True # whether to declare queues/subscriptions
-       }
+         'declare': True  # whether to declare queues/subscriptions
+         }
 
 
-cfg.subscriptions = sarracenia.config.subscription.Subscriptions( [ {
-   'broker': cfg.broker,
-   'bindings': bindings,
-   'queue' : queue
-      } ] )
+cfg.subscriptions = sarracenia.config.subscription.Subscriptions([{
+    'broker': cfg.broker,
+    'bindings': bindings,
+    'queue': queue
+}])
 
 
 # set the instance number for the flow class.

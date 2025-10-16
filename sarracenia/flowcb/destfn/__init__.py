@@ -7,7 +7,7 @@ can be used for selective renaming using accept clauses.
 
 The flowcb modules here are for compatiblity with sundew "filename" options.
 a module that is focused on changing the names of files being sent or downloaded
-is called a Destination File Name script ... or DESTFNSCRIPT 
+is called a Destination File Name script ... or DESTFNSCRIPT
 
 These are floscb modules that are focused on the destfn entry point.
 

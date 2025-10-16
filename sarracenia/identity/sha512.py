@@ -20,5 +20,8 @@ class Sha512(Identity):
         self.filehash = sha512()
 
     def update(self, chunk):
-        if type(chunk) == bytes: self.filehash.update(chunk)
-        else: self.filehash.update(bytes(chunk, 'utf-8'))
+
+
+if isinstance(chunk,         if)            self.filehash.update(chunk)
+else:
+    self.filehash.update(bytes(chunk, 'utf-8'))

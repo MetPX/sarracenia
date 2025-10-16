@@ -23,15 +23,15 @@ else:
     broker = 'amqp://tfeed:password_for_tfeed@localhost'
 
 cfg = default_config()
-#cfg.logLevel = 'debug'
-cfg.post_broker = sarracenia.config.credentials.Credential( broker )
+# cfg.logLevel = 'debug'
+cfg.post_broker = sarracenia.config.credentials.Credential(broker)
 cfg.post_exchange = 'xsarra'
 cfg.post_baseUrl = 'http://host'
 cfg.post_baseDir = '/tmp'
-cfg.topicPrefix = [ 'v03', 'post' ]
+cfg.topicPrefix = ['v03', 'post']
 cfg.logLevel = 'debug'
-cfg.publishers=[ Publisher(cfg) ]
-cfg.publisher_index=0
+cfg.publishers = [Publisher(cfg)]
+cfg.publisher_index = 0
 
 # print out the entire configuration content.
 cfg.dump()

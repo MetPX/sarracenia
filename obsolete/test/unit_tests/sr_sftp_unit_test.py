@@ -7,7 +7,7 @@ try:
     from sr_message import *
     from sr_sftp import *
     from sr_util import *
-except:
+except BaseException:
     from sarra.sr_config import *
     from sarra.sr_message import *
     from sarra.sr_sftp import *
@@ -36,7 +36,7 @@ def self_test():
     msg.onfly_checksum = False
 
     # 1 bytes par 5 secs
-    #cfg.kbytes_ps = 0.0001
+    # cfg.kbytes_ps = 0.0001
 
     cfg.timeout = 5.0
     cfg.kbytes_ps = 0.01
@@ -53,7 +53,7 @@ def self_test():
     testdir = os.path.expanduser('~' + sftpuser) + '/tztz'
     try:
         shutil.rmtree(testdir)
-    except:
+    except BaseException:
         pass
 
     print("TEST 01: instantiation and connection")
@@ -153,7 +153,7 @@ def self_test():
 
     try:
         os.unlink("bbb")
-    except:
+    except BaseException:
         pass
 
     msg.onfly_checksum = None
@@ -174,7 +174,7 @@ def self_test():
     try:
         os.unlink("./bbb")
         print("TEST 06: OK")
-    except:
+    except BaseException:
         print("TEST 06: FAILED, file not found")
         failed = True
 
@@ -184,7 +184,7 @@ def self_test():
     try:
         os.unlink("./bbb")
         print("TEST 07: OK")
-    except:
+    except BaseException:
         print("TEST 07: FAILED, file not found")
         failed = True
 
@@ -232,7 +232,7 @@ def self_test():
     try:
         sftp.delete("zzz_unexistant")
         print("TEST 10: OK")
-    except:
+    except BaseException:
         print("TEST 10: FAILED")
         failed = True
 
@@ -244,7 +244,7 @@ def self_test():
     try:
         sftp.delete("ddd")
         print("TEST 11: OK")
-    except:
+    except BaseException:
         print("TEST 11: FAILED")
         failed = True
 
@@ -254,7 +254,7 @@ def self_test():
     try:
         sftp.delete("ddd")
         print("TEST 12: OK")
-    except:
+    except BaseException:
         print("TEST 12: FAILED")
         failed = True
 
@@ -322,7 +322,7 @@ def self_test():
 def main():
     try:
         self_test()
-    except:
+    except BaseException:
         print("sr_sftp: TEST FAILED")
         raise
 

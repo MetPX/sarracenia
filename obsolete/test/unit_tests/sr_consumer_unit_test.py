@@ -2,7 +2,7 @@
 
 try:
     from sr_consumer import *
-except:
+except BaseException:
     from sarra.sr_consumer import *
 
 # ===================================
@@ -18,14 +18,14 @@ def self_test():
     opt2 = 'reject .*'
     opt3 = 'll None'
 
-    #setup consumer to catch first post
+    # setup consumer to catch first post
     cfg = sr_config()
     cfg.configure()
 
     cfg.load_sums()
     cfg.broker = urllib.parse.urlparse(
         "amqps://anonymous:anonymous@hpfx.collab.science.gc.ca")
-    #cfg.broker         = urllib.parse.urlparse("amqps://anonymous:anonymous@dd.weather.gc.ca")
+    # cfg.broker         = urllib.parse.urlparse("amqps://anonymous:anonymous@dd.weather.gc.ca")
     cfg.prefetch = 10
     cfg.bindings = [('xpublic', 'v02.post.#')]
     cfg.durable = False
@@ -46,7 +46,8 @@ def self_test():
     i = 0
     while True:
         ok, msg = consumer.consume()
-        if ok: break
+        if ok:
+            break
 
         i = i + 1
         if i == 10000:
@@ -57,7 +58,7 @@ def self_test():
 
     consumer.cleanup()
 
-    if msg == None:
+    if msg is None:
         print("test 01: sr_consumer TEST Failed no message")
         failed = True
 
@@ -80,7 +81,7 @@ def self_test():
 def main():
     try:
         self_test()
-    except:
+    except BaseException:
         print("sr_consumer.py TEST FAILED")
         raise
 

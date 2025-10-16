@@ -16,21 +16,22 @@ class Message(FlowCB):
     """
        gather messages from a sarracenia.moth message queuing protocol source.
     """
+
     def __init__(self, options) -> None:
 
-        super().__init__(options,logger)
+        super().__init__(options, logger)
 
         self.consumers = []
 
         if hasattr(self.o, 'subscriptions') and len(self.o.subscriptions) > 0:
-            i=0
+            i = 0
             for s in self.o.subscriptions:
                 od = sarracenia.moth.default_options()
                 od.update(self.o.dictify())
-                od['subscription_index']=i
+                od['subscription_index'] = i
                 consumer = sarracenia.moth.Moth.subFactory(od)
                 self.consumers.append(consumer)
-                i+=1
+                i += 1
         else:
             logger.critical('missing required subscription specification')
 
@@ -40,28 +41,28 @@ class Message(FlowCB):
               True ... you can gather from other sources. and:
               a list of messages obtained from this source.
         """
-        if not hasattr(self,'consumers'):
+        if not hasattr(self, 'consumers'):
             return (True, [])
 
-        messages=[]
-        found_consumer=False
-        i=0
+        messages = []
+        found_consumer = False
+        i = 0
         for c in self.consumers:
-            if hasattr(c,'newMessages'):
-                found_consumer=True
+            if hasattr(c, 'newMessages'):
+                found_consumer = True
                 messages.extend(c.newMessages())
             else:
-                logger.warning( f'not connected. Trying to connect to {self.o.broker}')
+                logger.warning(f'not connected. Trying to connect to {self.o.broker}')
                 od = sarracenia.moth.default_options()
                 od.update(self.o.dictify())
-                od['subscription_index']=i
+                od['subscription_index'] = i
                 c = sarracenia.moth.Moth.subFactory(od)
-            i+=1
+            i += 1
         return (True, messages)
 
     def ack(self, mlist) -> None:
 
-        if not hasattr(self,'consumers'):
+        if not hasattr(self, 'consumers'):
             return
 
         for c in self.consumers:
@@ -71,48 +72,48 @@ class Message(FlowCB):
 
     def metricsReport(self) -> dict:
 
-        reports={}
-        if hasattr(self,'consumers'):
-            i=0
+        reports = {}
+        if hasattr(self, 'consumers'):
+            i = 0
             for c in self.consumers:
-                if hasattr(self.o,'subscriptions'):
-                    b=str(self.o.subscriptions[i]['broker'])
-                    if hasattr(c,'metricsReport'):
-                        reports[b]=c.metricsReport()
-                i+=1
+                if hasattr(self.o, 'subscriptions'):
+                    b = str(self.o.subscriptions[i]['broker'])
+                    if hasattr(c, 'metricsReport'):
+                        reports[b] = c.metricsReport()
+                i += 1
         return reports
 
     def on_housekeeping(self) -> None:
 
-        if not hasattr(self,'metricsReport'):
+        if not hasattr(self, 'metricsReport'):
             return
 
         mm = self.metricsReport()
         for b in mm:
             m = mm[b]
             average = (m['rxByteCount'] /
-                   m['rxGoodCount'] if m['rxGoodCount'] != 0 else 0)
-            logger.info( f"from {b} messages: good: {m['rxGoodCount']} bad: {m['rxBadCount']} " +\
-               f"bytes: {naturalSize(m['rxByteCount'])} " +\
-               f"average: {naturalSize(average)}" )
+                       m['rxGoodCount'] if m['rxGoodCount'] != 0 else 0)
+            logger.info(f"from {b} messages: good: {m['rxGoodCount']} bad: {m['rxBadCount']} " +
+                        f"bytes: {naturalSize(m['rxByteCount'])} " +
+                        f"average: {naturalSize(average)}")
 
-        if hasattr(self,'consumers'):
+        if hasattr(self, 'consumers'):
             for c in self.consumers:
-                if hasattr(c,'metricsReset'):
+                if hasattr(c, 'metricsReset'):
                     c.metricsReset()
 
     def on_stop(self) -> None:
 
-        if hasattr(self,'consumers'):
+        if hasattr(self, 'consumers'):
             for c in self.consumers:
-                if hasattr(c,'close'):
+                if hasattr(c, 'close'):
                     c.close()
 
     def please_stop(self) -> None:
         """ pass stop request along to consumer Moth instance(s)
         """
         super().please_stop()
-        if hasattr(self,'consumers'):
+        if hasattr(self, 'consumers'):
             for c in self.consumers:
-                if hasattr(c,'please_stop'):
+                if hasattr(c, 'please_stop'):
                     c.please_stop()

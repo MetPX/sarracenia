@@ -16,7 +16,9 @@ Usage:
     ...
 """
 
-import os, stat, time
+import os
+import stat
+import time
 import logging
 from sarracenia.flowcb import FlowCB
 
@@ -25,11 +27,11 @@ logger = logging.getLogger(__name__)
 
 class ToClusters(FlowCB):
     def __init__(self, options):
-        super().__init__(options,logger)
+        super().__init__(options, logger)
 
         self.o.add_option('msgToClusters', 'list')
 
-        if self.o.msgToClusters == None:
+        if self.o.msgToClusters is None:
             logger.info("msgToClusters setting mandatory")
             return
 

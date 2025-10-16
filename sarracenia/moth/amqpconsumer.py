@@ -32,6 +32,7 @@ import queue
 
 logger = logging.getLogger(__name__)
 
+
 class AMQPConsumer(AMQP):
     """
         Extension of the existing AMQP implementation, replacing basic_get with a consumer.
@@ -39,18 +40,18 @@ class AMQPConsumer(AMQP):
 
         Set amqp_consumer True in the config to use this instead of the regular AMQP class.
 
-        TODO: 
-          - how does this work with the batch and prefetch options? 
+        TODO:
+          - how does this work with the batch and prefetch options?
           - set our own consumer tag
           - make timeout configurable?
     """
 
     def __init__(self, props, is_subscriber) -> None:
         super().__init__(props, is_subscriber)
-        self._raw_msg_q = None 
-        # "The consumer tag is local to a connection, so two clients can use the same consumer tags. 
+        self._raw_msg_q = None
+        # "The consumer tag is local to a connection, so two clients can use the same consumer tags.
         #  If this field is empty the server will generate a unique tag."
-        self._request_consumer_tag = '' # TODO set to something useful
+        self._request_consumer_tag = ''  # TODO set to something useful
         self._active_consumer_tag = None
 
         # control log level in config file:
@@ -77,24 +78,24 @@ class AMQPConsumer(AMQP):
             return
 
         # (re)create local msg queue. Anything in the queue is invalid after re-creating a connection.
-        self._raw_msg_q = queue.Queue() 
+        self._raw_msg_q = queue.Queue()
 
         subscription = self.o['subscriptions'][self.o['subscription_index']]
         sub_queue = subscription['queue']
         self._active_consumer_tag = self.channel.basic_consume(queue=sub_queue['name'],
                                                                consumer_tag=self._request_consumer_tag,
-                                                               no_ack=False, 
+                                                               no_ack=False,
                                                                callback=self.__get_on_message)
         logger.info(f"registered consumer with tag {self._active_consumer_tag}")
         if self._request_consumer_tag != '' and self._request_consumer_tag != self._active_consumer_tag:
-            logger.warning(f"active consumer tag {self._active_consumer_tag} is different than " + 
+            logger.warning(f"active consumer tag {self._active_consumer_tag} is different than " +
                            f"requested consumer tag {self._request_consumer_tag}")
 
     def getNewMessage(self) -> sarracenia.Message:
         """ Mostly a copy of moth.amqp.AMQP's getNewMessage.
         """
 
-        if not self.is_subscriber:  #build_consumer
+        if not self.is_subscriber:  # build_consumer
             logger.error("getting from a publisher")
             return None
 
@@ -107,7 +108,7 @@ class AMQPConsumer(AMQP):
 
             # trigger incoming event processing
             try:
-                self.connection.drain_events(timeout=0.1) # TODO configurable timeout?
+                self.connection.drain_events(timeout=0.1)  # TODO configurable timeout?
             except TimeoutError:
                 pass
             # In newer Python versions, socket.timeout is "a deprecated alias of TimeoutError", but it's not on
@@ -120,15 +121,15 @@ class AMQPConsumer(AMQP):
                 raw_msg = self._raw_msg_q.get_nowait()
             except queue.Empty:
                 raw_msg = None
-            
+
             if (raw_msg is None) and (self.connection.connected):
                 return None
             else:
                 self.metrics['rxByteCount'] += len(raw_msg.body)
-                try: 
+                try:
                     msg = self._msgRawToDict(raw_msg)
                 except Exception as err:
-                    logger.error("message decode failed. raw message: %s" % raw_msg.body )
+                    logger.error("message decode failed. raw message: %s" % raw_msg.body)
                     logger.debug('Exception details: ', exc_info=True)
                     msg = None
                 if msg is None:
@@ -166,4 +167,3 @@ class AMQPConsumer(AMQP):
                 logger.debug("Exception details:", exc_info=True)
         self._active_consumer_tag = None
         super().close()
-

@@ -38,17 +38,18 @@ import azure.core.exceptions
 
 logger = logging.getLogger(__name__)
 
+
 class Azure(Transfer):
     """
-    Azure Storage Account blob storage  ( https://azure.microsoft.com/en-us/products/storage/blobs ) 
+    Azure Storage Account blob storage  ( https://azure.microsoft.com/en-us/products/storage/blobs )
 
 
-    built with: 
+    built with:
         Azure SKDs blob client (https://learn.microsoft.com/en-us/python/api/azure-storage-blob/azure.storage.blob?view=azure-python)
     """
 
     #  ----------------------- MAGIC METHODS ----------------------
-    #region Magic
+    # region Magic
     def __init__(self, proto, options):
 
         super().__init__(proto, options)
@@ -67,16 +68,18 @@ class Azure(Transfer):
         # When inflight is used in Azure, we try to copy and removing the original the temp file instead of doing a rename (like in traditional ftp/sftp).
         # For this, we discourage users to use the inflight option
         if self.o.inflight:
-            logger.warning(f"inflight usage is discouraged. Azure can't rename files and will copy/delete the temp file. Current inflight setting set to {self.o.inflight}.")
+            logger.warning(
+                f"inflight usage is discouraged. Azure can't rename files and will copy/delete the temp file. Current inflight setting set to {
+                    self.o.inflight}.")
 
         # The default INFO level for this logger is quite verbose, we might want to reduce it some day
         # logging.getLogger('azure.core.pipeline.policies.http_logging_policy').setLevel('WARNING')
 
         self.__init()
-    
 
-    ##  --------------------- PRIVATE METHODS ---------------------
-    #region Private
+    # --------------------- PRIVATE METHODS ---------------------
+    # region Private
+
     def __init(self):
         Transfer.init(self)
 
@@ -102,7 +105,7 @@ class Azure(Transfer):
 
     def __credentials(self) -> bool:
         # logger.debug("%s" % self.sendTo)
-        
+
         sendTo = self.sendTo.lower().replace("azure://", "https://").replace("azblob://", "https://")
 
         try:
@@ -119,22 +122,22 @@ class Azure(Transfer):
                     self.key = None
 
                 if url.password is not None and url.password in sendTo:
-                    sendTo = sendTo.replace(':'+ url.password, '')
-                
+                    sendTo = sendTo.replace(':' + url.password, '')
+
                 if url.username is not None and url.username in sendTo:
                     sendTo = sendTo.replace(url.username + '@', '')
-    
+
             self.container_url = sendTo
 
             if details and hasattr(details, 'azure_credentials') and details.azure_credentials is not None:
                 self.credentials = details.azure_credentials
-                logger.debug("azure_credentials= is set, it will override any "+
+                logger.debug("azure_credentials= is set, it will override any " +
                              "username/password (account name/key) in the URL")
                 return True
             elif self.account and self.key:
-                self.credentials = { "account_name": self.account,
-                                     "account_key":  self.key,
-                                   }
+                self.credentials = {"account_name": self.account,
+                                    "account_key": self.key,
+                                    }
                 return True
             else:
                 # assuming this is ok, for anonymous access
@@ -147,16 +150,15 @@ class Azure(Transfer):
             logger.debug('Exception details: ', exc_info=True)
 
         return False
-    
 
-    ##  ---------------------- PUBLIC METHODS ---------------------
-    #region Public
+    # ---------------------- PUBLIC METHODS ---------------------
+    # region Public
+
     def cd(self, path):
         logger.debug(f"changing into {path}")
         self.cwd = os.path.dirname(path)
         self.path = path.strip('/') + "/"
         self.path = self.path.lstrip('/')
-
 
     def cd_forced(self, path):
         logger.debug(f"forcing into  {path}")
@@ -177,7 +179,7 @@ class Azure(Transfer):
     def chmod(self, perms):
         logger.debug(f"would change perms to {perms} if it was implemented")
         return
-        
+
     def close(self):
         logger.debug("closing down connection")
         self.connected = False
@@ -213,7 +215,7 @@ class Azure(Transfer):
             logger.error(f"Unable to establish connection, {e}")
         except Exception as e:
             logger.error(f"Something else happened: {e}", exc_info=True)
-            
+
         return False
 
     def delete(self, path):
@@ -227,7 +229,7 @@ class Azure(Transfer):
             remote_offset=0,
             local_offset=0,
             length=0, exactLength=False) -> int:
-        
+
         logger.debug(f"downloading {remote_file} into {self.path}")
 
         file_key = self.path + remote_file
@@ -236,17 +238,16 @@ class Azure(Transfer):
         blob = self.client.get_blob_client(file_key)
 
         with open(local_file, 'wb') as file:
-          data = blob.download_blob()
-          file.write(data.readall())
+            data = blob.download_blob()
+            file.write(data.readall())
 
         rw_length = os.stat(local_file).st_size
 
         return rw_length
-    
+
     def gethttpsUrl(self, path):
         return self.container_url + '/' + path
 
-    
     def getcwd(self):
         if self.client:
             return self.cwd
@@ -266,7 +267,7 @@ class Azure(Transfer):
                 filename = b.name.replace(self.path, '', 1)
                 if filename == "":
                     continue
-                
+
                 entry = paramiko.SFTPAttributes()
 
                 entry.sr_httpsUrl = self.container_url + '/' + self.path + filename
@@ -275,14 +276,14 @@ class Azure(Transfer):
                     sr_metadata = json.loads(b.metadata[self._Metadata_Key])
                     entry.sr_mtime = sr_metadata['mtime']
                     entry.sr_identity = sr_metadata['identity']
-                
+
                 if hasattr(b, 'last_modified'):
                     t = b.last_modified.timestamp()
                     entry.st_atime = t
                     entry.st_mtime = t
                 if hasattr(b, 'size'):
                     entry.st_size = b.size
-                    
+
                 entry.st_mode = 0o644
 
                 self.entries[filename] = entry
@@ -297,12 +298,12 @@ class Azure(Transfer):
 
                 entry = paramiko.SFTPAttributes()
                 entry.st_mode = 0o755 | stat.S_IFDIR
-    
+
                 self.entries[filename] = entry
 
         logger.debug(f"self.entries={self.entries}")
         return self.entries
-    
+
     def mkdir(self, remote_dir):
         logger.debug(f"would mkdir {remote_dir} inside {self.path}, if it was supported")
         return
@@ -326,13 +327,13 @@ class Azure(Transfer):
         if 'mtime' in msg:
             md['mtime'] = msg['mtime']
 
-        metadata = { self._Metadata_Key: json.dumps(md) }
+        metadata = {self._Metadata_Key: json.dumps(md)}
 
         # upload
         try:
             with open(local_file, 'rb') as data:
                 new_file = self.client.upload_blob(name=file_key, data=data, metadata=metadata)
-            #self.client.upload_file( Filename=local_file, Bucket=self.bucket, Key=file_key, Config=self.s3_transfer_config, ExtraArgs=extra_args)
+            # self.client.upload_file( Filename=local_file, Bucket=self.bucket, Key=file_key, Config=self.s3_transfer_config, ExtraArgs=extra_args)
 
             write_size = new_file.get_blob_properties().size
             logger.debug(f'uploaded {local_file} to {self.container_url}/{file_key}')
@@ -343,7 +344,7 @@ class Azure(Transfer):
 
     def registered_as() -> list:
         return ['azure', 'azblob']
-    
+
     def rename(self, remote_old, remote_new):
         remote_new = remote_new.lstrip('/')
         remote_new_wpath = self.path + remote_new
@@ -354,13 +355,15 @@ class Azure(Transfer):
 
         from_url = self.container_url + "/" + remote_old_wpath + "?" + self.credentials
 
-        logger.debug(f"remote_old={remote_old_wpath}; from_url={self.container_url}/{remote_old_wpath}; remote_new={remote_new_wpath}")
+        logger.debug(
+            f"remote_old={remote_old_wpath}; from_url={
+                self.container_url}/{remote_old_wpath}; remote_new={remote_new_wpath}")
         b_new.start_copy_from_url(from_url)
         self.client.delete_blob(remote_old_wpath.lstrip('/'))
-    
+
     def rmdir(self, path):
-        blobList=[*self.client.list_blobs(name_starts_with=path)]
-        
+        blobList = [*self.client.list_blobs(name_starts_with=path)]
+
         logger.debug(f"deleting {len(blobList)} blobs under {path}")
         while len(blobList) > 0:
             first256 = blobList[0:255]

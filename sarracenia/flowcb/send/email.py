@@ -2,7 +2,7 @@
 Email Sender
 ============
 
-``sarracenia.flowcb.send.email.Email`` is an sr3 sender plugin. It will send the *contents* of a 
+``sarracenia.flowcb.send.email.Email`` is an sr3 sender plugin. It will send the *contents* of a
 file in the *body* of an email to the configured recipient(s).
 
 The email subject will be the name of the file being sent.
@@ -28,10 +28,10 @@ Usage:
         # or, with a "human readable" sender name:
 
         email_from  Santa Claus <santa@canada.ca>
-    
+
     3. Configure recipients using accept statements. You must have at least one recipient per accept statement.
        Multiple recipients can be specified by separating each address by a comma. ::
-    
+
         accept .*AACN27.* test@example.com
         accept .*SXCN.*   user1@example.com, user2@example.com
         accept .*CACN.* DESTFN=A_CACN_Bulletin  me@ssc-spc.gc.ca,you@ssc-spc.gc.ca,someone@ssc-spc.gc.ca
@@ -40,20 +40,20 @@ To change the filename that is sent in the subject, you can use the filename opt
 DESTFN/DESTFNSCRIPT on a per-accept basis. The ``email_subject_prepend`` option can be used to add text before
 the filename in the email subject. For example: ::
 
-    email_subject_prepend  Sent by Sarracenia: 
+    email_subject_prepend  Sent by Sarracenia:
 
 There is also the option of sending a file as an attachment instead of embedding its contents in the email.
 To do this, there are two options that can be used.
 `` email_attachment `` is a boolean value to specify if you want to send files as attachments
 `` email_attachment_text `` is the optional text that can be added inside of the email content, with the attached file.
-    
+
     email_attachment True
     email_attachment_text Attached in this email is data coming from XXX
 
 
 Future Improvement Ideas:
   - SMTP on different ports and with authentication
-    
+
 Original Author: Wahaj Taseer - June, 2019
 """
 
@@ -74,8 +74,8 @@ logger = logging.getLogger(__name__)
 class Email(FlowCB):
     def __init__(self, options):
 
-        super().__init__(options,logger)
-        self.o.add_option('email_from',            'str', default_value='')
+        super().__init__(options, logger)
+        self.o.add_option('email_from', 'str', default_value='')
         self.o.add_option('email_subject_prepend', 'str', default_value='')
         self.o.add_option('email_attachment', 'flag', default_value=False)
         self.o.add_option('email_attachment_text', 'str', default_value='')
@@ -107,13 +107,13 @@ class Email(FlowCB):
         # sendTo --> email_server
         self.email_server = self.o.sendTo.strip('/')
         if '//' in self.email_server:
-            self.email_server = self.email_server[self.email_server.find('//') + 2 :]
+            self.email_server = self.email_server[self.email_server.find('//') + 2:]
         logger.debug(f"Using email server: {self.email_server} (sendTo was: {self.o.sendTo})")
 
         # Add trailing space to email_subject_prepend
         if len(self.o.email_subject_prepend) > 0:
             self.o.email_subject_prepend += ' '
-            
+
     def after_work(self, worklist):
         """ This plugin can also be used in a sarra/subscriber, mostly for testing purposes.
         """
@@ -133,8 +133,8 @@ class Email(FlowCB):
         """ Send an email to each recipient defined in the config file for a particular accept statement.
             The file contents are sent in the body of the email. The subject is the filename.
         """
-        
-        if not msg['relPath'].startswith(self.o.baseDir): 
+
+        if not msg['relPath'].startswith(self.o.baseDir):
             ipath = os.path.normpath(f"{self.o.baseDir}/{msg['relPath']}")
         else:
             ipath = os.path.normpath(f"{msg['relPath']}")
@@ -143,7 +143,7 @@ class Email(FlowCB):
             logger.error("Recipients unknown, can't email file {ipath}")
             # negative return == permanent failure, don't retry
             return -1
-        
+
         # Get list of recipients for this message, from the mask that matched the filename/path
         recipients = self.o.masks[msg['_mask_index']][-1]
 
@@ -152,7 +152,8 @@ class Email(FlowCB):
 
         # Prepare the email message
         try:
-            # Build a non-text email message for the attachment if specified or if the file type can be deemed to be an image.
+            # Build a non-text email message for the attachment if specified or if the
+            # file type can be deemed to be an image.
             if self.o.email_attachment or (len(file_type) > 0 and file_type[0] and 'image' in file_type[0]):
                 emsg = MIMEMultipart()
                 emsg_text = MIMEText(f"{self.o.email_attachment_text}")
@@ -172,13 +173,13 @@ class Email(FlowCB):
             logger.debug('Exception details:', exc_info=True)
             # No retry if the file doesn't exist
             return -1
-        
+
         emsg['Subject'] = self.o.email_subject_prepend + msg['new_file']
 
         # if not set in the config, just don't set From, the From address will usually be derived from the hostname
         if self.o.email_from and len(self.o.email_from) > 0:
             emsg['From'] = self.o.email_from
-        
+
         # if sending to any one recipient fails, we will return False, triggering a retry.
         all_ok = True
         for recipient in recipients:
@@ -202,7 +203,7 @@ class Email(FlowCB):
                 logger.info(f'Sent file {logstr}')
 
             except Exception as e:
-                logger.error(f'failed to send {logstr} from {self.o.email_from} using server {self.email_server}' 
+                logger.error(f'failed to send {logstr} from {self.o.email_from} using server {self.email_server}'
                              + f' because {e}')
                 logger.debug('Exception details:', exc_info=True)
                 all_ok = False

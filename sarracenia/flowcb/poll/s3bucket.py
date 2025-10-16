@@ -41,19 +41,19 @@ logger = logging.getLogger(__name__)
 class S3bucket(FlowCB):
     def __init__(self, options):
 
-        super().__init__(options,logger)
+        super().__init__(options, logger)
 
         self.minutetracker = datetime.datetime.utcnow() + datetime.timedelta(minutes=-70)
-        
-        logger.info( f" url: {self.o.pollUrl} " )
+
+        logger.info(f" url: {self.o.pollUrl} ")
         ppu = urllib.parse.urlparse(self.o.pollUrl)
 
-        logger.info( f" host: {ppu.netloc} path:{ppu.path} " )
+        logger.info(f" host: {ppu.netloc} path:{ppu.path} ")
         self.service = ppu.netloc.split('-')[0]
         self.region = ppu.netloc.split('.')[0][3:]
         self.bucket = ppu.path.split('/')[2]
         self.prefix = '/'.join(ppu.path.split('/')[3:])
-        logger.info( f" service: {self.service} region: {self.region} bucket:{self.bucket}  prefix={self.prefix}" )
+        logger.info(f" service: {self.service} region: {self.region} bucket:{self.bucket}  prefix={self.prefix}")
 
     def poll(self):
 
@@ -61,12 +61,12 @@ class S3bucket(FlowCB):
         keys = []
         keysizes = []
 
-        current_prefix = self.o.variableExpansion( self.prefix )
-        logger.info("current_prefix: {current_prefix}" )
+        current_prefix = self.o.variableExpansion(self.prefix)
+        logger.info("current_prefix: {current_prefix}")
 
         # Gets the list of active weather station ICAOs from
-        s3 = boto3.client( self.service,
-            region_name=self.region, config=Config(signature_version=UNSIGNED, retries={ 'max_attempts': 3 }))
+        s3 = boto3.client(self.service,
+                          region_name=self.region, config=Config(signature_version=UNSIGNED, retries={'max_attempts': 3}))
         try:
             for obj in s3.list_objects(Bucket=self.bucket, Prefix=current_prefix)['Contents']:
                 keys.append(obj['Key'])
@@ -82,7 +82,7 @@ class S3bucket(FlowCB):
             fakestat = paramiko.SFTPAttributes()
             fakestat.st_size = keysizes[i]
 
-            m = sarracenia.Message.fromFileInfo(keys[i].replace(self.prefix,'',1), self.o, fakestat)
+            m = sarracenia.Message.fromFileInfo(keys[i].replace(self.prefix, '', 1), self.o, fakestat)
             gathered_messages.append(m)
 
             i += 1

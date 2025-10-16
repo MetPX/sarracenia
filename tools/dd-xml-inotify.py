@@ -1,6 +1,10 @@
 #!/usr/bin/python
 
-import os, socket, stat, sys, time
+import os
+import socket
+import stat
+import sys
+import time
 import amqplib.client_0_8 as amqp
 
 import asyncore
@@ -79,11 +83,11 @@ class Publisher:
     def close(self):
         try:
             self.channel.close()
-        except:
+        except BaseException:
             pass
         try:
             self.connection.close()
-        except:
+        except BaseException:
             pass
         self.connected = False
 
@@ -112,7 +116,7 @@ class Publisher:
                 self.connected = True
                 print("AMQP Sender is now connected to: %s" % str(self.host))
                 break
-            except:
+            except BaseException:
                 (type, value, tb) = sys.exc_info()
                 print("AMQP Sender cannot connected to: %s" % str(self.host))
                 print("Type: %s, Value: %s, Sleeping 5 seconds ..." %
@@ -131,7 +135,7 @@ class Publisher:
                                application_headers=hdr)
             self.channel.basic_publish(msg, self.exchange_name, exchange_key)
             print("Key %s Message %s " % (exchange_key, message))
-        except:
+        except BaseException:
             (type, value, tb) = sys.exc_info()
             print("AMQP cound not publish...reconnecting")
             print("Type: %s, Value: %s, Sleeping 5 seconds ..." %
@@ -170,7 +174,7 @@ class Publisher:
                                content_type='text/plain',
                                application_headers=hdr)
             self.channel.basic_publish(msg, self.exchange_name, exchange_key)
-        except:
+        except BaseException:
             (type, value, tb) = sys.exc_info()
             print("AMQP cound not publish...reconnecting")
             print("Type: %s, Value: %s, Sleeping 5 seconds ..." %
@@ -194,8 +198,10 @@ publisher = Publisher(HOST)
 class EventHandler(pyinotify.ProcessEvent):
     def process_IN_CLOSE_WRITE(self, event):
         for spath in SRC:
-            if not spath in event.pathname: continue
-            if event.pathname[-4:] == '.tmp': continue
+            if not spath in event.pathname:
+                continue
+            if event.pathname[-4:] == '.tmp':
+                continue
 
             filepath = event.pathname
             f = open(filepath, 'rb')
@@ -245,13 +251,14 @@ for spath in SRC:
 
     entries = os.listdir(spath)
     wdd = wm.add_watch(spath, pyinotify.IN_CLOSE_WRITE, rec=True)
-    print( "watching = " + spath)
+    print("watching = " + spath)
 
     for d in entries:
         currentDir = spath + '/' + d
-        if os.path.isfile(currentDir): continue
+        if os.path.isfile(currentDir):
+            continue
         wdd = wm.add_watch(currentDir, pyinotify.IN_CLOSE_WRITE, rec=True)
-        print( "watching = " + currentDir)
+        print("watching = " + currentDir)
 
 # start event loop
 asyncore.loop()

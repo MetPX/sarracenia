@@ -1,9 +1,12 @@
 import pytest
 from tests.conftest import *
 from unittest.mock import patch
-import os, types, copy
+import os
+import types
+import copy
 
-import fakeredis, urllib.parse
+import fakeredis
+import urllib.parse
 
 from sarracenia.flowcb.nodupe.redis import Redis
 from sarracenia import Message as SR3Message
@@ -11,7 +14,6 @@ from sarracenia import Message as SR3Message
 import logging
 
 logger = logging.getLogger(__name__)
-
 
 
 class Options:
@@ -27,27 +29,30 @@ class Options:
         self.housekeeping = float(39)
         self.fileAgeMin = 0
         self.fileAgeMax = 0
-    def add_option(self, option, type, default = None):
+
+    def add_option(self, option, type, default=None):
         if not hasattr(self, option):
             setattr(self, option, default)
     pass
+
 
 def make_message():
     m = SR3Message()
     m["pubTime"] = "20180118151049.356378078"
     m["topic"] = "v02.post.sent_by_tsource2send"
     m["mtime"] = "20180118151048"
-    m["identity"] = {  
-                "method" : "sha512", 
-                "value" : "k5z2h7QHH2ZCC9x0YX2aZa+fC4CgTlFp3I0lntR94ZqbLOhqDHeJWnIi0+mym9pg9e8rS4N9v3IWQm\\nXMIdF7CQ=="
-        }
+    m["identity"] = {
+        "method": "sha512",
+        "value": "k5z2h7QHH2ZCC9x0YX2aZa+fC4CgTlFp3I0lntR94ZqbLOhqDHeJWnIi0+mym9pg9e8rS4N9v3IWQm\\nXMIdF7CQ=="
+    }
     m["atime"] = "20180118151049.356378078"
     m["mode"] = "644"
     m["size"] = "69"
-    m["baseUrl"] =  "https://NotARealURL"
+    m["baseUrl"] = "https://NotARealURL"
     m["relPath"] = "ThisIsAPath/To/A/File.txt"
     m["_deleteOnPost"] = set()
     return m
+
 
 WorkList = types.SimpleNamespace()
 WorkList.ok = []
@@ -55,6 +60,7 @@ WorkList.incoming = []
 WorkList.rejected = []
 WorkList.failed = []
 WorkList.directories_ok = []
+
 
 def redis_setup(nodupe, vals):
     for val in vals:
@@ -65,12 +71,13 @@ def redis_setup(nodupe, vals):
     nodupe._redis.set(nodupe._rkey_count, len(vals))
     nodupe._last_count = len(vals)
 
+
 def test__deriveKey(tmp_path):
     with patch(target="redis.from_url", new=fakeredis.FakeStrictRedis.from_url, ):
         BaseOptions = Options()
         BaseOptions.pid_filename = str(tmp_path) + os.sep + "pidfilename.txt"
         BaseOptions.config = "test__deriveKey.conf"
-        BaseOptions.nodupe_redis_keybase = "redis_test__" + BaseOptions.config.split(".")[0] 
+        BaseOptions.nodupe_redis_keybase = "redis_test__" + BaseOptions.config.split(".")[0]
 
         nodupe = Redis(BaseOptions)
 
@@ -88,24 +95,25 @@ def test__deriveKey(tmp_path):
 
         thismsg = make_message()
         thismsg['identity'] = {'method': "cod"}
-        assert nodupe.deriveKey(thismsg) == thismsg["relPath"] + "," + thismsg["mtime"] + "," + thismsg["size"] 
+        assert nodupe.deriveKey(thismsg) == thismsg["relPath"] + "," + thismsg["mtime"] + "," + thismsg["size"]
         thismsg['identity'] = {'method': "method", 'value': "value\n"}
         assert nodupe.deriveKey(thismsg) == "method,value"
 
         thismsg = make_message()
-        assert nodupe.deriveKey(thismsg) == thismsg["identity"]["method"]+","+thismsg["identity"]["value"]
+        assert nodupe.deriveKey(thismsg) == thismsg["identity"]["method"] + "," + thismsg["identity"]["value"]
         thismsg['size'] = 28234
         del thismsg['identity']
-        assert nodupe.deriveKey(thismsg) == thismsg["relPath"] + "," + thismsg["mtime"] + ",28234" 
+        assert nodupe.deriveKey(thismsg) == thismsg["relPath"] + "," + thismsg["mtime"] + ",28234"
         del thismsg['mtime']
-        assert nodupe.deriveKey(thismsg) == thismsg["relPath"] + "," + thismsg['pubTime'] + ",28234" 
+        assert nodupe.deriveKey(thismsg) == thismsg["relPath"] + "," + thismsg['pubTime'] + ",28234"
+
 
 def test_on_start(tmp_path):
     with patch(target="redis.from_url", new=fakeredis.FakeStrictRedis.from_url, ):
         BaseOptions = Options()
         BaseOptions.pid_filename = str(tmp_path) + os.sep + "pidfilename.txt"
         BaseOptions.config = "test_on_start.conf"
-        BaseOptions.nodupe_redis_keybase = "redis_test__" + BaseOptions.config.split(".")[0] 
+        BaseOptions.nodupe_redis_keybase = "redis_test__" + BaseOptions.config.split(".")[0]
         BaseOptions.cfg_run_dir = str(tmp_path)
         BaseOptions.no = 5
         nodupe = Redis(BaseOptions)
@@ -114,12 +122,13 @@ def test_on_start(tmp_path):
 
         assert True
 
+
 def test_on_stop(tmp_path):
     with patch(target="redis.from_url", new=fakeredis.FakeStrictRedis.from_url, ):
         BaseOptions = Options()
         BaseOptions.pid_filename = str(tmp_path) + os.sep + "pidfilename.txt"
         BaseOptions.config = "test_on_stop.conf"
-        BaseOptions.nodupe_redis_keybase = "redis_test__" + BaseOptions.config.split(".")[0] 
+        BaseOptions.nodupe_redis_keybase = "redis_test__" + BaseOptions.config.split(".")[0]
         BaseOptions.cfg_run_dir = str(tmp_path)
         BaseOptions.no = 5
         nodupe = Redis(BaseOptions)
@@ -128,6 +137,7 @@ def test_on_stop(tmp_path):
 
         assert True
 
+
 def test_on_housekeeping(tmp_path, caplog):
     with patch(target="redis.from_url", new=fakeredis.FakeStrictRedis.from_url, ):
         import time
@@ -135,16 +145,16 @@ def test_on_housekeeping(tmp_path, caplog):
         BaseOptions = Options()
         BaseOptions.pid_filename = str(tmp_path) + os.sep + "pidfilename.txt"
         BaseOptions.config = "test_on_housekeeping.conf"
-        BaseOptions.nodupe_redis_keybase = "redis_test__" + BaseOptions.config.split(".")[0] 
+        BaseOptions.nodupe_redis_keybase = "redis_test__" + BaseOptions.config.split(".")[0]
         BaseOptions.cfg_run_dir = str(tmp_path)
         BaseOptions.no = 5
         nodupe = Redis(BaseOptions)
         nodupe.o.nodupe_ttl = 900
 
         cache = [
-            ['key1', '/some/path/to/file1.txt', float(time.time() - 300)], 
-            ['key2', '/some/path/to/file2a.txt', float(time.time() - 300)], 
-            ['key2', '/some/path/to/file2b.txt', float(time.time() - 300)], 
+            ['key1', '/some/path/to/file1.txt', float(time.time() - 300)],
+            ['key2', '/some/path/to/file2a.txt', float(time.time() - 300)],
+            ['key2', '/some/path/to/file2b.txt', float(time.time() - 300)],
             ['key3', '/some/path/to/file3.txt', float(time.time() - 3000)],
         ]
         redis_setup(nodupe, cache)
@@ -162,6 +172,7 @@ def test_on_housekeeping(tmp_path, caplog):
         assert nodupe._last_count == 4
         assert log_found == True
 
+
 def test__is_new(tmp_path, capsys):
     with patch(target="redis.from_url", new=fakeredis.FakeStrictRedis.from_url, ):
         import time
@@ -169,7 +180,7 @@ def test__is_new(tmp_path, capsys):
         BaseOptions = Options()
         BaseOptions.pid_filename = str(tmp_path) + os.sep + "pidfilename.txt"
         BaseOptions.config = "test__is_new.conf"
-        BaseOptions.nodupe_redis_keybase = "redis_test__" + BaseOptions.config.split(".")[0] 
+        BaseOptions.nodupe_redis_keybase = "redis_test__" + BaseOptions.config.split(".")[0]
         BaseOptions.cfg_run_dir = str(tmp_path)
         BaseOptions.no = 5
         nodupe = Redis(BaseOptions)
@@ -177,9 +188,9 @@ def test__is_new(tmp_path, capsys):
         nodupe.now = nowflt()
 
         cache = [
-            ['key1', '/some/path/to/file1.txt', float(time.time() - 300)], 
-            ['key2', '/some/path/to/file2a.txt', float(time.time() - 300)], 
-            ['key2', '/some/path/to/file2b.txt', float(time.time() - 300)], 
+            ['key1', '/some/path/to/file1.txt', float(time.time() - 300)],
+            ['key2', '/some/path/to/file2a.txt', float(time.time() - 300)],
+            ['key2', '/some/path/to/file2b.txt', float(time.time() - 300)],
             ['key3', '/some/path/to/file3.txt', float(time.time() - 3000)],
         ]
         redis_setup(nodupe, cache)
@@ -187,14 +198,16 @@ def test__is_new(tmp_path, capsys):
         message = make_message()
 
         k = nodupe.deriveKey(message)
-        k = nodupe._rkey_base + ":" + nodupe._hash(k) + "." + nodupe._hash(message["relPath"]) 
+        k = nodupe._rkey_base + ":" + nodupe._hash(k) + "." + nodupe._hash(message["relPath"])
 
         assert nodupe._is_new(message) == True
         assert nodupe._redis.get(k) == bytes(str(nodupe.now) + "|" + message['relPath'], 'utf-8')
         assert len(nodupe._redis.keys(nodupe._rkey_base + ":*")) == 5
 
-        message['nodupe_override'] = {"path": message['relPath'].split('/')[-1], "key": message['relPath'].split('/')[-1]}
-        k = nodupe._rkey_base + ":" + nodupe._hash(message['nodupe_override']['key']) + "." + nodupe._hash(message['nodupe_override']['path'])
+        message['nodupe_override'] = {"path": message['relPath'].split(
+            '/')[-1], "key": message['relPath'].split('/')[-1]}
+        k = nodupe._rkey_base + ":" + \
+            nodupe._hash(message['nodupe_override']['key']) + "." + nodupe._hash(message['nodupe_override']['path'])
         assert nodupe._is_new(message) == True
         assert nodupe._redis.get(k) == bytes(str(nodupe.now) + "|" + message['relPath'].split('/')[-1], 'utf-8')
         assert len(nodupe._redis.keys(nodupe._rkey_base + ":*")) == 6
@@ -207,7 +220,6 @@ def test__is_new(tmp_path, capsys):
         assert nodupe.cache_hit == '/some/path/to/file1.txt'
 
 
-
 @pytest.mark.depends(on=['test__is_new'])
 def test_after_accept(tmp_path, capsys):
     with patch(target="redis.from_url", new=fakeredis.FakeStrictRedis.from_url, ):
@@ -216,7 +228,7 @@ def test_after_accept(tmp_path, capsys):
         BaseOptions = Options()
         BaseOptions.pid_filename = str(tmp_path) + os.sep + "pidfilename.txt"
         BaseOptions.config = "test_after_accept.conf"
-        BaseOptions.nodupe_redis_keybase = "redis_test__" + BaseOptions.config.split(".")[0] 
+        BaseOptions.nodupe_redis_keybase = "redis_test__" + BaseOptions.config.split(".")[0]
         BaseOptions.cfg_run_dir = str(tmp_path)
         BaseOptions.no = 5
         BaseOptions.inflight = 0
@@ -226,7 +238,7 @@ def test_after_accept(tmp_path, capsys):
         nodupe.now = nowflt()
 
         message = make_message()
-        
+
         test_after_accept_worklist = copy.deepcopy(WorkList)
         test_after_accept_worklist.incoming = [message, message, message]
 
@@ -236,10 +248,11 @@ def test_after_accept(tmp_path, capsys):
         assert len(test_after_accept_worklist.rejected) == 2
 
         k = nodupe.deriveKey(message)
-        k = nodupe._rkey_base + ":" + nodupe._hash(k) + "." + nodupe._hash(message["relPath"]) 
+        k = nodupe._rkey_base + ":" + nodupe._hash(k) + "." + nodupe._hash(message["relPath"])
 
         assert nodupe._redis.get(k) == bytes(str(nodupe.now) + "|" + message['relPath'], 'utf-8')
         assert len(nodupe._redis.keys(nodupe._rkey_base + ":*")) == 1
+
 
 @pytest.mark.depends(on=['test__is_new'])
 def test_after_accept__WithFileAges(tmp_path, capsys):
@@ -249,7 +262,7 @@ def test_after_accept__WithFileAges(tmp_path, capsys):
         BaseOptions = Options()
         BaseOptions.pid_filename = str(tmp_path) + os.sep + "pidfilename.txt"
         BaseOptions.config = "test_after_accept__WithFileAges.conf"
-        BaseOptions.nodupe_redis_keybase = "redis_test__" + BaseOptions.config.split(".")[0] 
+        BaseOptions.nodupe_redis_keybase = "redis_test__" + BaseOptions.config.split(".")[0]
         BaseOptions.cfg_run_dir = str(tmp_path)
         BaseOptions.no = 5
         BaseOptions.inflight = 0
@@ -265,15 +278,18 @@ def test_after_accept__WithFileAges(tmp_path, capsys):
         message_old['mtime'] = timeflt2str(nodupe.now - 10000)
         message_new = make_message()
         message_new['mtime'] = nowstr()
-        
+
         test_after_accept__WithFileAges_worklist = copy.deepcopy(WorkList)
         test_after_accept__WithFileAges_worklist.incoming = [message_old, message_new]
 
         nodupe.after_accept(test_after_accept__WithFileAges_worklist)
 
         assert len(test_after_accept__WithFileAges_worklist.rejected) == 2
-        assert test_after_accept__WithFileAges_worklist.rejected[0]['reject'].count(message_old['mtime'] + " too old (nodupe check), oldest allowed")
-        assert test_after_accept__WithFileAges_worklist.rejected[1]['reject'].count(message_new['mtime'] + " too new (nodupe check), newest allowed")
+        assert test_after_accept__WithFileAges_worklist.rejected[0]['reject'].count(
+            message_old['mtime'] + " too old (nodupe check), oldest allowed")
+        assert test_after_accept__WithFileAges_worklist.rejected[1]['reject'].count(
+            message_new['mtime'] + " too new (nodupe check), newest allowed")
+
 
 @pytest.mark.depends(on=['test__is_new'])
 def test_after_accept__InFlight(tmp_path, capsys):
@@ -283,7 +299,7 @@ def test_after_accept__InFlight(tmp_path, capsys):
         BaseOptions = Options()
         BaseOptions.pid_filename = str(tmp_path) + os.sep + "pidfilename.txt"
         BaseOptions.config = "test_after_accept__InFlight.conf"
-        BaseOptions.nodupe_redis_keybase = "redis_test__" + BaseOptions.config.split(".")[0] 
+        BaseOptions.nodupe_redis_keybase = "redis_test__" + BaseOptions.config.split(".")[0]
         BaseOptions.cfg_run_dir = str(tmp_path)
         BaseOptions.no = 5
         BaseOptions.inflight = 1000
@@ -297,7 +313,7 @@ def test_after_accept__InFlight(tmp_path, capsys):
         message_old['mtime'] = timeflt2str(nodupe.now - 10000)
         message_new = make_message()
         message_new['mtime'] = nowstr()
-        
+
         test_after_accept__InFlight_worklist = copy.deepcopy(WorkList)
         test_after_accept__InFlight_worklist.incoming = [message_old, message_new]
 
@@ -306,4 +322,5 @@ def test_after_accept__InFlight(tmp_path, capsys):
         assert len(test_after_accept__InFlight_worklist.rejected) == 1
         assert len(test_after_accept__InFlight_worklist.incoming) == 1
         assert test_after_accept__InFlight_worklist.incoming[0]['mtime'] == message_old['mtime']
-        assert test_after_accept__InFlight_worklist.rejected[0]['reject'].count(message_new['mtime'] + " too new (nodupe check), newest allowed")
+        assert test_after_accept__InFlight_worklist.rejected[0]['reject'].count(
+            message_new['mtime'] + " too new (nodupe check), newest allowed")

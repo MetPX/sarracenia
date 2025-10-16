@@ -6,7 +6,7 @@ try:
     from sr_http import *
     from sr_message import *
     from sr_util import *
-except:
+except BaseException:
     from sarra.sr_config import *
     from sarra.sr_consumer import *
     from sarra.sr_http import *
@@ -29,13 +29,13 @@ def self_test():
 
     print("SETUP 0: get 1 message from dd.weather")
 
-    #setup consumer to catch first post
+    # setup consumer to catch first post
     cfg = sr_config()
     cfg.configure()
     cfg.use_pika = False
     cfg.broker = urllib.parse.urlparse(
         "amqps://anonymous:anonymous@hpfx.collab.science.gc.ca")
-    #cfg.broker         = urllib.parse.urlparse("amqps://anonymous:anonymous@dd.weather.gc.ca")
+    # cfg.broker         = urllib.parse.urlparse("amqps://anonymous:anonymous@dd.weather.gc.ca")
     cfg.prefetch = 10
     cfg.bindings = [('xpublic', 'v02.post.#')]
     cfg.durable = False
@@ -86,7 +86,7 @@ def self_test():
     try:
         os.unlink("./toto")
         print("TEST 01: OK")
-    except:
+    except BaseException:
         print("TEST 01: FAILED, file not found")
         failed = True
 
@@ -96,7 +96,7 @@ def self_test():
     try:
         os.unlink("./toto")
         print("TEST 02: OK")
-    except:
+    except BaseException:
         print("TEST 02: FAILED, file not found")
         failed = True
 
@@ -106,7 +106,7 @@ def self_test():
     try:
         os.unlink("./toto")
         print("TEST 03: OK")
-    except:
+    except BaseException:
         print("TEST 03: FAILED, file not found")
         failed = True
 
@@ -147,15 +147,15 @@ def self_test():
 
     try:
         os.unlink("titi")
-    except:
+    except BaseException:
         pass
     try:
         os.unlink("toto")
-    except:
+    except BaseException:
         pass
     try:
         os.unlink(consumer.queuepath)
-    except:
+    except BaseException:
         pass
 
     consumer.cleanup()
@@ -176,7 +176,7 @@ def self_test():
 def main():
     try:
         self_test()
-    except:
+    except BaseException:
         print("sr_http: TEST FAILED")
         raise
 

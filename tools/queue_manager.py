@@ -1,15 +1,18 @@
 #!/usr/bin/python
 
-import commands, pika, sys, time
+import commands
+import pika
+import sys
+import time
 
 # defines limits
 
 max_messages = 25000
 max_memory = 50000000
 
-#===========================
+# ===========================
 # defines rabbitmqctl commands
-#===========================
+# ===========================
 
 
 class DeleteQueueNamed(object):
@@ -43,15 +46,16 @@ class DeleteQueueNamed(object):
         self._connection.close()
 
 
-#===========================
+# ===========================
 # defines rabbitmqctl commands
-#===========================
+# ===========================
 
 
 def rabbitmqctl(options):
     cmd = "/usr/sbin/rabbitmqctl " + options
     (status, text) = commands.getstatusoutput(cmd)
-    if len(text) == 0: return []
+    if len(text) == 0:
+        return []
     if status != 0:
         print("Error could not execute this:")
         print(cmd)
@@ -59,14 +63,14 @@ def rabbitmqctl(options):
     return text.split('\n')
 
 
-#===========================
+# ===========================
 
 # get active clients
 
 clients = rabbitmqctl(
     "list_consumers | grep -v  ^Listing | grep -v ^...done | awk '{print $1}'")
 
-#===========================
+# ===========================
 
 # get active queues (first word is the queue it uses)
 
@@ -81,7 +85,7 @@ for l in qmm:
     parts = l.split()
     queues[parts[0]] = [int(parts[1]), int(parts[2])]
 
-#===========================
+# ===========================
 
 # find queue binding with exchange
 
@@ -96,7 +100,8 @@ qx = rabbitmqctl(
 for l in qx:
     l = l.strip()
     parts = l.split()
-    if len(parts) != 2: continue
+    if len(parts) != 2:
+        continue
     bindings[parts[0]] = parts[1]
 
 # check queue without consumers
@@ -107,7 +112,8 @@ qdeleted = []
 for q in queues:
 
     # queue used by a client
-    if q in clients: continue
+    if q in clients:
+        continue
 
     nb_messages, qmemory = queues[q]
 

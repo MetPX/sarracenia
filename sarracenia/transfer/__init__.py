@@ -21,7 +21,11 @@
 #
 #
 
-import calendar, datetime
+import sarracenia.transfer.https
+import sarracenia.transfer.ftp
+import sarracenia.transfer.file
+import calendar
+import datetime
 from hashlib import md5
 from hashlib import sha512
 import humanize
@@ -35,15 +39,15 @@ import time
 import urllib
 import urllib.parse
 
-#from sarracenia.sr_xattr import *
+# from sarracenia.sr_xattr import *
 from sarracenia import nowflt, timestr2flt
 from sarracenia.featuredetection import features
 
 logger = logging.getLogger(__name__)
 
-#============================================================
+# ============================================================
 # sigalarm
-#============================================================
+# ============================================================
 
 
 class TimeoutException(Exception):
@@ -65,7 +69,7 @@ def alarm_raise(n, f):
 # alarm_set
 def alarm_set(time):
     """
-       FIXME: replace with set itimer for > 1 second resolution... currently rouding to nearest second. 
+       FIXME: replace with set itimer for > 1 second resolution... currently rouding to nearest second.
     """
 
     if sys.platform != 'win32':
@@ -81,23 +85,23 @@ def alarm_set(time):
 class Transfer():
     """
      This is a sort of abstract base class for implementing transfer protocols.
-     Implemented subclasses include support for: local files, https, sftp, and ftp. 
+     Implemented subclasses include support for: local files, https, sftp, and ftp.
 
      This class has routines that do i/o given descriptors opened by the sub-classes,
      so that each one does not need to re-implement copying, for example.
 
      Each subclass needs to implement the following routines:
 
-     if downloading:: 
+     if downloading::
 
          get    ( msg, remote_file, local_file, remote_offset=0, local_offset=0, length=0 )
-         getAccellerated( msg, remote_file, local_file, length ) 
+         getAccellerated( msg, remote_file, local_file, length )
          ls     ()
          cd     (dir)
          delete (path)
-    
 
-     if sending:: 
+
+     if sending::
 
          put    ( msg, remote_file, local_file, remote_offset=0, local_offset=0, length=0 )
          putAccelerated ( msg, remote_file, local_file, length=0 )
@@ -120,7 +124,7 @@ class Transfer():
 
      The first format is the vastly preferred one. The others are fallbacks when the first
      is not available.
-     The flowcb/poll/__init__.py lsdir() routing will turn ls tries to transform any of 
+     The flowcb/poll/__init__.py lsdir() routing will turn ls tries to transform any of
      these return values into the first form (a dictionary of SFTPAttributes)
      Each SFTPAttributes structure needs st_mode set, and folders need stat.S_IFDIR set.
 
@@ -177,32 +181,33 @@ class Transfer():
         self.lastLog = self.tbegin
         self.byteRate = 0
         self.logMinimumInterval = 60
-        #if hasattr(self.o,'sanity_log_dead'):
+        # if hasattr(self.o,'sanity_log_dead'):
         #    self.logMinimumInterval = self.o.runStateThreshold_hung/4
-        #else:
+        # else:
         #    self.logMinimumInterval = 30
 
-    def logProgress(self,sz):
+    def logProgress(self, sz):
         """
 
-           if there hasn't been a log message in at least logMinumumInterval, 
+           if there hasn't been a log message in at least logMinumumInterval,
            then put out a message, so sanity does not think it is dead.
-           
+
            this should print out a message once in a while for long file transfers.
         """
-        now=nowflt()
-        if now-self.lastLog > self.logMinimumInterval:
-            logger.info( f"{humanize.naturalsize(sz,binary=True)} written so far.")
-            self.lastLog=now
+        now = nowflt()
+        if now - self.lastLog > self.logMinimumInterval:
+            logger.info(f"{humanize.naturalsize(sz, binary=True)} written so far.")
+            self.lastLog = now
 
     def local_read_close(self, src):
-        #logger.debug("sr_proto local_read_close")
+        # logger.debug("sr_proto local_read_close")
 
         src.close()
 
         # finalize checksum
 
-        if self.sumalgo: self.checksum = self.sumalgo.value
+        if self.sumalgo:
+            self.checksum = self.sumalgo.value
         if self.data_sumalgo:
             self.data_checksum = self.data_sumalgo.value
 
@@ -215,12 +220,15 @@ class Transfer():
         # local_file opening and seeking if needed
 
         src = open(local_file, 'rb')
-        if local_offset != 0: src.seek(local_offset, 0)
+        if local_offset != 0:
+            src.seek(local_offset, 0)
 
         # initialize sumalgo
 
-        if self.sumalgo: self.sumalgo.set_path(local_file)
-        if self.data_sumalgo: self.data_sumalgo.set_path(local_file)
+        if self.sumalgo:
+            self.sumalgo.set_path(local_file)
+        if self.data_sumalgo:
+            self.data_sumalgo.set_path(local_file)
 
         return src
 
@@ -239,12 +247,13 @@ class Transfer():
 
         # finalize checksum
 
-        if self.sumalgo: self.checksum = self.sumalgo.value
+        if self.sumalgo:
+            self.checksum = self.sumalgo.value
         if self.data_sumalgo:
             self.data_checksum = self.data_sumalgo.value
 
     def local_write_open(self, local_file, local_offset=0):
-        #logger.debug("sr_proto local_write_open")
+        # logger.debug("sr_proto local_write_open")
 
         # reset ckecksum, fpos
 
@@ -260,20 +269,21 @@ class Transfer():
         # local_file opening and seeking if needed
 
         dst = open(local_file, 'r+b')
-        if local_offset != 0: dst.seek(local_offset, 0)
+        if local_offset != 0:
+            dst.seek(local_offset, 0)
 
         return dst
 
     def on_data(self, chunk) -> bytes:
         """
-            transform data as it is being read. 
-            Given a buffer, return the transformed buffer. 
+            transform data as it is being read.
+            Given a buffer, return the transformed buffer.
             Checksum calculation is based on pre transformation... likely need
             a post transformation value as well.
         """
         return chunk
 
-        #FIXME ... need to re-enable on_data plugins... not sure how they should work.
+        # FIXME ... need to re-enable on_data plugins... not sure how they should work.
         # sub-classing of transfer class?
 
     def read_write(self, src, dst, length=0):
@@ -290,7 +300,8 @@ class Transfer():
 
         if length == 0:
             while True:
-                if self.o.timeout: alarm_set(self.o.timeout)
+                if self.o.timeout:
+                    alarm_set(self.o.timeout)
                 chunk = src.read(self.o.bufSize)
                 if chunk:
                     new_chunk = self.on_data(chunk)
@@ -298,8 +309,10 @@ class Transfer():
                     dst.write(new_chunk)
                     self.logProgress(rw_length)
                 alarm_cancel()
-                if not chunk: break
-                if self.sumalgo: self.sumalgo.update(chunk)
+                if not chunk:
+                    break
+                if self.sumalgo:
+                    self.sumalgo.update(chunk)
                 self.throttle(chunk)
             return rw_length
 
@@ -312,7 +325,8 @@ class Transfer():
 
         i = 0
         while i < nc:
-            if self.o.timeout: alarm_set(self.o.timeout)
+            if self.o.timeout:
+                alarm_set(self.o.timeout)
             chunk = src.read(self.o.bufSize)
             if chunk:
                 new_chunk = self.on_data(chunk)
@@ -320,15 +334,18 @@ class Transfer():
                 dst.write(new_chunk)
                 self.logProgress(rw_length)
             alarm_cancel()
-            if not chunk: break
-            if self.sumalgo: self.sumalgo.update(chunk)
+            if not chunk:
+                break
+            if self.sumalgo:
+                self.sumalgo.update(chunk)
             self.throttle(chunk)
             i = i + 1
 
         # remaining
 
         if r > 0:
-            if self.o.timeout: alarm_set(self.o.timeout)
+            if self.o.timeout:
+                alarm_set(self.o.timeout)
             chunk = src.read(r)
             if chunk:
                 new_chunk = self.on_data(chunk)
@@ -336,7 +353,8 @@ class Transfer():
                 dst.write(new_chunk)
                 self.logProgress(rw_length)
             alarm_cancel()
-            if self.sumalgo: self.sumalgo.update(chunk)
+            if self.sumalgo:
+                self.sumalgo.update(chunk)
             self.throttle(chunk)
 
         return rw_length
@@ -347,15 +365,17 @@ class Transfer():
                         local_file,
                         local_offset=0,
                         length=0, exactLength=False):
-        #logger.debug("sr_proto read_writelocal")
+        # logger.debug("sr_proto read_writelocal")
 
         # open
         dst = self.local_write_open(local_file, local_offset)
 
         # initialize sumalgo
 
-        if self.sumalgo: self.sumalgo.set_path(src_path)
-        if self.data_sumalgo: self.data_sumalgo.set_path(src_path)
+        if self.sumalgo:
+            self.sumalgo.set_path(src_path)
+        if self.data_sumalgo:
+            self.data_sumalgo.set_path(src_path)
 
         # copy source to sendTo
 
@@ -369,7 +389,7 @@ class Transfer():
 
         # warn if length mismatch without transformation.
         # 2022/12/02 - pas should see a lot of these messages in HPC case from now on...
-        
+
         if not self.o.acceptSizeWrong and length != 0 and rw_length != length:
             logger.debug(
                 "util/writelocal mismatched file length writing %s. Message said to expect %d bytes.  Got %d bytes."
@@ -394,12 +414,12 @@ class Transfer():
         # warn if length mismatch without transformation.
 
         # FIXME: 2020/09 - commented out for now... unsure about this.
-        #if (not self.o.on_data_list) and length != 0 and rw_length != length :
+        # if (not self.o.on_data_list) and length != 0 and rw_length != length :
         #   logger.error("util/readlocal mismatched file length reading %s. Message announced it as %d bytes, but read %d bytes " % (local_file,length,rw_length))
 
         # 2022/12/02 - pas attempting to get files that get shorter addressed.
-        if ((length==0) or (rw_length < length)) and hasattr(dst,'truncate') and not self.o.nofsetstat:
-             dst.truncate(rw_length)
+        if ((length == 0) or (rw_length < length)) and hasattr(dst, 'truncate') and not self.o.nofsetstat:
+            dst.truncate(rw_length)
 
         return rw_length
 
@@ -426,7 +446,7 @@ class Transfer():
 
     def get_sumstr(self) -> dict:
         if self.sumalgo:
-            #return { 'method':type(self.sumalgo).__name__, 'value':self.sumalgo.value }
+            # return { 'method':type(self.sumalgo).__name__, 'value':self.sumalgo.value }
             return {
                 'method': self.sumalgo.get_method(),
                 'value': self.sumalgo.value
@@ -435,32 +455,35 @@ class Transfer():
             return None
 
     def metricsReport(self):
-        return { 'byteRateInstant': self.byteRate }
+        return {'byteRateInstant': self.byteRate}
 
     # throttle
     def throttle(self, buf):
         self.tbytes = self.tbytes + len(buf)
         rspan = nowflt() - self.tbegin
         if rspan > 0:
-            self.byteRate = self.tbytes/rspan
+            self.byteRate = self.tbytes / rspan
 
-        if hasattr(self.o,'byteRateMax') and self.o.byteRateMax and self.o.byteRateMax > 0:
+        if hasattr(self.o, 'byteRateMax') and self.o.byteRateMax and self.o.byteRateMax > 0:
             span = self.tbytes / self.o.byteRateMax
             if span > rspan:
                 stime = span - rspan
                 if stime > 10:
-                    logger.info( f"exceeded byteRateMax: {self.o.byteRateMax} sleeping for {stime:.2f}")
+                    logger.info(f"exceeded byteRateMax: {self.o.byteRateMax} sleeping for {stime:.2f}")
                 time.sleep(stime)
 
     # write_chunk
     def write_chunk(self, chunk):
-        if self.chunk_iow: self.chunk_iow.write(chunk)
+        if self.chunk_iow:
+            self.chunk_iow.write(chunk)
         self.rw_length += len(chunk)
         alarm_cancel()
         self.logProgress(self.rw_length)
-        if self.sumalgo: self.sumalgo.update(chunk)
+        if self.sumalgo:
+            self.sumalgo.update(chunk)
         self.throttle(chunk)
-        if self.o.timeout: alarm_set(self.o.timeout)
+        if self.o.timeout:
+            alarm_set(self.o.timeout)
 
     # write_chunk_end
     def write_chunk_end(self):
@@ -475,15 +498,14 @@ class Transfer():
         self.tbegin = nowflt()
         self.lastLog = self.tbegin
         self.rw_length = 0
-        if self.o.timeout: alarm_set(self.o.timeout)
+        if self.o.timeout:
+            alarm_set(self.o.timeout)
 
     def gethttpsUrl(self, path):
         return None
 
+
 # batteries included.
-import sarracenia.transfer.file
-import sarracenia.transfer.ftp
-import sarracenia.transfer.https
 
 if features['sftp']['present']:
     import sarracenia.transfer.sftp

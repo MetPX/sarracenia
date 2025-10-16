@@ -19,9 +19,10 @@ class Wistree(FlowCB):
        So when downloading, instead of writing the file to a single directory, it is
        written to a WIS-compliant folder structure.
     """
+
     def __init__(self, options):
 
-        super().__init__(options,logger)
+        super().__init__(options, logger)
         self.topic_builder = GTStoWIS2.GTStoWIS2()
         self.date_pattern = re.compile("^[0-9]{8}$")
 
@@ -41,7 +42,7 @@ class Wistree(FlowCB):
                 # /20181218/UCAR-UNIDATA/WMO-BULLETINS/IX/21/IXTD99_KNES_182147_9d73fc80e12fca52a06bf41c716cd718.cap
                 tpfx = msg['subtopic']
 
-                msg['id']= str(uuid.uuid4())
+                msg['id'] = str(uuid.uuid4())
 
                 # input has relpath=/YYYYMMDD/... + pubTime
                 # need to move the date from relPath to BaseDir, adding the T hour from pubTime.
@@ -51,10 +52,9 @@ class Wistree(FlowCB):
                     # or default to using pubTime...
                     new_baseSubDir = msg['pubTime'][0:11]
 
-
                 new_baseDir = msg['new_dir'] + os.sep + new_baseSubDir
-                new_relDir = str(uuid.uuid4()).replace('-','/')
-                msg['topic'] = 'WIS' + os.sep + self.topic_builder.mapAHLtoTopic( msg['new_file'])
+                new_relDir = str(uuid.uuid4()).replace('-', '/')
+                msg['topic'] = 'WIS' + os.sep + self.topic_builder.mapAHLtoTopic(msg['new_file'])
                 msg['new_file'] = str(uuid.uuid4())
 
                 if msg['new_file'][-len(type_suffix):] != type_suffix:
@@ -62,14 +62,14 @@ class Wistree(FlowCB):
                 else:
                     new_file = msg['new_file']
 
-                if type_suffix == 'bufr' :
-                    mtype='application/x-bufr'
+                if type_suffix == 'bufr':
+                    mtype = 'application/x-bufr'
                 elif type_suffix == 'grib':
-                    mtype='application/x-grib'
+                    mtype = 'application/x-grib'
                 else:
-                    mtype='unknown'
+                    mtype = 'unknown'
 
-                msg['links'] =  { "href": msg['baseUrl'] + '/' + msg['relPath'], 'rel':'canonical', 'type': mtype }
+                msg['links'] = {"href": msg['baseUrl'] + '/' + msg['relPath'], 'rel': 'canonical', 'type': mtype}
                 msg.updatePaths(self.o, new_baseDir + os.sep + new_relDir, new_file)
 
             except Exception as ex:

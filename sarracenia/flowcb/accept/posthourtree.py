@@ -10,7 +10,11 @@ Usage:
 
 """
 import logging
-import sys, os, os.path, time, stat
+import sys
+import os
+import os.path
+import time
+import stat
 from sarracenia.flowcb import FlowCB
 
 logger = logging.getLogger(__name__)
@@ -24,5 +28,5 @@ class Posthourtree(FlowCB):
         for message in worklist.incoming:
             datestr = time.strftime('%H', time.gmtime())  # pick the hour
             # insert the hour into the rename header of the message to be posted.
-            message['new_dir'] += '/' + datestr 
-            logger.info(  f"post_hour_tree: new_dir: {message['new_dir']}" )
+            message['new_dir'] += '/' + datestr
+            logger.info(f"post_hour_tree: new_dir: {message['new_dir']}")

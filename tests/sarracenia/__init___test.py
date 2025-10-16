@@ -1,10 +1,10 @@
 import pytest
 from tests.conftest import *
-#from unittest.mock import Mock
+# from unittest.mock import Mock
 
 import os
 from base64 import b64decode
-#import urllib.request
+# import urllib.request
 import logging
 
 import sarracenia
@@ -12,6 +12,7 @@ import sarracenia.config
 
 logger = logging.getLogger('sarracenia')
 logger.setLevel('DEBUG')
+
 
 def test_baseUrlParse():
     parsed = sarracenia.baseUrlParse('http://hostname.com/a/deep/path/file.txt?query=val')
@@ -29,7 +30,8 @@ def test_timev2tov3str():
 
 
 def test_durationToSeconds():
-    assert sarracenia.durationToSeconds('none') == sarracenia.durationToSeconds('off') == sarracenia.durationToSeconds('false') == 0.0
+    assert sarracenia.durationToSeconds('none') == sarracenia.durationToSeconds(
+        'off') == sarracenia.durationToSeconds('false') == 0.0
     assert sarracenia.durationToSeconds('on', default=10) == sarracenia.durationToSeconds('true', default=10) == 10.0
 
     assert sarracenia.durationToSeconds('1s') == 1.0
@@ -46,35 +48,35 @@ def test_durationToSeconds():
     assert sarracenia.durationToSeconds('1s', default=None) == 1.0
     assert sarracenia.durationToSeconds('-1s') == -1.0
     assert sarracenia.durationToSeconds('-1.5h') == -5400.0
-    assert sarracenia.durationToSeconds('1w') == 24*3600*7
+    assert sarracenia.durationToSeconds('1w') == 24 * 3600 * 7
     assert sarracenia.durationToSeconds('2h2m') == 7320
     assert sarracenia.durationToSeconds('3m2s') == 182
-    assert sarracenia.durationToSeconds( '6w1d' ) == 24*3600*(6*7.0+1)
-    assert sarracenia.durationToSeconds( '6M1d' ) == 16001280
-    assert sarracenia.durationToSeconds( '6M5d' ) == round( (6*30.7+5)*24*3600 ) # the math came out .99999 ...
-    assert sarracenia.durationToSeconds( '1y' ) == 365.25*24*3600
-    assert sarracenia.durationToSeconds( '1y28d' ) == (365.25+28)*24*3600
-    assert sarracenia.durationToSeconds( '1y1M' ) == (365.25+30.7)*24*3600
-    assert sarracenia.durationToSeconds( '1000w' ) == 1000*7*24*3600
-    assert sarracenia.durationToSeconds( '11y' ) == 11*365.25*24*3600
-
+    assert sarracenia.durationToSeconds('6w1d') == 24 * 3600 * (6 * 7.0 + 1)
+    assert sarracenia.durationToSeconds('6M1d') == 16001280
+    assert sarracenia.durationToSeconds('6M5d') == round((6 * 30.7 + 5) * 24 * 3600)  # the math came out .99999 ...
+    assert sarracenia.durationToSeconds('1y') == 365.25 * 24 * 3600
+    assert sarracenia.durationToSeconds('1y28d') == (365.25 + 28) * 24 * 3600
+    assert sarracenia.durationToSeconds('1y1M') == (365.25 + 30.7) * 24 * 3600
+    assert sarracenia.durationToSeconds('1000w') == 1000 * 7 * 24 * 3600
+    assert sarracenia.durationToSeconds('11y') == 11 * 365.25 * 24 * 3600
 
 
 def test_durationToString():
-    assert sarracenia.durationToString( 3600 ) == '1h'
-    assert sarracenia.durationToString( 1800 ) == '30m'
-    assert sarracenia.durationToString( 600 ) == '10m'
-    assert sarracenia.durationToString( 6*3600 ) == '6h'
-    assert sarracenia.durationToString( 6*3600+120 ) == '6h2m'
-    assert sarracenia.durationToString( 26*3600+120 ) == '1d2h'
-    assert sarracenia.durationToString( 30*24*3600 ) == '30d'
-    assert sarracenia.durationToString( 35*24*3600 ) == '1M4d'
-    assert sarracenia.durationToString( 182*24*3600 ) == '5M28d'
-    assert sarracenia.durationToString( 186*24*3600 ) == '6M1d'
-    assert sarracenia.durationToString( 190*24*3600 ) == '6M5d'
-    assert sarracenia.durationToString( 365*24*3600 ) == '1y'
-    assert sarracenia.durationToString( 393*24*3600 ) == '1y28d'
-    assert sarracenia.durationToString( 396*24*3600 ) == '1y1M'
+    assert sarracenia.durationToString(3600) == '1h'
+    assert sarracenia.durationToString(1800) == '30m'
+    assert sarracenia.durationToString(600) == '10m'
+    assert sarracenia.durationToString(6 * 3600) == '6h'
+    assert sarracenia.durationToString(6 * 3600 + 120) == '6h2m'
+    assert sarracenia.durationToString(26 * 3600 + 120) == '1d2h'
+    assert sarracenia.durationToString(30 * 24 * 3600) == '30d'
+    assert sarracenia.durationToString(35 * 24 * 3600) == '1M4d'
+    assert sarracenia.durationToString(182 * 24 * 3600) == '5M28d'
+    assert sarracenia.durationToString(186 * 24 * 3600) == '6M1d'
+    assert sarracenia.durationToString(190 * 24 * 3600) == '6M5d'
+    assert sarracenia.durationToString(365 * 24 * 3600) == '1y'
+    assert sarracenia.durationToString(393 * 24 * 3600) == '1y28d'
+    assert sarracenia.durationToString(396 * 24 * 3600) == '1y1M'
+
 
 def test_timeValidate():
     assert sarracenia.timeValidate('20230710120000') == True
@@ -138,6 +140,7 @@ def test_nowflt():
 #     elif sarracenia.features['humanize']['present'] == False:
 #         assert sarracenia.naturalTime(1024) == '1024'
 
+
 @pytest.fixture
 def message():
     msg = sarracenia.Message()
@@ -157,7 +160,7 @@ class Test_Message():
         msg = sarracenia.Message()
         msg['mtime'] = sarracenia.nowstr()
         msg['size'] = 0
-        #msg['mtime'] = sarracenia.timeflt2str(sarracenia.timestr2flt(msg['mtime']) + 1000)
+        # msg['mtime'] = sarracenia.timeflt2str(sarracenia.timestr2flt(msg['mtime']) + 1000)
         msg.computeIdentity(path1, options)
         assert msg['identity']['method'] == options.identity_method
 
@@ -197,17 +200,17 @@ class Test_Message():
         msg.computeIdentity(path4, options)
         assert msg['identity']['value'] == 'identity_arbitrary_value'
 
-        # Set 4a - random 
+        # Set 4a - random
         options.identity = 'random'
         options.identity_method = 'random'
-        del(msg['identity'])
+        del (msg['identity'])
         msg.computeIdentity(path4, options)
         assert msg['identity']['method'] == 'random'
 
         # Set 4b - 'cod,*' method
         options.identity = 'cod,testname'
         options.identity_method = 'cod,testname'
-        del(msg['identity'])
+        del (msg['identity'])
         msg.computeIdentity(path4, options)
         assert msg['identity'] == 'cod,testname'
 
@@ -249,9 +252,8 @@ class Test_Message():
             msg['size'] = 0
             msg.computeIdentity(path6, options)
             assert msg['identity']['value'] == 'xattr_identity_value'
-        except:
+        except BaseException:
             pass
-
 
     @pytest.mark.depends(on=['test_fromFileInfo'])
     def test_fromFileData(self, tmp_path):
@@ -279,18 +281,17 @@ class Test_Message():
         msg5 = sarracenia.Message.fromFileData('/dev/null', o)
         assert "size" not in msg5.keys()
 
-
     def test_fromFileInfo(self, tmp_path):
         # Set 1
         path = str(tmp_path) + os.sep + "file1.txt"
         open(path, 'a').close()
         options = sarracenia.config.default_config()
-        
+
         msg = sarracenia.Message.fromFileInfo(path, options, None)
         assert msg['_format'] == 'v03'
         assert len(msg['_deleteOnPost']) == 10
         assert msg['local_offset'] == 0
-        
+
         # Set 2
         path = str(tmp_path) + os.sep + "file2.txt"
         open(path, 'a').close()
@@ -328,21 +329,20 @@ class Test_Message():
         options.strip = 20
         options.identity_method = 'cod,identityValue'
         delattr(options, 'post_format')
-        #options.post_topicPrefix = ['v02']
+        # options.post_topicPrefix = ['v02']
         msg = sarracenia.Message.fromFileInfo(path, options, os.lstat(path))
         assert msg['rename'] == "/"
         # _format is now decided on output (per publisher.)
-        #assert msg['_format'] == "v02"
-        assert msg['identity'] == {'method': 'cod', 'value': 'identityValue' }
+        # assert msg['_format'] == "v02"
+        assert msg['identity'] == {'method': 'cod', 'value': 'identityValue'}
 
-        #Set 5
-        #path = str(tmp_path) + os.sep + "file5.txt"
-        #open(path, 'a').close()
-        #options = sarracenia.config.default_config()
-        #options.rename = str(tmp_path) + os.sep + "file4a.txt"
-        #with pytest.raises(KeyError):
+        # Set 5
+        # path = str(tmp_path) + os.sep + "file5.txt"
+        # open(path, 'a').close()
+        # options = sarracenia.config.default_config()
+        # options.rename = str(tmp_path) + os.sep + "file4a.txt"
+        # with pytest.raises(KeyError):
         #    msg = sarracenia.Message.fromFileInfo(path, options, os.lstat(path))
-
 
     @pytest.mark.depends(on=['test_fromFileData'])
     def test_fromStream(self, tmp_path):
@@ -363,19 +363,18 @@ class Test_Message():
         msg = sarracenia.Message.fromStream(path, o, data)
         assert oct(os.stat(path).st_mode)[-3:] == '700'
 
-
     @pytest.mark.depends(on=['sarracenia/__init___test.py::test_baseUrlParse'])
     def test_updatePaths(self, tmp_path, mocker):
         path = str(tmp_path) + os.sep + "file.txt"
         open(path, 'a').close()
         new_file = "newfile.txt"
         new_dir = str(tmp_path) + os.sep + "new"
-        
-        #Test set 1
+
+        # Test set 1
         options = sarracenia.config.default_config()
         msg = sarracenia.Message()
         # this was a behaviour changed in https://github.com/MetPX/sarracenia/pull/1034
-        #with pytest.raises(Exception):
+        # with pytest.raises(Exception):
         #    msg.updatePaths(options)
 
         msg = sarracenia.Message()
@@ -386,43 +385,43 @@ class Test_Message():
         assert msg['new_dir'] == new_dir
         assert msg['new_file'] == new_file
 
-        #Test set 2
+        # Test set 2
         options = sarracenia.config.default_config()
         options.post_baseUrl = 'https://post_baseurl.com'
         options.fixed_headers = {'fixed_headers__Key1': 'fixed_headers__Val1'}
         msg.updatePaths(options, new_dir, new_file)
         assert msg['fixed_headers__Key1'] == 'fixed_headers__Val1'
         # post_format isn't in the message anymore... because it varies by publisher.
-        #assert msg['post_format'] == 'v03'
+        # assert msg['post_format'] == 'v03'
 
-        #Test set 3
+        # Test set 3
         options = sarracenia.config.default_config()
         options.post_format = ''
-        options.post_topicPrefix  = 'post_topicPrefix'
+        options.post_topicPrefix = 'post_topicPrefix'
         options.post_baseDir = str(tmp_path)
         msg = sarracenia.Message()
         msg['baseUrl'] = 'baseUrl'
         msg.updatePaths(options, new_dir, new_file)
         assert msg['new_baseUrl'] == 'baseUrl'
         # post_format isn't in the message anymore... because it varies by publisher.
-        #assert msg['post_format'] == 'p'
+        # assert msg['post_format'] == 'p'
 
-        #Test set 4
+        # Test set 4
         options = sarracenia.config.default_config()
         options.post_format = ''
-        options.post_topicPrefix  = ''
+        options.post_topicPrefix = ''
         options.topicPrefix = 'topicPrefix'
         options.post_baseDir = 'post_baseDir'
         msg = sarracenia.Message()
         msg['baseUrl'] = 'baseUrl'
         msg.updatePaths(options, new_dir, new_file)
         # post_format isn't in the message anymore... because it varies by publisher.
-        #assert msg['post_format'] == 't'
+        # assert msg['post_format'] == 't'
 
-        #Test set 5
+        # Test set 5
         options = sarracenia.config.default_config()
         options.post_format = ''
-        options.post_topicPrefix  = ''
+        options.post_topicPrefix = ''
         options.topicPrefix = msg['_format']
         options.post_baseDir = 'post_baseDir'
         msg = sarracenia.Message()
@@ -430,7 +429,7 @@ class Test_Message():
         msg.updatePaths(options, '/this/is/a/path/new', new_file)
         assert msg['new_baseUrl'] == '/this/is/a/path'
         # post_format isn't in the message anymore... because it varies by publisher.
-        #assert msg['post_format'] == msg['_format']
+        # assert msg['post_format'] == msg['_format']
 
         # Test set 6
         options = sarracenia.config.default_config()
@@ -438,11 +437,10 @@ class Test_Message():
         msg = sarracenia.Message()
         mocker.patch('sys.platform', 'win32')
         msg.updatePaths(options, '\\this\\is\\a\\path\\new', new_file)
-        #assert msg['new_relPath'] == '/this/is/a/path/new/newfile.txt'
+        # assert msg['new_relPath'] == '/this/is/a/path/new/newfile.txt'
         options.currentDir = 'Z:'
         msg.updatePaths(options, '\\this\\is\\a\\path\\new', new_file)
-        #assert msg['new_relPath'] == 'this/is/a/path/new/newfile.txt'
-
+        # assert msg['new_relPath'] == 'this/is/a/path/new/newfile.txt'
 
     def test_setReport(self):
         msg = sarracenia.Message()
@@ -464,10 +462,9 @@ class Test_Message():
 
         # Add more assertions for other fields in the message
 
-
     @pytest.mark.depends(on=['sarracenia/__init___test.py::test_timeValidate'])
     def test_validate(self, message):
-        
+
         assert sarracenia.Message.validate('string') == False
 
         with pytest.raises(KeyError):
@@ -479,7 +476,6 @@ class Test_Message():
         message['pubTime'] = '20230710120000'
         assert sarracenia.Message.validate(message) == True
 
-    
     def test_getContent(self, mocker):
         msg = sarracenia.Message()
 
@@ -504,7 +500,6 @@ class Test_Message():
         msg['retrievePath'] = "MetPX/sarracenia/main/VERSION.txt"
         assert msg.getContent() == expected_content
 
-        
     def test_copyDict(self, message):
         message.copyDict(None)
         assert message['_format'] == 'v03'
@@ -512,24 +507,27 @@ class Test_Message():
         message.copyDict({'foobar': 'baz'})
         assert message['foobar'] == 'baz'
 
-
     def test_dumps(self, message):
         # Test dumps method
-        assert message.dumps() == "{  '_deleteOnPost':'{'_format'}', '_format':'v03', 'baseUrl':'https://example.com', 'relPath':'path/to/file.txt' }"
+        assert message.dumps(
+        ) == "{  '_deleteOnPost':'{'_format'}', '_format':'v03', 'baseUrl':'https://example.com', 'relPath':'path/to/file.txt' }"
 
         assert sarracenia.Message.dumps(None) == ''
 
         message['_format'] = 'v04'
         message['properties'] = {'prop1': 'propval1'}
-        assert message.dumps() == "{  '_deleteOnPost':'{'_format'}', '_format':'v04', 'baseUrl':'https://example.com', 'properties':'https://example.com 'prop1':'propval1'', 'relPath':'path/to/file.txt' }"
+        assert message.dumps(
+        ) == "{  '_deleteOnPost':'{'_format'}', '_format':'v04', 'baseUrl':'https://example.com', 'properties':'https://example.com 'prop1':'propval1'', 'relPath':'path/to/file.txt' }"
 
         message['id'] = "id111"
         del message['properties']
-        assert message.dumps() == "{  '_deleteOnPost':'{'_format'}', '_format':'v04', 'baseUrl':'https://example.com', 'relPath':'path/to/file.txt' }"
+        assert message.dumps(
+        ) == "{  '_deleteOnPost':'{'_format'}', '_format':'v04', 'baseUrl':'https://example.com', 'relPath':'path/to/file.txt' }"
 
         message['_format'] = 'Wis'
         del message['id']
-        assert message.dumps() == "{ 'geometry': None, 'properties':{  '_deleteOnPost':'{'_format'}', '_format':'Wis', 'baseUrl':'https://example.com', 'relPath':'path/to/file.txt', } }"
+        assert message.dumps(
+        ) == "{ 'geometry': None, 'properties':{  '_deleteOnPost':'{'_format'}', '_format':'Wis', 'baseUrl':'https://example.com', 'relPath':'path/to/file.txt', } }"
 
         message['id'] = "id111"
         message['geometry'] = "geometry111"
@@ -541,8 +539,3 @@ class Test_Message():
 
         message['longfield'] = "{hacskmbeponlfkfcmxxasoxjgrodcmovxbkzgnfxqimkmxshaztwsptqbulazgszjyiqoqasyukgjejtbrbeufvfdrxlurglhlszdehigvctczjtleadkpeycunthwzwdbxybhbewgcclljkebtwueldbhximikfbtgapiklmqzceyqlilebchekrxmvhfflaclqjddfrhicdttaabkfkhbwylnzyneattcjsgpordersenmbzyjeaybtyyahsde}"
         assert message.dumps() == "{ { 'id': 'id111', 'type':'Feature', 'geometry':geometry111 'properties':{  '_deleteOnPost':'{'_format'}', '_format':'Wis', 'baseUrl':'https://example.com', 'geometry':'geometry111', 'id':'id111', 'longfield':'{hacskmbeponlfkfcmxxasoxjgrodcmovxbkzgnfxqimkmxshaztwsptqbulazgszjyiqoqasyukgjejtbrbeufvfdrxlurglhlszdehigvctczjtleadkpeycunthwzwdbxybhbewgcclljkebtwueldbhximikfbtgapiklmqzceyqlilebchekrxmvhfflaclqjddfrhicdttaabkfkhbwylnzyneattcjsgpordersenmbzyjeaybty...}', 'relPath':'path/to/file.txt', 'testdict':'{  'key1':'val1', 'key2':'val2' }', } }"
-
-
-
-
-

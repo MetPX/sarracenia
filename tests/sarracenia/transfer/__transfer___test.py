@@ -1,6 +1,6 @@
 import pytest
 from tests.conftest import *
-#from unittest.mock import Mock
+# from unittest.mock import Mock
 
 import logging
 
@@ -11,6 +11,7 @@ import sarracenia.transfer
 logger = logging.getLogger('sarracenia.config')
 logger.setLevel('DEBUG')
 
+
 def test_factory():
     options = sarracenia.config.default_config()
     transfer = sarracenia.transfer.Transfer.factory('http', options)
@@ -18,7 +19,8 @@ def test_factory():
     assert type(transfer) is sarracenia.transfer.https.Https
 
     transfer = sarracenia.transfer.Transfer.factory('DoesNotExist', options)
-    assert transfer == None
+    assert transfer is None
+
 
 def test___init__():
     options = sarracenia.config.default_config()

@@ -22,6 +22,10 @@
 #
 #
 
+import sarracenia.identity.sha512
+import sarracenia.identity.random
+import sarracenia.identity.md5
+import sarracenia.identity.arbitrary
 import os
 import logging
 
@@ -36,16 +40,16 @@ class Identity:
     """
         A class for algorithms to get a fingerprint for a file being announced.
         Appropriate fingerprinting algorithms vary according to file type.
- 
+
         required methods in subclasses:
-      
+
         def registered_as(self):
             return a one letter string identifying the algorithm (mostly for v2.)
             in v3, the registration comes from the identity sub-class name in lower case.
-    
+
         def set_path(self,path):
             start a checksum for the given path... initialize.
-    
+
         def update(self,chunk):
             update the checksum based on the given bytes from the file (sequential access assumed.)
         """
@@ -62,7 +66,7 @@ class Identity:
 
     def update_file(self, path):
         """
-         read the entire file, check sum it. 
+         read the entire file, check sum it.
          this is kind of last resort as it cost an extra file read.
          It is better to call update( as the file is being read for other reasons.
        """
@@ -79,16 +83,10 @@ class Identity:
         return b64encode(self.filehash.digest()).decode('utf-8')
 
 
-import sarracenia.identity.arbitrary
-import sarracenia.identity.md5
-import sarracenia.identity.random
-import sarracenia.identity.sha512
-
-# the 'unknown' method is created to accomodate cases where a identity field 
+# the 'unknown' method is created to accomodate cases where a identity field
 # missing, or the corresponding class is not known to this instance.
-
 # methods where size checks makes sense. updated when new methods added.
-binary_methods = [ 'sha512', 'md5', 'unknown' ]
+binary_methods = ['sha512', 'md5', 'unknown']
 
 known_methods = []
 for sc in Identity.__subclasses__():

@@ -1,7 +1,7 @@
 """
     This plugin filters messages based on the content (mime) type.
 
-    It will attempt to filter based on the contentType field in the message. 
+    It will attempt to filter based on the contentType field in the message.
 
     If contentType is not available from the message, it will check if the file already exists locally and will
     set the contentType. For this to work, the python-magic package must be installed (you can check by using
@@ -22,7 +22,7 @@
                                                         rejected (default). When False, types not defined in either
                                                         list will be accepted.
                                                         Note: this is used when the contentType of the file **is**
-                                                        known, but it's not defined in either the acceptType or 
+                                                        known, but it's not defined in either the acceptType or
                                                         rejectType lists.
 """
 
@@ -38,14 +38,15 @@ if features['filetypes']['present']:
 
 logger = logging.getLogger(__name__)
 
+
 class Content_type(FlowCB):
     def __init__(self, options):
 
         super().__init__(options, logger)
 
-        self.o.add_option('filterContentType_rejectUnknown',   kind='flag', default_value=True)
-        self.o.add_option('filterContentType_acceptType',      kind='list', default_value=[])
-        self.o.add_option('filterContentType_rejectType',      kind='list', default_value=[])
+        self.o.add_option('filterContentType_rejectUnknown', kind='flag', default_value=True)
+        self.o.add_option('filterContentType_acceptType', kind='list', default_value=[])
+        self.o.add_option('filterContentType_rejectType', kind='list', default_value=[])
         self.o.add_option('filterContentType_rejectUndefined', kind='flag', default_value=True)
 
         if not features['filetypes']['present']:
@@ -61,14 +62,13 @@ class Content_type(FlowCB):
         for t in self.o.filterContentType_rejectType:
             tmp.append(t.strip())
         self.o.filterContentType_rejectType = tmp
-        
+
         # check for overlap in the lists
-        accept  = set(self.o.filterContentType_acceptType)
-        reject  = set(self.o.filterContentType_rejectType)
+        accept = set(self.o.filterContentType_acceptType)
+        reject = set(self.o.filterContentType_rejectType)
         in_both = accept.intersection(reject)
         if len(in_both) > 0:
             logger.warning(f"{in_both} are in both acceptType and rejectType, check your config file!")
-
 
     def set_content_type(self, msg):
         """ If contentType is not set in the message, try to set it.
@@ -85,11 +85,11 @@ class Content_type(FlowCB):
         elif hasattr(self.o, 'baseDir') and self.o.baseDir:
             path = os.path.join(self.o.baseDir, msg['relPath'])
             logger.debug(f"path from baseDir + relPath: {path}")
-        
+
         if not os.path.exists(path):
             logger.debug(f"can't set contentType, local file {path} does not exist ({msg.getIDStr()})")
             return False
-        
+
         # theoretically we have a path we can read
         try:
             msg['contentType'] = magic.from_file(path, mime=True)
@@ -105,10 +105,10 @@ class Content_type(FlowCB):
     def after_accept(self, worklist):
         """ Accept or reject a message based on the contentType.
         """
-        
+
         accepting = []
         for msg in worklist.incoming:
-            
+
             # UNKNOWN contentType, try to set it
             if 'contentType' not in msg:
                 if not self.set_content_type(msg):
@@ -120,7 +120,7 @@ class Content_type(FlowCB):
                         logger.debug(f"{msg.getIDStr()} has unknown contentType, accepting")
                         accepting.append(msg)
                     continue
-            
+
             logger.debug(f"{msg.getIDStr()} has contentType {msg['contentType']}")
 
             # Now we know the message has the contentType field

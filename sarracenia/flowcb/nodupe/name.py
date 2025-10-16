@@ -14,6 +14,7 @@ class Name(FlowCB):
       Note: files that have different checksums, sizes, modification times, etc. are NOT
             considered duplicates, even if they have the same name.
     """
+
     def after_accept(self, worklist):
         for m in worklist.incoming:
             if not 'nodupe_override' in m:

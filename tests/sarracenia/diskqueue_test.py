@@ -1,10 +1,12 @@
 import pytest
 from tests.conftest import *
 
-import jsonpickle, os
+import jsonpickle
+import os
 
 from sarracenia.diskqueue import DiskQueue
 from sarracenia import Message as SR3Message
+
 
 class Options:
     def __init__(self):
@@ -20,9 +22,11 @@ class Options:
         self.pid_filename = "/tmp/sarracenia/diskqueue_test/pid_filename"
         self.housekeeping = float(39)
         self.batch = 0
-    def add_option(self, option, type, default = None):
+
+    def add_option(self, option, type, default=None):
         if not hasattr(self, option):
             setattr(self, option, default)
+
 
 def make_message():
     m = SR3Message()
@@ -30,19 +34,20 @@ def make_message():
     m["topic"] = "v02.post.sent_by_tsource2send"
     m["mtime"] = "20180118151048"
     m["headers"] = {
-            "atime": "20180118151049.356378078", 
-            "from_cluster": "localhost",
-            "mode": "644",
-            "parts": "1,69,1,0,0",
-            "source": "tsource",
-            "sum": "d,c35f14e247931c3185d5dc69c5cd543e",
-            "to_clusters": "localhost"
-        }
-    m["baseUrl"] =  "https://NotARealURL"
+        "atime": "20180118151049.356378078",
+        "from_cluster": "localhost",
+        "mode": "644",
+        "parts": "1,69,1,0,0",
+        "source": "tsource",
+        "sum": "d,c35f14e247931c3185d5dc69c5cd543e",
+        "to_clusters": "localhost"
+    }
+    m["baseUrl"] = "https://NotARealURL"
     m["relPath"] = "ThisIsAPath/To/A/File.txt"
     m["notice"] = "20180118151050.45 ftp://anonymous@localhost:2121 /sent_by_tsource2send/SXAK50_KWAL_181510___58785"
     m["_deleteOnPost"] = set()
     return m
+
 
 def test_msgFromJSON(tmp_path):
     BaseOptions = Options()
@@ -53,6 +58,7 @@ def test_msgFromJSON(tmp_path):
 
     assert message == download_retry.msgFromJSON(jsonpickle.encode(message))
 
+
 def test_msgToJSON(tmp_path):
     BaseOptions = Options()
     BaseOptions.pid_filename = str(tmp_path) + os.sep + "pidfilename.txt"
@@ -61,6 +67,7 @@ def test_msgToJSON(tmp_path):
     message = make_message()
 
     assert jsonpickle.encode(message) + '\n' == download_retry.msgToJSON(message)
+
 
 def test__is_exired__TooSoon(tmp_path):
     BaseOptions = Options()
@@ -71,6 +78,7 @@ def test__is_exired__TooSoon(tmp_path):
     message = make_message()
 
     assert download_retry.is_expired(message) == True
+
 
 def test__is_exired__TooLate(tmp_path):
     BaseOptions = Options()
@@ -84,6 +92,7 @@ def test__is_exired__TooLate(tmp_path):
 
     assert download_retry.is_expired(message) == False
 
+
 def test___len__(tmp_path):
     BaseOptions = Options()
     BaseOptions.pid_filename = str(tmp_path) + os.sep + "pidfilename.txt"
@@ -94,6 +103,7 @@ def test___len__(tmp_path):
 
     download_retry.msg_count_new += 1
     assert len(download_retry) == 2
+
 
 def test_in_cache(tmp_path):
     BaseOptions = Options()
@@ -107,6 +117,7 @@ def test_in_cache(tmp_path):
 
     # Checking if it's there actually adds it, so checking it again right after should return True
     assert download_retry.in_cache(message) == True
+
 
 def test_needs_requeuing(tmp_path):
     BaseOptions = Options()
@@ -122,7 +133,8 @@ def test_needs_requeuing(tmp_path):
     download_retry.o.retry_ttl = 1000000
 
     assert download_retry.needs_requeuing(message) == False
-    
+
+
 def test_put__Single(tmp_path):
     BaseOptions = Options()
     BaseOptions.pid_filename = str(tmp_path) + os.sep + "pidfilename.txt"
@@ -135,6 +147,7 @@ def test_put__Single(tmp_path):
     line = jsonpickle.encode(message) + '\n'
 
     assert open(download_retry.new_path, 'r').read() == line
+
 
 def test_put__Multi(tmp_path):
     BaseOptions = Options()
@@ -150,6 +163,7 @@ def test_put__Multi(tmp_path):
     contents = open(download_retry.new_path, 'r').read()
 
     assert contents == line + line + line
+
 
 def test_cleanup(tmp_path):
     BaseOptions = Options()
@@ -169,6 +183,7 @@ def test_cleanup(tmp_path):
     assert os.path.exists(download_retry.queue_file) == False
     assert download_retry.msg_count == 0
 
+
 def test_msg_get_from_file__NoLine(tmp_path):
     BaseOptions = Options()
     BaseOptions.pid_filename = str(tmp_path) + os.sep + "pidfilename.txt"
@@ -176,8 +191,9 @@ def test_msg_get_from_file__NoLine(tmp_path):
 
     fp_new, msg = download_retry.msg_get_from_file(None, download_retry.queue_file)
 
-    assert fp_new == None
-    assert msg == None
+    assert fp_new is None
+    assert msg is None
+
 
 def test_msg_get_from_file(tmp_path):
     BaseOptions = Options()
@@ -196,6 +212,7 @@ def test_msg_get_from_file(tmp_path):
     import io
     assert isinstance(fp_new, io.TextIOWrapper) == True
     assert msg == message
+
 
 def test_get__Single(tmp_path):
     BaseOptions = Options()
@@ -216,6 +233,7 @@ def test_get__Single(tmp_path):
     assert len(gotten) == 1
     assert gotten == [message]
 
+
 def test_get__Multi(tmp_path):
     BaseOptions = Options()
     BaseOptions.pid_filename = str(tmp_path) + os.sep + "pidfilename.txt"
@@ -235,6 +253,7 @@ def test_get__Multi(tmp_path):
     assert len(gotten) == 2
     assert gotten == [message, message]
 
+
 def test_on_housekeeping__FinishRetry(tmp_path, caplog):
     BaseOptions = Options()
     BaseOptions.pid_filename = str(tmp_path) + os.sep + "pidfilename.txt"
@@ -242,14 +261,14 @@ def test_on_housekeeping__FinishRetry(tmp_path, caplog):
 
     hk_out = download_retry.on_housekeeping()
 
-    assert hk_out == None
+    assert hk_out is None
 
     # This should not be logged unless there is actually messages in the queue
     log_found_notFinished = False
     for record in caplog.records:
         if "Resuming retries" in record.message:
             log_found_notFinished = True
-    
+
     assert log_found_notFinished == False
 
     m1 = make_message()
@@ -265,7 +284,7 @@ def test_on_housekeeping__FinishRetry(tmp_path, caplog):
     for record in caplog.records:
         if "Resuming retries" in record.message:
             log_found_notFinished = True
-    
+
     assert log_found_notFinished == True
 
 
@@ -283,7 +302,7 @@ def test_on_housekeeping(tmp_path, caplog):
 
     hk_out = download_retry.on_housekeeping()
 
-    assert hk_out == None
+    assert hk_out is None
     assert os.path.exists(download_retry.queue_file) == True
     assert os.path.exists(download_retry.new_path) == False
 
@@ -300,6 +319,7 @@ def test_on_housekeeping(tmp_path, caplog):
     assert log_found_HasQueue == True
     assert log_found_NumMessages == True
     assert log_found_Elapsed == True
+
 
 def test_diskqueue(tmp_path, caplog):
     """ DiskQueue integration test, tests the behaviour of the class, mimicking how it's actually used in sr3.
@@ -398,8 +418,3 @@ def test_diskqueue(tmp_path, caplog):
     assert len(dq) == 3
     assert dq.msg_count_new == 1
     assert dq.msg_count == 2
-
-
-
-
-

@@ -8,13 +8,14 @@ logger = logging.getLogger(__name__)
 class Rxpipe(FlowCB):
     """
       After each file is transferred, write it's name to a named_pipe.
-      
+
       parameter:
               rxpipe_name  -- the path for the named pipe to write the file names to.
     """
+
     def __init__(self, options):
 
-        super().__init__(options,logger)
+        super().__init__(options, logger)
         self.o.add_option(option='rxpipe_name', kind='str')
 
     def on_start(self):

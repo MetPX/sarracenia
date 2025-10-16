@@ -32,17 +32,24 @@ Author:
     André LeBlanc, ANL, Autumn 2022
 """
 
-import logging, socket, struct, time, signal, sys, os
+import logging
+import socket
+import struct
+import time
+import signal
+import sys
+import os
 import urllib.parse
 from sarracenia.flowcb import FlowCB
 
 logger = logging.getLogger(__name__)
 
+
 class Am(FlowCB):
-    
+
     def __init__(self, options):
-             
-        super().__init__(options,logger)
+
+        super().__init__(options, logger)
 
         self.url = urllib.parse.urlparse(self.o.sendTo)
 
@@ -59,16 +66,15 @@ class Am(FlowCB):
             logger.warning(f"Attributing fileSizeMax, MaxBulLen value : {self.o.MaxBulLen} bytes max")
 
         # Initialise socket
-        ## Create a TCP/IP socket
+        # Create a TCP/IP socket
         self.s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         self.s.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 2)
 
         # Add signal handler
-        ## Override outer signal handler with a default one to exit correctly.
+        # Override outer signal handler with a default one to exit correctly.
         signal.signal(signal.SIGTERM, signal.SIG_DFL)
 
-
-    def wrapbulletin(self, sarra_msg): 
+    def wrapbulletin(self, sarra_msg):
 
         logger.info("Commencing message wrap.")
 
@@ -86,15 +92,18 @@ class Am(FlowCB):
 
         # Step out of the function if the bulletin size is too big
         if len(strdata) > self.o.fileSizeMax:
-            logger.error(f"Bulletin length too long. Bulletin limit length: {self.o.fileSizeMax}. Latest bulletin length: {len(strdata)}. Path to bulletin: {msg_path}")
+            logger.error(
+                f"Bulletin length too long. Bulletin limit length: {
+                    self.o.fileSizeMax}. Latest bulletin length: {
+                    len(strdata)}. Path to bulletin: {msg_path}")
             return None
 
-        ## Attach rest of header with NULLs (if not long enough)
+        # Attach rest of header with NULLs (if not long enough)
         nulheader = ['\0' for _ in range(size)]
         nulheaderstr = ''.join(nulheader)
         header = header + nulheaderstr[len(header):]
 
-        ## Perform bite swaps AND init miscellaneous header parameters
+        # Perform bite swaps AND init miscellaneous header parameters
         length = socket.htonl(len(strdata.lstrip('\n')))
 
         firsttime = socket.htonl(int(time.time()))
@@ -104,15 +113,26 @@ class Am(FlowCB):
         start, src_inet, dst_inet = (0, 0, 0)
 
         # Wrap bulletin
-        ## Replace first line feed with NULL
-        packedheader = s.pack(header.replace('\n','\x00',1).encode('iso-8859-1'), src_inet, dst_inet, threadnum.encode('iso-8859-1'), start
-                                   , length, firsttime, timestamp, future.encode('iso-8859-1'))
-        
+        # Replace first line feed with NULL
+        packedheader = s.pack(
+            header.replace(
+                '\n',
+                '\x00',
+                1).encode('iso-8859-1'),
+            src_inet,
+            dst_inet,
+            threadnum.encode('iso-8859-1'),
+            start,
+            length,
+            firsttime,
+            timestamp,
+            future.encode('iso-8859-1'))
+
         msg = packedheader + data
 
         logger.debug("Message has been packed.")
         # llogger.debug(f"Message contents: {msg}")
-        
+
         return msg
 
     def on_stop(self):
@@ -120,24 +140,24 @@ class Am(FlowCB):
 
     def reEstablishConnection(self):
         # Use exponential backoff to try and connect or reconnect to remote host
-        
+
         if self.host == 'None':
             raise Exception("No remote host specified.")
 
-        logger.info("Trying to connect to remote host %s and port %d" % (str(self.host) , self.port))
+        logger.info("Trying to connect to remote host %s and port %d" % (str(self.host), self.port))
 
         backoff_range = 1
         while True:
             try:
                 # Initialise socket
-                ## Create a TCP/IP socket
+                # Create a TCP/IP socket
                 self.s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
                 self.s.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 2)
 
                 time.sleep(1)
                 self.s.connect((socket.gethostbyname(self.host), self.port))
                 break
-                
+
             except socket.error as e:
                 logger.debug("Error msg: %s" % str(e.args))
                 logger.error("Trying to establish connection in %d seconds" % (2**backoff_range))
@@ -146,13 +166,12 @@ class Am(FlowCB):
                 if backoff_range < 6:
                     backoff_range += 1
 
-
     def send(self, bulletin):
         try:
             self.packed_bulletin = self.wrapbulletin(bulletin)
 
             # We don't want to send nothing.
-            if self.packed_bulletin == None:
+            if self.packed_bulletin is None:
                 return False
 
             while True:
@@ -161,9 +180,9 @@ class Am(FlowCB):
 
                     # Check if went okay
                     return bytesSent == len(self.packed_bulletin)
-                    
+
                 except socket.error as e:
-                    logger.debug("Bulletin not sent. Error message: %s",str(e.args))
+                    logger.debug("Bulletin not sent. Error message: %s", str(e.args))
                     logger.error("Connection interrupted. Attempting to reconnect")
                     self.s.close()
                     self.reEstablishConnection()

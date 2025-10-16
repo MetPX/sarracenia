@@ -2,13 +2,16 @@ import pytest
 from tests.conftest import *
 from unittest.mock import patch
 
-import os, types, copy
+import os
+import types
+import copy
 
-#from sarracenia.flowcb import FlowCB
+# from sarracenia.flowcb import FlowCB
 from sarracenia.flowcb.retry import Retry
 from sarracenia import Message as SR3Message
 
 import fakeredis
+
 
 class Options:
     def __init__(self):
@@ -24,9 +27,11 @@ class Options:
         self.pid_filename = "/tmp/sarracenia/retyqueue_test/pid_filename"
         self.housekeeping = float(0)
         self.batch = 0
-    def add_option(self, option, type, default = None):
+
+    def add_option(self, option, type, default=None):
         if not hasattr(self, option):
             setattr(self, option, default)
+
 
 WorkList = types.SimpleNamespace()
 WorkList.ok = []
@@ -35,21 +40,22 @@ WorkList.rejected = []
 WorkList.failed = []
 WorkList.directories_ok = []
 
+
 def make_message():
     m = SR3Message()
     m["pubTime"] = "20180118151049.356378078"
     m["topic"] = "v02.post.sent_by_tsource2send"
     m["mtime"] = "20180118151048"
     m["headers"] = {
-            "atime": "20180118151049.356378078", 
-            "from_cluster": "localhost",
-            "mode": "644",
-            "parts": "1,69,1,0,0",
-            "source": "tsource",
-            "sum": "d,c35f14e247931c3185d5dc69c5cd543e",
-            "to_clusters": "localhost"
-        }
-    m["baseUrl"] =  "https://NotARealURL"
+        "atime": "20180118151049.356378078",
+        "from_cluster": "localhost",
+        "mode": "644",
+        "parts": "1,69,1,0,0",
+        "source": "tsource",
+        "sum": "d,c35f14e247931c3185d5dc69c5cd543e",
+        "to_clusters": "localhost"
+    }
+    m["baseUrl"] = "https://NotARealURL"
     m["relPath"] = "ThisIsAPath/To/A/File.txt"
     m["notice"] = "20180118151050.45 ftp://anonymous@localhost:2121 /sent_by_tsource2send/SXAK50_KWAL_181510___58785"
     m["_deleteOnPost"] = set()
@@ -59,14 +65,13 @@ def make_message():
 @pytest.mark.bug("DiskQueue.py doesn't cleanup properly")
 @pytest.mark.depends(on=['sarracenia/diskqueue_test.py', 'sarracenia/redisqueue_test.py'])
 def test_cleanup(tmp_path):
-    
+
     with patch(target="redis.from_url", new=fakeredis.FakeStrictRedis.from_url, ):
         BaseOptions_disk = Options()
         BaseOptions_disk.retry_driver = 'disk'
         BaseOptions_disk.pid_filename = str(tmp_path) + os.sep + "pidfilename.txt"
         retry_disk = Retry(BaseOptions_disk)
         retry_disk.on_start()
-
 
         BaseOptions_redis = Options()
         BaseOptions_redis.retry_driver = 'redis'
@@ -85,11 +90,11 @@ def test_cleanup(tmp_path):
 
         assert len(retry_disk.download_retry) == len(retry_redis.download_retry) == 3
         assert len(retry_disk.post_retry) == len(retry_redis.post_retry) == 3
-    
+
         retry_disk.cleanup()
         retry_redis.cleanup()
 
-        #These should both return 0, but with the current DiskQueue, cleanup doesn't work properly.
+        # These should both return 0, but with the current DiskQueue, cleanup doesn't work properly.
         assert len(retry_disk.download_retry) == len(retry_redis.download_retry) == 0
         assert len(retry_disk.post_retry) == len(retry_redis.post_retry) == 0
 
@@ -123,6 +128,7 @@ def test_metricsReport(tmp_path):
         assert metrics_disk['msgs_in_download_retry'] == metrics_redis['msgs_in_download_retry'] == 3
         assert metrics_disk['msgs_in_post_retry'] == metrics_redis['msgs_in_post_retry'] == 3
 
+
 @pytest.mark.depends(on=['sarracenia/diskqueue_test.py', 'sarracenia/redisqueue_test.py'])
 def test_after_post(tmp_path):
     with patch(target="redis.from_url", new=fakeredis.FakeStrictRedis.from_url, ):
@@ -150,6 +156,7 @@ def test_after_post(tmp_path):
         retry_redis.after_post(after_post_worklist_redis)
 
         assert len(retry_disk.post_retry) == len(retry_redis.post_retry) == 3
+
 
 @pytest.mark.depends(on=['sarracenia/diskqueue_test.py', 'sarracenia/redisqueue_test.py'])
 def test_after_work__WLFailed(tmp_path):
@@ -179,6 +186,7 @@ def test_after_work__WLFailed(tmp_path):
 
         assert len(retry_disk.download_retry) == len(retry_redis.download_retry) == 3
         assert len(after_work_worklist_disk.failed) == len(after_work_worklist_redis.failed) == 0
+
 
 @pytest.mark.depends(on=['sarracenia/diskqueue_test.py', 'sarracenia/redisqueue_test.py'])
 def test_after_work__SmallQty(tmp_path):
@@ -245,6 +253,7 @@ def test_after_work(tmp_path):
         assert len(retry_disk.download_retry) == len(retry_redis.download_retry) == 0
         assert len(after_work_worklist_disk.ok) == len(after_work_worklist_redis.ok) == 3
 
+
 @pytest.mark.depends(on=['sarracenia/diskqueue_test.py', 'sarracenia/redisqueue_test.py'])
 def test_after_accept__SmallQty(tmp_path):
     with patch(target="redis.from_url", new=fakeredis.FakeStrictRedis.from_url, ):
@@ -275,6 +284,7 @@ def test_after_accept__SmallQty(tmp_path):
 
         assert len(retry_disk.download_retry) == len(retry_redis.download_retry) == 0
         assert len(after_work_worklist_disk.incoming) == len(after_work_worklist_redis.incoming) == 3
+
 
 @pytest.mark.depends(on=['sarracenia/diskqueue_test.py', 'sarracenia/redisqueue_test.py'])
 def test_after_accept(tmp_path):
@@ -308,6 +318,7 @@ def test_after_accept(tmp_path):
 
         assert len(retry_disk.download_retry) == len(retry_redis.download_retry) == 1
         assert len(after_work_worklist_disk.incoming) == len(after_work_worklist_redis.incoming) == 3
+
 
 @pytest.mark.depends(on=['sarracenia/diskqueue_test.py', 'sarracenia/redisqueue_test.py'])
 def test_on_housekeeping(tmp_path, caplog):
@@ -344,7 +355,7 @@ def test_on_housekeeping(tmp_path, caplog):
                 log_found_hk_elapse_disk = True
 
         caplog.clear()
-    
+
         retry_redis.on_housekeeping()
         for record in caplog.records:
             if "on_housekeeping elapse" in record.message:

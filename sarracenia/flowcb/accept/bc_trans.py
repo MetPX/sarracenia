@@ -11,10 +11,10 @@ Description
 
 How to set up in your config:
 --------------------------------
- 
+
     Use ``callback accept.bc_trans``, and read about the config options above.
-    
-    For an example, see https://github.com/MetPX/sarracenia/tree/development/sarracenia/examples/flow files named ``*bc_trans*.conf``. 
+
+    For an example, see https://github.com/MetPX/sarracenia/tree/development/sarracenia/examples/flow files named ``*bc_trans*.conf``.
 
     Your ``subtopic`` should match the ``path`` from the scheduled flow plugin.
 
@@ -25,23 +25,27 @@ Change log:
 
 from sarracenia.flowcb import FlowCB
 import logging
-import requests,os,datetime,sys,time
+import requests
+import os
+import datetime
+import sys
+import time
 
 logger = logging.getLogger(__name__)
+
 
 class Bc_trans(FlowCB):
     def __init__(self, options):
         super().__init__(options, logger)
-        
-        # end __init__
 
+        # end __init__
 
     def after_accept(self, worklist):
 
         for msg in worklist.incoming:
 
             # Modify the filename with the specified format
-            try: 
+            try:
 
                 now = datetime.datetime.now()
                 msg['new_file'] = f"OB.BC.MOT.BC_TRAN.{now.strftime('%Y%m%d%H%M%S')}.csv"

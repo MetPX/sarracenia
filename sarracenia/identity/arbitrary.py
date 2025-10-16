@@ -7,6 +7,7 @@ def set_default_value(value):
     global default_value
     default_value = value
 
+
 class Arbitrary(Identity):
     """
       For applications where there is no known way of determining equivalence, allow them to supply
@@ -14,6 +15,7 @@ class Arbitrary(Identity):
 
       use setter to set the value... some sort of external checksum algorithm that cannot be reproduced.
      """
+
     def __init__(self):
         global default_value
         self._value = default_value

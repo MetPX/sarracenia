@@ -16,7 +16,8 @@ to promote the sale, use or other dealings in this Software without prior writte
 '''
 from ctypes import *
 
-import sys, os
+import sys
+import os
 kernel32 = windll.kernel32
 
 LPSTR = c_wchar_p
@@ -81,7 +82,8 @@ class ADS():
 
         if file_infos.cStreamName:
             streamname = file_infos.cStreamName.split(":")[1]
-            if streamname: streamlist.append(streamname)
+            if streamname:
+                streamlist.append(streamname)
 
             while kernel32.FindNextStreamW(p, byref(file_infos)):
                 streamlist.append(file_infos.cStreamName.split(":")[1])
@@ -125,7 +127,7 @@ class ADS():
             os.remove(self.full_filename(stream))
             self.streams.remove(stream)
             return True
-        except:
+        except BaseException:
             return False
 
     def get_stream_content(self, stream):

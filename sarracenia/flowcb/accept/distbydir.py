@@ -20,15 +20,15 @@ class Distbydir(FlowCB):
 
       can pick, using python indexing, any element of the path.
     """
+
     def __init__(self, options):
-        super().__init__(options,logger)
+        super().__init__(options, logger)
 
         # setting it to -2 means the last directory in a path.
-        self.o.add_option( 'distbydir_offset', 'count', -2 )
+        self.o.add_option('distbydir_offset', 'count', -2)
 
     def after_accept(self, worklist):
         for m in worklist.incoming:
             m['_deleteOnPost'] |= set(['exchangeSplitOverride'])
-            m['exchangeSplitOverride'] = int(hashlib.md5(m['relPath'].split('/')[self.o.distbydir_offset]).hexdigest()[0])
-
-
+            m['exchangeSplitOverride'] = int(hashlib.md5(
+                m['relPath'].split('/')[self.o.distbydir_offset]).hexdigest()[0])

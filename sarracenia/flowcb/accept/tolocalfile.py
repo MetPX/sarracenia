@@ -57,7 +57,7 @@ Example:
         ok = self.gif2png(gifpath=message.relPath,pngpath=new_path)
 
     change the message to announce the new png product::
-    
+
         if ok :
             message['baseUrl'] = message['saved_baseUrl']
         message['relPath'] = new_path
@@ -79,7 +79,7 @@ logger = logging.getLogger('__name__')
 
 class ToLocalFile(FlowCB):
     def __init__(self, options):
-        super().__init__(options,logger)
+        super().__init__(options, logger)
 
     def after_accept(self, worklist):
         new_incoming = []

@@ -7,7 +7,7 @@ logger = logging.getLogger(__name__)
 class Sample(sarracenia.flowcb.FlowCB):
     def __init__(self, options):
 
-        super().__init__(options,logger)
+        super().__init__(options, logger)
 
         # declare a module specific setting.
         options.add_option('announce_list', 'list')

@@ -1033,7 +1033,7 @@ class QueueCase(HostConnectBaseCase):
     @patch('sarra.sr_amqp.HostConnect')
     @patch('time.sleep')
     def test_build__multiple_bindings__bind_Exception_loophole(
-        self, sleep, hc, chan):
+            self, sleep, hc, chan):
         # Prepare test
         xname = self.xname_fmt.format(self.test_build.__name__)
         xkey = self.xkey_fmt.format(self.test_build.__name__)
@@ -1095,7 +1095,7 @@ class QueueCase(HostConnectBaseCase):
         # Execute test
         try:
             self.q.declare()
-        except:
+        except BaseException:
             # Evaluate results
             expected = [
                 call.queue_declare(

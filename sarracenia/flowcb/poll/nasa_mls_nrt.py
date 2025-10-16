@@ -23,5 +23,7 @@ class Nasa_mls_nrt(Poll):
             self.entries[data] = st
 
             logger.info("(%s) = %s" % (self.myfname, st))
-        if self.myfname == None: return
-        if self.myfname == data: return
+        if self.myfname is None:
+            return
+        if self.myfname == data:
+            return

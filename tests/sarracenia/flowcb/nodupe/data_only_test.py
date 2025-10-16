@@ -1,9 +1,12 @@
 import pytest
 from tests.conftest import *
-import os, types, copy
+import os
+import types
+import copy
 
 from sarracenia.flowcb.nodupe.data_only import Data_only
 from sarracenia import Message as SR3Message
+
 
 class Options:
     def __init__(self):
@@ -15,27 +18,30 @@ class Options:
         self.config = "foobar.conf"
         self.pid_filename = "/tmp/sarracenia/diskqueue_test/pid_filename"
         self.housekeeping = float(39)
-    def add_option(self, option, type, default = None):
+
+    def add_option(self, option, type, default=None):
         if not hasattr(self, option):
             setattr(self, option, default)
     pass
 
+
 def make_message():
     m = SR3Message()
     m["pubTime"] = "20180118151049.356378078"
-    m["topic"] = [ "v02", "post", "sent_by_tsource2send" ]
+    m["topic"] = ["v02", "post", "sent_by_tsource2send"]
     m["mtime"] = "20180118151048"
-    m["atime"] = "20180118151049.356378078" 
+    m["atime"] = "20180118151049.356378078"
     m["mode"] = "644"
-    m["identity"] = { 
-          "method" : "sha512", 
-          "value" : "C/HbD77eLraAoj/IWnoRFTzKZpVaT0YSebbUeKl2m103TbnkN5vukAlISgctTZkaCT/Mk2llOjcq5p\nW/5M1hIQ=="
+    m["identity"] = {
+        "method": "sha512",
+        "value": "C/HbD77eLraAoj/IWnoRFTzKZpVaT0YSebbUeKl2m103TbnkN5vukAlISgctTZkaCT/Mk2llOjcq5p\nW/5M1hIQ=="
     }
-    m["size"] = "69" 
-    m["baseUrl"] =  "https://NotARealURL"
+    m["size"] = "69"
+    m["baseUrl"] = "https://NotARealURL"
     m["relPath"] = "ThisIsAPath/To/A/File.txt"
     m["_deleteOnPost"] = set()
     return m
+
 
 WorkList = types.SimpleNamespace()
 WorkList.ok = []
@@ -43,6 +49,7 @@ WorkList.incoming = []
 WorkList.rejected = []
 WorkList.failed = []
 WorkList.directories_ok = []
+
 
 def test_after_accept(tmp_path, capsys):
     BaseOptions = Options()
@@ -56,7 +63,7 @@ def test_after_accept(tmp_path, capsys):
     message_with_nodupe['nodupe_override'] = {}
 
     message_without_nodupe = make_message()
-    
+
     wl_test_after_accept = copy.deepcopy(WorkList)
     wl_test_after_accept.incoming = [message_with_nodupe, message_without_nodupe]
 

@@ -6,7 +6,7 @@
 # Documentation: https://github.com/MetPX/sarracenia
 #
 """
-  plugins that use primarily the after_work entry point, normally 
+  plugins that use primarily the after_work entry point, normally
   executed after the file transfer (either send or get) has completed.
 
   usually such plugins will contain a loop:

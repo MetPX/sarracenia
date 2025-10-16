@@ -19,11 +19,11 @@ sample station file::
         7|70614|9440083|Vancouver|US|WA|-8.0
 
 The poll:
-If poll_noaa_stn_file isn't set, it'll grab an up-to-date version of all station site code data from the 
+If poll_noaa_stn_file isn't set, it'll grab an up-to-date version of all station site code data from the
 NOAA website. The station list file is in the following format:
 SourceID | SiteID | SiteCode | SiteName | CountryID | StateID | UTCOffset
 Each station on its own line.
-Posts the file on the exchange if the request returns a valid URL. 
+Posts the file on the exchange if the request returns a valid URL.
 
 in v2, one needed a matching downloader plugin, but in sr3 we can leverage the retrievePath feature
 so that normalk downloader works, so only the poll one needed.
@@ -46,12 +46,12 @@ logger = logging.getLogger(__name__)
 class Noaa_hydrometric(FlowCB):
     def __init__(self, options):
 
-        super().__init__(options,logger)
+        super().__init__(options, logger)
 
         # these options are only for the poll.
         self.o.add_option(option='poll_noaa_stn_file', kind='str')
-        self.o.add_option( option='retrievePathPattern', kind='str', \
-              default_value='datagetter?range=1&station={0:}&product={1:}&units=metric&time_zone=gmt&application=web_services&format=csv' )
+        self.o.add_option(option='retrievePathPattern', kind='str',
+                          default_value='datagetter?range=1&station={0:}&product={1:}&units=metric&time_zone=gmt&application=web_services&format=csv')
 
         if self.o.identity_method.startswith('cod,'):
             m, v = self.o.identity_method.split(',')
@@ -77,8 +77,8 @@ class Noaa_hydrometric(FlowCB):
 
         else:
             # Grab station site codes from https://opendap.co-ops.nos.noaa.gov/stations/stationsXML.jsp
-            tree = ET.parse(urllib.request.urlopen\
-               ('https://opendap.co-ops.nos.noaa.gov/stations/stationsXML.jsp'))
+            tree = ET.parse(urllib.request.urlopen
+                            ('https://opendap.co-ops.nos.noaa.gov/stations/stationsXML.jsp'))
             root = tree.getroot()
             for child in root:
                 sitecodes.append(child.attrib['ID'])

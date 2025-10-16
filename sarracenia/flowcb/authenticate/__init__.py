@@ -15,9 +15,10 @@ import logging
 
 logger = logging.getLogger(__name__)
 
+
 class BearerToken(sarracenia.flowcb.FlowCB):
     """ BearerToken class implements an after_accept method that is common
-    to authentication plugins that provide bearer tokens. 
+    to authentication plugins that provide bearer tokens.
 
     A plugin author just needs to create a subclass of BearerToken and
     implement the get_token() method. The after_accept method defined here
@@ -36,7 +37,7 @@ class BearerToken(sarracenia.flowcb.FlowCB):
         """
         for msg in worklist.incoming:
             token = self.get_token()
-            
+
             if not token:
                 logger.error("Failed to get token!")
                 continue
@@ -44,11 +45,11 @@ class BearerToken(sarracenia.flowcb.FlowCB):
             # If the credential already exists and the bearer_token matches, don't need to do anything
             ok, details = self.o.credentials.get(msg['baseUrl'])
             token_already_in_creds = False
-            try: 
+            try:
                 token_already_in_creds = (ok and details.bearer_token == token)
                 if token_already_in_creds:
                     logger.debug(f"Token for {msg['baseUrl']} already in credentials database")
-            except:
+            except BaseException:
                 token_already_in_creds = False
 
             if not token_already_in_creds:
@@ -58,7 +59,7 @@ class BearerToken(sarracenia.flowcb.FlowCB):
                 cred = sarracenia.config.credentials.Credential(urlstr=msg['baseUrl'])
                 cred.bearer_token = token
                 self.o.credentials.add(msg['baseUrl'], details=cred)
-    
+
     def get_token(self):
         """ To be implemented by plugin authors.
         """

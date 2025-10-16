@@ -2,7 +2,7 @@
 
 try:
     from sr_retry import *
-except:
+except BaseException:
     from sarra.sr_retry import *
 
 # ===================================
@@ -15,8 +15,10 @@ failed = False
 # test encode/decode
 def test_retry_encode_decode(retry, message, done=False):
 
-    if done: line = retry.msgToJSON(message, done)
-    else: line = retry.msgToJSON(message)
+    if done:
+        line = retry.msgToJSON(message, done)
+    else:
+        line = retry.msgToJSON(message)
     msg = retry.msgFromJSON(line)
 
     if msg.body != message.body:
@@ -102,7 +104,7 @@ def test_retry_msg_append_get_file(retry, message):
 
         try:
             del message.properties['application_headers']['_retry_tag_']
-        except:
+        except BaseException:
             pass
 
         # make sure close/append works for every entry
@@ -117,9 +119,12 @@ def test_retry_msg_append_get_file(retry, message):
     while True:
 
         fp, msg = retry.msg_get_from_file(fp, path)
-        if not msg: break
-        if retry.is_done(msg): d = d + 1
-        else: r = r + 1
+        if not msg:
+            break
+        if retry.is_done(msg):
+            d = d + 1
+        else:
+            r = r + 1
         t = t + 1
 
     if t != 100:
@@ -136,7 +141,7 @@ def test_retry_msg_append_get_file(retry, message):
 
     # at end file fp is none
 
-    if fp != None:
+    if fp is not None:
         print(
             "test 10: append_get returned file pointer should have been None")
         failed = True
@@ -170,7 +175,8 @@ def test_retry_get_simple(retry, message):
     t = 0
     while True:
         msg = retry.get()
-        if not msg: break
+        if not msg:
+            break
         t = t + 1
 
     if t != 3:
@@ -211,7 +217,8 @@ def test_retry_overall(retry, message):
 
         # heartbeat or done
         if not msg:
-            if h_done: break
+            if h_done:
+                break
             retry.on_heartbeat(retry.parent)
             h_count = h_count + 1
             h_done = 1
@@ -235,7 +242,7 @@ def test_retry_overall(retry, message):
         if r == 0:
             try:
                 del message.properties['application_headers']['_retry_tag_']
-            except:
+            except BaseException:
                 pass
             message.body = '%s xyz://user@host /my/terrible/path%.10d' % (
                 timeflt2str(time.time()), msg_count)
@@ -246,8 +253,8 @@ def test_retry_overall(retry, message):
     # msg_count != done d_count ...
 
     if msg_count != d_count:
-        print("test 14: overall count failed msg_count %d  done_count %d ( failed %d, heartb %d)" % \
-        (msg_count,d_count,f_count,h_count))
+        print("test 14: overall count failed msg_count %d  done_count %d ( failed %d, heartb %d)" %
+              (msg_count, d_count, f_count, h_count))
         failed = True
 
     if os.path.isfile(retry.retry_path):
@@ -287,7 +294,8 @@ def test_retry_ctrl_c(retry, message):
 
         # heartbeat or done
         if not msg:
-            if h_done: break
+            if h_done:
+                break
             retry.on_heartbeat(retry.parent)
             h_count = h_count + 1
             h_done = 1
@@ -311,7 +319,7 @@ def test_retry_ctrl_c(retry, message):
         if r == 0:
             try:
                 del message.properties['application_headers']['_retry_tag_']
-            except:
+            except BaseException:
                 pass
             message.body = '%s xyz://user@host /my/terrible/path%.10d' % (
                 timeflt2str(time.time()), msg_count)
@@ -319,7 +327,8 @@ def test_retry_ctrl_c(retry, message):
             retry.add_msg_to_new_file(message)
             msg_count = msg_count + 1
             a_count = a_count + 1
-            if a_count == 2: break
+            if a_count == 2:
+                break
 
     # ctrl_c heartbeat
 
@@ -332,7 +341,8 @@ def test_retry_ctrl_c(retry, message):
 
         # heartbeat or done
         if not msg:
-            if h_done: break
+            if h_done:
+                break
             retry.on_heartbeat(retry.parent)
             h_count = h_count + 1
             h_done = 1
@@ -356,7 +366,7 @@ def test_retry_ctrl_c(retry, message):
         if r == 0:
             try:
                 del message.properties['application_headers']['_retry_tag_']
-            except:
+            except BaseException:
                 pass
             message.body = '%s xyz://user@host /my/terrible/path%.10d' % (
                 timeflt2str(time.time()), msg_count)
@@ -367,8 +377,8 @@ def test_retry_ctrl_c(retry, message):
     # msg_count != done d_count ...
 
     if msg_count != d_count:
-        print("test 16: ctrl_c count failed msg_count %d  done_count %d ( failed %d, heartb %d)" % \
-        (msg_count,d_count,f_count,h_count))
+        print("test 16: ctrl_c count failed msg_count %d  done_count %d ( failed %d, heartb %d)" %
+              (msg_count, d_count, f_count, h_count))
         failed = True
 
     if os.path.isfile(retry.retry_path):
@@ -383,22 +393,22 @@ def self_test():
     retry_path = '/tmp/retry'
     try:
         os.unlink(retry_path)
-    except:
+    except BaseException:
         pass
     try:
         os.unlink(retry_path + '.new')
-    except:
+    except BaseException:
         pass
     try:
         os.unlink(retry_path + '.state')
-    except:
+    except BaseException:
         pass
     try:
         os.unlink(retry_path + '.heart')
-    except:
+    except BaseException:
         pass
 
-    #setup retry parent
+    # setup retry parent
     cfg = sr_config()
     cfg.configure()
     cfg.retry_path = retry_path
@@ -499,7 +509,7 @@ def self_test():
     path = "/tmp/ftest1"
     try:
         os.unlink(path)
-    except:
+    except BaseException:
         pass
 
     i = 0
@@ -526,7 +536,7 @@ def self_test():
 def main():
     try:
         self_test()
-    except:
+    except BaseException:
         print("sr_retry.py TEST FAILED")
         raise
 

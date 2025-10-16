@@ -3,7 +3,7 @@
 try:
     from sr_config import *
     from sr_instances import *
-except:
+except BaseException:
     from sarra.sr_config import *
     from sarra.sr_instances import *
 

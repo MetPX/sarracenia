@@ -89,14 +89,15 @@ from sarracenia.flowcb import FlowCB
 
 logger = logging.getLogger(__name__)
 
+
 class Wmo2msc(FlowCB):
     def __init__(self, options):
-        super().__init__(options,logger)
+        super().__init__(options, logger)
 
-        self.o.add_option( 'filter_wmo2msc_uniquify', 'str', 'hash' )
-        self.o.add_option( 'filter_wmo2msc_replace_dir', 'str' )
-        self.o.add_option( 'filter_wmo2msc_treeify', 'flag', True )
-        self.o.add_option( 'filter_wmo2msc_convert', 'flag', True )
+        self.o.add_option('filter_wmo2msc_uniquify', 'str', 'hash')
+        self.o.add_option('filter_wmo2msc_replace_dir', 'str')
+        self.o.add_option('filter_wmo2msc_treeify', 'flag', True)
+        self.o.add_option('filter_wmo2msc_convert', 'flag', True)
 
         if not hasattr(self.o, 'filter_wmo2msc_replace_dir'):
             logger.critical("filter_wmo2msc_replace_dir setting is mandatory")
@@ -108,7 +109,7 @@ class Wmo2msc(FlowCB):
         (self.o.filter_olddir, self.o.filter_newdir) = self.o.filter_wmo2msc_replace_dir.split(',')
 
         logger.debug("old-dir=%s, new-dir=%s" %
-                    (self.o.filter_olddir, self.o.filter_newdir))
+                     (self.o.filter_olddir, self.o.filter_newdir))
 
         self.trimre = re.compile(b" +\n")
 
@@ -197,7 +198,7 @@ class Wmo2msc(FlowCB):
         if ahl2 in ['SA', 'SM', 'SI', 'SO', 'UJ', 'US', 'FT']:
             self.replaceChar('\x03', '')
 
-        #trimming of trailing blanks.
+        # trimming of trailing blanks.
         lenb = len(self.bintxt)
         self.bintxt = self.trimre.sub(b"\n", self.bintxt)
         if len(self.bintxt) < lenb:
@@ -213,7 +214,7 @@ class Wmo2msc(FlowCB):
                 input_file = os.path.join(self.o.baseDir, message['relPath'])
             else:
                 logger.error(f'needs local files invalid url: %s or baseDir not set' %
-                    (message['baseUrl'] + message['relPath']))
+                             (message['baseUrl'] + message['relPath']))
                 worklist.rejected.append(message)
                 continue
 
@@ -250,7 +251,7 @@ class Wmo2msc(FlowCB):
                 # This file is encoded in an indecipherably non-standard format.
                 fmt = 'unknown-binary'
 
-                #self.replaceChar('\r','',2) replace only the first 2 carriage returns.
+                # self.replaceChar('\r','',2) replace only the first 2 carriage returns.
                 self.bintxt = self.bintxt.replace(bytearray('\r', 'latin_1'),
                                                   bytearray('', 'latin_1'), 2)
             else:
@@ -267,10 +268,10 @@ class Wmo2msc(FlowCB):
             # Determine local file name.
             if self.o.filter_wmo2msc_uniquify in ['time']:
 
-                AHLfn += '_' + time.strftime( "%Y%m%d%H%M%S", time.gmtime(time.time()) ) + \
-                         '_%05d' % random.randint(0,9999)
+                AHLfn += '_' + time.strftime("%Y%m%d%H%M%S", time.gmtime(time.time())) + \
+                         '_%05d' % random.randint(0, 9999)
             elif self.o.filter_wmo2msc_uniquify in ['hash']:
-                #AHLfn += '_%s' % ''.join( format(x, '02x') for x in s.digest() )
+                # AHLfn += '_%s' % ''.join( format(x, '02x') for x in s.digest() )
                 AHLfn += '_' + sumstr
 
             if self.o.filter_wmo2msc_treeify:
@@ -304,7 +305,7 @@ class Wmo2msc(FlowCB):
                 try:
                     os.link(input_file, output_file)
                     fileOK = True
-                except:
+                except BaseException:
                     pass
 
             if self.o.filter_wmo2msc_convert or not fileOK:
@@ -353,12 +354,12 @@ SUPPLEMENTARY INFORMATION
 SUNDEW COMPATIBILITY:   This script is the sarra version of a 'bulletin-file' receiver.
 
 dod_filter_wmo2msc.py is a do_download plugin script used with sr_sarra to convert
-World Meteorological Organisation (WMO) standard (See WMO-386 and WMO-306) bulletins 
-into the similar but different internal format used by the Meteorological Service of 
+World Meteorological Organisation (WMO) standard (See WMO-386 and WMO-306) bulletins
+into the similar but different internal format used by the Meteorological Service of
 Canada (MSC.)
 
-transformation of bulletins is based on detecting the format by reading the first 
-line of the file, and the first four bytes of after the first line.  detected format 
+transformation of bulletins is based on detecting the format by reading the first
+line of the file, and the first four bytes of after the first line.  detected format
 is one of:
    wmo-binary: GRIB, BUFR, or PNG, which require carriage returns to be removed ?
    wmo-alpha:  extensive filtering.
@@ -368,9 +369,9 @@ The file is read entirely into memory as the WMO standard specifies a maximum me
 size of 500,000 bytes with no segmentation and re-assembly being ruled out.
 
 The output files are named based based on the Abbreviated Header Line (AHL)
-from first line of each input file. 
+from first line of each input file.
 
-It operates on local files.  One subscribes to a source messages that are already 
+It operates on local files.  One subscribes to a source messages that are already
 downloaded, then this 'download' filter produces a second tree of converted bulletins.
 
 STANDALONE DEBUGGING:
@@ -396,12 +397,12 @@ is standard in Unix/Linux land, and not two carriage returns followed by a line 
 by the ancient tomes of the WMO.
 
 This processing was determined by blackbox reverse engineering for MetPX sundew in the mid-2000's.
-when a study was done over a few days in the mid 2000's, it was determined that approximately 
-6% of traffic on the GTS is carriage returns, which seems sad, but the formats are too entrenched 
-to be changed.  
+when a study was done over a few days in the mid 2000's, it was determined that approximately
+6% of traffic on the GTS is carriage returns, which seems sad, but the formats are too entrenched
+to be changed.
 
 Hopefully identical logic has been ported to Sarracenia for use as a sarra plugin in 2017.
 
-Adaptation of sundew code to sarracenia by Peter Silva - 2017/01 
+Adaptation of sundew code to sarracenia by Peter Silva - 2017/01
 
 """

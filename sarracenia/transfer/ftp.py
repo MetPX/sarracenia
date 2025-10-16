@@ -20,13 +20,19 @@
 #  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307  USA
 #
 
-import ftplib, os, subprocess, sys, time, ssl
+import ftplib
+import os
+import subprocess
+import sys
+import time
+import ssl
 import logging
 from sarracenia.transfer import Transfer
 from sarracenia.transfer import alarm_cancel, alarm_set, alarm_raise
 from urllib.parse import unquote
 
 logger = logging.getLogger(__name__)
+
 
 class IMPLICIT_FTP_TLS(ftplib.FTP_TLS):
     """ FTP_TLS subclass that automatically wraps sockets in SSL to support implicit FTPS.
@@ -49,6 +55,7 @@ class IMPLICIT_FTP_TLS(ftplib.FTP_TLS):
             value = self.context.wrap_socket(value)
         self._sock = value
 
+
 class Ftp(Transfer):
     """
     File Transfer Protocol (FTP)  ( https://datatracker.ietf.org/doc/html/rfc959 )
@@ -59,6 +66,7 @@ class Ftp(Transfer):
 
     built using: ftplib ( https://docs.python.org/3/library/ftplib.html )
     """
+
     def __init__(self, proto, options):
 
         super().__init__(proto, options)
@@ -68,7 +76,7 @@ class Ftp(Transfer):
         self.o.add_option('accelFtpgetCommand', 'str',
                           '/usr/bin/ncftpget %s %d')
 
-        self.o.add_option('ftpFilenameEncoding', 'str', 'utf-8' )
+        self.o.add_option('ftpFilenameEncoding', 'str', 'utf-8')
 
         logger.debug("sr_ftp __init__")
         self.connected = False
@@ -101,7 +109,7 @@ class Ftp(Transfer):
             self.ftp.cwd(self.originalDir)
             self.ftp.cwd(path)
             return
-        except:
+        except BaseException:
             pass
         finally:
             alarm_cancel()
@@ -109,16 +117,18 @@ class Ftp(Transfer):
         # need to create subdir
 
         subdirs = path.split("/")
-        if path[0:1] == "/": subdirs[0] = "/" + subdirs[0]
+        if path[0:1] == "/":
+            subdirs[0] = "/" + subdirs[0]
 
         for d in subdirs:
-            if d == '': continue
+            if d == '':
+                continue
             # try to go directly to subdir
             try:
                 alarm_set(self.o.timeout)
                 self.ftp.cwd(d)
                 continue
-            except:
+            except BaseException:
                 pass
             finally:
                 alarm_cancel()
@@ -149,8 +159,10 @@ class Ftp(Transfer):
     def check_is_connected(self):
         logger.debug("sr_ftp check_is_connected")
 
-        if self.ftp == None: return False
-        if not self.connected: return False
+        if self.ftp is None:
+            return False
+        if not self.connected:
+            return False
 
         if self.sendTo != self.o.sendTo:
             self.close()
@@ -164,7 +176,7 @@ class Ftp(Transfer):
         # really connected
         try:
             cwd = self.getcwd()
-        except:
+        except BaseException:
             self.close()
             return False
 
@@ -209,15 +221,17 @@ class Ftp(Transfer):
         self.connected = False
         self.sendTo = self.o.sendTo
 
-        if not self.credentials(): return False
+        if not self.credentials():
+            return False
 
         # timeout alarm 100 secs to connect
         alarm_set(self.o.timeout)
 
         try:
             expire = -999
-            if self.o.timeout: expire = self.o.timeout
-            if self.port == '' or self.port == None: 
+            if self.o.timeout:
+                expire = self.o.timeout
+            if self.port == '' or self.port is None:
                 if self.implicit_ftps:
                     self.port = 990
                 else:
@@ -245,9 +259,10 @@ class Ftp(Transfer):
                                      unquote(self.password),
                                      timeout=expire)
                 ftp.encoding = self.o.ftpFilenameEncoding
-                if self.prot_p: ftp.prot_p()
+                if self.prot_p:
+                    ftp.prot_p()
                 # needed only if prot_p then set back to prot_c
-                #else          : ftp.prot_c()
+                # else          : ftp.prot_c()
 
             ftp.set_pasv(self.passive)
 
@@ -255,7 +270,7 @@ class Ftp(Transfer):
 
             try:
                 self.originalDir = ftp.pwd()
-            except:
+            except BaseException:
                 logger.warning("Unable to ftp.pwd")
                 logger.debug('Exception details: ', exc_info=True)
 
@@ -263,7 +278,7 @@ class Ftp(Transfer):
             self.connected = True
             self.ftp = ftp
 
-        except:
+        except BaseException:
             logger.error("Unable to connect to %s (user:%s)" %
                          (self.host, self.user))
             logger.debug('Exception details: ', exc_info=True)
@@ -277,7 +292,8 @@ class Ftp(Transfer):
 
         try:
             ok, details = self.o.credentials.get(self.sendTo)
-            if details: url = details.url
+            if details:
+                url = details.url
 
             self.host = url.hostname
             self.port = url.port
@@ -292,7 +308,7 @@ class Ftp(Transfer):
 
             return True
 
-        except:
+        except BaseException:
             logger.error(
                 "sr_ftp/credentials: unable to get credentials for %s" %
                 self.sendTo)
@@ -307,7 +323,7 @@ class Ftp(Transfer):
         # if delete does not work (file not found) run pwd to see if connection is ok
         try:
             self.ftp.delete(path)
-        except:
+        except BaseException:
             d = self.ftp.pwd()
         alarm_cancel()
 
@@ -326,7 +342,8 @@ class Ftp(Transfer):
         dst = self.local_write_open(local_file, local_offset)
 
         # initialize sumalgo
-        if self.sumalgo: self.sumalgo.set_path(remote_file)
+        if self.sumalgo:
+            self.sumalgo.set_path(remote_file)
 
         # download
         self.write_chunk_init(dst)
@@ -334,11 +351,11 @@ class Ftp(Transfer):
         try:
             if self.binary:
                 self.ftp.retrbinary('RETR ' + remote_file, self.write_chunk,
-                                self.o.bufSize)
+                                    self.o.bufSize)
             else:
                 self.ftp.retrlines('RETR ' + remote_file, self.write_chunk)
         except Exception as Ex:
-            logger.error( f"failed to get {remote_file} to {local_file}: {Ex}" )
+            logger.error(f"failed to get {remote_file} to {local_file}: {Ex}")
 
         rw_length = self.write_chunk_end()
 
@@ -392,7 +409,7 @@ class Ftp(Transfer):
 
     # line_callback: entries[filename] = 'stripped_file_description'
     def line_callback(self, iline):
-        #logger.debug("sr_ftp line_callback %s" % iline)
+        # logger.debug("sr_ftp line_callback %s" % iline)
 
         oline = iline
         oline = oline.strip('\n')
@@ -402,7 +419,8 @@ class Ftp(Transfer):
         opart2 = []
 
         for p in opart1:
-            if p == '': continue
+            if p == '':
+                continue
             opart2.append(p)
 
         # else case is in the event of unlikely race condition
@@ -410,12 +428,12 @@ class Ftp(Transfer):
         # on linux, there are 8 fields, with spaces, perhaps more...
         if len(opart2) > 7:
             # university of Wisconsin as an ftp server that has an extra auth field.
-            if opart2[4].isnumeric(): # normal linux case.
+            if opart2[4].isnumeric():  # normal linux case.
                 fil = ' '.join(opart2[8:])
             else:  # U. Wisconsin case.
                 fil = ' '.join(opart2[9:])
         else:
-            # guess it is on windows... 
+            # guess it is on windows...
             fil = ' '.join(opart2[3:])
 
         line = ' '.join(opart2)
@@ -434,8 +452,8 @@ class Ftp(Transfer):
         alarm_set(self.o.timeout)
         try:
             self.ftp.voidcmd('SITE CHMOD ' +
-                         "{0:o}".format(self.o.permDirDefault) + ' ' +
-                         remote_dir)
+                             "{0:o}".format(self.o.permDirDefault) + ' ' +
+                             remote_dir)
         finally:
             alarm_cancel()
 
@@ -457,11 +475,11 @@ class Ftp(Transfer):
         try:
             if self.binary:
                 self.ftp.storbinary("STOR " + remote_file, src, self.o.bufSize,
-                                self.write_chunk)
+                                    self.write_chunk)
             else:
                 self.ftp.storlines("STOR " + remote_file, src, self.write_chunk)
         except Exception as Ex:
-            logger.error( f"failed to put {remote_file} to {local_file}: {Ex}" )
+            logger.error(f"failed to put {remote_file} to {local_file}: {Ex}")
 
         rw_length = self.write_chunk_end()
 

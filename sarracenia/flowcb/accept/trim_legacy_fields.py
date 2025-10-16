@@ -9,7 +9,9 @@ Usage:
 """
 
 import logging
-import os, stat, time
+import os
+import stat
+import time
 from sarracenia.flowcb import FlowCB
 
 logger = logging.getLogger(__name__)
@@ -17,10 +19,10 @@ logger = logging.getLogger(__name__)
 
 class Trim_legacy_fields(FlowCB):
     def __init__(self, options):
-        super().__init__(options,logger)
+        super().__init__(options, logger)
 
     def after_accept(self, worklist):
         for message in worklist.incoming:
-            for h in [ 'atime', 'filename', 'from_cluster', 'mtime', 'source', 'sundew_extension', 'to_clusters' ]:
+            for h in ['atime', 'filename', 'from_cluster', 'mtime', 'source', 'sundew_extension', 'to_clusters']:
                 if h in message:
                     del message[h]

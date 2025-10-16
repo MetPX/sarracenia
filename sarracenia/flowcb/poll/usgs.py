@@ -15,7 +15,7 @@ usage:
 
 	If multiple usgs stations need to be fetched in one call, station_chunk should specify how big the station
 	blocks should be. If not set it'll individually download station data.
-	If poll_usgs_stn_file isn't set, it'll default to pulling the siteIDs from: 
+	If poll_usgs_stn_file isn't set, it'll default to pulling the siteIDs from:
 	https://water.usgs.gov/osw/hcdn-2009/HCDN-2009_Station_Info.xlsx
 	directory. each station declaration is in the following format:
 	SourceID | SiteID | SiteCode | SiteName | CountryID | StateID | UTCOffset
@@ -32,12 +32,12 @@ usage:
 	More info on the http rest parameters at: https://waterservices.usgs.gov/rest/IV-Service.html
 	For writing fault-resistant code that polls from usgs: https://waterservices.usgs.gov/docs/portable_code.html
 	Sign up for updates involving if/how the format changes: http://waterdata.usgs.gov/nwis/subscribe?form=email
-	Parameter codes to tailor the data you want: 
+	Parameter codes to tailor the data you want:
 	https://help.waterdata.usgs.gov/code/parameter_cd_query?fmt=rdb&inline=true&group_cd=%
 	Currently the parametercd is set to:
 	00060	Physical	Discharge, cubic feet per second
 	00065	Physical	Gage height, feet
-	00011	Physical	Temperature, water, degrees Fahrenheit	
+	00011	Physical	Temperature, water, degrees Fahrenheit
 """
 
 import datetime
@@ -54,7 +54,7 @@ logger = logging.getLogger(__name__)
 class Usgs(FlowCB):
     def __init__(self, options):
 
-        super().__init__(options,logger)
+        super().__init__(options, logger)
         self.o.add_option('poll_usgs_station', 'list')
 
         # Parse sitecodes from file if provided, or the usgs website (turns excel spreadsheet into pandas

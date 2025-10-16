@@ -23,9 +23,9 @@ class TRACE_ON_STOP(FlowCB):
     def LOG_TRACE(self):
         tb_output = io.StringIO()
         traceback.print_stack(None, None, tb_output)
-        logger.info("\n\n****************************************\n" + \
-                             "***** PRINTING TRACEBACK FROM STOP *****\n" + \
-                             "****************************************\n" + \
-                           "\n" + tb_output.getvalue()             + "\n" + \
-                           "\n****************************************\n")
+        logger.info("\n\n****************************************\n" +
+                    "***** PRINTING TRACEBACK FROM STOP *****\n" +
+                    "****************************************\n" +
+                    "\n" + tb_output.getvalue() + "\n" +
+                    "\n****************************************\n")
         tb_output.close()

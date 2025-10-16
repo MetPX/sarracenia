@@ -1,4 +1,7 @@
 
+import sarracenia.postformat.v02
+import sarracenia.postformat.v03
+import sarracenia.postformat.wis
 import logging
 import sarracenia
 
@@ -11,7 +14,7 @@ class PostFormat:
        as opposed to internal represenation in the Sarracenia.
 
        Internally All messages are represented as python dictionaries with
-       fields identical to v03 messages. 
+       fields identical to v03 messages.
 
        PostFormats convert between message payload protocols and in-memory Sarracenia.Message
        formats.
@@ -42,13 +45,13 @@ class PostFormat:
     def content_type(post_format):
         for sc in PostFormat.__subclasses__():
             if post_format == sc.__name__.lower():
-                return sc.content_type() 
+                return sc.content_type()
         return None
 
         return self.mimetype
 
     @staticmethod
-    def importAny(payload, headers, content_type, options ) -> sarracenia.Message:
+    def importAny(payload, headers, content_type, options) -> sarracenia.Message:
         """
           given a message in a wire format, with the given properties (or headers) in a dictionary,
           return the message as a normalized v03 message.
@@ -56,47 +59,48 @@ class PostFormat:
           msg['_format'] will be set to the name of the postformat detected and decoded.
        """
         for sc in PostFormat.__subclasses__():
-            #logger.info( f" sc={sc}, scct={sc.content_type()}, content_type={content_type} " )
-            if sc.mine(payload, headers, content_type, options ):
-                return sc.importMine(payload, headers, options )
+            # logger.info( f" sc={sc}, scct={sc.content_type()}, content_type={content_type} " )
+            if sc.mine(payload, headers, content_type, options):
+                return sc.importMine(payload, headers, options)
         return None
 
         pass
 
     @staticmethod
-    def exportAny(msg, post_format='v03', topicPrefix=[ 'v03' ], options={ 'post_format': 'v03', 'topicPrefix':'v03' } ) -> (str, dict, str):
+    def exportAny(msg, post_format='v03', topicPrefix=['v03'], options={
+                  'post_format': 'v03', 'topicPrefix': 'v03'}) -> (str, dict, str):
         """
           return a tuple of the encoded message body, a headers dict, and content_type
           and a completed topic as a list as one header.
        """
         for sc in PostFormat.__subclasses__():
             if post_format == sc.__name__.lower():
-                return sc.exportMine( msg, options ) 
+                return sc.exportMine(msg, options)
 
         return None, None, None
 
-    def topicDerive(msg, options ) -> list:
+    def topicDerive(msg, options) -> list:
         """
            Sarracenia standard topic derivation.
 
            https://metpx.github.io/sarracenia/Explanation/Concepts.html#amqp-v09-rabbitmq-settings
 
         """
- 
+
         p = options['publishers'][options['publisher_index']]
 
         if p['broker'].url.scheme.startswith('mqtt'):
-            if ( 'exchange' in p ) and ( 'topicPrefix' in p ):
+            if ('exchange' in p) and ('topicPrefix' in p):
                 if 'exchangeSplit' in p and p['exchangeSplit'] > 1:
-                    idx = sum( bytearray(msg['identity']['value'], 'ascii')) % len(p['exchange'])
+                    idx = sum(bytearray(msg['identity']['value'], 'ascii')) % len(p['exchange'])
                     exchange = p['exchange'][idx]
                 else:
                     exchange = p['exchange'][0]
             topic_prefix = [exchange] + p['topicPrefix']
-            topic_separator='/'
+            topic_separator = '/'
         else:
             topic_prefix = p['topicPrefix']
-            topic_separator='.'
+            topic_separator = '.'
 
         if 'topic' in msg:
             if type(msg['topic']) is list:
@@ -106,18 +110,13 @@ class PostFormat:
         elif 'topic' in p and p['topic'] and (type(p['topic']) is not list):
             topic = p['topic'].split(topic_separator)
         else:
-            if 'relPath' in msg: 
+            if 'relPath' in msg:
                 topic = topic_prefix + msg['relPath'].split('/')[0:-1]
             elif 'subtopic' in msg:
-                topic = topic_prefix + msg['subtopic']  
+                topic = topic_prefix + msg['subtopic']
             else:
                 topic = topic_prefix
         return topic
 
-   
 
 # test for v04 first, because v03 may claim all other JSON.
-import sarracenia.postformat.wis
-import sarracenia.postformat.v03
-import sarracenia.postformat.v02
-

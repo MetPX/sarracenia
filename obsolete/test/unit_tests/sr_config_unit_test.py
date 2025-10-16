@@ -59,6 +59,7 @@ class SrConfigDeliveryOptionsTestCase(SrConfigTestCase):
 
     see: https://github.com/MetPX/sarracenia/blob/master/doc/sr_subscribe.1.rst#delivery-specifications
     """
+
     def setUp(self) -> None:
         self.cfg.defaults()
 
@@ -208,6 +209,7 @@ class SrConfigChecksumTestCase(SrConfigTestCase):
 
 class SrConfigPluginScriptTestCase(SrConfigTestCase):
     """ Test cases related to plugin interfacing """
+
     def setUp(self) -> None:
         """ Creating a dummy script plugin which will be tested
 
@@ -253,6 +255,7 @@ class SrConfigPluginScriptTestCase(SrConfigTestCase):
 
 class SrConfigGeneralTestCase(SrConfigTestCase):
     """ Test cases related to general config parsing an interpretation logic """
+
     def setUp(self) -> None:
         """ Creates configuration which are generic to all test cases
 
@@ -760,7 +763,7 @@ class SrConfigGeneralTestCase(SrConfigTestCase):
                          "test 61: option heartbeat did not work")
 
     def test_subtopic(self):
-        opt1 = 'subtopic aaa.vv\ ww.hh##bb.aaa.#'
+        opt1 = 'subtopic aaa.vv\\ ww.hh##bb.aaa.#'
         w = opt1.split()
         w = self.cfg.backslash_space(w)
         self.cfg.option(w)
@@ -773,6 +776,7 @@ class SrConfigStdFilesRedirection(unittest.TestCase):
 
     These test stands for both out/err redirection in a single write (_io.TextIOWrapper) stream
     """
+
     def setUp(self) -> None:
         """ setup fake std file streams and logger to use through each test """
         self.stdoutpath = 'sys.stdout'
@@ -841,6 +845,7 @@ class SrConfigStdFileStreams(SrConfigStdFilesRedirection):
 
 class SrConfigStdFilesFileDescriptors(SrConfigStdFilesRedirection):
     """ Test cases over file descriptors consistency """
+
     def test_fds_before(self):
         """ test that file descriptor is different before redirection """
         self.assertNotEqual(self.fake_stdout.fileno(),
@@ -863,6 +868,7 @@ class SrConfigStdFilesFileDescriptors(SrConfigStdFilesRedirection):
 
 class SrConfigStdFilesOutput(SrConfigStdFilesRedirection):
     """ Test cases that validate that the output is printed where it should be before and after redirection """
+
     def test_logging(self):
         """ test that log file still receive log after redirection """
         StdFileLogWrapper(self.handler, self.fake_stdout.fileno())

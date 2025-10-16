@@ -30,30 +30,30 @@
 
 #
 
+import urllib.parse
+import urllib
+import sys
+import re
+import os
 import logging
 
 logger = logging.getLogger(__name__)
 
 logger.setLevel(logging.INFO)
 
-import os
-import re
-import urllib, urllib.parse
-import sys
-
 
 class Credential:
     r"""
 
-    An object that holds information about a credential, read from a 
+    An object that holds information about a credential, read from a
     credential file, which has one credential per line, format::
 
       url option1=value1, option2=value2
-       
+
     Examples::
         sftp://alice@herhost/ ssh_keyfile=/home/myself/mykeys/.ssh.id_dsa
         ftp://georges:Gpass@hishost/  passive = True, binary = True
-       
+
     `Format Documentation. <https://metpx.github.io/sarracenia/Reference/sr3_credentials.7.html>`_
 
     Attributes:
@@ -116,7 +116,7 @@ class Credential:
             s += self.url.scheme + '://'
             if self.url.username:
                 s += self.url.username
-            #if self.url.password:
+            # if self.url.password:
             #   s += ':' + self.url.password
             if self.url.hostname:
                 s += '@' + self.url.hostname
@@ -125,30 +125,40 @@ class Credential:
             if self.url.path:
                 s += self.url.path
 
-        alist = [ 'ssh_keyfile', 'passive', 'binary', 'tls', 'prot_p', 'bearer_token', 'login_method', 's3_endpoint', 'implicit_ftps']
-        if hasattr(self,'url') and self.url:
+        alist = [
+            'ssh_keyfile',
+            'passive',
+            'binary',
+            'tls',
+            'prot_p',
+            'bearer_token',
+            'login_method',
+            's3_endpoint',
+            'implicit_ftps']
+        if hasattr(self, 'url') and self.url:
             scheme = self.url.scheme
             if scheme.startswith('ftp'):
-                alist = [ 'passive', 'binary', 'tls', 'prot_p', 'login_method', 'implicit_ftps' ]
+                alist = ['passive', 'binary', 'tls', 'prot_p', 'login_method', 'implicit_ftps']
             elif scheme.startswith('sftp'):
-                alist = [ 'ssh_keyfile' ]
-            elif scheme.startswith('amqp') or  scheme.startswith('mqtt'):
-                alist = [ 'login_method' ]
+                alist = ['ssh_keyfile']
+            elif scheme.startswith('amqp') or scheme.startswith('mqtt'):
+                alist = ['login_method']
             elif scheme.startswith('https'):
-                alist = [ 'prot_p', 'bearer_token', 'login_method', 's3_endpoint', 'implicit_ftps']
-                if self.s3_session_token: 
-                    s += " %s" % 's3_session_token=Yes' 
-                if self.azure_credentials: 
-                    s += " %s" % 'azure_credentials=Yes' 
+                alist = ['prot_p', 'bearer_token', 'login_method', 's3_endpoint', 'implicit_ftps']
+                if self.s3_session_token:
+                    s += " %s" % 's3_session_token=Yes'
+                if self.azure_credentials:
+                    s += " %s" % 'azure_credentials=Yes'
 
         for a in alist:
             if getattr(self, a):
-                s+=f"+{a}={getattr(self,a)}"
+                s += f"+{a}={getattr(self, a)}"
 
         return s
 
     def to_json(self):
         return f"\"{str(self)}\""
+
 
 class CredentialDB:
     """Parses, stores and manages Credential objects.
@@ -157,13 +167,13 @@ class CredentialDB:
         credentials (dict): contains all sarracenia.config.credentials.Credential objects managed by the CredentialDB.
 
     Usage:
-       # build a credential via lookup in the normal files: 
+       # build a credential via lookup in the normal files:
        import CredentialDB from sarracenia.config.credentials
 
        credentials = CredentialDB.read( "/the/path/to/the/credentials.conf" )
 
        # if there are corresponding passwords or modulation of login information look it up.
-       
+
        broker = credentials.get( "amqps://hpfx.collab.science.gc.ca" )
        remote = credentials.get( "sftp://hoho@theserver" )
     """
@@ -189,12 +199,12 @@ class CredentialDB:
         """
 
         # need to create url object
-        key=urlstr
-        if details == None:
+        key = urlstr
+        if details is None:
             details = Credential()
             details.url = urllib.parse.urlparse(urlstr)
-            if hasattr(details.url,'password'):
-                key = key.replace( f":{details.url.password}", "" )
+            if hasattr(details.url, 'password'):
+                key = key.replace(f":{details.url.password}", "")
 
         self.credentials[key] = details
 
@@ -204,7 +214,7 @@ class CredentialDB:
 
         Args:
             urlstr (str): credentials as URL string to be parsed.
-        
+
         Returns:
             tuple: containing
                 cache_result (bool): ``True`` if the credential was retrieved from the CredentialDB cache, ``False``
@@ -213,12 +223,12 @@ class CredentialDB:
                 credential (sarracenia.config.credentials.Credential): the Credential
                     object matching the urlstr, ``None`` if urlstr is invalid.
         """
-        #logger.debug("CredentialDB get %s" % urlstr)
+        # logger.debug("CredentialDB get %s" % urlstr)
 
         # already cached
 
         if self.has(urlstr):
-            #logger.debug("CredentialDB get in cache %s %s" % (urlstr,self.credentials[urlstr]))
+            # logger.debug("CredentialDB get in cache %s %s" % (urlstr,self.credentials[urlstr]))
             return True, self.credentials[urlstr]
 
         # create url object if needed
@@ -226,18 +236,19 @@ class CredentialDB:
         url = urllib.parse.urlparse(urlstr)
 
         # add anonymous default, if necessary.
-        if ( 'amqp' in url.scheme ) and \
-           ( (url.username == None) or (url.username == '') ):
-            urlstr = urllib.parse.urlunparse( ( url.scheme, \
-                'anonymous:anonymous@%s' % url.netloc, url.path, None, None, url.port ) )
+        if ('amqp' in url.scheme) and \
+           ((url.username is None) or (url.username == '')):
+            urlstr = urllib.parse.urlunparse((url.scheme,
+                                              'anonymous:anonymous@%s' % url.netloc, url.path, None, None, url.port))
             url = urllib.parse.urlparse(urlstr)
             if self.isValid(url):
                 self.add(urlstr)
-                return False, self.credentials[urlstr.replace(':anonymous@','@')]
+                return False, self.credentials[urlstr.replace(':anonymous@', '@')]
 
         # resolved from defined credentials
         ok, details = self._resolve(urlstr, url)
-        if ok: return True, details
+        if ok:
+            return True, details
 
         # not found... is it valid ?
         if not self.isValid(url):
@@ -247,14 +258,14 @@ class CredentialDB:
 
         self.add(urlstr)
         if url and url.password:
-            k=urlstr.replace( f':{url.password}@', '@' )
+            k = urlstr.replace(f':{url.password}@', '@')
         else:
-            k=urlstr
+            k = urlstr
         return False, self.credentials[k]
 
     def has(self, urlstr):
         """Return ``True`` if the Credential matching the urlstr is already in the CredentialDB.
-        
+
         Args:
             urlstr(str): credentials in a URL string.
         """
@@ -268,12 +279,13 @@ class CredentialDB:
             S (str): string to check if true.
         """
         s = S.lower()
-        if s == 'true' or s == 'yes' or s == 'on' or s == '1': return True
+        if s == 'true' or s == 'yes' or s == 'on' or s == '1':
+            return True
         return False
 
     def isValid(self, url, details=None):
         """Validates a URL and Credential object. Checks for empty passwords, schemes, etc.
-            
+
         Args:
             url (urllib.parse.ParseResult): ParseResult object for a URL.
             details (sarracenia.config.credentials.Credential): sarra Credential object containing additional details about
@@ -286,44 +298,48 @@ class CredentialDB:
         # network location
         if url.netloc == '':
             # file (why here? anyway)
-            if url.scheme == 'file': return True
-            logger.error( f'no network location, and not a file url' )
+            if url.scheme == 'file':
+                return True
+            logger.error(f'no network location, and not a file url')
             return False
 
         # amqp... vhost not check: default /
 
         # user and password provided we are ok
-        user = url.username != None and url.username != ''
-        pasw = url.password != None and url.password != ''
+        user = url.username is not None and url.username != ''
+        pasw = url.password is not None and url.password != ''
         both = user and pasw
 
         # we have everything
-        if both: return True
+        if both:
+            return True
 
         # we have no user and no pasw (http normal, https... no cert,  sftp hope for .ssh/config)
         if not user and not pasw:
-            if url.scheme in ['http', 'https', 'sftp', 's3', 'azure', 'azblob']: return True
-            logger.error( f'unknown scheme: {url.scheme}')
+            if url.scheme in ['http', 'https', 'sftp', 's3', 'azure', 'azblob']:
+                return True
+            logger.error(f'unknown scheme: {url.scheme}')
             return False
 
         #  we have a pasw no user
         if pasw:
             # not sure... sftp hope to get user from .ssh/config
-            if url.scheme == 'sftp': return True
-            logger.error( f'password with no username specified')
+            if url.scheme == 'sftp':
+                return True
+            logger.error(f'password with no username specified')
             return False
 
         #  we only have a user ... permitted only for sftp
 
-        if url.scheme != 'sftp': 
-            logger.error( f"credential {url} not found"  )
+        if url.scheme != 'sftp':
+            logger.error(f"credential {url} not found")
             return False
 
         #  sftp and an ssh_keyfile was provided... check that it exists
 
         if details and details.ssh_keyfile:
-            if not os.path.exists(details.ssh_keyfile): 
-                logger.error( f'ssh_keyfile not found: {details.ssh_keyfile}')
+            if not os.path.exists(details.ssh_keyfile):
+                logger.error(f'ssh_keyfile not found: {details.ssh_keyfile}')
                 return False
 
         #  sftp with a user (and perhaps a valid ssh_keyfile)
@@ -336,11 +352,12 @@ class CredentialDB:
         Args:
             line (str): line to be parsed.
         """
-        #logger.debug("parse %s" % self.pwre.sub(':<secret!>@', line, count=1) )
+        # logger.debug("parse %s" % self.pwre.sub(':<secret!>@', line, count=1) )
 
         try:
             sline = line.strip()
-            if len(sline) == 0 or sline[0] == '#': return
+            if len(sline) == 0 or sline[0] == '#':
+                return
 
             # first field url string = protocol://user:password@host:port[/vost]
             parts = sline.split()
@@ -413,7 +430,7 @@ class CredentialDB:
 
             self.add(urlstr, details)
 
-        except:
+        except BaseException:
             logger.error("credentials/parse %s" % line)
             logger.debug('Exception details: ', exc_info=True)
 
@@ -434,10 +451,10 @@ class CredentialDB:
 
                 for line in lines:
                     self._parse(line)
-        except:
+        except BaseException:
             logger.error("credentials/read path = %s" % path)
             logger.debug('Exception details: ', exc_info=True)
-        #logger.debug("Credentials = %s\n" % self.credentials)
+        # logger.debug("Credentials = %s\n" % self.credentials)
 
     def _resolve(self, urlstr, url=None):
         """Resolve credentials for AMQP vhost from ones passed as a string, and optionally a urllib.parse.ParseResult
@@ -451,7 +468,7 @@ class CredentialDB:
             tuple: containing
                 result (bool): ``False`` if the creds were not in the CredentialDB. ``True`` if they were.
                 details (sarracenia.config.credentials.Credential): the updated Credential object, or ``None``.
-                
+
 
         """
 
@@ -466,13 +483,18 @@ class CredentialDB:
             details = self.credentials[s]
             u = details.url
 
-            if url.scheme != u.scheme: continue
-            if url.hostname != u.hostname: continue
-            if url.port != u.port: continue
+            if url.scheme != u.scheme:
+                continue
+            if url.hostname != u.hostname:
+                continue
+            if url.port != u.port:
+                continue
             if url.username != u.username:
-                if url.username != None: continue
+                if url.username is not None:
+                    continue
             if url.password != u.password:
-                if url.password != None: continue
+                if url.password is not None:
+                    continue
 
             # for AMQP...  vhost checking
             # amqp users have same credentials for any vhost
@@ -480,21 +502,23 @@ class CredentialDB:
             if 'amqp' in url.scheme:
                 url_vhost = url.path
                 u_vhost = u.path
-                if url_vhost == '': url_vhost = '/'
-                if u_vhost == '': u_vhost = '/'
+                if url_vhost == '':
+                    url_vhost = '/'
+                if u_vhost == '':
+                    u_vhost = '/'
 
-                if url_vhost != u_vhost: continue
+                if url_vhost != u_vhost:
+                    continue
 
             # resolved : cache it and return
 
             self.credentials[urlstr] = details
-            #logger.debug("Credentials get resolved %s %s" % (urlstr,details))
+            # logger.debug("Credentials get resolved %s %s" % (urlstr,details))
             return True, details
 
         return False, None
 
-
-    def validate_urlstr(self, urlstr) -> tuple :
+    def validate_urlstr(self, urlstr) -> tuple:
         """
            returns a tuple ( bool, expanded_url )
            the bool is whether the expansion worked, and the expanded_url is one with
@@ -510,4 +534,3 @@ class CredentialDB:
             cred_details.url = urllib.parse.urlparse(urlstr)
             return False, cred_details
         return True, cred_details
-

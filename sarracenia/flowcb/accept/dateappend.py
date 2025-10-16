@@ -6,7 +6,7 @@ Plugin dateappend.py:
 
     unlikely to be useful to others, except as example.
     note that, in the case of retries, the date will be appended multiple times.
-    
+
     This is for diagnosing problems with data pumps, identifying feed failures and retries.
 
 Example:
@@ -24,17 +24,22 @@ Usage:
 
 """
 import logging
-import sys, os, os.path, time, stat
+import sys
+import os
+import os.path
+import time
+import stat
 from sarracenia.flowcb import FlowCB
 
 logger = logging.getLogger(__name__)
 
+
 class Dateappend(FlowCB):
     def __init__(self, options):
-        super().__init__(options,logger)
+        super().__init__(options, logger)
 
     def after_accept(self, worklist):
         for message in worklist.incoming:
             datestr = time.strftime('_%Y%m%d%H%M%S', time.localtime())
-            if not message['new_file'].endswith( datestr ):
+            if not message['new_file'].endswith(datestr):
                 message['new_file'] += datestr

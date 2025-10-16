@@ -11,7 +11,9 @@ Usage:
 """
 
 import logging
-import os, stat, time
+import os
+import stat
+import time
 from sarracenia.flowcb import FlowCB
 
 logger = logging.getLogger(__name__)

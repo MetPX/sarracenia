@@ -20,4 +20,3 @@ class Random(Identity):
 
     def update(self, chunk):
         pass
-

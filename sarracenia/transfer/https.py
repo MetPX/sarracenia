@@ -32,18 +32,22 @@ import sys
 from sarracenia.transfer import Transfer
 from sarracenia.transfer import alarm_cancel, alarm_set, alarm_raise
 
-import urllib.error, urllib.parse, urllib.request
+import urllib.error
+import urllib.parse
+import urllib.request
 from urllib.parse import unquote
-from urllib.request import HTTPRedirectHandler 
+from urllib.request import HTTPRedirectHandler
 
 logger = logging.getLogger(__name__)
 
+
 class HTTPRedirectHandlerSameMethod(HTTPRedirectHandler):
-    """ Instead of returning a new Request without a method (defaults to GET), use the 
+    """ Instead of returning a new Request without a method (defaults to GET), use the
         same method in the new Request.
         https://docs.python.org/3/library/urllib.request.html#urllib.request.HTTPRedirectHandler.redirect_request
         https://developer.mozilla.org/en-US/docs/Web/HTTP/Redirections note [2]
     """
+
     def redirect_request(self, req, fp, code, msg, headers, newurl):
         orig_method = req.get_method()
         new_req = super().redirect_request(req, fp, code, msg, headers, newurl)
@@ -52,23 +56,25 @@ class HTTPRedirectHandlerSameMethod(HTTPRedirectHandler):
                      + f"to {new_req.get_method()} {new_req.get_full_url()}")
         return new_req
 
+
 class Https(Transfer):
     """
-    HyperText Transfer Protocol (HTTP)  ( https://en.wikipedia.org/wiki/Hypertext_Transfer_Protocol ) 
+    HyperText Transfer Protocol (HTTP)  ( https://en.wikipedia.org/wiki/Hypertext_Transfer_Protocol )
     sarracenia transfer protocol subclass supports/uses additional custom options:
 
     * accelWgetCommand (default: '/usr/bin/wget %s -o - -O %d' )
     * httpsSafeQuote (default: '/+' )
 
-    built with: 
+    built with:
          urllib.request ( https://docs.python.org/3/library/urllib.request.html )
     """
+
     def __init__(self, proto, options):
 
         super().__init__(proto, options)
 
         self.o.add_option('accelWgetCommand', 'str', '/usr/bin/wget %s -o - -O %d')
-        self.o.add_option('httpsSafeQuote' , 'str' , '/+')
+        self.o.add_option('httpsSafeQuote', 'str', '/+')
 
         logger.debug("sr_http __init__")
 
@@ -108,15 +114,15 @@ class Https(Transfer):
         self.path = path
 
     # for compatibility... always new connection with http
-    def check_is_connected(self):        
-        if (not self.connected 
-            or not self.opener 
-            or not self.head_opener 
-            or self.sendTo != self.o.sendTo):
+    def check_is_connected(self):
+        if (not self.connected
+            or not self.opener
+            or not self.head_opener
+                or self.sendTo != self.o.sendTo):
             logger.debug("sr_http check_is_connected -> no")
             self.close()
             return False
-        
+
         logger.debug("sr_http check_is_connected -> yes")
         return True
 
@@ -129,7 +135,8 @@ class Https(Transfer):
     def connect(self):
         logger.debug("sr_http connect %s" % self.o.sendTo)
 
-        if self.connected: self.close()
+        if self.connected:
+            self.close()
 
         self.connected = False
         self.sendTo = self.o.sendTo
@@ -137,15 +144,15 @@ class Https(Transfer):
         self.opener = None
         self.head_opener = None
         self.password_mgr = None
-        
+
         # Set up an opener, this used to be done in every call to __open__ uses a lot of CPU (issue #1261)
         #   FIXME? When done in connect, we create a new opener every time the destination changes
-        #   which might still be too frequently, depending on the config. I'm not convinced that we ever 
+        #   which might still be too frequently, depending on the config. I'm not convinced that we ever
         #   need to create a new opener. Maybe just put it in __init__ ?
         try:
             self.password_mgr = urllib.request.HTTPPasswordMgrWithDefaultRealm()
             auth_handler = urllib.request.HTTPBasicAuthHandler(self.password_mgr)
-        
+
             ssl_handler = urllib.request.HTTPSHandler(0, self.tlsctx)
 
             head_redirect_handler = HTTPRedirectHandlerSameMethod()
@@ -154,12 +161,12 @@ class Https(Transfer):
             self.opener = urllib.request.build_opener(auth_handler, ssl_handler)
             self.head_opener = urllib.request.build_opener(auth_handler, ssl_handler, head_redirect_handler)
 
-        except:
+        except BaseException:
             logger.error(f'unable to connect {self.o.sendTo}')
             logger.debug('Exception details: ', exc_info=True)
             self.connected = False
 
-        if not self.credentials(): 
+        if not self.credentials():
             self.connected = False
 
         self.connected = True
@@ -171,21 +178,22 @@ class Https(Transfer):
 
         try:
             ok, details = self.o.credentials.get(self.sendTo)
-            if details: url = details.url
+            if details:
+                url = details.url
 
             self.user = url.username if url.username != '' else None
             self.password = url.password if url.password != '' else None
             self.bearer_token = details.bearer_token if hasattr(
                 details, 'bearer_token') else None
 
-             # username and password credentials
-            if self.user != None:
+            # username and password credentials
+            if self.user is not None:
                 # continue with authentication
                 self.password_mgr.add_password(None, self.sendTo, self.user, unquote(self.password))
 
             return True
 
-        except:
+        except BaseException:
             logger.error("sr_http/credentials: unable to get credentials for %s" % self.sendTo)
             logger.debug('Exception details: ', exc_info=True)
 
@@ -207,13 +215,14 @@ class Https(Transfer):
         if 'retrievePath' in msg:
             url = self.sendTo + '/' + msg['retrievePath']
         else:
-            u = urllib.parse.urlparse( self.sendTo )
+            u = urllib.parse.urlparse(self.sendTo)
             url = u.scheme + '://' + u.netloc + '/' + urllib.parse.quote(self.path + '/' +
-                                                              remote_file, safe=self.o.httpsSafeQuote)
+                                                                         remote_file, safe=self.o.httpsSafeQuote)
 
         ok = self.__open__(url, remote_offset, length)
 
-        if not ok: return False
+        if not ok:
+            return False
 
         # read from self.http write to local_file
 
@@ -222,7 +231,7 @@ class Https(Transfer):
 
         return rw_length
 
-    def getAccelerated(self, msg, remote_file, local_file, length, remote_offset=0, exactLength=False ):
+    def getAccelerated(self, msg, remote_file, local_file, length, remote_offset=0, exactLength=False):
 
         arg1 = msg['baseUrl'] + '/' + msg['relPath']
         arg1 = arg1.replace(' ', '\\ ')
@@ -233,7 +242,7 @@ class Https(Transfer):
         cmd = cmd.replace('%d', arg2).split()
 
         if exactLength:
-            cmd = [cmd[0]] + [ f"--header=Range: bytes={remote_offset}-{length-1}" ] + cmd[1:]
+            cmd = [cmd[0]] + [f"--header=Range: bytes={remote_offset}-{length - 1}"] + cmd[1:]
         else:
             cmd = [cmd[0]] + cmd[1:]
 
@@ -241,7 +250,7 @@ class Https(Transfer):
         p = subprocess.Popen(cmd)
         p.wait()
         if p.returncode != 0:
-            logger.warning("binary accelerator %s returned: %d" % ( cmd, p.returncode ) )
+            logger.warning("binary accelerator %s returned: %d" % (cmd, p.returncode))
             return -1
         # FIXME: length is not validated.
         return length
@@ -279,7 +288,8 @@ class Https(Transfer):
 
         ok = self.__open__(url)
 
-        if not ok: return self.entries
+        if not ok:
+            return self.entries
 
         # get html page for directory
 
@@ -291,20 +301,23 @@ class Https(Transfer):
                     chunk = self.http.read(self.o.bufSize)
                 finally:
                     alarm_cancel()
-                if not chunk: break
-                if dbuf: dbuf += chunk
-                else: dbuf = chunk
+                if not chunk:
+                    break
+                if dbuf:
+                    dbuf += chunk
+                else:
+                    dbuf = chunk
 
-            #self.data = dbuf.decode('utf-8')
+            # self.data = dbuf.decode('utf-8')
 
             # invoke option defined on_html_page ... if any
 
-            #for plugin in self.o.on_html_page_list:
+            # for plugin in self.o.on_html_page_list:
             #    if not plugin(self):
             #        logger.warning("something wrong")
             #        return self.entries
 
-        except:
+        except BaseException:
             logger.warning("sr_http/ls: unable to open %s" % self.urlstr)
             logger.debug('Exception details: ', exc_info=True)
 
@@ -319,18 +332,18 @@ class Https(Transfer):
             actual_url = self.http.geturl()
             if actual_url != self.urlstr:
                 redir_msg = redir_msg + f" redirected to {actual_url}"
-        except:
+        except BaseException:
             pass
         return redir_msg
 
     # open
-    def __open__(self, path, remote_offset=0, length=0, method:str=None, add_headers:dict=None) -> bool:
+    def __open__(self, path, remote_offset=0, length=0, method: str = None, add_headers: dict = None) -> bool:
         """ Open a URL. When the open is successful, self.http is set to a urllib.response instance that can be
             read from like a file.
 
             Returns True when successfully opened, False if there was a problem.
         """
-        logger.debug( f"{path} " + (method if method else ''))
+        logger.debug(f"{path} " + (method if method else ''))
 
         self.http = None
         self.req = None
@@ -350,7 +363,7 @@ class Https(Transfer):
 
         try:
             headers = {'user-agent': 'Sarracenia ' + sarracenia.__version__}
-            
+
             # Bearer token credential is passed as a header
             if self.bearer_token:
                 logger.debug('bearer_token: %s' % self.bearer_token)
@@ -360,7 +373,7 @@ class Https(Transfer):
             if remote_offset != 0:
                 str_range = 'bytes=%d-%d' % (remote_offset, remote_offset + length - 1)
                 headers['Range'] = str_range
-            
+
             # add everything from add_headers dict into headers dict. if anything in add_headers already
             # exists in headers, the values from add_headers will replace the values in headers.
             # This is done last to allow add_headers values to override Range/Authorization.
@@ -368,20 +381,20 @@ class Https(Transfer):
                 headers.update(add_headers)
 
             # username and password credentials
-            if self.user != None:
+            if self.user is not None:
                 # takeaway credentials info from urlstr
                 cred = self.user + '@'
                 self.urlstr = self.urlstr.replace(cred, '')
-                if self.password != None:
+                if self.password is not None:
                     cred = self.user + ':' + self.password + '@'
                     self.urlstr = self.urlstr.replace(cred, '')
- 
+
             # Build the request that will get opened. If None is passed to method it defaults to GET.
             self.req = urllib.request.Request(self.urlstr, headers=headers, method=method)
 
             # open... we are connected
             opener = self.head_opener if method == 'HEAD' else self.opener
-            if self.timeout == None:
+            if self.timeout is None:
                 # when timeout is not passed, urllib defaults to socket._GLOBAL_DEFAULT_TIMEOUT
                 self.http = opener.open(self.req)
             else:
@@ -392,7 +405,7 @@ class Https(Transfer):
                 actual_url = self.http.geturl()
                 if actual_url != self.urlstr:
                     logger.debug(f"{self.urlstr} redirected to {actual_url}")
-            except:
+            except BaseException:
                 pass
 
             self.connected = True
@@ -410,7 +423,7 @@ class Https(Transfer):
             logger.error('Failed to reach server. Reason: %s' % e.reason)
             self.connected = False
             raise
-        except:
+        except BaseException:
             logger.error(f'unable to open {self.__url_redir_str()}')
             logger.debug('Exception details: ', exc_info=True)
             self.connected = False
@@ -419,17 +432,17 @@ class Https(Transfer):
             alarm_cancel()
 
         return False
-    
-    def stat(self,path,msg) -> sarracenia.filemetadata.FmdStat:
+
+    def stat(self, path, msg) -> sarracenia.filemetadata.FmdStat:
         st = sarracenia.filemetadata.FmdStat()
         # logger.debug( f" baseUrl:{msg['baseUrl']}, path:{self.path}, cwd:{self.cwd}, path:{path} " )
 
         url = msg['baseUrl']
-        if msg['baseUrl'][-1] != '/' and self.path[0] != '/' :
-            url += '/' 
+        if msg['baseUrl'][-1] != '/' and self.path[0] != '/':
+            url += '/'
         url += self.path
         if url[-1] != '/':
-            url += '/' 
+            url += '/'
         url += path
 
         ok = self.__open__(url, method='HEAD', add_headers={'Accept-Encoding': 'identity'})
@@ -440,15 +453,15 @@ class Https(Transfer):
         if status_code != 200:
             logger.debug(f"status code {status_code}")
             return None
-        
+
         have_metadata = False
         try:
             # Content-Length: 9659
             st.st_size = int(self.http.getheader('Content-Length'))
             have_metadata = True
-        except:
+        except BaseException:
             pass
-        try: 
+        try:
             # Last-Modified: Thu, 22 Aug 2024 20:37:53 GMT
             lm = self.http.getheader('Last-Modified')
             lm = datetime.datetime.strptime(lm, '%a, %d %b %Y %H:%M:%S GMT').timestamp()
@@ -456,7 +469,7 @@ class Https(Transfer):
                 st.st_atime = lm
                 st.st_mtime = lm
                 have_metadata = True
-        except:
+        except BaseException:
             pass
 
         if have_metadata:

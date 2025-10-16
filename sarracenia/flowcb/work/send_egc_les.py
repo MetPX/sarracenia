@@ -1,6 +1,6 @@
 """
 
-Sends metareas Enhanced Group Call (EGC) command to LES12 over telnet given an MSC bulletin file. 
+Sends metareas Enhanced Group Call (EGC) command to LES12 over telnet given an MSC bulletin file.
 Parses the filename to determine what kind of EGC info to send.
 
 Usage:
@@ -11,8 +11,8 @@ Usage:
 	file_send_egc_les_timeout timeout
 
 	where file_send_egc_les_timeout is the timeout for the telnet connection to LES12, and
-	file_send_egc_les_telnet must contain the user and host in the above format, where the 
-	password is taken from your ~/.config/sarra/credentials.conf file, following the format: 
+	file_send_egc_les_telnet must contain the user and host in the above format, where the
+	password is taken from your ~/.config/sarra/credentials.conf file, following the format:
 	telnet://user:password@host[:port]/ If port isn't specified, it will use telnet's
 	default port number, 23.
 
@@ -29,7 +29,12 @@ The EGC code (i.e: egc ocean,c1,c2,c3,c4,c5) in the subject field to represent t
 
 """
 
-import logging, telnetlib, sys, os, stat, time
+import logging
+import telnetlib
+import sys
+import os
+import stat
+import time
 
 from sarracenia import nowflt
 
@@ -37,26 +42,29 @@ from sarracenia.flowcb import FlowCB
 
 logger = logging.getLogger(__name__)
 
+
 class Send_egc_les(FlowCB):
 
     def __init__(self, options):
-        super().__init__(options,logger)
-        options.add_option('file_send_egc_les_telnet','str')
+        super().__init__(options, logger)
+        options.add_option('file_send_egc_les_telnet', 'str')
         options.add_option('file_send_egc_les_timeout', 'duration')
         logger.debug('hello')
 
     def find_egc(self, HDR, CCCC, logger):
         egc = None
 
-        ############## METAREA region XVII South of 75N :  egc_XVII_1
+        # METAREA region XVII South of 75N :  egc_XVII_1
 
         egc_XVII_1 = 'Egc 2 1 4 66n171w11053 1 0\r\n'
 
         # The following bulletins are normally sent to SafetyNet by Coast Guard.
         # During the off season, however, we send the weekly "data not available" message...
         # Merged FQ CWAO product replaces the FW CWNT and FI CWIS  -  July 15, 2013
-        if HDR == 'FQCN01' and CCCC == 'CWAO': egc = egc_XVII_1
-        if HDR == 'FICN01' and CCCC == 'CWIS': egc = egc_XVII_1
+        if HDR == 'FQCN01' and CCCC == 'CWAO':
+            egc = egc_XVII_1
+        if HDR == 'FICN01' and CCCC == 'CWIS':
+            egc = egc_XVII_1
 
         # Merged FQ CWAO product replaces the FW CWNT and FI CWIS  -  July 15, 2013
         # New code on Nov. 15 FQCN02 CWAO -  egc 0,1,4,66n171w11057,1,0
@@ -72,14 +80,16 @@ class Send_egc_les(FlowCB):
         if HDR == 'FZAK69' and CCCC == 'PAFG':
             egc = 'Egc 0 1 4 66n171w11034 1 0\r\n'
 
-        ############## METAREA region XVII North of 75N :  egc_XVII_2
+        # METAREA region XVII North of 75N :  egc_XVII_2
         egc_XVII_2 = 'Egc 2 1 4 66n171w11053 11 0\r\n'
 
-        ############## METAREA region XVIII South of 75N :  egc_XVIII_1
+        # METAREA region XVIII South of 75N :  egc_XVIII_1
         egc_XVIII_1 = 'Egc 0 1 4 66n122w11074 1 0\r\n'
 
-        if HDR == 'FQCN03' and CCCC == 'CWAO': egc = egc_XVIII_1
-        if HDR == 'FICN03' and CCCC == 'CWIS': egc = egc_XVIII_1
+        if HDR == 'FQCN03' and CCCC == 'CWAO':
+            egc = egc_XVIII_1
+        if HDR == 'FICN03' and CCCC == 'CWIS':
+            egc = egc_XVIII_1
 
         # Merged FQ CWAO product replaces the FW CWNT and FI CWIS  -  July 15, 2013
         if HDR == 'FQCN04' and CCCC == 'CWAO':
@@ -90,22 +100,23 @@ class Send_egc_les(FlowCB):
             egc = 'Egc 0 1 4 66n080w11032 1 0\r\n'
 
         #    Denmark bulletins...
-        if HDR == 'FBGL50' and CCCC == 'EKMI': egc = egc_XVIII_1
+        if HDR == 'FBGL50' and CCCC == 'EKMI':
+            egc = egc_XVIII_1
 
-        ############## METAREA region XVIII North of 75N :  egc_XVIII_2
+        # METAREA region XVIII North of 75N :  egc_XVIII_2
         egc_XVIII_2 = 'Egc 0 1 4 66n122w11074 11 0\r\n'
 
         # The FBDN51_EKMI is apparently a Warning (??), so the repetition code is different
         if HDR == 'FBDN51' and CCCC == 'EKMI':
             egc = 'Egc 0 1 4 66n080w11032 1 0\r\n'
 
-        ############## other METAREA region
+        # other METAREA region
         if HDR == 'FQCN05' and CCCC == 'CWAO':
             egc = "Egc 0 1 4 50n098w18030 1 0\r\n"
         if HDR == 'FICN05' and CCCC == 'CWIS':
             egc = "Egc 0 1 4 50n098w18030 1 0\r\n"
 
-        if egc == None:
+        if egc is None:
             logger.error(
                 "file_send_egc_les EGC code not defined for %s %s, file not sent."
                 % (HDR, CCCC))
@@ -114,7 +125,7 @@ class Send_egc_les(FlowCB):
     def after_work(self, worklist):
         """
            if the send works, fine. if not, placed on rejected list to avoid retry (permanent error.)
-        """ 
+        """
         new_ok = []
         for msg in worklist.ok:
             # Grabs credentials from credentials.conf that were given in a config option
@@ -130,58 +141,58 @@ class Send_egc_les(FlowCB):
             else:
                 logger.error("file_send_egc_les telnet credentials invalid")
                 worklist.rejected.append(msg)
-    
+
             timeout = int(self.o.file_send_egc_les_timeout)
-    
+
             if not port:
                 port = 23
-    
+
             # Read in the bulletin and replace any instances of .S with S, \n with \r\n
             # and add .S\r\n at the end indicating 'store and submit'
-    
+
             filepath = msg['new_relPath']
             with open(filepath, 'r') as f:
                 data = f.read()
             data = data.replace('.S', ' S')
             bul = data.replace('\n', '\r\n') + '.S\r\n'
-    
+
             # Find the 2 header components: T1T2A1A2ii CCCC
             parts = data.split(' ')
             HDR = parts[0]
             CCCC = parts[1]
-    
+
             # Decide which egc it should be transmitted with
             egc = self.find_egc(HDR, CCCC, logger)
-            if egc == None:
+            if egc is None:
                 worklist.rejected.append(msg)
-    
+
             # For FQ of CWAO if 'PAN PAN' in message then increase priority
             if HDR[:2] == 'FQ' and CCCC == 'CWAO' and 'PAN PAN' in data:
                 egc = egc.replace(' 1 4 ', ' 2 4 ')
-    
+
             # Transmit the file over telnet
             try:
                 start = nowflt()
-    
+
                 tn = telnetlib.Telnet(server, port, timeout)
-    
+
                 tn.read_until("username:", timeout)
                 tn.write(user + "\r\n")
-    
+
                 tn.read_until("password:", timeout)
                 tn.write(password + "\r\n")
-    
+
                 tn.read_until(">", timeout)
                 tn.write(egc)
-    
+
                 tn.read_until("Text:", timeout)
                 tn.write(bul)
-    
+
                 tn.write("quit\r\n")
-    
+
                 info = tn.read_all()
                 tn.close()
-    
+
                 nbBytes = os.stat(filepath)[stat.ST_SIZE]
                 end = nowflt()
                 logger.info(
@@ -190,7 +201,7 @@ class Send_egc_les(FlowCB):
                             end - start))
                 logger.info("file_send_egc_les: egc used: %s" % egc)
                 logger.info("file_send_egc_les: return message: %s" % info)
-    
+
                 if 'Storing' in info and 'Submitted' in info and 'Reference' in info:
                     os.unlink(filepath)
                     new_ok.append(msg)
@@ -199,7 +210,7 @@ class Send_egc_les(FlowCB):
                         "file_send_egc_les: error with return info from file: %s" %
                         filepath)
                     worklist.rejected.append(msg)
-            except:
+            except BaseException:
                 logger.error(
                     "file_send_egc_les/on_file: error sending over telnet")
                 logger.debug('Exception details: ', exc_info=True)

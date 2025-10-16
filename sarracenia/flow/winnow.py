@@ -4,9 +4,9 @@ import logging
 logger = logging.getLogger(__name__)
 
 default_options = {
-        'acceptUnmatched': True, 
-        'nodupe_ttl': 300,
-        'logDuplicates': True
+    'acceptUnmatched': True,
+    'nodupe_ttl': 300,
+    'logDuplicates': True
 }
 
 
@@ -16,6 +16,7 @@ class Winnow(Flow):
        * suppress duplicates,
        * post the thinned out stream somewhere else.
     """
+
     def __init__(self, options):
 
         super().__init__(options)

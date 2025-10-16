@@ -1,18 +1,21 @@
+from sarracenia.flowcb.accept.trim_legacy_fields import Trim_legacy_fields
+import sarracenia.config
+from sarracenia import Message as SR3Message
 import pytest
-import types, re
+import types
+import re
 
-#useful for debugging tests
+# useful for debugging tests
+
+
 def pretty(*things, **named_things):
     import pprint
     for t in things:
         pprint.PrettyPrinter(indent=2, width=200).pprint(t)
-    for k,v in named_things.items():
+    for k, v in named_things.items():
         print(str(k) + ":")
         pprint.PrettyPrinter(indent=2, width=200).pprint(v)
 
-from sarracenia.flowcb.accept.trim_legacy_fields import Trim_legacy_fields
-from sarracenia import Message as SR3Message
-import sarracenia.config
 
 def make_message():
     m = SR3Message()
@@ -22,9 +25,10 @@ def make_message():
     m['from_cluster'] = 'from_cluster__value'
     m['mtime'] = 'mtime__value'
     m['source'] = 'source__value'
-    m['to_clusters' ] = 'to_clusters__value'
+    m['to_clusters'] = 'to_clusters__value'
 
     return m
+
 
 def make_worklist():
     WorkList = types.SimpleNamespace()
@@ -34,6 +38,7 @@ def make_worklist():
     WorkList.failed = []
     WorkList.directories_ok = []
     return WorkList
+
 
 def test_after_accept(caplog):
 

@@ -28,6 +28,7 @@
 #
 #
 
+import json
 from sarracenia.featuredetection import features
 
 if features['sftp']['present']:
@@ -68,10 +69,9 @@ if sys.platform == 'win32':
         from sarracenia.pyads import ADS
         supports_alternate_data_streams = True
 
-    except:
+    except BaseException:
         pass
 
-import json
 
 STREAM_NAME = 'sr_.json'
 
@@ -89,17 +89,17 @@ class FileMetadata:
 
       on unlix/linux/mac systems, we use extended attributes,
       where we apply a *user.sr\_* prefix to the attribute names to avoid clashes.
-    
+
       on Windows NT, create an "sr\_.json" Alternate Data Stream  to store them.
 
       API:
-    
-      All values are utf-8, hence readable by some subset of humans. 
+
+      All values are utf-8, hence readable by some subset of humans.
       not bytes.  no binary, go away...
 
       x = sr_attr( path )  <- read metadata from file.
       x.list()  <- list all extant extended attributes.
-      
+
       * sample return value: [ 'sum', 'mtime' ]
 
       x.get('sum') <- look at one value.
@@ -113,6 +113,7 @@ class FileMetadata:
       x.persist() <- write metadata back to file, if necessary.
 
    """
+
     def __init__(self, path):
 
         global supports_alternate_data_streams
@@ -147,10 +148,10 @@ class FileMetadata:
                     if v[0] == '{':
                         v = json.loads(v)
                     self.x[k] = v
-            except:
+            except BaseException:
                 self.x = {}
 
-        if 'integrity' in self.x: # id transition.
+        if 'integrity' in self.x:  # id transition.
             self.x['identity'] = self.x['integrity']
             del self.x['integrity']
 
@@ -180,10 +181,10 @@ class FileMetadata:
         """
         if name in self.x.keys():
             if name == 'blocks':
-                for k in ['manifest', 'waiting' ]:
-                    m={}
+                for k in ['manifest', 'waiting']:
+                    m = {}
                     if k in self.x['blocks']:
-                        for db in self.x['blocks'][k]: # when json'd for writing, numeric indices are stringified.
+                        for db in self.x['blocks'][k]:  # when json'd for writing, numeric indices are stringified.
                             m[db if type(db) is int else int(db)] = self.x['blocks'][k][db]
                         self.x['blocks'][k] = m
             return self.x[name]
@@ -210,7 +211,7 @@ class FileMetadata:
         try:
             if supports_alternate_data_streams:
 
-                #replace STREAM_NAME with json.dumps(self.x)
+                # replace STREAM_NAME with json.dumps(self.x)
                 s = list(self.ads)
                 if STREAM_NAME in s:
                     self.ads.delete_stream(STREAM_NAME)
@@ -219,7 +220,7 @@ class FileMetadata:
                     STREAM_NAME, bytes(json.dumps(self.x, indent=4), 'utf-8'))
 
             if supports_extended_attributes:
-                #set the attributes in the list. encoding utf8...
+                # set the attributes in the list. encoding utf8...
                 for i in self.x:
                     if type(self.x[i]) is not str:
                         s = json.dumps(self.x[i])
@@ -227,7 +228,7 @@ class FileMetadata:
                         s = self.x[i]
                     xattr.setxattr(self.path, 'user.sr_' + i,
                                    bytes(s, 'utf-8'))
-        except:
+        except BaseException:
             # not really sure what to do in the exception case...
             # permission would be a normal thing and just silently fail...
             # could also be on windows, but not on an NTFS file system.

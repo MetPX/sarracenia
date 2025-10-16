@@ -46,9 +46,10 @@ import sys
 
 logger = logging.getLogger(__name__)
 
+
 class Resources(FlowCB):
     def __init__(self, options):
-        super().__init__(options,logger)
+        super().__init__(options, logger)
         # Set option to neg value to determine if user set in config
         self.o.add_option('MemoryMax', 'size', '0')
         self.o.add_option('MemoryBaseLineFile', 'count', 100)
@@ -92,7 +93,7 @@ class Resources(FlowCB):
 
         logger.info(
             f"Current Memory usage: {naturalSize(mem)} / "
-            f"{naturalSize(self.threshold)} = {(mem/self.threshold):.2%}"
+            f"{naturalSize(self.threshold)} = {(mem / self.threshold):.2%}"
         )
 
         if mem > self.threshold:

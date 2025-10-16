@@ -5,7 +5,10 @@
 # more info: https://github.com/MetPX/sarracenia
 #
 
-import os, json, sys, time
+import os
+import json
+import sys
+import time
 from _codecs import decode, encode
 
 from sarracenia import nowflt, timestr2flt
@@ -23,9 +26,9 @@ logger = logging.getLogger(__name__)
 
 class Retry(FlowCB):
     """
-    overall goal:  
+    overall goal:
 
-    * When file transfers fail, write the messages to a queue to be retried later. 
+    * When file transfers fail, write the messages to a queue to be retried later.
       There is also a second retry queue for failed posts.
 
     how it works:
@@ -42,30 +45,30 @@ class Retry(FlowCB):
     * the DiskQueue or RedisQueue classes are used to store the retries, and it handles
       expiry on each housekeeping event.
 
-    * ``_isRetry`` in the message is a count of how many times a retry has been 
+    * ``_isRetry`` in the message is a count of how many times a retry has been
       attempted for that file.
 
     """
+
     def __init__(self, options) -> None:
 
         logger.debug("sr_retry __init__")
 
-        super().__init__(options,logger)
+        super().__init__(options, logger)
 
-        if not features['retry']['present'] :
-            logger.critical( f"missing retry pre-requsites, module disabled")
+        if not features['retry']['present']:
+            logger.critical(f"missing retry pre-requsites, module disabled")
             return
 
-        self.o.add_option( 'retry_driver', 'str', 'disk')
+        self.o.add_option('retry_driver', 'str', 'disk')
 
         # retry_refilter False -- retry to send with existing processing.
         # retry_refilter True  -- re-ingest and re-apply processing (if it has changed.)
-        self.o.add_option( 'retry_refilter', 'flag', False)
+        self.o.add_option('retry_refilter', 'flag', False)
 
-        #queuedriver = os.getenv('SR3_QUEUEDRIVER', 'disk')
+        # queuedriver = os.getenv('SR3_QUEUEDRIVER', 'disk')
 
         logger.debug('logLevel=%s' % self.o.logLevel)
-
 
     def gather(self, qty) -> None:
         """
@@ -78,7 +81,8 @@ class Retry(FlowCB):
         if not features['retry']['present'] or not self.o.retry_refilter:
             return (True, [])
 
-        if qty <= 0: return (True, [])
+        if qty <= 0:
+            return (True, [])
 
         message_list = self.download_retry.get(qty)
 
@@ -92,9 +96,7 @@ class Retry(FlowCB):
                     del m[k]
             self.__set_isRetry(m)
 
-
         return (True, message_list)
-
 
     def after_accept(self, worklist) -> None:
         """
@@ -111,10 +113,10 @@ class Retry(FlowCB):
             return
 
         qty = (self.o.batch / 2) - len(worklist.incoming)
-        #logger.info('qty: %d len(worklist.incoming) %d' % ( qty, len(worklist.incoming) ) )
+        # logger.info('qty: %d len(worklist.incoming) %d' % ( qty, len(worklist.incoming) ) )
 
-        if qty <= 0: 
-            logger.info( f"{len(worklist.incoming)} messages to process, too busy to retry" )
+        if qty <= 0:
+            logger.info(f"{len(worklist.incoming)} messages to process, too busy to retry")
             return
 
         mlist = self.download_retry.get(qty)
@@ -122,7 +124,7 @@ class Retry(FlowCB):
         for m in mlist:
             self.__set_isRetry(m)
 
-        #logger.debug("loading from %s: qty=%d ... got: %d " % (self.download_retry_name, qty, len(mlist)))
+        # logger.debug("loading from %s: qty=%d ... got: %d " % (self.download_retry_name, qty, len(mlist)))
         if len(mlist) > 0:
             worklist.incoming.extend(mlist)
 
@@ -131,11 +133,11 @@ class Retry(FlowCB):
         Messages in `worklist.failed` should be put in the download retry queue. If there are only a few new
         messages, get some from the post retry queue and put them into `worklist.ok`.
         """
-        if not features['retry']['present'] :
+        if not features['retry']['present']:
             return
 
         if len(worklist.failed) != 0:
-            logger.debug( f"putting {len(worklist.failed)} messages into {self.download_retry_name}"  )
+            logger.debug(f"putting {len(worklist.failed)} messages into {self.download_retry_name}")
             self.download_retry.put(worklist.failed)
             worklist.failed = []
 
@@ -144,19 +146,19 @@ class Retry(FlowCB):
 
         # retry posting...
         if (self.o.batch > 2):
-           qty = self.o.batch // 2 - len(worklist.ok)
-        elif len(worklist.ok) < self.o.batch :
-           qty=self.o.batch - len(worklist.ok)
+            qty = self.o.batch // 2 - len(worklist.ok)
+        elif len(worklist.ok) < self.o.batch:
+            qty = self.o.batch - len(worklist.ok)
         else:
-           qty=0
+            qty = 0
 
-        if qty <= 0: 
-            logger.info( f"{len(worklist.ok)} messages to process, too busy to retry" )
+        if qty <= 0:
+            logger.info(f"{len(worklist.ok)} messages to process, too busy to retry")
             return
 
         mlist = self.post_retry.get(qty)
 
-        logger.debug( f"loading from {self.post_retry_name}: qty={qty} ... got: {len(mlist)}" )
+        logger.debug(f"loading from {self.post_retry_name}: qty={qty} ... got: {len(mlist)}")
         if len(mlist) > 0:
             worklist.ok.extend(mlist)
 
@@ -164,14 +166,14 @@ class Retry(FlowCB):
         """
         Messages in `worklist.failed` should be put in the post retry queue.
         """
-        if not features['retry']['present'] :
+        if not features['retry']['present']:
             return
 
         for m in worklist.failed:
             self.__set_isRetry(m)
 
         self.post_retry.put(worklist.failed)
-        worklist.failed=[]
+        worklist.failed = []
 
     def metricsReport(self) -> dict:
         """Returns the number of messages in the download_retry and post_retry queues.
@@ -184,7 +186,7 @@ class Retry(FlowCB):
     def on_cleanup(self) -> None:
         logger.debug('starting retry cleanup')
 
-        if not hasattr(self,'download_retry'):
+        if not hasattr(self, 'download_retry'):
             self.on_start()
 
         self.download_retry.cleanup()
@@ -216,11 +218,12 @@ class Retry(FlowCB):
         self.post_retry.close()
 
     def __set_isRetry(self, msg):
-        if '_isRetry' not in msg or ('_isRetry' in msg and type(msg['_isRetry']) != int):
-            msg['_isRetry'] = 1
+
+
+if '_isRetry' not in msg or ('_isRetry' in msg and not isinstance(msg['_isRetry'],         if '_isRetry' not in msg or ('_isRetry' in msg and )            msg['_isRetry'] = 1
         else:
             msg['_isRetry'] += 1
 
         if '_deleteOnPost' not in msg:
-            msg['_deleteOnPost'] = set()
+            msg['_deleteOnPost']=set()
         msg['_deleteOnPost'].add('_isRetry')

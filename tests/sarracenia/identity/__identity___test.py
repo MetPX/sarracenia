@@ -1,6 +1,6 @@
 import pytest
 from tests.conftest import *
-#from unittest.mock import Mock
+# from unittest.mock import Mock
 
 import os
 import logging
@@ -8,12 +8,14 @@ import logging
 import sarracenia
 import sarracenia.identity
 
+
 def test_factory():
     identity = sarracenia.identity.Identity().factory('foobar')
-    assert identity == None
+    assert identity is None
 
     identity = sarracenia.identity.Identity().factory()
     assert identity.registered_as() == 's'
+
 
 def test_get_method():
     identity = sarracenia.identity.Identity().factory()
@@ -27,6 +29,7 @@ def test_update_file(tmp_path):
     identity.update_file(path1)
 
     assert identity.filehash.name == "sha512"
+
 
 @pytest.mark.depends(on=['test_update_file'])
 def test___Property_value(tmp_path):

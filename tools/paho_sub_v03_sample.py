@@ -18,7 +18,8 @@
 #
 
 import paho.mqtt.client as mqtt
-import os, os.path
+import os
+import os.path
 import urllib.request
 import json
 
@@ -33,7 +34,8 @@ rcs = [
 
 def on_connect(client, userdata, flags, rc):
 
-    if (rc >= 6): rc = 6
+    if (rc >= 6):
+        rc = 6
     print("Connection result code: " + rcs[rc])
 
     client.subscribe("xpublic/#")
@@ -72,7 +74,7 @@ client.on_connect = on_connect
 client.on_message = on_message
 
 print('about to connect')
-#client.username_pw_set( 'guest', 'guestpw' )
+# client.username_pw_set( 'guest', 'guestpw' )
 client.connect('localhost')
 print('done connect')
 

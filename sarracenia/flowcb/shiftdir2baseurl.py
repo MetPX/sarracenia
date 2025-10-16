@@ -13,13 +13,14 @@ class ShiftDir2baseUrl(FlowCB):
     """
        modify message to shift directories from relPath to baseUrl:
 
-       given the setting shiftDir2baseUrl == 2 and given message with 
+       given the setting shiftDir2baseUrl == 2 and given message with
            baseDir=https://a  relPath=b/c/d/e subtopic=b/c/d -->  baseDir=https://a/b/c  relPath=d/e  subtopic=d
 
     """
+
     def __init__(self, options):
 
-        super().__init__(options,logger)
+        super().__init__(options, logger)
         self.o.add_option('shiftDir2baseUrl', 'count', 1)
 
     def after_work(self, worklist):

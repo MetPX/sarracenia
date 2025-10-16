@@ -6,11 +6,13 @@
 
 """
 
-import os, stat, time
+import os
+import stat
+import time
 import datetime
 import json
 import logging
-import sarracenia 
+import sarracenia
 from sarracenia.flowcb import FlowCB
 
 logger = logging.getLogger(__name__)
@@ -19,7 +21,7 @@ logger = logging.getLogger(__name__)
 class Age(FlowCB):
 
     def reset_metrics(self) -> None:
-        self.metrics={}
+        self.metrics = {}
         self.metrics['ageTotal'] = 0
         self.metrics['ageCount'] = 0
         self.metrics['ageMax'] = 0
@@ -30,10 +32,10 @@ class Age(FlowCB):
         self.reset_metrics()
 
     def metricsReport(self) -> dict:
-        self.metrics['copyCount'] =  self.metrics['ageCount']
+        self.metrics['copyCount'] = self.metrics['ageCount']
         if self.metrics['ageCount'] > 0:
-            self.metrics['ageMean'] = self.metrics['ageTotal']/self.metrics['ageCount']
-            self.metrics['copyMean'] = self.metrics['copyTotal']/self.metrics['ageCount']
+            self.metrics['ageMean'] = self.metrics['ageTotal'] / self.metrics['ageCount']
+            self.metrics['copyMean'] = self.metrics['copyTotal'] / self.metrics['ageCount']
         else:
             self.metrics['ageMean'] = 0
             self.metrics['copyMean'] = 0
@@ -41,13 +43,12 @@ class Age(FlowCB):
         return self.metrics
 
     def on_housekeeping(self) -> None:
-        #logger.info( f" maximum Age: {datetime.timedelta(seconds=self.metrics['ageMax'])}  Average Age: {datetime.timedelta(seconds=self.metrics['ageMean'])} files: {self.metrics['ageCount']}" )
-        logger.info( "Age of files (in seconds) when transfer complete, maximum: %.2g Average: %.2g file count: %d" % 
-            ( self.metrics['ageMax'], self.metrics['ageMean'], self.metrics['ageCount'] ) )
+        # logger.info( f" maximum Age: {datetime.timedelta(seconds=self.metrics['ageMax'])}  Average Age: {datetime.timedelta(seconds=self.metrics['ageMean'])} files: {self.metrics['ageCount']}" )
+        logger.info("Age of files (in seconds) when transfer complete, maximum: %.2g Average: %.2g file count: %d" %
+                    (self.metrics['ageMax'], self.metrics['ageMean'], self.metrics['ageCount']))
 
-        logger.info( "Copy time for files (in seconds) when transfer complete, maximum: %.2g Average: %.2g file count: %d" % 
-            ( self.metrics['copyMax'], self.metrics['copyMean'], self.metrics['ageCount'] ) )
-
+        logger.info("Copy time for files (in seconds) when transfer complete, maximum: %.2g Average: %.2g file count: %d" %
+                    (self.metrics['copyMax'], self.metrics['copyMean'], self.metrics['ageCount']))
 
     def after_work(self, worklist) -> None:
         for m in worklist.ok:
@@ -66,6 +67,8 @@ class Age(FlowCB):
             if age > self.metrics['ageMax']:
                 self.metrics['ageMax'] = age
 
-            logger.info( f"file {m['new_dir']+os.sep+m['new_file']} took {copy} seconds to copy and is {age} seconds old"  )
-
-     
+            logger.info(
+                f"file {
+                    m['new_dir'] +
+                    os.sep +
+                    m['new_file']} took {copy} seconds to copy and is {age} seconds old")

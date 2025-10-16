@@ -15,7 +15,7 @@ Register for an account here: https://documentation.dataspace.copernicus.eu/Regi
 This code is based on https://documentation.dataspace.copernicus.eu/APIs/Token.html#by-python-script.
 
 According to this, each token is valid for 10 minutes: https://documentation.dataspace.copernicus.eu/FAQ.html#apis
-  
+
 Configurable Options:
 ----------------------
 
@@ -37,8 +37,8 @@ Configurable Options:
 
 How to set up your download config:
 ------------------------------------
- 
-    Add ``callback authenticate.copernicus``, in your subscribe, sarra or other download config.  
+
+    Add ``callback authenticate.copernicus``, in your subscribe, sarra or other download config.
 
     Add ``https://username:password@identity.dataspace.copernicus.eu/`` to your ``credentials.conf`` file (or whatever
     URL matches your ``openidConnectUrl``).
@@ -61,17 +61,18 @@ import requests
 
 logger = logging.getLogger(__name__)
 
+
 class Copernicus(BearerToken):
     def __init__(self, options):
         super().__init__(options, logger)
-        
+
         # Allow setting a logLevel *only* for this plugin in the config file:
         # set accept.auth_copernicus.logLevel debug
         if hasattr(self.o, 'logLevel'):
             logger.setLevel(self.o.logLevel.upper())
 
-        self.o.add_option('openidConnectUrl', kind='str', 
-            default_value='https://identity.dataspace.copernicus.eu/auth/realms/CDSE/protocol/openid-connect/token')
+        self.o.add_option('openidConnectUrl', kind='str',
+                          default_value='https://identity.dataspace.copernicus.eu/auth/realms/CDSE/protocol/openid-connect/token')
         self.o.add_option('clientId', kind='str', default_value='cdse-public')
         self.o.add_option('grantType', kind='str', default_value='password')
 
@@ -141,5 +142,5 @@ class Copernicus(BearerToken):
                 else:
                     # do 1 retry
                     return self.get_token(retry=True)
-        
+
         return self._token

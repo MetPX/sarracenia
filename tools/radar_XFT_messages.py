@@ -10,14 +10,16 @@
 # different sessions
 
 import amqplib.client_0_8 as amqp
-import os, sys, time
+import os
+import sys
+import time
 
 print("RADARS are every 10 MINS... ")
 print("It may take that time to have something shown")
 
 machine = "amqp.weather.gc.ca"
-#machine       = "dd.weather.gc.ca"
-#machine       = sys.argv[1]
+# machine       = "dd.weather.gc.ca"
+# machine       = sys.argv[1]
 user = "anonymous"
 passwd = "anonymous"
 
@@ -82,7 +84,7 @@ channel.basic_consume(_queuename, callback=amqp_callback)
 while True:
     try:
         channel.wait()
-    except:
+    except BaseException:
         channel.close()
         connection.close()
         sys.exit(1)

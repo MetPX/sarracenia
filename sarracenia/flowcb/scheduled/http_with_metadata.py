@@ -11,16 +11,17 @@ import datetime
 
 logger = logging.getLogger(__name__)
 
+
 class Http_with_metadata(Scheduled):
 
     """
     Same as a normal scheduled flow, except this will do an HTTP HEAD request to try to get the file size,
     modification time, etc. and add that to the message.
-     
-    Options:
-        post_whenNoMetadata (default False): when True, post URLs *without metadata* (when HEAD request returns an error) 
 
-    Example config: 
+    Options:
+        post_whenNoMetadata (default False): when True, post URLs *without metadata* (when HEAD request returns an error)
+
+    Example config:
     https://github.com/MetPX/sarracenia/tree/development/sarracenia/examples/flow/scheduled_aviation_wind_fax_charts.conf
 
     NOTE: Set the ``nodupe_ttl`` setting to something non-zero to filter out files that haven't changed
@@ -29,10 +30,10 @@ class Http_with_metadata(Scheduled):
     """
 
     def __init__(self, options, logger=logger):
-        super().__init__(options,logger)
+        super().__init__(options, logger)
         self.o.add_option('post_whenNoMetadata', 'flag', False)
 
-    def gather(self,messageCountMax):
+    def gather(self, messageCountMax):
 
         if not self.ready_to_gather():
             return (False, [])
@@ -52,7 +53,7 @@ class Http_with_metadata(Scheduled):
                 url = self.o.post_baseUrl + relPath
             else:
                 url = self.o.post_baseUrl + '/' + relPath
-            
+
             try:
                 resp = requests.head(url)
                 resp.raise_for_status()
@@ -86,7 +87,7 @@ class Http_with_metadata(Scheduled):
                     continue
                 else:
                     logger.info(f"Failed to get metadata for {url} ({e}), posting anyways")
-            
+
             m = sarracenia.Message.fromFileInfo(relPath, self.o, st)
             gathered_messages.append(m)
 

@@ -8,9 +8,11 @@ of the code to sleep for a long time, but can still be interrupted.
 
 import time
 
-def interruptible_sleep(sleep_time:float, obj: object, stop_flag_name: str='_stop_requested', nap_time: float=5.0) -> bool:
+
+def interruptible_sleep(sleep_time: float, obj: object, stop_flag_name: str = '_stop_requested',
+                        nap_time: float = 5.0) -> bool:
     """ Sleep for sleep_time, divided up into shorter nap_time intervals.
-        Pass a reference to an object that contains a boolean attribute named stop_flag_name. 
+        Pass a reference to an object that contains a boolean attribute named stop_flag_name.
         Between each nap_time, the function will check if obj.stop_flag_name has become True.
         If the flag is False, it will continue sleeping, if True, it will abort the sleep.
 
@@ -21,7 +23,7 @@ def interruptible_sleep(sleep_time:float, obj: object, stop_flag_name: str='_sto
             nap_time (float): default = 5.0, sleep in intervals of nap_time
 
         Returns:
-            bool: ``True`` if the sleep **was** interrupted, ``False`` if it slept for the entire ``sleep_time`` 
+            bool: ``True`` if the sleep **was** interrupted, ``False`` if it slept for the entire ``sleep_time``
                     time without interruption.
     """
     interrupted = False

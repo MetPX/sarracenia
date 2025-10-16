@@ -1,5 +1,5 @@
 """
-Posts updated files of airnowtech. 
+Posts updated files of airnowtech.
 Compatible with Python 3.5+.
 
 usage:
@@ -39,11 +39,11 @@ class Airnow(FlowCB):
                 logger.debug("poll_airnow_http Filename: %s" % Filename)
                 URL = self.o.pollUrl + '/' + Filename
                 logger.info('INFO %s ' % URL)
-                #resp = requests.get(self.o.pollUrl + '/' + Filename)
+                # resp = requests.get(self.o.pollUrl + '/' + Filename)
                 resp = requests.get(URL)
                 if resp.ok:
-                    mtime = datetime.datetime.strptime(resp.headers['last-modified'],\
-                        '%a, %d %b %Y %H:%M:%S %Z')
+                    mtime = datetime.datetime.strptime(resp.headers['last-modified'],
+                                                       '%a, %d %b %Y %H:%M:%S %Z')
                     last_poll = datetime.datetime.utcnow() + datetime.timedelta(
                         seconds=-sleep)
                     logger.info(mtime)
@@ -64,5 +64,5 @@ class Airnow(FlowCB):
         except Exception as e:
             logger.error(f"Poll failed: {e}")
             logger.debug("Exception details:", exc_info=True)
-        
+
         return gathered_messages

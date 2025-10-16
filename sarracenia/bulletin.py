@@ -1,5 +1,5 @@
 import logging
-import time 
+import time
 import random
 import re
 from base64 import b64decode
@@ -24,7 +24,7 @@ class Bulletin:
             from sarracenia.bulletin import Bulletin
     """
 
-    def __init__(self,options):
+    def __init__(self, options):
         super().__init__()
         self.o = options
         self.binary = 0
@@ -36,13 +36,16 @@ class Bulletin:
         """
 
         ltime = time.localtime()
-        current_year  = time.strftime("%Y",ltime )
+        current_year = time.strftime("%Y", ltime)
         previous_year = str(int(current_year) - 1)
 
         # Prevent all bulletins being rejected on a new year for a couple of minutes. Check for previous year as well
-        if bulletin_year == current_year or bulletin_year == previous_year    : return True
-        if len(bulletin_year) !=    4       : return False
-        if bulletin_year[:1]  !=  '2'       : return False
+        if bulletin_year == current_year or bulletin_year == previous_year:
+            return True
+        if len(bulletin_year) != 4:
+            return False
+        if bulletin_year[:1] != '2':
+            return False
 
         return True
 
@@ -59,30 +62,31 @@ class Bulletin:
         tokens = header.split(b' ')
         header = b' '.join(tokens)
 
-        if header==b'':
+        if header == b'':
             logger.error("Header is empty when it shouldn't be.")
             isProblem = True
             return header, isProblem
- 
+
         tokens = header.split(b' ')
 
-        # Header can't miss the timestamp. Don't raise an error however, as we want these bulletins added as a PROBLEM file locally. 
+        # Header can't miss the timestamp. Don't raise an error however, as we
+        # want these bulletins added as a PROBLEM file locally.
         if len(tokens) < 3:
             logger.error('Incomplete header (less than 3 fields)')
             return header, isProblem
 
         # Remove the ['z', 'Z'] or ['utc', 'UTC'] if they're present in the group DDHHmm
-        if len(tokens[2]) > 6: 
+        if len(tokens[2]) > 6:
             tokens[2] = tokens[2][0:6]
             logger.info("Header normalized (%s): truncated the DDHHMM group (>6 characters)" % str(header))
             rebuild = 1
 
-        # Verify first three fields, T1T2AiA2ii CCCC DDHHmm -> https://www.weather.gov/tg/headef 
-        if not tokens[0].isalnum() or len(tokens[0]) not in [4,5,6] or \
-           not tokens[1].isalnum() or len(tokens[1]) not in [4,5,6] or \
+        # Verify first three fields, T1T2AiA2ii CCCC DDHHmm -> https://www.weather.gov/tg/headef
+        if not tokens[0].isalnum() or len(tokens[0]) not in [4, 5, 6] or \
+           not tokens[1].isalnum() or len(tokens[1]) not in [4, 5, 6] or \
            not tokens[2].isdigit() or len(tokens[2]) != 6 or \
-           not (0 <  int(tokens[2][:2]) <= 31) or not(00 <= int(tokens[2][2:4]) <= 23) or \
-           not(00 <= int(tokens[2][4:]) <= 59):
+           not (0 < int(tokens[2][:2]) <= 31) or not (00 <= int(tokens[2][2:4]) <= 23) or \
+           not (00 <= int(tokens[2][4:]) <= 59):
             logger.error('Malformed header (some of the first 3 fields corrupt).')
             isProblem = True
             return header, isProblem
@@ -94,13 +98,13 @@ class Bulletin:
             return header, isProblem
 
         # Verify BBB field(s) -> https://www.weather.gov/tg/headef. Remove it if it's corrupted.
-        if not tokens[3].isalpha() or len(tokens[3]) != 3 or tokens[3].decode(charset)[0] not in ['C','A','R','P']:
-            logger.info("Header normalized: fourth and later fields removed.") 
+        if not tokens[3].isalpha() or len(tokens[3]) != 3 or tokens[3].decode(charset)[0] not in ['C', 'A', 'R', 'P']:
+            logger.info("Header normalized: fourth and later fields removed.")
             del tokens[3:]
             rebuild = 1
 
         if len(tokens) == 5 and \
-                (not tokens[4].isalpha() or len(tokens[4]) != 3 or tokens[4].decode(charset)[0] not in ['C','A','R','P']):
+                (not tokens[4].isalpha() or len(tokens[4]) != 3 or tokens[4].decode(charset)[0] not in ['C', 'A', 'R', 'P']):
             logger.info("Header normalized: fifth and later fields removed")
             del tokens[4:]
             rebuild = 1
@@ -113,7 +117,7 @@ class Bulletin:
         if rebuild:
             header = b' '.join(tokens)
 
-        return header,isProblem
+        return header, isProblem
 
     def getData(self, msg, path):
         """Get the bulletin data.
@@ -123,7 +127,8 @@ class Bulletin:
         """
 
         # Read file data from message or from file path directly if message content not found.
-        # For the binary data, only extract first line (header) as that is all we need. The ascii decoding fails with the rest of the bulletin (usually).
+        # For the binary data, only extract first line (header) as that is all we
+        # need. The ascii decoding fails with the rest of the bulletin (usually).
         try:
 
             self.binary = 0
@@ -149,7 +154,6 @@ class Bulletin:
                     data = data.splitlines()[0].decode('ascii')
                     self.binary = 1
 
-
             return data
 
         except Exception as e:
@@ -160,7 +164,6 @@ class Bulletin:
         """ Generate Random number to make the file unique...
         """
         return str(random.randint(0, 99999)).zfill(5)
-
 
     def getStation(self, data):
         """Extracted from Sundew code: https://github.com/MetPX/Sundew/blob/main/lib/bulletin.py#L327-L408
@@ -189,13 +192,14 @@ class Bulletin:
                 i += 1
                 premiereLignePleine = ligne
                 if len(premiereLignePleine) > 1:
-                    if len(data) > i+1 : deuxiemeLignePleine = data[i+1]
+                    if len(data) > i + 1:
+                        deuxiemeLignePleine = data[i + 1]
                     break
 
-            #print " ********************* header = ", data[0][0:7]
+            # print " ********************* header = ", data[0][0:7]
             # switch depends on bulletin type.
             if data[0][0:2] == "SA":
-                if data[1].split()[0] in ["METAR","LWIS"]:
+                if data[1].split()[0] in ["METAR", "LWIS"]:
                     station = premiereLignePleine.split()[1]
                 else:
                     station = premiereLignePleine.split()[0]
@@ -203,26 +207,26 @@ class Bulletin:
             elif data[0][0:2] == "SP":
                 station = premiereLignePleine.split()[1]
 
-            elif data[0][0:2] in ["SI","SM"]:
+            elif data[0][0:2] in ["SI", "SM"]:
                 station = premiereLignePleine.split()[0]
-                if station == "AAXX" :
-                    if deuxiemeLignePleine != "" :
+                if station == "AAXX":
+                    if deuxiemeLignePleine != "":
                         station = deuxiemeLignePleine.split()[0]
-                    else :
+                    else:
                         station = ''
 
-            elif data[0][0:6] in ["SRCN40","SXCN40","SRMT60","SXAK50", "SRND20", "SRND30"]:
-            #elif data[0][0:6] in self.wmo_id:
-                #station = premiereLignePleine.split()[0]
+            elif data[0][0:6] in ["SRCN40", "SXCN40", "SRMT60", "SXAK50", "SRND20", "SRND30"]:
+                # elif data[0][0:6] in self.wmo_id:
+                # station = premiereLignePleine.split()[0]
                 station = ''
 
-            elif data[0][0:2] in ["FC","FT"]:
+            elif data[0][0:2] in ["FC", "FT"]:
                 if premiereLignePleine.split()[1] == "AMD":
                     station = premiereLignePleine.split()[2]
                 else:
                     station = premiereLignePleine.split()[1]
 
-            elif data[0][0:2] in ["UE","UG","UK","UL","UQ","US"]:
+            elif data[0][0:2] in ["UE", "UG", "UK", "UL", "UQ", "US"]:
                 parts = premiereLignePleine.split()
                 if parts[0][:2] in ['EE', 'II', 'QQ', 'UU']:
                     station = parts[1]
@@ -231,24 +235,25 @@ class Bulletin:
                 else:
                     station = ''
 
-            elif data[0][0:2] in ["RA","MA","CA"]:
+            elif data[0][0:2] in ["RA", "MA", "CA"]:
                 station = premiereLignePleine.split()[0].split('/')[0]
-            
+
         except Exception:
             station = ''
-        
-        if station != '' :
-            while len(station) > 1 and station[0] == '?' :
+
+        if station != '':
+            while len(station) > 1 and station[0] == '?':
                 station = station[1:]
-            if station[0] != '?' :
+            if station[0] != '?':
                 station = station.split('?')[0]
-                if station[-1] == '=' : station = station[:-1]
-            else :
+                if station[-1] == '=':
+                    station = station[:-1]
+            else:
                 station = ''
 
             # Added to SR3
             # The station needs to be alphanumeric, between 3 and 7 characters. If not, don't assign a station
-            if re.search('^[a-zA-Z0-9]{3,7}$', station) == None:
+            if re.search('^[a-zA-Z0-9]{3,7}$', station) is None:
                 station = ''
 
         return station
@@ -258,7 +263,7 @@ class Bulletin:
            The BBB is the field of the bulletin header that states if it was amended or not.
         """
 
-        if len(first_line) != 4: 
+        if len(first_line) != 4:
             BBB = ''
         else:
             BBB = first_line[3]
@@ -271,19 +276,18 @@ class Bulletin:
 
         try:
             T1T2A1A2ii = first_line[0]
-            CCCC       = first_line[1]
+            CCCC = first_line[1]
 
             if len(first_line) >= 3:
                 YYGGgg = first_line[2]
                 header = T1T2A1A2ii + "_" + CCCC + "_" + YYGGgg
-            else:  
-                header = T1T2A1A2ii + "_" + CCCC # + "_" + YYGGgg
-            
+            else:
+                header = T1T2A1A2ii + "_" + CCCC  # + "_" + YYGGgg
+
         except Exception:
             header = None
 
         return header
-
 
     def getTime(self, data):
         """ extract time from the data of the ca station
@@ -307,7 +311,8 @@ class Bulletin:
                     logger.error("Unable to verify year from julian time.")
                     return None
 
-            if len(parts) < 4: return None
+            if len(parts) < 4:
+                return None
 
             # Julian days shouldn't be float type. Reject them when found. They should only be integers.
             if '.' in jul:

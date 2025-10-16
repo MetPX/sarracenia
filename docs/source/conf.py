@@ -16,14 +16,15 @@
 
 # -- Project information -----------------------------------------------------
 
-import os,re
+import os
+import re
 
 project = 'Sarracenia'
 copyright = '2022, Shared Services Canada, Government of Canada, GPLv2'
 author = 'Data Interchange Team'
 
 hoho = os.getcwd()
-print( f'current working directory {hoho}' )
+print(f'current working directory {hoho}')
 
 file_ = '../sarracenia/_version.py'
 filepath = os.path.join(os.path.abspath('..'), file_)
@@ -42,14 +43,13 @@ with open(filepath) as fh:
 release = version
 
 
-
 # -- General configuration ---------------------------------------------------
 
 # Add any Sphinx extension module names here, as strings. They can be
 # extensions coming with Sphinx (named 'sphinx.ext.*') or your custom
 # ones.
-extensions = ['nbsphinx', 
-              'sphinx.ext.autodoc', 
+extensions = ['nbsphinx',
+              'sphinx.ext.autodoc',
               'sphinx.ext.coverage',
               'sphinx.ext.doctest',
               'sphinx.ext.githubpages',
@@ -70,13 +70,13 @@ exclude_patterns = []
 # The theme to use for HTML and HTML Help pages.  See the documentation for
 # a list of builtin themes.
 #
-#html_theme = 'bizstyle'
+# html_theme = 'bizstyle'
 html_theme = 'sphinx_rtd_theme'
 
 # Add any paths that contain custom static files (such as style sheets) here,
 # relative to this directory. They are copied after the builtin static files,
 # so a file named "default.css" will overwrite the builtin "default.css".
-#html_static_path = ['_static']
+# html_static_path = ['_static']
 
 html_js_files = ['https://code.jquery.com/jquery-3.6.0.min.js']
 
@@ -84,4 +84,4 @@ html_logo = '_static/sarra_horror_culture_w200.png'
 
 html_favicon = '_static/sarra_horror_culture_favicon.png'
 
-#html_theme_options = { 'sidebar_span': 6 }
+# html_theme_options = { 'sidebar_span': 6 }

@@ -4,9 +4,9 @@ Polls the Copernicus Marine Data Store STAC API and S3 buckets.
 
 Based on https://github.com/MetPX/sarracenia/blob/development/sarracenia/flowcb/poll/s3bucket.py
 
-This was developed because the software provided by Copernicus, the Copernicus Marine Toolbox requires 
+This was developed because the software provided by Copernicus, the Copernicus Marine Toolbox requires
 Python >= 3.9 and seemed difficult to integrate into Sarracenia data flows. We also prefer to not install
-packages on our servers using pip when possible. 
+packages on our servers using pip when possible.
 This plugin lets us find URLs in a normal Sarracenia poll and apply accept/reject filtering to narrow down
 the files we want. Duplicate suppression can also be used.
 
@@ -21,7 +21,7 @@ https://pypi.org/project/copernicusmarine/
 NOTE: No authentication is currently used, and it doesn't seem to be necessary right now. This might need
 to be updated in the future if they require authentication.
 
-Additional filtering can be performed on datasets for a productID. 
+Additional filtering can be performed on datasets for a productID.
 Add dataset_href=some_regex to the end of a productID to include only datasets with hrefs that match the regex.
 
 Example Config:
@@ -52,6 +52,7 @@ import re
 
 logger = logging.getLogger(__name__)
 
+
 class Copernicus_marine_s3(sarracenia.flowcb.FlowCB):
     def __init__(self, options):
         super().__init__(options, logger)
@@ -63,11 +64,11 @@ class Copernicus_marine_s3(sarracenia.flowcb.FlowCB):
             logger.debug(f"logLevel {self.o.logLevel.upper()}")
 
         self.o.add_option('productID', kind='list', default_value=[])
-        
+
         self.stac_base_url = self.o.pollUrl
         if self.stac_base_url[-1] != '/':
             self.stac_base_url += '/'
-        
+
         # Parse productIDs
         self.productIDs = {}
         for product_id in self.o.productID:
@@ -81,8 +82,8 @@ class Copernicus_marine_s3(sarracenia.flowcb.FlowCB):
             except Exception as e:
                 logger.error(f"Invalid productID {product_id} - check the config file!")
                 logger.debug("Exception details:", exc_info=True)
-        
-        self.botocore_config = botocore.config.Config(s3={"addressing_style": "virtual"}, 
+
+        self.botocore_config = botocore.config.Config(s3={"addressing_style": "virtual"},
                                                       signature_version=botocore.UNSIGNED)
 
     def get_s3_urls_from_stac(self, productIDs):
@@ -98,18 +99,18 @@ class Copernicus_marine_s3(sarracenia.flowcb.FlowCB):
                 datasets = set()
                 for link in product_page['links']:
                     if 'dataset.stac.json' in link['href']:
-                        if productIDs[id]: # if there's a regex filter for this productID
+                        if productIDs[id]:  # if there's a regex filter for this productID
                             if productIDs[id].match(link['href']):
                                 datasets.add(link['href'])
                             else:
                                 logger.debug(f"{link['href']} doesn't match {productIDs[id]}, ignoring")
-                        else: # no regex, no need to filter        
+                        else:  # no regex, no need to filter
                             datasets.add(link['href'])
-                
+
                 if len(datasets) == 0:
                     logger.error(f"Failed to find dataset/collection link for productID {id}")
-                    continue # keep trying other productIDs
-                
+                    continue  # keep trying other productIDs
+
                 for dataset in datasets:
                     resp = requests.get(self.stac_base_url + id + '/' + dataset)
                     if not resp:
@@ -121,14 +122,14 @@ class Copernicus_marine_s3(sarracenia.flowcb.FlowCB):
                         if id not in s3_urls:
                             s3_urls[id] = []
                         s3_urls[id].append(dataset_page['assets']['native']['href'])
-                    else: 
+                    else:
                         logger.error("Failed to find Native dataset S3 URL for productID {id} + dataset {dataset}")
                         logger.debug(f"dataset page: {self.stac_base_url + id + '/' + dataset}")
 
             except Exception as e:
                 logger.error(f"Could not poll productID {id} ({e})")
                 logger.debug(f"Exception:", exc_info=True)
-        
+
         logger.debug(f"STAC poll found {s3_urls}")
         return s3_urls
 
@@ -146,10 +147,11 @@ class Copernicus_marine_s3(sarracenia.flowcb.FlowCB):
                 params['url'] += urllib.parse.quote(f'&{item}={ident[item]}', safe='/&=')
 
             if 'User-Agent' in params['headers']:
-                params['headers']['User-Agent'] = 'Sarracenia' + sarracenia.__version__ + ' ' + params['headers']['User-Agent']
-            
+                params['headers']['User-Agent'] = 'Sarracenia' + \
+                    sarracenia.__version__ + ' ' + params['headers']['User-Agent']
+
             logger.debug(f"request: {model}, params: {params}, request_signer: {request_signer}, kwargs: {kwargs}")
-        except:
+        except BaseException:
             # Don't really care if this fails, something wrong in this method shouldn't stop the poll from working
             logger.debug('Exception setting identification', exc_info=True)
 
@@ -173,8 +175,8 @@ class Copernicus_marine_s3(sarracenia.flowcb.FlowCB):
                 prefix = '/'.join(pr.path.strip('/').split('/')[1:])
                 if endpoint not in bucket_prefix_by_endpoint:
                     bucket_prefix_by_endpoint[endpoint] = []
-                bucket_prefix_by_endpoint[endpoint].append({'bucket':bucket, 'prefix':prefix})
-        
+                bucket_prefix_by_endpoint[endpoint].append({'bucket': bucket, 'prefix': prefix})
+
         logger.debug(f"Going to S3 list {bucket_prefix_by_endpoint}")
 
         # Have a bunch of prefixes now (directories), poll them to find files
@@ -186,7 +188,8 @@ class Copernicus_marine_s3(sarracenia.flowcb.FlowCB):
                 # Tell Copernicus who we are, for their monitoring
                 s3.meta.events.register("before-call.s3.ListObjects", self._identify_client)
                 for bucket_prefix in bucket_prefix_by_endpoint[endpoint]:
-                    logger.info(f"\bing s3://{bucket_prefix['bucket']}/{bucket_prefix['prefix']} @ endpoint {endpoint}")
+                    logger.info(
+                        f"\bing s3://{bucket_prefix['bucket']}/{bucket_prefix['prefix']} @ endpoint {endpoint}")
                     # s3.list_objects returns a maximum of 1000 items, need to use paginator instead
                     operation = 'list_objects_v2' if 'list_objects_v2' in dir(s3) else 'list_objects'
                     paginator = s3.get_paginator(operation)
@@ -200,7 +203,7 @@ class Copernicus_marine_s3(sarracenia.flowcb.FlowCB):
                         if self.stop_requested:
                             break
                     if self.stop_requested:
-                            break
+                        break
             except Exception as e:
                 logger.error(f"Error during S3 poll for endpoint {endpoint} ({e})")
                 logger.debug(f"Exception:", exc_info=True)
@@ -216,21 +219,20 @@ class Copernicus_marine_s3(sarracenia.flowcb.FlowCB):
                         stat.st_mtime = t
                     if 'Size' in obj:
                         stat.st_size = obj['Size']
-                    
+
                     file_path = bucket + '/' + obj['Key']
                     msg = sarracenia.Message.fromFileInfo(file_path, self.o, stat)
                     # The (new_)baseUrl field will be set to the post_baseUrl from the config, or pollUrl if
                     # post_baseUrl is not set. We need to override it here, because the baseUrl can change if the
-                    # files are coming from different endpoints. 
+                    # files are coming from different endpoints.
                     msg['baseUrl'] = endpoint
                     msg['new_baseUrl'] = endpoint
                     # When Sarracenia runs updatePaths again later, from sarracenia.Flow, self.o.post_baseUrl will be
                     # different, so set msg['post_baseUrl'] here to override whatever setting it has at that point.
                     msg['post_baseUrl'] = endpoint
                     msg['_deleteOnPost'] |= {'post_baseUrl'}
-                    
+
                     gathered_msgs.append(msg)
 
         logger.info(f"found {len(gathered_msgs)} files, Sarracenia will filter them")
         return gathered_msgs
-

@@ -1,7 +1,7 @@
 """
  A sample on_part plugin to perform virus scanning, using the ClamAV engine.
 
- requires a clamd binding package to be installed. On debian derived systems:: 
+ requires a clamd binding package to be installed. On debian derived systems::
 
     sudo apt-get install python3-pyclamd
 
@@ -26,16 +26,15 @@ from sarracenia.flowcb import FlowCB
 #
 from sarracenia.featuredetection import features
 
-features['clamd'] = { 'modules_needed': [ 'pyclamd' ], 'Needed': True,
-        'lament' : 'cannot use clamd to av scan files transferred',
-        'rejoice' : 'can use clamd to av scan files transferred' }
+features['clamd'] = {'modules_needed': ['pyclamd'], 'Needed': True,
+                     'lament': 'cannot use clamd to av scan files transferred',
+                     'rejoice': 'can use clamd to av scan files transferred'}
 
 try:
     import pyclamd
     features['clamd']['present'] = True
-except:
+except BaseException:
     features['clamd']['present'] = False
-
 
 
 logger = logging.getLogger(__name__)
@@ -53,13 +52,14 @@ class Clamav(FlowCB):
        after downloading.
 
     """
+
     def __init__(self, options) -> None:
 
-        super().__init__(options,logger)
+        super().__init__(options, logger)
 
         self.metric_scanned = 0
         self.metric_hits = 0
-       
+
         if sarracenia.features['pyclamd']['present']:
             import pyclamd
             self.av = pyclamd.ClamdAgnostic()

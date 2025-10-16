@@ -1,3 +1,4 @@
+import random
 import copy
 import json
 import logging
@@ -33,36 +34,40 @@ __default_options = {
     'tlsRigour': 'normal'
 }
 
+
 def default_options() -> dict:
-        """
-        get default properties to override, used by client for validation. 
+    """
+    get default properties to override, used by client for validation.
 
-        """
-        if (sys.version_info.major == 3) and (sys.version_info.minor < 7):
-            o = {}
-            for k in __default_options:
-                if k == 'masks':
-                    o[k] = __default_options[k]
-                else:
-                    o[k] = copy.deepcopy(__default_options[k])
-        else:
-            o = copy.deepcopy(__default_options)
+    """
+    if (sys.version_info.major == 3) and (sys.version_info.minor < 7):
+        o = {}
+        for k in __default_options:
+            if k == 'masks':
+                o[k] = __default_options[k]
+            else:
+                o[k] = copy.deepcopy(__default_options[k])
+    else:
+        o = copy.deepcopy(__default_options)
 
-        return o
-          
-import random
+    return o
 
-eboIntervalMaximum = 60 + random.random()*60
+
+eboIntervalMaximum = 60 + random.random() * 60
+
 
 def ProtocolPresent(p) -> bool:
-    if ( p[0:4] in ['amqp'] ) and sarracenia.features['amqp']['present']:
-       return True
-    if ( p[0:4] in ['mqtt'] ) and sarracenia.features['mqtt']['present']:
-       return True
+    if (p[0:4] in ['amqp']) and sarracenia.features['amqp']['present']:
+        return True
+    if (p[0:4] in ['mqtt']) and sarracenia.features['mqtt']['present']:
+        return True
     if p in sarracenia.features:
-        logger.critical( f"support for {p} missing, please install python packages: {' '.join(sarracenia.features[p]['modules_needed'])}" )
+        logger.critical(
+            f"support for {p} missing, please install python packages: {
+                ' '.join(
+                    sarracenia.features[p]['modules_needed'])}")
     else:
-        logger.critical( f"Protocol scheme {p} unsupported for communications with message brokers" )
+        logger.critical(f"Protocol scheme {p} unsupported for communications with message brokers")
 
     return False
 
@@ -74,9 +79,9 @@ class Moth():
 
         A multi-protocol library for use by hierarchical message passing implementations,
         (messages which have a 'topic' header that is used for routing by brokers.)
- 
+
         - regardless of protocol, the message format returned should be the same.
-        - the message is turned into a sarracenia.Message object, which acts like a python 
+        - the message is turned into a sarracenia.Message object, which acts like a python
           dictionary, corresponding to key-value pairs in the message body, and properties.
         - topic is a special key that may end up in the message body, or some sort of property
           or metadata.
@@ -85,8 +90,8 @@ class Moth():
           a message identifier to be passed to the broker. Whatever protocol symbol is used
           by the protocol, it is passed through this message property. Examples:
           in rabbitmq/amqp ack takes a "delivery_tag" as an argument, in MQTT, it takes a "message-id"
-          so when receiving an AMQP message, the m['ack_id'] is assigned the delivery_tag from the message. 
-        - There is a special dict item:  "_DeleteOnPost",  
+          so when receiving an AMQP message, the m['ack_id'] is assigned the delivery_tag from the message.
+        - There is a special dict item:  "_DeleteOnPost",
           to identify keys which are added only for local use.
           they will be removed from the message when publishing.
           examples:  topic (sent outside body), message-id (used for acknowledgements.)
@@ -103,13 +108,13 @@ class Moth():
 
         * topicPrefix
 
-        * subTopic  
+        * subTopic
 
         * queueName   (for amqp, used as client-id for mqtt)
 
         this library knows nothing about Sarracenia, the only code used from sarracenia is to interpret
         duration properties, from the root sarracenia/__init__.py, the broker argument from sarracenia.config.credentials
-  
+
         usage::
 
            import sarracenia.moth
@@ -128,17 +133,17 @@ class Moth():
 
            # if there are new messages from a publisher, return them, otherwise return
            # an empty list []].
-             
+
            p=Moth( { 'batch':1 }, False )
 
            p.putNewMessage()
 
            p.close()
-           # tear down connection.     
-  
+           # tear down connection.
+
         Initialize a broker connection. Connections are unidirectional.
         either for subscribing (with subFactory) or publishing (with pubFactory.)
-       
+
         The factories return objects subclassed to match the protocol required
         by the broker argument.
 
@@ -151,7 +156,7 @@ class Moth():
         * supplied as overrides to the default properties listed above.
 
         Some may vary among protocols::
- 
+
           Protocol     library implementing    URL to select
           --------     --------------------    -------------
 
@@ -168,23 +173,23 @@ class Moth():
        **messaging_strategy**
 
        how to manage the connection. Covers whether to treat the connection
-       as new or assume it is set up. Also, If something goes wrong.  
-       What should be done. 
-         
+       as new or assume it is set up. Also, If something goes wrong.
+       What should be done.
+
        * reset: on startup... erase any state, and re-initialize.
 
-       * stubborn: If set to True, loop forever if something bad happens.  
+       * stubborn: If set to True, loop forever if something bad happens.
          Never give up. This sort of setting is desired in operations, especially unattended.
          if set to False, may give up more easily.
 
        * failure_duration is to advise library how to structure connection service level.
-          
+
          * 5m - make a connection that will recover from transient errors of a few minutes,
            but not tax the broker too much for prolonged outages.
 
          * 5d - duration outage to striving to survive connection for five days.
 
-       Changing recovery_strategy setting, might result in having to destroy and re-create 
+       Changing recovery_strategy setting, might result in having to destroy and re-create
        consumer queues (AMQP.)
 
        **Options**
@@ -215,12 +220,12 @@ class Moth():
 
        **optional:**
 
-       *  'message_ttl'    
+       *  'message_ttl'
 
        **for put:**
 
        *   'exchange' (only in AMQP... hmm...)
-       
+
 
     """
     @staticmethod
@@ -229,22 +234,22 @@ class Moth():
         if 'subscription_index' in props:
             subIndex = props['subscription_index']
             broker = props['subscriptions'][subIndex]['broker']
-        elif not props['broker'] :
+        elif not props['broker']:
             logger.error('no broker specified')
             return None
         else:
             broker = props['broker']
 
-        if not hasattr(broker,'url'):
+        if not hasattr(broker, 'url'):
             logger.error('invalid broker url')
             return None
 
         if not ProtocolPresent(broker.url.scheme):
-           logger.error('unknown broker scheme/protocol specified')
-           return None
+            logger.error('unknown broker scheme/protocol specified')
+            return None
 
         for sc in Moth.findAllSubclasses(Moth):
-            driver=sc.__name__.lower()
+            driver = sc.__name__.lower()
             # when amqp_consumer option is True, use the moth.AMQPConsumer class, not normal moth.AMQP
             if "amqp_consumer" in props and props["amqp_consumer"]:
                 if driver == 'amqp':
@@ -252,10 +257,10 @@ class Moth():
                 if driver == 'amqpconsumer':
                     # driver needs to be amqp to match with the broker URL's scheme
                     driver = 'amqp'
-            scheme=broker.url.scheme
+            scheme = broker.url.scheme
             if (scheme == driver) or \
-               ( (scheme[0:-1] == driver) and (scheme[-1] in [ 's', 'w' ])) or \
-               ( (scheme[0:-2] == driver) and (scheme[-2] == 'ws')):
+               ((scheme[0:-1] == driver) and (scheme[-1] in ['s', 'w'])) or \
+               ((scheme[0:-2] == driver) and (scheme[-2] == 'ws')):
                 return sc(props, True)
         logger.error('broker intialization failure')
         return None
@@ -274,26 +279,26 @@ class Moth():
         else:
             broker = props['broker']
 
-        if not hasattr(broker,'url'):
-            logger.error( f"invalid broker url: {str(broker)} {type(broker)}")
+        if not hasattr(broker, 'url'):
+            logger.error(f"invalid broker url: {str(broker)} {type(broker)}")
             return None
 
         if not ProtocolPresent(broker.url.scheme):
-            logger.error( f"unknown broker scheme/protocol specified: {broker.url.scheme}")
+            logger.error(f"unknown broker scheme/protocol specified: {broker.url.scheme}")
             return None
 
-        scheme=broker.url.scheme
+        scheme = broker.url.scheme
         for sc in Moth.__subclasses__():
-            driver=sc.__name__.lower()
+            driver = sc.__name__.lower()
             if (scheme == driver) or \
-               ( (scheme[0:-1] == driver) and (scheme[-1] in [ 's', 'w' ])) or \
-               ( (scheme[0:-2] == driver) and (scheme[-2] == 'ws')):
+               ((scheme[0:-1] == driver) and (scheme[-1] in ['s', 'w'])) or \
+               ((scheme[0:-2] == driver) and (scheme[-2] == 'ws')):
                 return sc(props, False)
 
         # ProtocolPresent test should ensure that we never get here...
         logger.error('broker {str(broker)} intialization failure')
         return None
-    
+
     @staticmethod
     def findAllSubclasses(cls) -> set:
         """Recursively finds all subclasses of a class. __subclasses__() only gives direct subclasses.
@@ -312,9 +317,9 @@ class Moth():
         """
 
         self.is_subscriber = is_subscriber
-        self.connected=False
+        self.connected = False
         self._stop_requested = False
-        self.metrics = { 'connected': False }
+        self.metrics = {'connected': False}
         self.metricsReset()
 
         now = time.time()
@@ -330,13 +335,13 @@ class Moth():
 
         if is_subscriber:
             if 'subscriber_index' in self.o:
-                subscription=self.o['subscriptions'][self.o['subscription_index']]
+                subscription = self.o['subscriptions'][self.o['subscription_index']]
                 broker = subscription['broker']
                 self.o['broker'] = broker
                 self.o['exchange'] = subscription['exchange']
         else:
             if 'publisher_index' in self.o:
-                publisher=self.o['publishers'][self.o['publisher_index']]
+                publisher = self.o['publishers'][self.o['publisher_index']]
                 self.o['broker'] = publisher['broker']
                 self.o['exchange'] = publisher['exchange']
                 self.o['topicPrefix'] = publisher['topicPrefix']
@@ -349,9 +354,9 @@ class Moth():
 
         logging.basicConfig(format=self.o['logFormat'],
                             level=getattr(logging, self.o['logLevel'].upper()))
-        logger.debug( f" Maximum interval exponential back off of connecting to broker: {eboIntervalMaximum} " )
+        logger.debug(f" Maximum interval exponential back off of connecting to broker: {eboIntervalMaximum} ")
 
-    def ack(self, message: sarracenia.Message ) -> bool:
+    def ack(self, message: sarracenia.Message) -> bool:
         """
           tell broker that a given message has been received.
 
@@ -380,19 +385,20 @@ class Moth():
         On Success, this routine returns immediately (non-blocking) with either None, or a list of messages.
 
         On failure, this routine blocks, and loops reconnecting to broker, until interaction with broker is successful.
-        
+
         """
         logger.error("NewMessages unimplemented")
         return []
-    
+
     def please_stop(self) -> None:
-        """ register a request to cleanly stop. Any long running processes should check for _stop_requested and 
+        """ register a request to cleanly stop. Any long running processes should check for _stop_requested and
             stop if it becomes True.
         """
         logger.info("asked to stop")
         self._stop_requested = True
 
-    def putNewMessage(self, message:sarracenia.Message, content_type: str ='application/json', exchange: str = None) -> bool:
+    def putNewMessage(self, message: sarracenia.Message, content_type: str = 'application/json',
+                      exchange: str = None) -> bool:
         """
            publish a message as set up to the given topic.
 
@@ -425,8 +431,8 @@ class Moth():
         return self.metrics
 
     def metricsConnect(self) -> None:
-        self.metrics['connected']=True
-        if self.metrics['disconnectLast'] > 0 :
+        self.metrics['connected'] = True
+        if self.metrics['disconnectLast'] > 0:
             down_time = time.time() - self.metrics['disconnectLast']
             self.metrics['disconnectTime'] += down_time
 
@@ -434,7 +440,7 @@ class Moth():
         """
            tear down an existing connection.
         """
-        self.metrics['connected']=False
+        self.metrics['connected'] = False
         self.metrics['disconnectCount'] += 1
         self.metrics['disconnectLast'] = time.time()
 
@@ -450,7 +456,7 @@ class Moth():
         else:
             self.putCleanUp()
 
-    def setEbo(self,start)->None:
+    def setEbo(self, start) -> None:
         """  Calculate next retry time using exponential backoff
              note that it doesn't look like classic EBO because the time
              is multiplied by how long it took to fail. Long failures should not
@@ -459,22 +465,22 @@ class Moth():
              and so the next_try might get smaller even though it hasn't succeeded yet...
              it should eventually settle down to a long period though.
         """
-        now=time.time()
+        now = time.time()
         # if the attempt takes a long time, do not want to try again quickly.
         # but if it fails immediately, then wait at least 1 second.
-        attempt_duration = max(now - start,1)
+        attempt_duration = max(now - start, 1)
         self.next_connect_failures += 1
 
-        # wait a little longer after each failure. 
+        # wait a little longer after each failure.
         ebo = 1.2**self.next_connect_failures
 
         # eboIntervalMaximum is something random between 1 and 4 minutes.
-        # it is the ceiling. Otherwise based on the number of failures to connect and 
+        # it is the ceiling. Otherwise based on the number of failures to connect and
         # how long each attempt takes to fail.
-        next_try = min(max(attempt_duration * ebo,0.1), eboIntervalMaximum)
+        next_try = min(max(attempt_duration * ebo, 0.1), eboIntervalMaximum)
         self.next_connect_time = now + next_try
 
-    def splitPick(self,message) -> int:
+    def splitPick(self, message) -> int:
         """
            given a message and exchangeSplit, return the number to split to.
         """
@@ -482,16 +488,16 @@ class Moth():
         # FIXME: assert ( len(self.o['exchange']) == self.o['post_exchangeSplit'] )
         #        if that isn't true... then there is something wrong... should we check ?
         if 'exchangeSplitOverride' in message:
-            idx = int(message['exchangeSplitOverride'])%len(self.o['exchange'])
+            idx = int(message['exchangeSplitOverride']) % len(self.o['exchange'])
         elif 'relPath' in message:
-            idx = sum( bytearray( message['relPath'], 'ascii')) % len(self.o['exchange'])
+            idx = sum(bytearray(message['relPath'], 'ascii')) % len(self.o['exchange'])
         elif 'retrievePath' in message:
-            idx = sum( bytearray( message['retrievePath'], 'ascii')) % len(self.o['exchange'])
+            idx = sum(bytearray(message['retrievePath'], 'ascii')) % len(self.o['exchange'])
         else:
-            logger.warning( f"missing fields for exchangeSplit, assigning 0")
+            logger.warning(f"missing fields for exchangeSplit, assigning 0")
             idx = 0
-        return idx 
- 
+        return idx
+
 
 if features['amqp']['present']:
     import sarracenia.moth.amqp

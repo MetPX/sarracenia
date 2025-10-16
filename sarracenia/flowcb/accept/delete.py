@@ -12,6 +12,7 @@ import os
 from sarracenia.flowcb import FlowCB
 logger = logging.getLogger(__name__)
 
+
 class Delete(FlowCB):
     def __init__(self, options):
         super().__init__(options, logger)
@@ -31,5 +32,5 @@ class Delete(FlowCB):
                 self.o.consumer.sleep_now = self.o.consumer.sleep_min
                 self.o.consumer.msg_to_retry()
                 worklist.rejected.append(message)
-        
+
         worklist.incoming = new_incoming

@@ -62,18 +62,19 @@ import requests
 
 logger = logging.getLogger(__name__)
 
+
 class Bc_trans(BearerToken):
     def __init__(self, options):
         super().__init__(options, logger)
-        
+
         # Allow setting a logLevel *only* for this plugin in the config file:
         # set accept.auth_eumetsat.logLevel debug
         if hasattr(self.o, 'logLevel'):
             logger.setLevel(self.o.logLevel.upper())
 
         # For additional options (defined by user)
-        self.o.add_option('tokenEndpoint_baseUrl', 'str', 'https://loginproxy.gov.bc.ca/') # required
-        self.o.add_option('tokenEndpoint_path', 'str', 'auth/realms/apigw/protocol/openid-connect/token') # required
+        self.o.add_option('tokenEndpoint_baseUrl', 'str', 'https://loginproxy.gov.bc.ca/')  # required
+        self.o.add_option('tokenEndpoint_path', 'str', 'auth/realms/apigw/protocol/openid-connect/token')  # required
 
         # Set initial values
         self._bearer_token = None
@@ -96,7 +97,6 @@ class Bc_trans(BearerToken):
 
         # end __init__
 
-
     def get_token(self):
         """
         Fetches the bearer token from the token endpoint. Uses the parent class entry point.
@@ -106,9 +106,9 @@ class Bc_trans(BearerToken):
         try:
             logger.info("Requesting a new bearer token")
 
-            response = requests.post(self.o.tokenEndpoint_baseUrl + self.o.tokenEndpoint_path,\
-                data={'grant_type': f'{self.grant_type}'},\
-                auth=(self.client_id, self.client_secret))
+            response = requests.post(self.o.tokenEndpoint_baseUrl + self.o.tokenEndpoint_path,
+                                     data={'grant_type': f'{self.grant_type}'},
+                                     auth=(self.client_id, self.client_secret))
 
             # Get response information
             response_status = response.status_code
@@ -117,10 +117,10 @@ class Bc_trans(BearerToken):
             if response_status == 200:
                 self._bearer_token = response.json()["access_token"]
             else:
-                logger.error( f"Request status received: {response_status}. Response message: {response_text}" )
+                logger.error(f"Request status received: {response_status}. Response message: {response_text}")
                 self._bearer_token = None
 
         except Exception as e:
             logger.debug("Exception details:", exc_info=True)
-        
+
         return self._bearer_token
