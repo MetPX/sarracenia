@@ -1954,9 +1954,8 @@ class Flow:
                 if len(msg['new_dir']) < 2 or ('fileOp' not in msg and 'directory' in msg['fileOp']): 
                     self.reject(msg, 422, f"new_file message field missing, do not know name of file to write. skipping." )
                     continue
-                np=os.path.dirname(msg['new_dir'])
-                msg['new_dir'] = os.path.dirname(np)
-                msg['new_file'] = os.path.basename(np)
+                msg['new_file'] = os.path.basename(msg['new_dir'])
+                msg['new_dir'] = os.path.dirname(msg['new_dir'])
 
             new_path = msg['new_dir'] + os.path.sep + msg['new_file']
             new_file = msg['new_file']
