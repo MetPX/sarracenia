@@ -554,7 +554,10 @@ class Message(dict):
         logger.debug( f"mtime persisted, calc_method: {calc_method}" )
 
         if calc_method[:4] == 'cod,' and len(calc_method) > 2:
-            sumstr = calc_method
+            sumstr = {
+                    'method' : 'cod',
+                    'value': calc_method[4:]
+                    }
         elif calc_method in [ 'md5name', 'invalid' ]:
             xattr.persist()  # persist the mtime, at least...
             return  # no checksum needed for md5name. 
