@@ -209,7 +209,7 @@ class Test_Message():
         options.identity_method = 'cod,testname'
         del(msg['identity'])
         msg.computeIdentity(path4, options)
-        assert msg['identity'] == 'cod,testname'
+        assert msg['identity'] == {'method': 'cod', 'value': 'testname'}
 
         try:
             import xattr
