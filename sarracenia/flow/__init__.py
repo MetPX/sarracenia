@@ -2315,10 +2315,11 @@ class Flow:
                     download_algo = msg['identity']['value']
                 elif msg['identity']['method'].startswith('cod,'):
                     download_algo = msg['identity']['method'][4:]
+                # Algo not cod, get value from method field.
                 else:
-                    # Don't try re-calculating checksum if method doesn't include "cod"
-                    download_algo = None
-            # Assign whatever is set in the configuration if identity isn't found in incoming message.
+                    # We want to re-calculate the checksum to compare with the value that was advertised from the message.
+                    download_algo = msg['identity']['method']
+            # Assign whatever is set in the configuration if identity isn't found in the incoming message.
             elif self.o.identity_method != None:
                 download_algo = self.o.identity_method
             else:
@@ -2442,8 +2443,17 @@ class Flow:
                 msg['onfly_checksum'] = self.proto[self.scheme].get_sumstr()
                 msg['data_checksum'] = self.proto[self.scheme].data_checksum
 
-                if self.o.identity_method.startswith('cod,') and not accelerated:
+                if ('identity' in msg and msg['identity']['method'].startswith('cod') or ('identity' not in msg and 'cod' not in self.o.identity_method)) and not accelerated:
+                    # if 'identity' in msg and msg['identity']['value'] != msg['onfly_checksum']['value']:
+                    #     logger.warning("Onfly checksum differs from checksum found in sarracenia message. Will overwrite message with onfly_checksum value.")
+                    #     logger.debug(f"Onfly checksum: {msg['onfly_checksum']} ; Checksum from incoming sarracenia message {msg['identity']}")
                     msg['identity'] = msg['onfly_checksum']
+                # If no incoming checksum in message and have cod in options, add cod checksum to message.
+                elif 'identity' not in msg and 'cod' in self.o.identity_method:
+                    msg['identity'] = {
+                            'method' : 'cod',
+                            'value': download_algo[4:]
+                            }
 
                 msg['_deleteOnPost'] |= set(['onfly_checksum'])
                 msg['_deleteOnPost'] |= set(['data_checksum'])
