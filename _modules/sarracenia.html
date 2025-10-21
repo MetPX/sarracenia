@@ -661,7 +661,10 @@
         <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span> <span class="sa">f</span><span class="s2">&quot;mtime persisted, calc_method: </span><span class="si">{</span><span class="n">calc_method</span><span class="si">}</span><span class="s2">&quot;</span> <span class="p">)</span>
 
         <span class="k">if</span> <span class="n">calc_method</span><span class="p">[:</span><span class="mi">4</span><span class="p">]</span> <span class="o">==</span> <span class="s1">&#39;cod,&#39;</span> <span class="ow">and</span> <span class="nb">len</span><span class="p">(</span><span class="n">calc_method</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">2</span><span class="p">:</span>
-            <span class="n">sumstr</span> <span class="o">=</span> <span class="n">calc_method</span>
+            <span class="n">sumstr</span> <span class="o">=</span> <span class="p">{</span>
+                    <span class="s1">&#39;method&#39;</span> <span class="p">:</span> <span class="s1">&#39;cod&#39;</span><span class="p">,</span>
+                    <span class="s1">&#39;value&#39;</span><span class="p">:</span> <span class="n">calc_method</span><span class="p">[</span><span class="mi">4</span><span class="p">:]</span>
+                    <span class="p">}</span>
         <span class="k">elif</span> <span class="n">calc_method</span> <span class="ow">in</span> <span class="p">[</span> <span class="s1">&#39;md5name&#39;</span><span class="p">,</span> <span class="s1">&#39;invalid&#39;</span> <span class="p">]:</span>
             <span class="n">xattr</span><span class="o">.</span><span class="n">persist</span><span class="p">()</span>  <span class="c1"># persist the mtime, at least...</span>
             <span class="k">return</span>  <span class="c1"># no checksum needed for md5name. </span>
