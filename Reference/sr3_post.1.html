@@ -113,7 +113,7 @@
 <dd class="field-odd"><p>1</p>
 </dd>
 <dt class="field-even">Date<span class="colon">:</span></dt>
-<dd class="field-even"><p>Oct 30, 2025</p>
+<dd class="field-even"><p>Nov 05, 2025</p>
 </dd>
 <dt class="field-odd">Version<span class="colon">:</span></dt>
 <dd class="field-odd"><p>3.01.01rc1</p>
@@ -140,12 +140,19 @@ to an AMQP server, also called a broker.</p>
 but there is also an implementation in C, which works nearly identically.
 Differences:</p>
 <blockquote>
-<div><ul class="simple">
+<div><ul>
 <li><p>plugins are not supported in the C implementation.</p></li>
 <li><p>C implementation uses POSIX regular expressions, python3 grammar is slightly different.</p></li>
 <li><p>when the <em>sleep</em> option ( used only in the C implementation) is set to &gt; 0,
 it transforms sr_cpost into a daemon that works like the <em>watch</em> component
 of <a class="reference external" href="sr3.1.html">sr3(1)</a>.</p></li>
+<li><p>Option parsing in C is simplistic compared to the Python implementation. Example:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Python</span> <span class="n">command</span> <span class="n">line</span><span class="p">:</span> <span class="o">--</span><span class="n">header</span><span class="o">=</span><span class="s1">&#39;key=value&#39;</span>
+     <span class="n">C</span> <span class="n">command</span> <span class="n">line</span><span class="p">:</span> <span class="o">--</span><span class="n">header</span> <span class="n">key</span><span class="o">=</span><span class="n">value</span>
+</pre></div>
+</div>
+<p>An <em>=</em> sign after the keyword will not be parsed as it is in Python.</p>
+</li>
 </ul>
 </div></blockquote>
 <section id="mandatory-settings">

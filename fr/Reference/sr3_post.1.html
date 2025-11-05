@@ -112,7 +112,7 @@
 <dd class="field-odd"><p>1</p>
 </dd>
 <dt class="field-even">Date<span class="colon">:</span></dt>
-<dd class="field-even"><p>Oct 30, 2025</p>
+<dd class="field-even"><p>Nov 05, 2025</p>
 </dd>
 <dt class="field-odd">Version<span class="colon">:</span></dt>
 <dd class="field-odd"><p>3.01.01rc1</p>
@@ -150,6 +150,15 @@ de <a class="reference external" href="sr3.1.html">sr3(1)</a>.</p>
 </li>
 </ul>
 </div></blockquote>
+<ul>
+<li><p>L’interprétation des options en C est simpliste comparé à l’implémentation Python. Exemple:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Ligne</span> <span class="n">de</span> <span class="n">commande</span> <span class="n">Python</span> <span class="p">:</span> <span class="o">--</span><span class="n">header</span><span class="o">=</span><span class="s1">&#39;key=value&#39;</span>
+<span class="n">Ligne</span> <span class="n">de</span> <span class="n">commande</span> <span class="n">C</span> <span class="p">:</span> <span class="o">--</span><span class="n">header</span> <span class="n">key</span><span class="o">=</span><span class="n">value</span>
+</pre></div>
+</div>
+<p>Le signe <em>=</em> après le mot-clé ne sera pas analysé comme il l’est en Python.</p>
+</li>
+</ul>
 <section id="options-obligatoires">
 <h4>Options obligatoires<a class="headerlink" href="#options-obligatoires" title="Link to this heading"></a></h4>
 <p>L’option <em>post_base_url url,url,…</em> spécifie l’emplacement
