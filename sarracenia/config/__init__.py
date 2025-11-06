@@ -2673,7 +2673,7 @@ class Config:
             choices=[
                 'notset', 'debug', 'info', 'warning', 'error', 'critical'
             ],
-            help='encode payload in base64 (for binary) or text (utf-8)')
+            help='set the log level (default is info)')
         parser.add_argument('--logReject',
                             action='store_true',
                             default=self.logReject,
