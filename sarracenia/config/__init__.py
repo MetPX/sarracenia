@@ -1401,9 +1401,12 @@ class Config:
     def _parse_declare(self, words):
 
         if words[0] in ['env', 'envvar', 'var', 'value']:
-            name, value = words[1].split('=')
-            self.env[name] = value
-            self.env_declared.append(name)
+            name = words[1].split('=')[0]
+            if len(name) < len(words[1]):
+                self.env[name] = words[1][len(name)+1:]
+                self.env_declared.append(name)
+            else:
+                logging.error( f"malformed declaration: for {words[0]} need name and value separated by = sign" )
         elif words[0] in ['option', 'o']:
             self._parse_option(words[1], words[2:])
         elif words[0] in ['source', 'subscriber', 'subscribe']:
@@ -1640,8 +1643,12 @@ class Config:
             self.feeder = urllib.parse.urlparse(line[1])
             self.declared_users[self.feeder.username] = 'feeder'
         elif k in ['header', 'h']:
-            (kk, vv) = line[1].split('=')
-            self.fixed_headers[kk] = vv
+            kk = line[1].split('=')[0]
+            if len(line[1]) < len(kk):
+                self.fixed_headers[kk] = line[1][len(kk)+1:]
+            else:
+                logger.error( f"{','.join(self.files)}:{lineno} {k} keyword=value (no = sign found)" )
+
         elif k in ['include', 'config']:
             try:
                 self.parse_file(v)
