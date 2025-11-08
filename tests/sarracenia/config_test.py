@@ -104,6 +104,8 @@ def test_read_line_declare():
 
      options.parse_line( "subscribe", "ex1", "subscribe/ex1", 1, "declare env VAR99=hoho" )
      assert( options.env['VAR99'] == 'hoho' )
+     options.parse_line( "subscribe", "ex1", "subscribe/ex1", 1, "declare env VAR98=hoho=lala" )
+     assert( options.env['VAR98'] == 'hoho=lala' )
 
 def test_read_line_flags():
 
