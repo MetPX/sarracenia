@@ -1644,7 +1644,7 @@ class Config:
             self.declared_users[self.feeder.username] = 'feeder'
         elif k in ['header', 'h']:
             kk = line[1].split('=')[0]
-            if len(line[1]) < len(kk):
+            if len(kk) < len(line[1]):
                 self.fixed_headers[kk] = line[1][len(kk)+1:]
             else:
                 logger.error( f"{','.join(self.files)}:{lineno} {k} keyword=value (no = sign found)" )
