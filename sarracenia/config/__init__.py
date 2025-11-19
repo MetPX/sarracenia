@@ -1118,7 +1118,7 @@ class Config:
         s = 'accept' if accepting else 'reject'
         if pstrip : strip=pstrip
         strip = '' if strip == 0 else f' strip:{strip}'
-        fn = '' if (maskFileOption == 'WHATFN') else f' filename:{maskFileOption}'
+        fn = f' filename:{maskFileOption}'
         flatten = '' if flatten == '/' else f' flatten:{flatten}'
         w = 'with ' if fn or flatten or strip else ''
         args = '' if len(args) == 0 else ' args:' + str(args)
