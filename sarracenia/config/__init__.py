@@ -1615,6 +1615,9 @@ class Config:
                     logger.warning( f"{','.join(self.files)}:{lineno} {k} needs to be near the start of the file." )
             return
 
+        if k == 'broker':
+            self.subtopic_seen=False
+
         if k in queue_options and hasattr(self,'subtopic_seen') and self.subtopic_seen:
             logger.warning( f"{','.join(self.files)}:{lineno} {k} needs to appear before *subtopic*" \
                 " unless you need different queues to have different settings")
