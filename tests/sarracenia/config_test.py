@@ -104,6 +104,8 @@ def test_read_line_declare():
 
      options.parse_line( "subscribe", "ex1", "subscribe/ex1", 1, "declare env VAR99=hoho" )
      assert( options.env['VAR99'] == 'hoho' )
+     options.parse_line( "subscribe", "ex1", "subscribe/ex1", 1, "declare env VAR98=hoho=lala" )
+     assert( options.env['VAR98'] == 'hoho=lala' )
 
 def test_read_line_flags():
 
@@ -128,6 +130,14 @@ def test_read_line_flags():
      assert( options.sourceFromMessage == False )
      assert( options.sundew_compat_regex_first_match_is_zero == False )
      assert( options.topicCopy == False )
+
+def test_read_line_header():
+     options = copy.deepcopy(sarracenia.config.default_config())
+     options.parse_line( "subscribe", "ex1", "subscribe/ex1", 1, "header sundew_extension=THIS:IS:A:TEST:EXTENSION" )
+     assert( 'sundew_extension' in options.fixed_headers )
+     assert( options.fixed_headers['sundew_extension'] == 'THIS:IS:A:TEST:EXTENSION')
+     options.parse_line( "subscribe", "ex1", "subscribe/ex1", 1, "header sundew_extension=THIS:IS:A:TEST:EXTENSION:SENDER=with_equals" )
+     assert( options.fixed_headers['sundew_extension'] == 'THIS:IS:A:TEST:EXTENSION:SENDER=with_equals')
 
 def test_read_line_counts():
 
