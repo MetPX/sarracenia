@@ -190,7 +190,7 @@ class Ftp(Transfer):
 
         try:
             old_ftp.quit()
-        except EOFError:
+        except (EOFError, ftplib.error_temp):
             # FTP quit will try to politely close the connection.
             # Sometimes the client will already have the connection closed.
             # We should close the connection permanently from our end when this happens.
