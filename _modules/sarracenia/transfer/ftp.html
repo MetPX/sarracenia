@@ -285,7 +285,7 @@
 
         <span class="k">try</span><span class="p">:</span>
             <span class="n">old_ftp</span><span class="o">.</span><span class="n">quit</span><span class="p">()</span>
-        <span class="k">except</span> <span class="ne">EOFError</span><span class="p">:</span>
+        <span class="k">except</span> <span class="p">(</span><span class="ne">EOFError</span><span class="p">,</span> <span class="n">ftplib</span><span class="o">.</span><span class="n">error_temp</span><span class="p">):</span>
             <span class="c1"># FTP quit will try to politely close the connection.</span>
             <span class="c1"># Sometimes the client will already have the connection closed.</span>
             <span class="c1"># We should close the connection permanently from our end when this happens.</span>
