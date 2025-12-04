@@ -140,10 +140,11 @@ class DiskQueue():
             self.new_fp = open(self.new_path, 'a')
 
         for message in message_list:
-            logger.debug("DEBUG add to new file %s %s" %
-                         (os.path.basename(self.new_path), message))
+            #logger.debug("DEBUG add to new file %s %s" %
+            #             (os.path.basename(self.new_path), message))
             self.new_fp.write(self.msgToJSON(message))
             self.msg_count_new += 1
+            logger.debug( f"DEBUG new file {os.path.basename(self.new_path)} +1 = {self.msg_count_new}" )
         self.new_fp.flush()
 
     def cleanup(self):
@@ -433,7 +434,7 @@ class DiskQueue():
                 fp, message = self.msg_get_from_file(fp, self.new_path)
                 if not message: break
                 i = i + 1
-                logger.debug("DEBUG message %s" % message)
+                #logger.debug("DEBUG message %s" % message)
                 if not self.needs_requeuing(message): continue
 
                 #logger.debug("MG DEBUG flush retry to state %s" % message)
