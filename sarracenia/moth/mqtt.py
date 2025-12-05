@@ -34,7 +34,6 @@ import sarracenia
 from sarracenia.postformat import PostFormat
 from sarracenia.moth import Moth
 import os
-import ssl
 import threading
 import time
 from urllib.parse import unquote
@@ -204,6 +203,12 @@ class MQTT(Moth):
       
         logger.warning("note: mqtt support is newish, not very well tested")
 
+    def _sslClientSetup(self,client=None) -> int:
+        port=super()._sslClientSetup()
+        if self.tlsctx:
+            self.client.tls_set_context(self.tlsctx)
+        return port
+   
     def __sub_on_disconnect(client, userdata, mid, reason_code, properties=None):
         userdata.metricsDisconnect()
         logger.debug(reason_code)
@@ -300,61 +305,6 @@ class MQTT(Moth):
             userdata.unexpected_publishes.append(mid)
             logger.warning( f"BUG: ack for message we do not know we published. mid={mid}" )
 
-    def __sslClientSetup(self,client=None) -> int:
-        """
-          Initializse client SSL context, must be called after self.client is instantiated.
-          return port number for connection.
-      
-        """
-        if not client and hasattr(self,'client'):
-            client=self.client
-
-        if self.is_subscriber and 'subscriptions' in self.o and self.o['subscriptions']:
-            s=self.o['subscriptions'][self.o['subscription_index']]
-            queue=s['queue']
-            broker=s['broker']
-        else:
-            broker=self.o['broker']
-            queue=self.o
-
-        if broker.url.scheme[-1] == 's':
-            port = 8883
-            if 'tlsRigour' in queue:
-                queue['tlsRigour'] = queue['tlsRigour'].lower()
-            elif 'tlsRigour' in self.o: 
-                queue['tlsRigour'] = self.o['tlsRigour'].lower()
-            else:
-                queue['tlsRigour'] = 'normal'
-
-            if queue['tlsRigour'] == 'lax':
-                self.tlsctx = ssl.create_default_context()
-                self.tlsctx.check_hostname = False
-                self.tlsctx.verify_mode = ssl.CERT_NONE
-
-            elif queue['tlsRigour'] == 'strict':
-                self.tlsctx = ssl.SSLContext(ssl.PROTOCOL_TLS)
-                self.tlsctx.options |= ssl.OP_NO_TLSv1
-                self.tlsctx.options |= ssl.OP_NO_TLSv1_1
-                self.tlsctx.check_hostname = True
-                self.tlsctx.verify_mode = ssl.CERT_REQUIRED
-                self.tlsctx.load_default_certs()
-                # TODO Find a way to reintroduce certificate revocation (CRL) in the future
-                #  self.tlsctx.verify_flags = ssl.VERIFY_CRL_CHECK_CHAIN
-                #  https://github.com/MetPX/sarracenia/issues/330
-            elif queue['tlsRigour'] == 'normal':
-                self.tlsctx = ssl.create_default_context()
-            else:
-                self.logger.warning(
-                    f"option tlsRigour must be one of: lax, normal, strict")
-
-            client.tls_set_context(self.tlsctx)
-        else:
-            port = 1883
-
-        if broker.url.port:
-            port = broker.url.port
-        return port
-
     def __clientSetup(self, cid) -> paho.mqtt.client.Client:
 
         s=self.o['subscriptions'][self.o['subscription_index']]
@@ -428,7 +378,7 @@ class MQTT(Moth):
             logger.info( f"is no around? {self.o['no']} " )
             if ('no' in self.o) and self.o['no'] > 0: # instances 'started'
                 self.client = self.__clientSetup(cid)
-                self.client.connect( broker.url.hostname, port=self.__sslClientSetup(), \
+                self.client.connect( broker.url.hostname, port=self._sslClientSetup(),
                        clean_start=False, properties=props )
                 self.client.enable_logger(logger)
                 self.client.loop_start()
@@ -452,7 +402,7 @@ class MQTT(Moth):
                     logger.info( f"declare session for instances {icid}" )
                     self.client = self.__clientSetup(icid)
                     self.client.on_connect = MQTT.__sub_on_connect
-                    self.client.connect( broker.url.hostname, port=self.__sslClientSetup(self.client), \
+                    self.client.connect( broker.url.hostname, port=self._sslClientSetup(),
                        clean_start=False, properties=props )
                     while (self.connect_in_progress) or (self.subscribe_in_progress > 0):
                         logger.info( f"waiting ({ebo} seconds) for broker to confirm subscription is set up.")
@@ -518,7 +468,7 @@ class MQTT(Moth):
                                         unquote(self.o['broker'].url.password))
             self.connect_in_progress = True
             res = self.client.connect_async(self.o['broker'].url.hostname,
-                                      port=self.__sslClientSetup(),
+                                      port=self._sslClientSetup(),
                                      properties=props)
             logger.info( f"connecting to {self.o['broker'].url.hostname}, res={res}" )
  
@@ -577,7 +527,7 @@ class MQTT(Moth):
                 icid= queue['name'] + "_i%02d" % i
                 logger.info( f"cleanup session {icid}" )
                 myclient = self.__clientSetup( icid )
-                myclient.connect( broker.url.hostname, port=self.__sslClientSetup(myclient), \
+                myclient.connect( broker.url.hostname, port=self._sslClientSetup(myclient),
                    clean_start=False, properties=props )
                 while self.connect_in_progress:
                     myclient.loop(0.1)

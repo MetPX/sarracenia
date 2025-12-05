@@ -209,14 +209,9 @@ class AMQP(Moth):
           Expect caller to handle errors.
         """
         if broker.url.hostname:
-            host = broker.url.hostname
-            if broker.url.port is None:
-                if (broker.url.scheme[-1] == 's'):
-                    host += ':5671'
-                else:
-                    host += ':5672'
-            else:
-                host += ':{}'.format(broker.url.port)
+            host = f"{broker.url.hostname}:{self._sslClientSetup()}"
+
+
         else:
             logger.critical( f"invalid broker specification: {broker} " )
             return False
@@ -234,7 +229,7 @@ class AMQP(Moth):
                                               broker.url.password),
                                           login_method=broker.login_method,
                                           virtual_host=vhost,
-                                          ssl=(broker.url.scheme[-1] == 's'),
+                                          ssl=self.tlsctx,
                                           client_properties={'product':'MetPX Sarracenia (sr3)',
                                                              'product_version':sarracenia.__version__,
                                                             }

@@ -1,6 +1,7 @@
 import copy
 import json
 import logging
+import ssl
 import sys
 import time
 from sarracenia.featuredetection import features
@@ -303,6 +304,7 @@ class Moth():
             cls_subclasses = cls_subclasses.union(Moth.findAllSubclasses(sc))
         return cls_subclasses
 
+
     def __init__(self, props=None, is_subscriber=True) -> None:
         """
            If is_subscriber=True, then this is a consuming instance.
@@ -405,6 +407,66 @@ class Moth():
         """
         logger.error("implementation missing!")
         return False
+
+    def _sslClientSetup(self,client=None) -> int:
+        """
+          Initializse client SSL context, must be called after self.client is instantiated.
+          return port number for connection.
+      
+        """
+        if not client and hasattr(self,'client'):
+            client=self.client
+
+        if self.is_subscriber and 'subscriptions' in self.o and self.o['subscriptions']:
+            s=self.o['subscriptions'][self.o['subscription_index']]
+            queue=s['queue']
+            broker=s['broker']
+        else:
+            broker=self.o['broker']
+            queue=self.o
+
+        if broker.url.scheme[-1] == 's':
+            if broker.url.scheme[0] in [ 'a' ]:
+                port = 5671
+            else:
+                port = 8883
+            if 'tlsRigour' in queue:
+                queue['tlsRigour'] = queue['tlsRigour'].lower()
+            elif 'tlsRigour' in self.o:
+                queue['tlsRigour'] = self.o['tlsRigour'].lower()
+            else:
+                queue['tlsRigour'] = 'normal'
+
+            if queue['tlsRigour'] == 'lax':
+                self.tlsctx = ssl.create_default_context()
+                self.tlsctx.check_hostname = False
+                self.tlsctx.verify_mode = ssl.CERT_NONE
+
+            elif queue['tlsRigour'] == 'strict':
+                self.tlsctx = ssl.SSLContext(ssl.PROTOCOL_TLS)
+                self.tlsctx.options |= ssl.OP_NO_TLSv1
+                self.tlsctx.options |= ssl.OP_NO_TLSv1_1
+                self.tlsctx.check_hostname = True
+                self.tlsctx.verify_mode = ssl.CERT_REQUIRED
+                self.tlsctx.load_default_certs()
+                # TODO Find a way to reintroduce certificate revocation (CRL) in the future
+                #  self.tlsctx.verify_flags = ssl.VERIFY_CRL_CHECK_CHAIN
+                #  https://github.com/MetPX/sarracenia/issues/330
+            elif queue['tlsRigour'] == 'normal':
+                self.tlsctx = ssl.create_default_context()
+            else:
+                self.logger.warning(
+                    f"option tlsRigour must be one of: lax, normal, strict")
+        else:
+            self.tlsctx=None
+            if broker.url.scheme[0] in [ 'a' ]:
+                port = 5672
+            else:
+                port = 1883
+
+        if broker.url.port:
+            port = broker.url.port
+        return port
 
     def metricsReset(self) -> None:
         self.metrics['disconnectLast'] = 0
