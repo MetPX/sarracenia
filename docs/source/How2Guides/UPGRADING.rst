@@ -618,11 +618,11 @@ V2 to Sr3
           can mostly be implemented as plugins.
           
 **CHANGE**: the v2 do_poll plugins must be replaced by subclassing for `poll <../Reference/flowcb.html#module-sarracenia.flowcb.poll>`_
-          Example in `plugin porting <v2ToSr3.html>`_ 
+          Example in `plugin porting <Plugins_v2ToSr3.html>`_ 
 
 **CHANGE**: The v2 on_html_page plugins are also replaced by subclassing `poll <../Reference/flowcb.html#module-sarracenia.flowcb.poll>`_
 
-**CHANGE**: v2 do_send replaced by send entrypoint in a Flowcb plugin `plugin porting <v2ToSr3.html>`_
+**CHANGE**: v2 do_send replaced by send entrypoint in a Flowcb plugin `plugin porting <Plugins_v2ToSr3.html>`_
 
 *NOTICE*: the v2 accellerator plugins are replaced by built-in accelleration.
           accel_wget_command, accel_scp_command, accel_ftpget_command, accel_ftpput_command,
@@ -630,11 +630,11 @@ V2 to Sr3
           `Transfer <../Reference/flowcb.html#module-sarracenia.transfer>`_ class.
           Adding new transfer protocols is done by sub-classing Transfer.
           
-*SHOULD*: v2 on_message -> after_accept should be re-written `plugin porting <v2ToSr3.html>`_
+*SHOULD*: v2 on_message -> after_accept should be re-written `plugin porting <Plugins_v2ToSr3.html>`_
 
-*SHOULD*: v2 on_file -> after_work should be re-written `plugin porting <v2ToSr3.html>`_
+*SHOULD*: v2 on_file -> after_work should be re-written `plugin porting <Plugins_v2ToSr3.html>`_
 
-*SHOULD*: v2 plugins should to be re-written.  `plugin porting <v2ToSr3.html>`_
+*SHOULD*: v2 plugins should to be re-written.  `plugin porting <Plugins_v2ToSr3.html>`_
           there are many built-in plugins that are ported and automatically
           converted, but external ones must be re-written.
 
