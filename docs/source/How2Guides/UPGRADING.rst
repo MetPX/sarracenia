@@ -499,6 +499,18 @@ V2 to Sr3
 **CHANGE**: v2: *mirror* defaults to False on all components except sarra.
           sr3: *mirror* defaults to True on all components except subscribe.
 
+**CHANGE**: *strip* acts differently when posting in sr3. 
+
+          For subscribers, both versions act similarly, but the effect of post in sr3 is different.
+
+          v2: *strip* posts a complete Relpath value (not stripped) in the RelPath of the notification message.
+          the *rename* header contains the stripped path.
+
+          sr3: *strip* posts the stripped value in the RelPath, and the strip result in a *rename* field.
+
+          Full discussion: https://github.com/MetPX/sarracenia/issues/1506
+
+
 *NOTICE*: The most common v2 plugins are on_message, and on_file 
           (as per *plugin* and *on\_* directives in v2 configuration files) which can 
           be honoured via the `v2wrapper sr3 plugin class <../Reference/flowcb.html#module-sarracenia.flowcb.v2wrapper>`_
