@@ -3037,6 +3037,9 @@ class sr_GlobalState:
                     elif ( k == 'acceptUnmatched' ):
                             acceptUnmatched_explicit=line[1]
                             continue
+                    elif ( k == 'strip' ) and component in [ 'post' , 'watch' ]:
+                        v3_cfg.write("# Commenting strip option because it shouldn't be used in a post config in sr3. See https://github.com/MetPX/sarracenia/issues/1506")
+                        k = "\n# " + k
                     elif ( k == 'post_baseUrl' ) and line[1][-1] != '/':
                             line[1]+='/'
                             # see: https://github.com/MetPX/sarracenia/issues/841
