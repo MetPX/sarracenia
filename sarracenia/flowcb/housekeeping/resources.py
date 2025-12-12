@@ -50,11 +50,12 @@ class Resources(FlowCB):
     def __init__(self, options):
         super().__init__(options,logger)
         # Set option to neg value to determine if user set in config
+        self.o.add_option('CpuTimeMax', 'float', '0')
         self.o.add_option('MemoryMax', 'size', '0')
         self.o.add_option('MemoryBaseLineFile', 'count', 100)
         self.o.add_option('MemoryMultiplier', 'float', 3)
 
-        self.threshold = None
+        self.threshold_memory = None
         ''' Per-process maximum memory footprint that is considered too large, forcing a process restart.'''
         self.transferCount = 0
         self.msgCount = 0
@@ -66,15 +67,16 @@ class Resources(FlowCB):
             mem = 0
 
         ost = os.times()
+        cpu_system_time = ost.system
         logger.info(f"Current cpu_times: user={ost.user} system={ost.system}")
 
         # We must set a threshold **after** the config file has been parsed.
-        if self.threshold is None:
+        if self.threshold_memory is None:
             # If the config set something, use it.
             if self.o.MemoryMax != 0:
-                self.threshold = self.o.MemoryMax
+                self.threshold_memory = self.o.MemoryMax
 
-            if self.threshold is None:
+            if self.threshold_memory is None:
                 # No user input set, now to figure out what our baseline memory usage is at a steady state
                 #   Process MemoryBaseLineFile(s)+ then get a memory reading before setting memory restart threshold.
                 if (self.transferCount < self.o.MemoryBaseLineFile) and (
@@ -86,16 +88,28 @@ class Resources(FlowCB):
                         f"before self-setting threshold")
                     return True
 
-                self.threshold = int(self.o.MemoryMultiplier * mem)
+                self.threshold_memory = int(self.o.MemoryMultiplier * mem)
 
-            logger.info(f"Memory threshold set to: {naturalSize(self.threshold)}")
+
+            logger.info(f"Memory threshold set to: {naturalSize(self.threshold_memory)}")
 
         logger.info(
             f"Current Memory usage: {naturalSize(mem)} / "
-            f"{naturalSize(self.threshold)} = {(mem/self.threshold):.2%}"
+            f"{naturalSize(self.threshold_memory)} = {(mem/self.threshold_memory):.2%}"
         )
 
-        if mem > self.threshold:
+        if self.o.CpuTimeMax != 0:
+            logger.info(f"Current CPU time usage: {cpu_system_time}. CPU time threshold: {self.o.CpuTimeMax}.")
+
+        if mem > self.threshold_memory:
+            logger.info(
+                f"Memory threshold surpassed! Triggering a restart for '{sys.argv}' via '{sys.executable}'"
+            )
+            self.restart()
+        elif self.o.CpuTimeMax != 0 and cpu_system_time > self.o.CpuTimeMax:
+            logger.info(
+                f"CPU threshold surpassed! Triggering a restart for '{sys.argv}' via '{sys.executable}'"
+            )
             self.restart()
         # self.restart()
 
@@ -106,9 +120,6 @@ class Resources(FlowCB):
         Do an in-place restart of the current process (keeps pid).
         Gets a new memory stack/heap, keeps all file descriptors but replaces the buffers.
         """
-        logger.info(
-            f"Memory threshold surpassed! Triggering a restart for '{sys.argv}' via '{sys.executable}'"
-        )
         # First arg must be the program to be run (absolute path to program)
         # Second arg has to be python for windows, see how this affects the linux side of things..
         # Third arg is the name of the program you wish to run (should be full path to script) plus all the args.
@@ -134,10 +145,10 @@ class Resources(FlowCB):
 
     def after_work(self, worklist):
         self.transferCount += len(worklist.ok)
-        # if self.threshold is not None:
+        # if self.threshold_memory is not None:
         #    TODO: Remove this callback when issue #444 is implemented
 
     def after_accept(self, worklist):
         self.msgCount += len(worklist.incoming)
-        # if self.threshold is not None:
+        # if self.threshold_memory is not None:
         #    TODO: Remove this callback when issue #444 is implemented
