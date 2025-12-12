@@ -23,7 +23,7 @@ For further reading, see:
   about major changes between v2 and sr3
 - `Contribution/v03 <../Contribution/v03.html>`_ - in-depth documentation
   about sr3’s design and changes from v2
-- `How2Guides/v2ToSr3 <../How2Guides/v2ToSr3.html>`_ - detailed instructions
+- `How2Guides/Plugins_v2ToSr3 <../How2Guides/Plugins_v2ToSr3.html>`_ - detailed instructions
   for developers who want to port their v2 plugins to sr3
 
 Background Information

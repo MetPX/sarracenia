@@ -417,6 +417,17 @@ V2 to Sr3
 **CHANGEMENT**: v2 : *mirror* a la valeur false sur tous les composants à l’exception de sarra.
           sr3 : la valeur par défaut de *mirror* est True sur tous les composants, à l’exception de subscribe.
 
+**CHANGEMENT** : La fonction *strip* se comporte différemment lors de l'envoi de données dans SR3.
+
+          Pour les abonnés, les deux versions fonctionnent de manière similaire, mais l'effet de l'envoi dans SR3 diffère.
+
+          V2 : *strip* envoie la valeur RelPath complète (non tronquée) dans le champ RelPath du message de notification.
+          L'en-tête *rename* contient le chemin tronqué.
+
+          SR3 : *strip* envoie la valeur tronquée dans le champ RelPath, et et il est également placé dans l´entête *rename*.
+
+          Discussion complète (en anglais): https://github.com/MetPX/sarracenia/issues/1506
+
 *NOTICE* : Les plugins v2 les plus courants sont on_message, et on_file
           (selon les directives *plugin* et *on\_* dans les fichiers de configuration v2) qui peuvent
           être honoré via la classe de plugin `v2wrapper sr3 plugin class <../Reference/flowcb.html#module-sarracenia.flowcb.v2wrapper>`_
@@ -536,11 +547,11 @@ V2 to Sr3
           peut principalement être implémenté sous forme de plugins.
 
 **CHANGEMENT**: les plugins do_poll v2 doivent être remplacés par une sous-classification pour `poll <../Reference/flowcb.html#module-sarracenia.flowcb.poll>`_
-          Exemple dans  `plugin porting <v2ToSr3.html>`_
+          Exemple dans  `plugin porting <Plugins_v2ASr3.html>`_
 
 **CHANGEMENT**: Les plugins on_html_page v2 sont également remplacés par la sous-classification `poll <.. /Reference/flowcb.html#module-sarracenia.flowcb.poll>`_
 
-**CHANGEMENT**: v2 do_send remplacé par send entrypoint dans un plugin Flowcb `plugin portage <v2ToSr3.html>`_
+**CHANGEMENT**: v2 do_send remplacé par send entrypoint dans un plugin Flowcb `plugin portage <Plugins_v2ASr3.html>`_
 
 *NOTICE* : les plugins d’accélérateur v2 sont remplacés par l’accélérateur intégré.
           accel_wget_command, accel_scp_command, accel_ftpget_command, accel_ftpput_command,
@@ -548,11 +559,11 @@ V2 to Sr3
           `Transfer <../Reference/flowcb.html#module-sarracenia.transfer>`_.
           L’ajout de nouveaux protocoles de transfert se fait en sous-classant Transfer.
 
-*SHOULD*: v2 on_message -> after_accept doit être réécrit `portage de plugin <v2ToSr3.html>`_
+*SHOULD*: v2 on_message -> after_accept doit être réécrit `portage de plugin <Plugins_v2ASr3.html>`_
 
-*SHOULD*: v2 on_file -> after_work devrait être réécrit `portage de plugin <v2ToSr3.html>`_
+*SHOULD*: v2 on_file -> after_work devrait être réécrit `portage de plugin <Plugins_v2ASr3.html>`_
 
-*SHOULD* : les plugins v2 doivent être réécrits. `portage de plugin <v2ToSr3.html>`_
+*SHOULD* : les plugins v2 doivent être réécrits. `portage de plugin <Plugins_v2ASr3.html>`_
           il existe de nombreux plugins intégrés qui sont portés et automatiquement
           convertis, mais les externes doivent être réécrits.
 
