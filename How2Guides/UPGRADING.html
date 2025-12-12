@@ -22,7 +22,7 @@
     <script src="../_static/js/theme.js"></script>
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
-    <link rel="next" title="Porting V2 Plugins to Sr3" href="v2ToSr3.html" />
+    <link rel="next" title="Porting V2 Plugins to Sr3" href="Plugins_v2ToSr3.html" />
     <link rel="prev" title="Administering Rabbitmq Adddendum" href="Admin_Rabbit_Addendum.html" /> 
 </head>
 
@@ -55,8 +55,8 @@
 <li class="toctree-l2"><a class="reference internal" href="source.html">Data Sources</a></li>
 <li class="toctree-l2"><a class="reference internal" href="source.html#quickly-announcing-very-large-trees-on-linux">Quickly Announcing Very Large Trees On Linux</a></li>
 <li class="toctree-l2"><a class="reference internal" href="FlowCallbacks.html">Using Flow Callback Plugins</a></li>
-<li class="toctree-l2"><a class="reference internal" href="Admin.html">Administering AMQP Data Pumps</a></li>
-<li class="toctree-l2"><a class="reference internal" href="Admin_Rabbit_Addendum.html">Administering Rabbitmq Adddendum</a></li>
+<li class="toctree-l2"><a class="reference internal" href="Admin.html">Administering a Data Pump</a></li>
+<li class="toctree-l2"><a class="reference internal" href="Admin_Rabbit_Addendum.html">Administering Rabbitmq on a Data Pump</a></li>
 <li class="toctree-l2 current"><a class="current reference internal" href="#">Release Notes (Advice on Upgrades)</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="#installation-instructions">Installation Instructions</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#git">git</a></li>
@@ -82,9 +82,9 @@
 <li class="toctree-l3"><a class="reference internal" href="#v2-to-sr3">V2 to Sr3</a></li>
 </ul>
 </li>
-<li class="toctree-l2"><a class="reference internal" href="v2ToSr3.html">Porting V2 Plugins to Sr3</a></li>
+<li class="toctree-l2"><a class="reference internal" href="Plugins_v2ToSr3.html">Porting Plugins from v2 to Sr2</a></li>
 <li class="toctree-l2"><a class="reference internal" href="Email_Ingesting_With_Sarracenia.html">Email Ingesting with Sarracenia (v2)</a></li>
-<li class="toctree-l2"><a class="reference internal" href="Hydro_Examples.html">Using Plugins to Grab Hydrometric Data (v2)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="Hydro_Examples.html">Some Hydrometry Examples</a></li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="../Explanation/index.html">Explanation</a></li>
@@ -698,12 +698,22 @@ startup. Underscore is still use for grouping purposes. Options which have chang
 </tbody>
 </table>
 </div></blockquote>
-<dl>
+<dl class="simple">
 <dt><strong>CHANGE</strong>: default topic_prefix v02.post -&gt; topicPrefix  v03</dt><dd><p>may need to change configurations to override default to get
 compatible configurations.</p>
 </dd>
 <dt><strong>CHANGE</strong>: v2: <em>mirror</em> defaults to False on all components except sarra.</dt><dd><p>sr3: <em>mirror</em> defaults to True on all components except subscribe.</p>
 </dd>
+</dl>
+<p><strong>CHANGE</strong>: <em>strip</em> acts differently when posting in sr3.</p>
+<blockquote>
+<div><p>For subscribers, both versions act similarly, but the effect of post in sr3 is different.</p>
+<p>v2: <em>strip</em> posts a complete Relpath value (not stripped) in the RelPath of the notification message.
+the <em>rename</em> header contains the stripped path.</p>
+<p>sr3: <em>strip</em> posts the stripped value in the RelPath, and the strip result in a <em>rename</em> field.</p>
+<p>Full discussion: <a class="reference external" href="https://github.com/MetPX/sarracenia/issues/1506">https://github.com/MetPX/sarracenia/issues/1506</a></p>
+</div></blockquote>
+<dl>
 <dt><em>NOTICE</em>: The most common v2 plugins are on_message, and on_file</dt><dd><p>(as per <em>plugin</em> and <em>on_</em> directives in v2 configuration files) which can
 be honoured via the <a class="reference external" href="../Reference/flowcb.html#module-sarracenia.flowcb.v2wrapper">v2wrapper sr3 plugin class</a>
 Many other plugins were ported, and the the configuration module
@@ -819,11 +829,11 @@ unnecessary by changes in the implementation.</p>
 <dt><em>NOTICE</em>: for API users and plugin writers, the v2 plugin format is entirely replaced by</dt><dd><p>the <a class="reference external" href="FlowCallbacks.html">Flow Callback</a> class. New plugin functionality
 can mostly be implemented as plugins.</p>
 </dd>
-<dt><strong>CHANGE</strong>: the v2 do_poll plugins must be replaced by subclassing for <a class="reference external" href="../Reference/flowcb.html#module-sarracenia.flowcb.poll">poll</a></dt><dd><p>Example in <a class="reference external" href="v2ToSr3.html">plugin porting</a></p>
+<dt><strong>CHANGE</strong>: the v2 do_poll plugins must be replaced by subclassing for <a class="reference external" href="../Reference/flowcb.html#module-sarracenia.flowcb.poll">poll</a></dt><dd><p>Example in <a class="reference external" href="Plugins_v2ToSr3.html">plugin porting</a></p>
 </dd>
 </dl>
 <p><strong>CHANGE</strong>: The v2 on_html_page plugins are also replaced by subclassing <a class="reference external" href="../Reference/flowcb.html#module-sarracenia.flowcb.poll">poll</a></p>
-<p><strong>CHANGE</strong>: v2 do_send replaced by send entrypoint in a Flowcb plugin <a class="reference external" href="v2ToSr3.html">plugin porting</a></p>
+<p><strong>CHANGE</strong>: v2 do_send replaced by send entrypoint in a Flowcb plugin <a class="reference external" href="Plugins_v2ToSr3.html">plugin porting</a></p>
 <dl class="simple">
 <dt><em>NOTICE</em>: the v2 accellerator plugins are replaced by built-in accelleration.</dt><dd><p>accel_wget_command, accel_scp_command, accel_ftpget_command, accel_ftpput_command,
 accel_scp_command, are now built-in options used by the
@@ -831,10 +841,10 @@ accel_scp_command, are now built-in options used by the
 Adding new transfer protocols is done by sub-classing Transfer.</p>
 </dd>
 </dl>
-<p><em>SHOULD</em>: v2 on_message -&gt; after_accept should be re-written <a class="reference external" href="v2ToSr3.html">plugin porting</a></p>
-<p><em>SHOULD</em>: v2 on_file -&gt; after_work should be re-written <a class="reference external" href="v2ToSr3.html">plugin porting</a></p>
+<p><em>SHOULD</em>: v2 on_message -&gt; after_accept should be re-written <a class="reference external" href="Plugins_v2ToSr3.html">plugin porting</a></p>
+<p><em>SHOULD</em>: v2 on_file -&gt; after_work should be re-written <a class="reference external" href="Plugins_v2ToSr3.html">plugin porting</a></p>
 <dl>
-<dt><em>SHOULD</em>: v2 plugins should to be re-written.  <a class="reference external" href="v2ToSr3.html">plugin porting</a></dt><dd><p>there are many built-in plugins that are ported and automatically
+<dt><em>SHOULD</em>: v2 plugins should to be re-written.  <a class="reference external" href="Plugins_v2ToSr3.html">plugin porting</a></dt><dd><p>there are many built-in plugins that are ported and automatically
 converted, but external ones must be re-written.</p>
 <p>There are some performance consequences from this compatibility however, so high traffic
 flows will run with less cpu and memory load if the plugins are ported to sr3.
@@ -865,7 +875,7 @@ Ideally, one does not use <em>force_polling</em> at all.</p>
           </div>
           <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
         <a href="Admin_Rabbit_Addendum.html" class="btn btn-neutral float-left" title="Administering Rabbitmq Adddendum" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
-        <a href="v2ToSr3.html" class="btn btn-neutral float-right" title="Porting V2 Plugins to Sr3" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+        <a href="Plugins_v2ToSr3.html" class="btn btn-neutral float-right" title="Porting V2 Plugins to Sr3" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
     </div>
 
   <hr/>
