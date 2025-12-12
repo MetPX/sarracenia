@@ -177,14 +177,23 @@ on their __init__() routines::
       """
            options can be declared in any plugin. There are various *kind* of options, where the declared type modifies the parsing.
            
-           'count'      integer count type. 
+           'count'      integer count type.
+           'octal'      base-8 (octal) integer type.
            'duration'   a floating point number indicating a quantity of seconds (0.001 is 1 milisecond)
-                        modified by a unit suffix ( m-minute, h-hour, w-week ) 
+                        modified by a unit suffix ( m-minute, h-hour, w-week )
            'flag'       boolean (True/False) option.
+           'float'      a simple floating point number.
+
            'list'       a list of string values, each succeeding occurrence catenates to the total.
                         all v2 plugin options are declared of type list.
+
+           'set'        a set of string values, each succeeding occurrence is unioned to the total.
+                        if all_values is provided, then constrain set to that.
+
            'size'       integer size. Suffixes k, m, and g for kilo, mega, and giga (base 2) multipliers.
-           'str'        an arbitrary string value, as will all of the above types, each succeeding occurrence overrides the previous one.
+
+           'str'        an arbitrary string value, as will all of the above types, each
+                        succeeding occurrence overrides the previous one.
            
       """
 
