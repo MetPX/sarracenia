@@ -2517,10 +2517,11 @@ class Flow:
 
         self.o = options
         sendTo=self.o.sendTo 
+        start_time=time.perf_counter()
         logger.debug( f"{self.scheme}_transport sendTo: {sendTo}" )
         logger.debug("%s_transport send %s %s" %
                      (self.scheme, msg['new_dir'], msg['new_file']))
-
+ 
         if len(self.plugins['send']) > 0:
             ok = False
             for plugin in self.plugins['send']:
@@ -2914,10 +2915,10 @@ class Flow:
             if not self.o.dry_run:
                 self.set_remote_file_attributes(self.proto[self.scheme], new_file,
                                             msg)
+            end_time=time.perf_counter()
+            rate=msg['size']/(end_time-start_time)
 
-            logger.info('Sent: %s %s into %s/%s %d-%d' %
-                        (local_path, str_range, new_dir, new_file, offset,
-                         offset + msg['size'] - 1))
+            logger.info( f"Sent: {local_path} {str_range} into {new_dir}/{new_file} {offset}-{offset+msg['size']-1} rate: {rate:.2f}" )
 
             return 1
 
