@@ -239,11 +239,16 @@ class Log(FlowCB):
                 else:
                     verb = self.action_verb
 
+                if 'report' in msg and 'rate' in msg['report']:
+                    rate=f"rate: {msg['report']['rate']:.2f}"
+                else:
+                    rate=""
+
                 if ('new_dir' in msg) and ('new_file' in msg):
-                    logger.info("%s ok: %s " %
-                                (verb, msg['new_dir'] + '/' + msg['new_file']))
+                    logger.info( f"{verb} ok: {msg['new_dir']+'/'+msg['new_file']} {rate}" )
                 elif 'relPath' in msg:
-                    logger.info("%s ok: relPath: %s " % (verb, msg['relPath'] ))
+                    logger.info( f"{verb} ok: relPath: {relPath} {rate}" )
+
 
                 if self.o.logMessageDump:
                     logger.info('message: %s' % msg.dumps())

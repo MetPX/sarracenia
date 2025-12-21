@@ -1937,6 +1937,7 @@ class Flow:
 
         for msg in self.worklist.incoming:
 
+            start_time=time.perf_counter()
             if 'newname' in msg:
                 """
                   revamped rename algorithm requires only 1 message, ignore newname.
@@ -2062,7 +2063,10 @@ class Flow:
             # download content
             if 'content' in msg.keys():
                 if self.write_inline_file(msg):
+                    end_time=time.perf_counter()
+                    rate=msg['size']/(end_time-start_time)
                     msg.setReport(201, "Download successful (inline content)")
+                    msg['report']['rate']=rate
                     self.worklist.ok.append(msg)
                     self.metrics['flow']['transferRxLast'] = msg['report']['timeCompleted']
                     continue
@@ -2083,7 +2087,10 @@ class Flow:
                 ok = self.download(msg, self.o)
                 if ok == 1:
                     logger.debug("downloaded ok: %s" % new_path)
+                    end_time=time.perf_counter()
+                    rate=msg['size']/(end_time-start_time)
                     msg.setReport(201, "Download successful" )
+                    msg['report']['rate']=rate
                     # if content is present, but downloaded anyways, then it is no good, and should not be forwarded.
                     if 'content' in msg:
                         del msg['content']
@@ -2917,6 +2924,7 @@ class Flow:
                                             msg)
             end_time=time.perf_counter()
             rate=msg['size']/(end_time-start_time)
+            msg['report']['rate']=rate
 
             logger.info( f"Sent: {local_path} {str_range} into {new_dir}/{new_file} {offset}-{offset+msg['size']-1} rate: {rate:.2f}" )
 
