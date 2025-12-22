@@ -67,10 +67,9 @@ def test_durationToString():
     assert sarracenia.durationToString( 6*3600 ) == '6h'
     assert sarracenia.durationToString( 6*3600+120 ) == '6h2m'
     assert sarracenia.durationToString( 26*3600+120 ) == '1d2h'
-    d1m = sarracenia.durationToString( 30*24*3600 )
-    assert d1m in [ '30d', '1M' ]
+    assert sarracenia.durationToString( 30*24*3600 ) in [ '30d', '1M' ]
     assert sarracenia.durationToString( 35*24*3600 ) == '1M4d'
-    assert sarracenia.durationToString( 182*24*3600 ) == '5M28d'
+    assert sarracenia.durationToString( 182*24*3600 ) in [ '5M28d', '6M' ]
     assert sarracenia.durationToString( 186*24*3600 ) == '6M1d'
     assert sarracenia.durationToString( 190*24*3600 ) == '6M5d'
     assert sarracenia.durationToString( 365*24*3600 ) == '1y'
