@@ -103,7 +103,7 @@ class Log(FlowCB):
         if 'identity' in msg and 'value' in msg['identity']:
             s+=f"id: {msg['identity']['value'][0:7]} "
         if 'size' in msg:
-            s+=f"size: {msg['size']} "
+            s+=f"size: {naturalSize(msg['size'])} ({msg['size']}) "
         return s
         
     def _messagePostStr(self,msg):
@@ -240,7 +240,7 @@ class Log(FlowCB):
                     verb = self.action_verb
 
                 if 'report' in msg and 'rate' in msg['report']:
-                    rate=f"rate: {msg['report']['rate']:.2f}"
+                    rate=f"rate: {naturalSize(msg['report']['rate'])}/s ({msg['report']['rate']:.2f} B/s)"
                 else:
                     rate=""
 
