@@ -2926,7 +2926,12 @@ class Flow:
             rate=msg['size']/(end_time-start_time)
             msg['report']['rate']=rate
 
-            logger.info( f"Sent: {local_path} {str_range} into {new_dir}/{new_file} {offset}-{offset+msg['size']-1} rate: {rate:.2f}" )
+            if str_range:
+                offset_str=f"slice: {sarracenia.naturalSize(msg['size'])} {offset}-{offset+msg['size']-1}"
+                logger.info( f"block Sent: {local_path} {str_range} into {new_dir}/{new_file} {offset_str} rate: {sarracenia.naturalSize(rate)}/s ({rate:.2f})" )
+            else:
+                offset_str=f"size: {sarracenia.naturalSize(msg['size'])} ({msg['size']})"
+                logger.info( f"whole Sent: {local_path} into {new_dir}/{new_file} {offset_str} rate: {sarracenia.naturalSize(rate)}/s ({rate:.2f} B/s)" )
 
             return 1
 
