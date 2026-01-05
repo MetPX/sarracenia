@@ -220,7 +220,10 @@ class Log(FlowCB):
         for msg in worklist.ok:
             if 'size' in msg:
                 self.fileBytes += msg['size']
-                
+                size = f"size: {naturalSize(msg['size'])} ({msg['size']}) "
+            else:
+                size = ""
+
             if not self.o.download:
                 continue
 
@@ -245,9 +248,9 @@ class Log(FlowCB):
                     rate=""
 
                 if ('new_dir' in msg) and ('new_file' in msg):
-                    logger.info( f"{verb} ok: {msg['new_dir']+'/'+msg['new_file']} {rate}" )
+                    logger.info( f"{verb} ok: {msg['new_dir']+'/'+msg['new_file']} {size}{rate}" )
                 elif 'relPath' in msg:
-                    logger.info( f"{verb} ok: relPath: {msg['relPath']} {rate}" )
+                    logger.info( f"{verb} ok: relPath: {msg['relPath']} {size}{rate}" )
 
 
                 if self.o.logMessageDump:
