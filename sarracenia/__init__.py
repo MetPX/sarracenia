@@ -28,7 +28,6 @@ from ._version import __version__
 from base64 import b64decode, b64encode
 import calendar
 import datetime
-import humanize
 import importlib.util
 import io
 import logging
@@ -85,6 +84,9 @@ if features['humanize']['present']:
     def naturalTime( dur ):
         return humanize.naturaltime(dur)
 
+    def naturalDelta(value, months=True, minimum_unit='seconds'):
+        return humanize.naturaldelta(value, months=months, minimum_unit=minimum_unit)
+
 else:
   
     def naturalSize( num ):
@@ -92,6 +94,9 @@ else:
 
     def naturalTime( dur ):
        return "%g" % dur
+
+    def naturalDelta(value, months=True, minimum_unit='seconds'):
+        return "%d" % value
 
 
 if features['appdirs']['present']:
@@ -334,14 +339,14 @@ days_in_a_month=30.7
 
 def durationToString(d) -> str:
     """
-      given a numbner of seconds, return a short, human readable string.
+      given a number of seconds, return a short, human readable string.
 
       naturaldelta does not do weeks...
     """
     if (d < 60):
         return f"{d:7.2f}s"
 
-    hnd =  humanize.naturaldelta(d).replace("minute","m").replace("second","T").replace("hour","h").replace("day","d").replace("month","M").replace("year","y").replace(" ","").replace("s","").replace("T","s").replace("an", "1").replace("a","1")
+    hnd = naturalDelta(d).replace("minute","m").replace("second","T").replace("hour","h").replace("day","d").replace("month","M").replace("year","y").replace(" ","").replace("s","").replace("T","s").replace("an", "1").replace("a","1")
     
     if ',' in hnd:
         ( first_part, second_part ) = hnd.split(',')

@@ -24,7 +24,6 @@
 import calendar, datetime
 from hashlib import md5
 from hashlib import sha512
-import humanize
 import logging
 import os
 import random
@@ -36,7 +35,7 @@ import urllib
 import urllib.parse
 
 #from sarracenia.sr_xattr import *
-from sarracenia import nowflt, timestr2flt
+from sarracenia import nowflt, timestr2flt, naturalSize
 from sarracenia.featuredetection import features
 
 logger = logging.getLogger(__name__)
@@ -192,7 +191,7 @@ class Transfer():
         """
         now=nowflt()
         if now-self.lastLog > self.logMinimumInterval:
-            logger.info( f"{humanize.naturalsize(sz,binary=True)} written so far.")
+            logger.info( f"{naturalSize(sz)} written so far.")
             self.lastLog=now
 
     def local_read_close(self, src):
