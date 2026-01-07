@@ -61,6 +61,7 @@ The type of action to take. One of:
 
  - add:           copy to the list of available configurations.
  - cleanup:       deletes the component's resources on the server.
+ - clean-restart: stop, cleanup and then start the configuration.
  - convert:       copy configurations from v2 to sr3 location, updating on the way.
  - declare:       creates the component's resources on the server.
  - disable:       mark a configuration as ineligible to run.
