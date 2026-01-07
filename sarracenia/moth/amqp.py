@@ -234,7 +234,7 @@ class AMQP(Moth):
             if self.o['tlsRigour'] == 'lax':
                 sslarg = {
                     'cert_reqs' : ssl.CERT_NONE,
-                    'ssl_version':  ssl.PROTOCOL_TLS_CLIENT,
+                    'ssl_version':  ssl.PROTOCOL_TLS,
                     'server_hostname': None
                 }
             elif self.o['tlsRigour'] == 'strict':
