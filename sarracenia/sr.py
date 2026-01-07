@@ -165,7 +165,7 @@ class sr_GlobalState:
 
             # would like to forward things like --debug...
             for arg in sys.argv[1:-1]:
-                if arg in ['start', 'restart', 'run']:
+                if arg in ['start', 'clean-restart', 'restart', 'run']:
                     break
                 cmd.append(arg)
 
@@ -1796,11 +1796,8 @@ class sr_GlobalState:
             logging.error( f'{self.leftovers} configuration not found' )
             return
 
-        if len(self.filtered_configurations) > 1 :
-            if len(self.filtered_configurations) != self.options.dangerWillRobinson:
-                logging.error(
-                        f"specify --dangerWillRobinson=<number> of configs to cleanup (actual: {len(self.filtered_configurations)}, given: {self.options.dangerWillRobinson} ) when cleaning more than one")
-                return False
+        if not self.validate_dangerWillRobinson():
+            return False
 
         all_stopped=True
         for f in self.filtered_configurations:
@@ -3188,6 +3185,15 @@ class sr_GlobalState:
 
         return bad
 
+    def validate_dangerWillRobinson(self):
+        if len(self.filtered_configurations) > 1 :
+            if len(self.filtered_configurations) != self.options.dangerWillRobinson:
+                logging.error(
+                        f"specify --dangerWillRobinson=<number> of configs to cleanup (actual: {len(self.filtered_configurations)}, given: {self.options.dangerWillRobinson} ) when cleaning more than one")
+                return False
+        return True
+
+
     def _pid_running_foreground(self, pid):
         """Returns True if the specified pid is running in the foreground.
         Possible cases:
@@ -3343,7 +3349,7 @@ def main():
             logger.setLevel(logging.INFO)
 
     actions = [
-        'convert', 'declare', 'devsnap', 'dump', 'edit', 'features', 'log', 'overview', 'restart', 'run', 'sanity',
+        'clean-restart', 'convert', 'declare', 'devsnap', 'dump', 'edit', 'features', 'log', 'overview', 'restart', 'run', 'sanity',
         'setup', 'show', 'status', 'start', 'stop'
     ]
 
@@ -3434,6 +3440,16 @@ def main():
     elif action == 'restart':
         print('stopping: ', end='', flush=True)
         gs.stop()
+        print('starting: ', end='', flush=True)
+        gs.start()
+
+    elif action == 'clean-restart':
+        if not gs.validate_dangerWillRobinson():
+            sys.exit(1)
+        print('stopping: ', end='', flush=True)
+        gs.stop()
+        print('cleanup: ', end='', flush=True)
+        gs.cleanup()
         print('starting: ', end='', flush=True)
         gs.start()
 

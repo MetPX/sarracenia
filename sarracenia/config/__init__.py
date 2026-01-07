@@ -708,7 +708,7 @@ class Config:
     ]
 
     actions = [
-        'add', 'cleanup', 'convert', 'devsnap', 'declare', 'disable', 'dump', 'edit',
+        'add', 'cleanup', 'clean-restart', 'convert', 'devsnap', 'declare', 'disable', 'dump', 'edit',
         'enable', 'features', 'foreground', 'log', 'list', 'remove', 'restart', 'run', 'sanity',
         'setup', 'show', 'start', 'stop', 'status', 'overview'
     ]
