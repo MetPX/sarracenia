@@ -36,6 +36,7 @@ from sarracenia.postformat import PostFormat
 from sarracenia.moth import Moth
 from sarracenia.interruptible_sleep import interruptible_sleep
 import os
+import ssl
 
 import time
 from urllib.parse import unquote
@@ -67,6 +68,7 @@ default_options = {
     'topicPrefix': ['v03'],
     'vhost': '/',
 }
+
 
 
 class AMQP(Moth):
@@ -228,13 +230,32 @@ class AMQP(Moth):
         if broker.url.path != '/' and broker.url.path != '':
             vhost = broker.url.path.strip('/')
 
+        if broker.url.scheme[-1] == 's':
+            if self.o['tlsRigour'] == 'lax':
+                sslarg = {
+                    'cert_reqs' : ssl.CERT_NONE,
+                    'ssl_version':  ssl.PROTOCOL_TLS,
+                    'server_hostname': None
+                }
+            elif self.o['tlsRigour'] == 'strict':
+                sslarg = {
+                      'cert_reqs' : ssl.CERT_REQUIRED,  # aka ssl.VerifyMode
+                      'ssl_version':  ssl.PROTOCOL_TLS_CLIENT,
+                      #'ciphers': set(ssl.OP_NO_TLSv1|ssl.OP_NO_TLSv1_1),
+                      'server_hostname': broker.url.hostname
+                }
+            else:
+                sslarg = True 
+        else:
+            sslarg=False
+        
         self.connection = amqp.Connection(host=host,
                                           userid=broker.url.username,
                                           password=unquote(
                                               broker.url.password),
                                           login_method=broker.login_method,
                                           virtual_host=vhost,
-                                          ssl=(broker.url.scheme[-1] == 's'),
+                                          ssl=sslarg,
                                           client_properties={'product':'MetPX Sarracenia (sr3)',
                                                              'product_version':sarracenia.__version__,
                                                             }
