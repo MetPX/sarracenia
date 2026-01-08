@@ -120,6 +120,7 @@
 <span class="kn">from</span> <span class="nn">sarracenia.moth</span> <span class="kn">import</span> <span class="n">Moth</span>
 <span class="kn">from</span> <span class="nn">sarracenia.interruptible_sleep</span> <span class="kn">import</span> <span class="n">interruptible_sleep</span>
 <span class="kn">import</span> <span class="nn">os</span>
+<span class="kn">import</span> <span class="nn">ssl</span>
 
 <span class="kn">import</span> <span class="nn">time</span>
 <span class="kn">from</span> <span class="nn">urllib.parse</span> <span class="kn">import</span> <span class="n">unquote</span>
@@ -151,6 +152,7 @@
     <span class="s1">&#39;topicPrefix&#39;</span><span class="p">:</span> <span class="p">[</span><span class="s1">&#39;v03&#39;</span><span class="p">],</span>
     <span class="s1">&#39;vhost&#39;</span><span class="p">:</span> <span class="s1">&#39;/&#39;</span><span class="p">,</span>
 <span class="p">}</span>
+
 
 
 <div class="viewcode-block" id="AMQP">
@@ -317,13 +319,32 @@
         <span class="k">if</span> <span class="n">broker</span><span class="o">.</span><span class="n">url</span><span class="o">.</span><span class="n">path</span> <span class="o">!=</span> <span class="s1">&#39;/&#39;</span> <span class="ow">and</span> <span class="n">broker</span><span class="o">.</span><span class="n">url</span><span class="o">.</span><span class="n">path</span> <span class="o">!=</span> <span class="s1">&#39;&#39;</span><span class="p">:</span>
             <span class="n">vhost</span> <span class="o">=</span> <span class="n">broker</span><span class="o">.</span><span class="n">url</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">strip</span><span class="p">(</span><span class="s1">&#39;/&#39;</span><span class="p">)</span>
 
+        <span class="k">if</span> <span class="n">broker</span><span class="o">.</span><span class="n">url</span><span class="o">.</span><span class="n">scheme</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">==</span> <span class="s1">&#39;s&#39;</span><span class="p">:</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">o</span><span class="p">[</span><span class="s1">&#39;tlsRigour&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="s1">&#39;lax&#39;</span><span class="p">:</span>
+                <span class="n">sslarg</span> <span class="o">=</span> <span class="p">{</span>
+                    <span class="s1">&#39;cert_reqs&#39;</span> <span class="p">:</span> <span class="n">ssl</span><span class="o">.</span><span class="n">CERT_NONE</span><span class="p">,</span>
+                    <span class="s1">&#39;ssl_version&#39;</span><span class="p">:</span>  <span class="n">ssl</span><span class="o">.</span><span class="n">PROTOCOL_TLS</span><span class="p">,</span>
+                    <span class="s1">&#39;server_hostname&#39;</span><span class="p">:</span> <span class="kc">None</span>
+                <span class="p">}</span>
+            <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">o</span><span class="p">[</span><span class="s1">&#39;tlsRigour&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="s1">&#39;strict&#39;</span><span class="p">:</span>
+                <span class="n">sslarg</span> <span class="o">=</span> <span class="p">{</span>
+                      <span class="s1">&#39;cert_reqs&#39;</span> <span class="p">:</span> <span class="n">ssl</span><span class="o">.</span><span class="n">CERT_REQUIRED</span><span class="p">,</span>  <span class="c1"># aka ssl.VerifyMode</span>
+                      <span class="s1">&#39;ssl_version&#39;</span><span class="p">:</span>  <span class="n">ssl</span><span class="o">.</span><span class="n">PROTOCOL_TLS_CLIENT</span><span class="p">,</span>
+                      <span class="c1">#&#39;ciphers&#39;: set(ssl.OP_NO_TLSv1|ssl.OP_NO_TLSv1_1),</span>
+                      <span class="s1">&#39;server_hostname&#39;</span><span class="p">:</span> <span class="n">broker</span><span class="o">.</span><span class="n">url</span><span class="o">.</span><span class="n">hostname</span>
+                <span class="p">}</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">sslarg</span> <span class="o">=</span> <span class="kc">True</span> 
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">sslarg</span><span class="o">=</span><span class="kc">False</span>
+        
         <span class="bp">self</span><span class="o">.</span><span class="n">connection</span> <span class="o">=</span> <span class="n">amqp</span><span class="o">.</span><span class="n">Connection</span><span class="p">(</span><span class="n">host</span><span class="o">=</span><span class="n">host</span><span class="p">,</span>
                                           <span class="n">userid</span><span class="o">=</span><span class="n">broker</span><span class="o">.</span><span class="n">url</span><span class="o">.</span><span class="n">username</span><span class="p">,</span>
                                           <span class="n">password</span><span class="o">=</span><span class="n">unquote</span><span class="p">(</span>
                                               <span class="n">broker</span><span class="o">.</span><span class="n">url</span><span class="o">.</span><span class="n">password</span><span class="p">),</span>
                                           <span class="n">login_method</span><span class="o">=</span><span class="n">broker</span><span class="o">.</span><span class="n">login_method</span><span class="p">,</span>
                                           <span class="n">virtual_host</span><span class="o">=</span><span class="n">vhost</span><span class="p">,</span>
-                                          <span class="n">ssl</span><span class="o">=</span><span class="p">(</span><span class="n">broker</span><span class="o">.</span><span class="n">url</span><span class="o">.</span><span class="n">scheme</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">==</span> <span class="s1">&#39;s&#39;</span><span class="p">),</span>
+                                          <span class="n">ssl</span><span class="o">=</span><span class="n">sslarg</span><span class="p">,</span>
                                           <span class="n">client_properties</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;product&#39;</span><span class="p">:</span><span class="s1">&#39;MetPX Sarracenia (sr3)&#39;</span><span class="p">,</span>
                                                              <span class="s1">&#39;product_version&#39;</span><span class="p">:</span><span class="n">sarracenia</span><span class="o">.</span><span class="n">__version__</span><span class="p">,</span>
                                                             <span class="p">}</span>
