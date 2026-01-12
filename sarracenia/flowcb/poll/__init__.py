@@ -218,7 +218,8 @@ class Poll(FlowCB):
             entry.st_mtime = time.mktime(t)
 
         # size is rounded, need a way to be more precise.
-        #entry.st_size = file_size_fix(words[-1])
+        if self.o.acceptSizeWrong:
+            entry.st_size = file_size_fix(words[-1])
 
         if self.myfname[-1] != '/':
             entry.st_mode = 0o755
