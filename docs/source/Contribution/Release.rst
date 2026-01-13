@@ -368,7 +368,32 @@ Once the above are done, the pre-release process can proceed.
 Versioning Scheme
 ~~~~~~~~~~~~~~~~~
 
-Each release will be versioned as ``<version>.<YY>.<MM> <segment>``
+After Sr3 v3.01, the MetPX project has adopted semantic versioning (based on ideas like
+https://packaging.python.org/en/latest/specifications/version-specifiers/ )
+Versions are described there as having major.minor.micro components.
+Where future release should increment the minor number (indicating maintenance or 
+incrementally improving features), and when incompatibilities arise, the major number 
+is incremented as well. The micro release number would be used for releases that
+contain bugfixes exclusively. An example series of versions would be:
+
+ * 3.01
+ * 3.02 (initial feature release after 3.01), 
+ * 3.02.01 (oops, just a quick bug-fix)
+ * 3.02.02 (second bug-fix release.)
+ * 3.03  (next stable feature release.)
+
+Note that the tags in the git repo should include a *v* prefix.
+During pre-stable sr3 development, 3.00.iircj convention was used,
+where:
+
+  * ii -- incremental number of pre-releases of 3.00
+
+  * j -- beta increment.
+
+In stable releases, the micro release number is likely going to be used more
+often than beta increments.
+
+For Sundew, and Sarracenia v2.x, releases are versioned as ``<version>.<YY>.<MM> <segment>``
 
 It is difficult to reconcile debian and python versioning conventions. 
 We use rcX for pre-releases which work in both contexts.
@@ -384,13 +409,6 @@ Where:
   X.Y     # Final release
   X.ypN   #ack! patched release.
 
-Currently, 3.00 is still stabilizing, so the year/month convention is not being applied.
-Releases are currently  3.00.iircj
-where:
-
-  * ii -- incremental number of pre-releases of 3.00
-
-  * j -- beta increment.
 
 The first alpha release of v2 from January 2016 would be versioned 
 as ``metpx-sarracenia-2.16.01a01``. A sample v3 is v3.00.52rc2. At some point 3.00 
@@ -412,6 +430,9 @@ Stable should receive bug-fixes if necessary from time to time.
       Changing the default requires the removal and recreation of the resource.
       This has a major impact on processes...
 
+.. Note:: More Info: https://github.com/MetPX/sarracenia/issues/1544
+
+—
 
 Set the Version
 ~~~~~~~~~~~~~~~
