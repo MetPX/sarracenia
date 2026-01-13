@@ -2088,9 +2088,10 @@ class Flow:
                 if ok == 1:
                     logger.debug("downloaded ok: %s" % new_path)
                     end_time=time.perf_counter()
-                    rate=msg['size']/(end_time-start_time)
                     msg.setReport(201, "Download successful" )
-                    msg['report']['rate']=rate
+                    if 'size' in msg:
+                        rate=msg['size']/(end_time-start_time)
+                        msg['report']['rate']=rate
                     # if content is present, but downloaded anyways, then it is no good, and should not be forwarded.
                     if 'content' in msg:
                         del msg['content']
@@ -2214,6 +2215,24 @@ class Flow:
                     logger.debug( "details:", exc_info=True )
 
                 if not ok: return 0
+
+            # try to fill in missing info in msg if they are not set by the plugin
+            # if they are already set, don't override, assume the plugin set them correctly
+            local_file = os.path.join(new_dir, new_file)
+            if 'identity' not in msg:
+                try:
+                    msg.computeIdentity(local_file)
+                except Exception as e:
+                    logger.warning(f"failed to set msg['identity']: {e}")
+                    logger.debug("Exception details:", exc_info=True)
+            if 'size' not in msg:
+                try:
+                    msg.setSize(local_file)
+                except Exception as e:
+                    logger.warning(f"failed to set msg['size']: {e}")
+                    logger.debug("Exception details:", exc_info=True)
+
+            # if we get here, download was successful
             return 1
 
         if self.o.dry_run:

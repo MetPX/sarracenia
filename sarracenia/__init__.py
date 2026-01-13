@@ -506,7 +506,6 @@ class Message(dict):
         self['_format'] = 'v03'
         self['_deleteOnPost'] = set(['_format'])
 
-
     def computeIdentity(msg, path, o, offset=0, data=None) -> None:
         """
            check extended attributes for a cached identity sum calculation.
@@ -574,6 +573,9 @@ class Message(dict):
         else: # a "normal" calculation method, liks sha512, or md5
             sumalgo = sarracenia.identity.Identity.factory(calc_method)
             sumalgo.set_path(path)
+
+            if 'size' not in msg:
+                msg.setSize(path)
 
             # compute checksum
             if calc_method in ['md5', 'sha512']:
@@ -940,6 +942,13 @@ class Message(dict):
 
         msg['report'] = {'code': code, 'timeCompleted': nowstr(), 'message': text}
         msg['_deleteOnPost'] |= set(['report'])
+
+    def setSize(msg, path) -> None:
+        """ Attempt to set the size field in the message, from the provided file path. (File must exist on disk).
+            Can be used to fix an incorrect size in the message (any existing msg['size'] is ignored and replaced).
+        """
+        if os.path.exists(path):
+            msg['size'] = os.path.getsize(path)
 
     def updatePaths(msg, options, new_dir=None, new_file=None, publisher_index=0):
         """
