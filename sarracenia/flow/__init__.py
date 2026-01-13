@@ -2221,7 +2221,7 @@ class Flow:
             local_file = os.path.join(new_dir, new_file)
             if 'identity' not in msg:
                 try:
-                    msg.computeIdentity(local_file)
+                    msg.computeIdentity(local_file, options)
                 except Exception as e:
                     logger.warning(f"failed to set msg['identity']: {e}")
                     logger.debug("Exception details:", exc_info=True)
