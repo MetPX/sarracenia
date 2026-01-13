@@ -1192,8 +1192,8 @@ class Message(dict):
         opath=msg['new_dir'] + os.sep + msg['new_file']
 
         if not os.path.isdir(msg['new_dir']):
-            if self.o.permDirDefault != 0:
-                os.makedirs(msg['new_dir'],mode=self.o.permDirDefault, exist_ok=True)
+            if options.permDirDefault != 0:
+                os.makedirs(msg['new_dir'],mode=options.permDirDefault, exist_ok=True)
             else:
                 os.makedirs(msg['new_dir'], exist_ok=True)
 
@@ -1214,10 +1214,10 @@ class Message(dict):
         try:
             with open(opath, 'wb') as f:
                sz=f.write(data)
-            if self.o.permDefault != 0:
-                os.chmod(opath,mode=self.o.permDefault)
+            if options.permDefault != 0:
+                os.chmod(opath,mode=options.permDefault)
             msg['size'] = sz
-            msg.computeIdentity(opath,self.o,data=data)
+            msg.computeIdentity(opath,options,data=data)
         except Exception as ex:
             logger.error( f"problem with {opath}: {ex}" )
 
