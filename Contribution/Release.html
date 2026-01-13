@@ -8,15 +8,15 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Releasing MetPX-Sarracenia &mdash; Sarracenia 3.01.01rc1 documentation</title>
       <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=80d5e7a1" />
-      <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=e59714d7" />
+      <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=9edc463e" />
 
   
     <link rel="shortcut icon" href="../_static/sarra_horror_culture_favicon.png"/>
       <script src="../_static/jquery.js?v=5d32c60e"></script>
       <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
       <script src="../_static/documentation_options.js?v=6e32622f"></script>
-      <script src="../_static/doctools.js?v=9bcbadda"></script>
-      <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
+      <script src="../_static/doctools.js?v=fd6eb6e6"></script>
+      <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
       <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
       <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script src="../_static/js/theme.js"></script>
@@ -129,7 +129,7 @@
 <dd class="field-odd"><p>3.01.01rc1</p>
 </dd>
 <dt class="field-even">date<span class="colon">:</span></dt>
-<dd class="field-even"><p>Jan 08, 2026</p>
+<dd class="field-even"><p>Jan 13, 2026</p>
 </dd>
 </dl>
 <section id="pre-release-overview">
@@ -525,7 +525,34 @@ tests: static, no_mirror, flakey_broker, restart_server, dynamic_flow:</p>
 </section>
 <section id="versioning-scheme">
 <h3>Versioning Scheme<a class="headerlink" href="#versioning-scheme" title="Link to this heading"></a></h3>
-<p>Each release will be versioned as <code class="docutils literal notranslate"><span class="pre">&lt;version&gt;.&lt;YY&gt;.&lt;MM&gt;</span> <span class="pre">&lt;segment&gt;</span></code></p>
+<p>After Sr3 v3.01, the MetPX project has adopted semantic versioning (based on ideas like
+<a class="reference external" href="https://packaging.python.org/en/latest/specifications/version-specifiers/">https://packaging.python.org/en/latest/specifications/version-specifiers/</a> )
+Versions are described there as having major.minor.micro components.
+Where future release should increment the minor number (indicating maintenance or
+incrementally improving features), and when incompatibilities arise, the major number
+is incremented as well. The micro release number would be used for releases that
+contain bugfixes exclusively. An example series of versions would be:</p>
+<blockquote>
+<div><ul class="simple">
+<li><p>3.01</p></li>
+<li><p>3.02 (initial feature release after 3.01),</p></li>
+<li><p>3.02.01 (oops, just a quick bug-fix)</p></li>
+<li><p>3.02.02 (second bug-fix release.)</p></li>
+<li><p>3.03  (next stable feature release.)</p></li>
+</ul>
+</div></blockquote>
+<p>Note that the tags in the git repo should include a <em>v</em> prefix.
+During pre-stable sr3 development, 3.00.iircj convention was used,
+where:</p>
+<blockquote>
+<div><ul class="simple">
+<li><p>ii – incremental number of pre-releases of 3.00</p></li>
+<li><p>j – beta increment.</p></li>
+</ul>
+</div></blockquote>
+<p>In stable releases, the micro release number is likely going to be used more
+often than beta increments.</p>
+<p>For Sundew, and Sarracenia v2.x, releases are versioned as <code class="docutils literal notranslate"><span class="pre">&lt;version&gt;.&lt;YY&gt;.&lt;MM&gt;</span> <span class="pre">&lt;segment&gt;</span></code></p>
 <p>It is difficult to reconcile debian and python versioning conventions.
 We use rcX for pre-releases which work in both contexts.</p>
 <p>Where:</p>
@@ -539,15 +566,6 @@ X.YrcN  # Release Candidate
 X.Y     # Final release
 X.ypN   #ack! patched release.</p></li>
 </ul>
-<p>Currently, 3.00 is still stabilizing, so the year/month convention is not being applied.
-Releases are currently  3.00.iircj
-where:</p>
-<blockquote>
-<div><ul class="simple">
-<li><p>ii – incremental number of pre-releases of 3.00</p></li>
-<li><p>j – beta increment.</p></li>
-</ul>
-</div></blockquote>
 <p>The first alpha release of v2 from January 2016 would be versioned
 as <code class="docutils literal notranslate"><span class="pre">metpx-sarracenia-2.16.01a01</span></code>. A sample v3 is v3.00.52rc2. At some point 3.00
 will be complete &amp; solid enough that the we will resume the year/month convention.</p>
@@ -567,6 +585,11 @@ setting, the access to the resource will not be granted by the server.
 <p>Changing the default requires the removal and recreation of the resource.
 This has a major impact on processes…</p>
 </div>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>More Info: <a class="reference external" href="https://github.com/MetPX/sarracenia/issues/1544">https://github.com/MetPX/sarracenia/issues/1544</a></p>
+</div>
+<p>—</p>
 </section>
 <section id="set-the-version">
 <h3>Set the Version<a class="headerlink" href="#set-the-version" title="Link to this heading"></a></h3>

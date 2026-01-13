@@ -8,15 +8,15 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Étude de cas : Mise en miroir HPC &mdash; Sarracenia 3.01.01rc1 documentation</title>
       <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=80d5e7a1" />
-      <link rel="stylesheet" type="text/css" href="../../../_static/css/theme.css?v=e59714d7" />
+      <link rel="stylesheet" type="text/css" href="../../../_static/css/theme.css?v=9edc463e" />
 
   
     <link rel="shortcut icon" href="../../../_static/sarra_horror_culture_favicon.png"/>
       <script src="../../../_static/jquery.js?v=5d32c60e"></script>
       <script src="../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
       <script src="../../../_static/documentation_options.js?v=6e32622f"></script>
-      <script src="../../../_static/doctools.js?v=9bcbadda"></script>
-      <script src="../../../_static/sphinx_highlight.js?v=dc90522c"></script>
+      <script src="../../../_static/doctools.js?v=fd6eb6e6"></script>
+      <script src="../../../_static/sphinx_highlight.js?v=6ffebe34"></script>
       <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
       <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script src="../../../_static/js/theme.js"></script>
@@ -139,7 +139,7 @@ pour cette application, tandis que les systèmes de fichiers sont également uti
 applications d’utilisateur normales.</p>
 <p>Alors que ce projet a dû souffrir à travers le développement, avec les leçons apprises et les outils
 maintenant disponible, il devrait être simple d’appliquer cette solution à d’autres cas. Le résultat final est
-que l’on ajoute une <a class="reference external" href="https://en.wikipedia.org/wiki/Shim_(computing)">Bibliothèque Shim</a> à l’environnement des utilisateurs (transparent pour les tâches des utilisateurs), et
+que l’on ajoute une <a href="#id2"><span class="problematic" id="id3">`Bibliothèque Shim`_</span></a> à l’environnement des utilisateurs (transparent pour les tâches des utilisateurs), et
 puis chaque fois qu’un fichier est écrit, un message AMQP avec les métadonnées du fichier est publié. Un pool de
 démons de transfert sont prêts à transférer les fichiers publiés dans une file d’attente partagée. Le nombre d’abonnés
 est programmable et évolutif, et les techniques et la topologie pour effectuer le transfert sont toutes facilement
@@ -166,7 +166,7 @@ maintiennent l’horaire.</p>
 </section>
 <section id="presentation-de-la-solution-hpcr">
 <h3>Présentation de la solution HPCR<a class="headerlink" href="#presentation-de-la-solution-hpcr" title="Link to this heading"></a></h3>
-<a class="reference internal image-reference" href="../../../_images/HPC-XC_High_Availability.png"><img alt="../../../_images/HPC-XC_High_Availability.png" src="../../../_images/HPC-XC_High_Availability.png" style="width: 1078.44px; height: 846.7800000000001px;" />
+<a class="reference internal image-reference" href="../../../_images/HPC-XC_High_Availability.png"><img alt="../../../_images/HPC-XC_High_Availability.png" height="847" src="../../../_images/HPC-XC_High_Availability.png" width="1078" />
 </a>
 <p>Dans le diagramme ci-dessus, si les opérations se trouvent dans le hall de données 1 (à gauche du centre)
 et qu’elles échouent, l’objectif est de reprendre les opérations rapidement à partir du Data Hall 2

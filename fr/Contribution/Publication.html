@@ -8,15 +8,15 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Publier une Version de MetPX-Sarracenia &mdash; Sarracenia 3.01.01rc1 documentation</title>
       <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=80d5e7a1" />
-      <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=e59714d7" />
+      <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=9edc463e" />
 
   
     <link rel="shortcut icon" href="../../_static/sarra_horror_culture_favicon.png"/>
       <script src="../../_static/jquery.js?v=5d32c60e"></script>
       <script src="../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
       <script src="../../_static/documentation_options.js?v=6e32622f"></script>
-      <script src="../../_static/doctools.js?v=9bcbadda"></script>
-      <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
+      <script src="../../_static/doctools.js?v=fd6eb6e6"></script>
+      <script src="../../_static/sphinx_highlight.js?v=6ffebe34"></script>
       <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
       <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script src="../../_static/js/theme.js"></script>
@@ -120,7 +120,7 @@
 <dd class="field-odd"><p>3.01.01rc1</p>
 </dd>
 <dt class="field-even">date<span class="colon">:</span></dt>
-<dd class="field-even"><p>Jan 08, 2026</p>
+<dd class="field-even"><p>Jan 13, 2026</p>
 </dd>
 </dl>
 <section id="processus-de-pre-publication">
@@ -306,7 +306,32 @@ tests : statique, no_mirror, flakey_broker, restart_server, Dynamic_flow</p>
 </section>
 <section id="schema-de-controle-de-version">
 <h3>Schéma de contrôle de version<a class="headerlink" href="#schema-de-controle-de-version" title="Link to this heading"></a></h3>
-<p>Chaque version sera versionnée en tant que <code class="docutils literal notranslate"><span class="pre">&lt;protocol</span> <span class="pre">version&gt;.&lt;YY&gt;.&lt;MM&gt;</span> <span class="pre">&lt;segment&gt;</span></code></p>
+<p>Après la version 3.01 de Sr3, le projet MetPX a adopté le versionnage sémantique (inspiré de concepts tels que :</p>
+<p><a class="reference external" href="https://packaging.python.org/en/latest/specifications/version-specifiers/">https://packaging.python.org/en/latest/specifications/version-specifiers/</a>).</p>
+<p>Les versions y sont décrites comme ayant des composantes majeure, mineure et micro.</p>
+<p>Lorsqu’une nouvelle version est publiée, le numéro mineur est incrémenté (indiquant une maintenance ou
+une amélioration progressive des fonctionnalités). En cas d’incompatibilités, le numéro majeur
+est également incrémenté. Le numéro de micro est utilisé pour les versions contenant exclusivement
+des correctifs de bogues. Voici un exemple de série de versions :</p>
+<ul class="simple">
+<li><p>3.01</p></li>
+<li><p>3.02 (première version avec des améliorations après la 3.01)</p></li>
+<li><p>3.02.01 (correction de bug rapide)</p></li>
+<li><p>3.02.02 (deuxième version corrective)</p></li>
+<li><p>3.03 (prochaine version stable incluant des améliorations)</p></li>
+</ul>
+<p>Notez que les étiquettes dans le dépôt Git doivent commencer par un <em>v</em>.</p>
+<p>Durant le dévéloppement du 3.00, la convention année/mois n´avais pas été appliquée.
+Les versions étaient 3.00.iibj où:</p>
+<blockquote>
+<div><ul class="simple">
+<li><p>ii – nombre incrémentiel de versions préliminaires de 3.00</p></li>
+<li><p>j – incrément bêta.</p></li>
+</ul>
+</div></blockquote>
+<p>Dans les versions stables, le numéro de micro-version sera probablement utilisé plus souvent
+que les incréments bêta.</p>
+<p>Pour Sundew et Sarra v2, les versions ont la forme: <code class="docutils literal notranslate"><span class="pre">&lt;protocol</span> <span class="pre">version&gt;.&lt;YY&gt;.&lt;MM&gt;</span> <span class="pre">&lt;segment&gt;</span></code></p>
 <p>Où:</p>
 <ul class="simple">
 <li><p><strong>version du protocole</strong> est la version du message. Dans les messages de notification Sarra,
@@ -321,16 +346,6 @@ X.YrcN  # Version Candidate
 X.Y     # Version Final
 X.ypN   #ack! Version corrigé.</p></li>
 </ul>
-<p>Actuellement, 3.00 est toujours stabilisé, de sorte que la convention année/mois n’est pas appliquée.
-Les versions sont actuellement 3.00.iibj où:</p>
-<blockquote>
-<div><ul class="simple">
-<li><p>ii – nombre incrémentiel de versions préliminaires de 3.00</p></li>
-<li><p>j – incrément bêta.</p></li>
-</ul>
-</div></blockquote>
-<p>À un moment donné, 3.00 sera complet et suffisamment solide pour que nous
-reprenions la convention année/mois, espérons-le 3.24.</p>
 <p>Les versions finales n’ont pas de suffixe et sont considérées comme stables.
 Stable devrait recevoir des corrections de bugs si nécessaire de temps en temps.</p>
 </section>

@@ -8,15 +8,15 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Case Study: HPC Mirroring &mdash; Sarracenia 3.01.01rc1 documentation</title>
       <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=80d5e7a1" />
-      <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=e59714d7" />
+      <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=9edc463e" />
 
   
     <link rel="shortcut icon" href="../../_static/sarra_horror_culture_favicon.png"/>
       <script src="../../_static/jquery.js?v=5d32c60e"></script>
       <script src="../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
       <script src="../../_static/documentation_options.js?v=6e32622f"></script>
-      <script src="../../_static/doctools.js?v=9bcbadda"></script>
-      <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
+      <script src="../../_static/doctools.js?v=fd6eb6e6"></script>
+      <script src="../../_static/sphinx_highlight.js?v=6ffebe34"></script>
       <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
       <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script src="../../_static/js/theme.js"></script>
@@ -134,7 +134,7 @@ the operational cluster is 20 Terabytes per day (231 mbytes/second) for this app
 the file systems are used for all the normal user applications as well.</p>
 <p>While this project had to suffer through the development, with the lessons learned and the tools
 now available, it should be straightforward to apply this solution to other cases. The end result is
-that one adds a <a class="reference external" href="https://en.wikipedia.org/wiki/Shim_(computing)">Shim Library</a> to the users’ environment (transparent to user jobs), and
+that one adds a <a href="#id2"><span class="problematic" id="id3">`Shim Library`_</span></a> to the users’ environment (transparent to user jobs), and
 then every time a file is written, an AMQP message with file metadata is posted. A pool of transfer
 daemons are standing by to transfer the files posted to a shared queue. The number of subscribers
 is programmable and scalable, and the techniques and topology to do the transfer are all easily
@@ -160,7 +160,7 @@ maintain schedule.</p>
 </section>
 <section id="hpcr-solution-overview">
 <h3>HPCR Solution Overview<a class="headerlink" href="#hpcr-solution-overview" title="Link to this heading"></a></h3>
-<a class="reference internal image-reference" href="../../_images/HPC-XC_High_Availability.png"><img alt="../../_images/HPC-XC_High_Availability.png" src="../../_images/HPC-XC_High_Availability.png" style="width: 1078.44px; height: 846.7800000000001px;" />
+<a class="reference internal image-reference" href="../../_images/HPC-XC_High_Availability.png"><img alt="../../_images/HPC-XC_High_Availability.png" height="847" src="../../_images/HPC-XC_High_Availability.png" width="1078" />
 </a>
 <p>In the diagram above, if operations are in Data Hall 1 (left of centre) and they fail, then the goal is to resume
 operations promptly from Data Hall 2 (on the right). For this to be realistic, production data must be available
