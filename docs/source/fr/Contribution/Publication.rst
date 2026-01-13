@@ -162,7 +162,35 @@ Une fois les étapes ci-dessus terminées, le processus de pré-version peut con
 Schéma de contrôle de version
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Chaque version sera versionnée en tant que ``<protocol version>.<YY>.<MM> <segment>``
+Après la version 3.01 de Sr3, le projet MetPX a adopté le versionnage sémantique (inspiré de concepts tels que :
+
+https://packaging.python.org/en/latest/specifications/version-specifiers/).
+
+Les versions y sont décrites comme ayant des composantes majeure, mineure et micro.
+
+Lorsqu'une nouvelle version est publiée, le numéro mineur est incrémenté (indiquant une maintenance ou
+une amélioration progressive des fonctionnalités). En cas d'incompatibilités, le numéro majeur 
+est également incrémenté. Le numéro de micro est utilisé pour les versions contenant exclusivement 
+des correctifs de bogues. Voici un exemple de série de versions :
+
+* 3.01
+* 3.02 (première version avec des améliorations après la 3.01)
+* 3.02.01 (correction de bug rapide)
+* 3.02.02 (deuxième version corrective)
+* 3.03 (prochaine version stable incluant des améliorations)
+
+Notez que les étiquettes dans le dépôt Git doivent commencer par un *v*.
+
+Durant le dévéloppement du 3.00, la convention année/mois n´avais pas été appliquée.
+Les versions étaient 3.00.iibj où:
+
+  * ii -- nombre incrémentiel de versions préliminaires de 3.00
+  * j -- incrément bêta.
+
+Dans les versions stables, le numéro de micro-version sera probablement utilisé plus souvent
+que les incréments bêta.
+
+Pour Sundew et Sarra v2, les versions ont la forme: ``<protocol version>.<YY>.<MM> <segment>``
 
 Où:
 
@@ -177,15 +205,6 @@ Où:
   X.YrcN  # Version Candidate
   X.Y     # Version Final
   X.ypN   #ack! Version corrigé.
-
-Actuellement, 3.00 est toujours stabilisé, de sorte que la convention année/mois n’est pas appliquée.
-Les versions sont actuellement 3.00.iibj où:
-
-  * ii -- nombre incrémentiel de versions préliminaires de 3.00
-  * j -- incrément bêta.
-
-À un moment donné, 3.00 sera complet et suffisamment solide pour que nous
-reprenions la convention année/mois, espérons-le 3.24.
 
 Les versions finales n'ont pas de suffixe et sont considérées comme stables.
 Stable devrait recevoir des corrections de bugs si nécessaire de temps en temps.
@@ -203,7 +222,7 @@ Stable devrait recevoir des corrections de bugs si nécessaire de temps en temps
        La modification de la valeur par défaut nécessite la suppression et la recréation de la ressource.
        Cela a un impact majeur sur les processus...
 
-
+.. Remarque : Plus d´informations (en anglais): https://github.com/MetPX/sarracenia/issues/1544
 Définir la version
 ~~~~~~~~~~~~~~~~~~
 
