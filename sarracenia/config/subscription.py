@@ -61,6 +61,9 @@ class Subscription(dict):
             aqa = getattr(options, a)
             aqa_dict = {}
             for arg in aqa:
+                if '=' not in arg:
+                    logger.error(f"invalid amqp_queue_args line: {arg} (key and value must be separated by =)")
+                    continue
                 k, v = arg.split('=', maxsplit=1)
                 v = sarracenia.config.guess_type(v.strip())
                 aqa_dict[k] = v
