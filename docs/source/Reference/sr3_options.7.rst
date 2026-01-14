@@ -427,6 +427,44 @@ If the check of the upstream server fails, or the retrieve itself has failed,
 then it puts the resource on the retry queue for later attempts.
 
 
+amqp_queue_args <list> (default: not set)
+-----------------------------------------
+
+*Only applies to subscriptions to AMQP brokers.*
+
+This option is used to define optional queue arguments. The arguments that can be
+defined depend on the broker software and version used. For
+example, `RabbitMQ <https://www.rabbitmq.com/docs/queues#optional-arguments>`_.
+
+Human-friendly values (e.g. ``1m`` for 1-minute) are **not supported**. You must
+use the unit expected by the broker.
+
+Note: any queue arguments that are already defined by other sr3 options that are
+also defined in ``amqp_queue_args`` will be **overriden** by the value from
+``amqp_queue_args``. This applies to:
+
+==================== =====================
+sr3 option           AMQP Queue Argument
+==================== =====================
+``expire``           ``x-expires``
+``messageAgeMax``    ``x-message-ttl``
+``queueType``        ``x-queue-type``
+==================== =====================
+
+Warning: no validation is performed on these arguments. sr3 does not know what
+arguments are supported by the broker, so it can't check if you have specified
+an unsupported option.
+
+For example: ::
+
+  # x-consumer-timeout: if an ack is not received within this timeframe, the broker
+  # will assume the message has been lost. (3600000 ms = 1 hour)
+  amqp_queue_args x-consumer-timeout=3600000
+
+  expire 5m
+  # this overrides the x-expires 5 minute expiration to 3600000 ms
+  amqp_queue_args x-expires=3600000
+
 attempts <count> (default: 3)
 -----------------------------
 

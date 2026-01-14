@@ -432,6 +432,43 @@ Si la vérification du serveur en amont échoue, ou si la récupération elle-m�
 alors la ressource est placée dans la file d'attente de nouvelles tentatives pour des tentatives ultérieures.
 
 
+amqp_queue_args <liste> (défaut: non défini)
+--------------------------------------------
+
+*S'applique uniquement aux abonnements aux serveurs AMQP.*
+
+Cette option permet de définir des arguments de file d'attente optionnels. Les arguments
+disponibles dépendent du logiciel et de la version du serveur AMQP utilisé. Par exemple,
+`RabbitMQ <https://www.rabbitmq.com/docs/queues#optional-arguments>`_.
+
+Les valeurs lisibles par l'utilisateur (par exemple, ``1m`` pour 1 minute) ne sont
+**pas prises en charge**. Vous devez utiliser l'unité attendue par le serveur.
+
+Remarque : tout argument de file d'attente déjà défini par d'autres options sr3 et
+également défini dans ``amqp_queue_args`` sera **remplaçant** la valeur de
+``amqp_queue_args``. Ceci s'applique à :
+
+=================== ===============================
+Option sr3          Argument de file d'attente AMQP
+=================== ===============================
+``expire``           ``x-expires``
+``messageAgeMax``    ``x-message-ttl``
+``queueType``        ``x-queue-type``
+=================== ===============================
+
+Avertissement : aucune validation n'est effectuée sur ces arguments. sr3 ne connaît pas les
+arguments pris en charge par le broker et ne peut donc pas vérifier si vous avez spécifié
+une option non prise en charge.
+
+Par exemple : ::
+
+  # x-consumer-timeout : si aucun accusé de réception n'est reçu dans ce délai, le broker
+  # considérera que le message a été perdu. (3600000 ms = 1 heure)
+  amqp_queue_args x-consumer-timeout=3600000
+
+  expire 5m
+  # Ceci remplace l'expiration de 5 minutes par 3600000 ms
+  amqp_queue_args x-expires=3600000
 
 attempts <count> (défaut: 3)
 -----------------------------
