@@ -314,6 +314,9 @@ class AMQP(Moth):
                 if 'type' in queue and queue['type'] is not None:
                     x = queue['type']
                     if x in ['classic', 'quorum', 'stream']: args['x-queue-type'] = x
+                # values in amqp_queue_args will override any values that were just set above
+                if 'amqp_queue_args' in queue and queue['amqp_queue_args'] is not None:
+                    args.update(queue['amqp_queue_args'])
 
                 #FIXME: convert expire, message_ttl to proper units.
                 if self.o['dry_run']:

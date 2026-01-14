@@ -3,10 +3,11 @@ import copy
 import json
 import os
 
+import sarracenia.config
+
 import logging
 
 logger = logging.getLogger(__name__)
-
 
 class Subscription(dict):
 
@@ -50,6 +51,21 @@ class Subscription(dict):
                 'max_queued_messages',  'prefetch', 'qos', 'receiveMaximum', 'tlsRigour', 'topic' ]:
             if hasattr(options, a):
                 self['queue'][a] = getattr(options,a)
+
+        # parse list option amqp_queue_args, e.g.:
+        #   amqp_queue_args x-consumer-timeout=12345
+        a = 'amqp_queue_args'
+        if hasattr(options, a):
+            if not self['broker'].url.scheme.lower().startswith('amqp'):
+                logger.warning(f"{a} option is set, but broker scheme is not AMQP(S): {self['broker']}")
+            aqa = getattr(options, a)
+            aqa_dict = {}
+            for arg in aqa:
+                k, v = arg.split('=', maxsplit=1)
+                v = sarracenia.config.guess_type(v.strip())
+                aqa_dict[k] = v
+            self['queue'][a] = aqa_dict
+
         self['baseDir'] = options.baseDir
 
 
