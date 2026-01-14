@@ -27,6 +27,7 @@ import sys
 import time
 import urllib, urllib.parse
 
+from ast import literal_eval
 from random import randint
 
 if sys.version_info[0] >= 3 and sys.version_info[1] < 8:
@@ -164,7 +165,7 @@ duration_options = [
     'runStateThreshold_idle', 'runStateThreshold_lag', 'retry_ttl', 'runStateThreshold_hung', 'sleep', 'timeout', 'varTimeOffset'
 ]
 
-list_options = [ 'path', 'vip' ]
+list_options = [ 'amqp_queue_args', 'path', 'vip' ]
 
 # set, valid values of the set.
 set_options = [ 'logEvents', 'fileEvents' ]
@@ -180,8 +181,8 @@ perm_options = [ 'permDefault', 'permDirDefault','permLog']
 
 # options that apply to queues, and so must appear before subtopic resolves queues characteristics.
 #
-queue_options = [ 'auto_delete', 'broker', 'clean_session', 'durable', 'exchange', 'exchangeSuffix',  \
-                  'expire', 'max_inflight_messages', 'max_queued_messages',  'prefetch',  \
+queue_options = [ 'amqp_queue_args', 'auto_delete', 'broker', 'clean_session', 'durable', 'exchange',   \
+                  'exchangeSuffix', 'expire', 'max_inflight_messages', 'max_queued_messages',  'prefetch',  \
                  'qos', 'queueBind',  'queueDeclare' , 'receiveMaximum', 'tlsRigour']
 
 size_options = ['accelThreshold', 'blockSize', 'bufSize', 'byteRateMax', 'fileSizeMax', 'inlineByteMax']
@@ -648,6 +649,15 @@ def config_path(subdir, config, mandatory=True, ctype='conf'):
 
     return False, config
 
+def guess_type(value:str):
+    """ try to parse a string into any type (int, float, string, etc.).
+        return the original string if anything goes wrong.
+    """
+    try:
+        value = literal_eval(value)
+    except Exception as e:
+        logger.debug(e)
+    return value
 
 class Config:
     r"""
