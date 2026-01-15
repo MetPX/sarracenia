@@ -38,12 +38,29 @@ Instructions d’installation
 git
 ---
 
-3.0.59
-------
+3.02.00
+-------
+
+*CHANGEMENT*: ``messageRateMax`` s'applique désormais *après* le filtrage d'acceptation/rejet.
+Dans les versions précédentes, il limitait le débit des messages *avant* le filtrage.
 
 
-*CHANGEMENT* : les *bindings* de l'API Python sont remplacées par des *subscriptions*. L'API est très différente, voir les exemples.
-Les *subscriptions* permettent l'usage  de plusieurs files d'attente et de plusieurs courtiers pour les abonnements.
+3.01.00
+-------
+
+*NOTICE* : vous pouvez désormais vous abonner à plusieurs courtiers et publier sur plusieurs
+post_brokers avec une seule configuration.
+
+*CHANGEMENT* : Les liaisons de l'API Python sont remplacées par les abonnements.
+L'API est très différente ; consultez les exemples.
+Les abonnements permettent la gestion de plusieurs files d'attente et de plusieurs courtiers.
+
+*CHANGEMENT* : Les paramètres ``post_`` de l'API Python sont remplacés par les ``publisher``s.
+Il est désormais nécessaire de créer la structure ``sarracenia.config.publisher.Publisher``
+pour publier des messages. Cela permet la publication vers plusieurs destinations.
+
+*CHANGEMENT* : L'API Python *sarracenia.moth.default_options* est remplacée par *sarracenia.moth.default_options()*.
+Cette méthode génère une copie modifiable des paramètres par défaut, au lieu du fichier options d'origine.
 
 
 3.0.58
