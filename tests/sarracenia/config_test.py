@@ -516,3 +516,9 @@ def test_multi():
                               'template': 'q_${BROKER_USER}.${COMPONENT}.${CONFIG}',
                               'tlsRigour': 'normal'}}] )
      """
+
+def test_guess_type():
+     assert type(sarracenia.config.guess_type('123')) == int
+     assert type(sarracenia.config.guess_type('abc')) == str
+     assert type(sarracenia.config.guess_type('3.14')) == float
+     assert type(sarracenia.config.guess_type('')) == str
