@@ -1213,9 +1213,9 @@ Ceci est normalement utilisé pour le débogage uniquement.
 messageRateMax <float> (défaut: 0)
 ----------------------------------
 
-Si **messageRateMax** est supérieur à zéro, le flux essaye de respecter cette vitesse de livraison en termes de
-messages d´annonce par seconde. Notez que la limitation est sur les messages d´annonce obtenus ou générés par seconde, avant le
-filtrage accept/reject. Le flux va dormir pour limiter le taux de traitement.
+Si **messageRateMax** est supérieur à zéro, le flux essaie de respecter cette vitesse de livraison en termes de
+messages annoncés par seconde. Notez que la limitation est sur le taux de messages après le
+filtrage accepter/rejeter. Le flux va dormir pour limiter le taux de traitement.
 
 
 messageRateMin <float> (défaut: 0)
