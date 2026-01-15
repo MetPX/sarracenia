@@ -78,6 +78,7 @@
 <li class="toctree-l4"><a class="reference internal" href="#sarracenia.config.get_metrics_filename"><code class="docutils literal notranslate"><span class="pre">get_metrics_filename()</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="#sarracenia.config.get_pid_filename"><code class="docutils literal notranslate"><span class="pre">get_pid_filename()</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="#sarracenia.config.get_user_cache_dir"><code class="docutils literal notranslate"><span class="pre">get_user_cache_dir()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#sarracenia.config.guess_type"><code class="docutils literal notranslate"><span class="pre">guess_type()</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="#sarracenia.config.logger"><code class="docutils literal notranslate"><span class="pre">logger</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="#sarracenia.config.no_file_config"><code class="docutils literal notranslate"><span class="pre">no_file_config()</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="#sarracenia.config.octal_number"><code class="docutils literal notranslate"><span class="pre">octal_number</span></code></a></li>
@@ -926,6 +927,13 @@ and if the parsing fails there, the usage will print the wrong defaults…</p>
 <dt class="sig sig-object py" id="sarracenia.config.get_user_cache_dir">
 <span class="sig-prename descclassname"><span class="pre">sarracenia.config.</span></span><span class="sig-name descname"><span class="pre">get_user_cache_dir</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">hostdir</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/sarracenia/config.html#get_user_cache_dir"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#sarracenia.config.get_user_cache_dir" title="Link to this definition"></a></dt>
 <dd><p>hostdir = None if statehost is false,</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="sarracenia.config.guess_type">
+<span class="sig-prename descclassname"><span class="pre">sarracenia.config.</span></span><span class="sig-name descname"><span class="pre">guess_type</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">value</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/sarracenia/config.html#guess_type"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#sarracenia.config.guess_type" title="Link to this definition"></a></dt>
+<dd><p>try to parse a string into any type (int, float, string, etc.).
+return the original string if anything goes wrong.</p>
 </dd></dl>
 
 <dl class="py data">

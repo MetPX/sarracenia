@@ -110,6 +110,7 @@
 <span class="kn">import</span> <span class="nn">time</span>
 <span class="kn">import</span> <span class="nn">urllib</span><span class="o">,</span> <span class="nn">urllib.parse</span>
 
+<span class="kn">from</span> <span class="nn">ast</span> <span class="kn">import</span> <span class="n">literal_eval</span>
 <span class="kn">from</span> <span class="nn">random</span> <span class="kn">import</span> <span class="n">randint</span>
 
 <span class="k">if</span> <span class="n">sys</span><span class="o">.</span><span class="n">version_info</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">&gt;=</span> <span class="mi">3</span> <span class="ow">and</span> <span class="n">sys</span><span class="o">.</span><span class="n">version_info</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">&lt;</span> <span class="mi">8</span><span class="p">:</span>
@@ -259,7 +260,7 @@
     <span class="s1">&#39;runStateThreshold_idle&#39;</span><span class="p">,</span> <span class="s1">&#39;runStateThreshold_lag&#39;</span><span class="p">,</span> <span class="s1">&#39;retry_ttl&#39;</span><span class="p">,</span> <span class="s1">&#39;runStateThreshold_hung&#39;</span><span class="p">,</span> <span class="s1">&#39;sleep&#39;</span><span class="p">,</span> <span class="s1">&#39;timeout&#39;</span><span class="p">,</span> <span class="s1">&#39;varTimeOffset&#39;</span>
 <span class="p">]</span>
 
-<span class="n">list_options</span> <span class="o">=</span> <span class="p">[</span> <span class="s1">&#39;path&#39;</span><span class="p">,</span> <span class="s1">&#39;vip&#39;</span> <span class="p">]</span>
+<span class="n">list_options</span> <span class="o">=</span> <span class="p">[</span> <span class="s1">&#39;amqp_queue_args&#39;</span><span class="p">,</span> <span class="s1">&#39;path&#39;</span><span class="p">,</span> <span class="s1">&#39;vip&#39;</span> <span class="p">]</span>
 
 <span class="c1"># set, valid values of the set.</span>
 <span class="n">set_options</span> <span class="o">=</span> <span class="p">[</span> <span class="s1">&#39;logEvents&#39;</span><span class="p">,</span> <span class="s1">&#39;fileEvents&#39;</span> <span class="p">]</span>
@@ -275,8 +276,8 @@
 
 <span class="c1"># options that apply to queues, and so must appear before subtopic resolves queues characteristics.</span>
 <span class="c1">#</span>
-<span class="n">queue_options</span> <span class="o">=</span> <span class="p">[</span> <span class="s1">&#39;auto_delete&#39;</span><span class="p">,</span> <span class="s1">&#39;broker&#39;</span><span class="p">,</span> <span class="s1">&#39;clean_session&#39;</span><span class="p">,</span> <span class="s1">&#39;durable&#39;</span><span class="p">,</span> <span class="s1">&#39;exchange&#39;</span><span class="p">,</span> <span class="s1">&#39;exchangeSuffix&#39;</span><span class="p">,</span>  \
-                  <span class="s1">&#39;expire&#39;</span><span class="p">,</span> <span class="s1">&#39;max_inflight_messages&#39;</span><span class="p">,</span> <span class="s1">&#39;max_queued_messages&#39;</span><span class="p">,</span>  <span class="s1">&#39;prefetch&#39;</span><span class="p">,</span>  \
+<span class="n">queue_options</span> <span class="o">=</span> <span class="p">[</span> <span class="s1">&#39;amqp_queue_args&#39;</span><span class="p">,</span> <span class="s1">&#39;auto_delete&#39;</span><span class="p">,</span> <span class="s1">&#39;broker&#39;</span><span class="p">,</span> <span class="s1">&#39;clean_session&#39;</span><span class="p">,</span> <span class="s1">&#39;durable&#39;</span><span class="p">,</span> <span class="s1">&#39;exchange&#39;</span><span class="p">,</span>   \
+                  <span class="s1">&#39;exchangeSuffix&#39;</span><span class="p">,</span> <span class="s1">&#39;expire&#39;</span><span class="p">,</span> <span class="s1">&#39;max_inflight_messages&#39;</span><span class="p">,</span> <span class="s1">&#39;max_queued_messages&#39;</span><span class="p">,</span>  <span class="s1">&#39;prefetch&#39;</span><span class="p">,</span>  \
                  <span class="s1">&#39;qos&#39;</span><span class="p">,</span> <span class="s1">&#39;queueBind&#39;</span><span class="p">,</span>  <span class="s1">&#39;queueDeclare&#39;</span> <span class="p">,</span> <span class="s1">&#39;receiveMaximum&#39;</span><span class="p">,</span> <span class="s1">&#39;tlsRigour&#39;</span><span class="p">]</span>
 
 <span class="n">size_options</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;accelThreshold&#39;</span><span class="p">,</span> <span class="s1">&#39;blockSize&#39;</span><span class="p">,</span> <span class="s1">&#39;bufSize&#39;</span><span class="p">,</span> <span class="s1">&#39;byteRateMax&#39;</span><span class="p">,</span> <span class="s1">&#39;fileSizeMax&#39;</span><span class="p">,</span> <span class="s1">&#39;inlineByteMax&#39;</span><span class="p">]</span>
@@ -763,6 +764,18 @@
 
     <span class="k">return</span> <span class="kc">False</span><span class="p">,</span> <span class="n">config</span></div>
 
+
+<div class="viewcode-block" id="guess_type">
+<a class="viewcode-back" href="../../api-documentation.html#sarracenia.config.guess_type">[docs]</a>
+<span class="k">def</span> <span class="nf">guess_type</span><span class="p">(</span><span class="n">value</span><span class="p">:</span><span class="nb">str</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot; try to parse a string into any type (int, float, string, etc.).</span>
+<span class="sd">        return the original string if anything goes wrong.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="n">value</span> <span class="o">=</span> <span class="n">literal_eval</span><span class="p">(</span><span class="n">value</span><span class="p">)</span>
+    <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="n">e</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">value</span></div>
 
 
 <div class="viewcode-block" id="Config">

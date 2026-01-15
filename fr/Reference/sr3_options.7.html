@@ -112,7 +112,7 @@
 <dd class="field-odd"><p>7</p>
 </dd>
 <dt class="field-even">Date<span class="colon">:</span></dt>
-<dd class="field-even"><p>Jan 13, 2026</p>
+<dd class="field-even"><p>Jan 15, 2026</p>
 </dd>
 <dt class="field-odd">Version<span class="colon">:</span></dt>
 <dd class="field-odd"><p>3.01.01rc1</p>
@@ -494,6 +494,49 @@ Dans les deux cas, le fichier téléchargé et le message correspondant sont tou
 rejetés.</p>
 <p>Si la vérification du serveur en amont échoue, ou si la récupération elle-même a échoué,
 alors la ressource est placée dans la file d’attente de nouvelles tentatives pour des tentatives ultérieures.</p>
+</section>
+<section id="amqp-queue-args-liste-defaut-non-defini">
+<h4>amqp_queue_args &lt;liste&gt; (défaut: non défini)<a class="headerlink" href="#amqp-queue-args-liste-defaut-non-defini" title="Link to this heading"></a></h4>
+<p><em>S’applique uniquement aux abonnements aux serveurs AMQP.</em></p>
+<p>Cette option permet de définir des arguments de file d’attente optionnels. Les arguments
+disponibles dépendent du logiciel et de la version du serveur AMQP utilisé. Par exemple,
+<a class="reference external" href="https://www.rabbitmq.com/docs/queues#optional-arguments">RabbitMQ</a>.</p>
+<p>Les valeurs lisibles par l’utilisateur (par exemple, <code class="docutils literal notranslate"><span class="pre">1m</span></code> pour 1 minute) ne sont
+<strong>pas prises en charge</strong>. Vous devez utiliser l’unité attendue par le serveur.</p>
+<p>Remarque : tout argument de file d’attente déjà défini par d’autres options sr3 et
+également défini dans <code class="docutils literal notranslate"><span class="pre">amqp_queue_args</span></code> sera <strong>remplaçant</strong> la valeur de
+<code class="docutils literal notranslate"><span class="pre">amqp_queue_args</span></code>. Ceci s’applique à :</p>
+<table class="docutils align-default">
+<thead>
+<tr class="row-odd"><th class="head"><p>Option sr3</p></th>
+<th class="head"><p>Argument de file d’attente AMQP</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">expire</span></code></p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">x-expires</span></code></p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">messageAgeMax</span></code></p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">x-message-ttl</span></code></p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">queueType</span></code></p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">x-queue-type</span></code></p></td>
+</tr>
+</tbody>
+</table>
+<p>Avertissement : aucune validation n’est effectuée sur ces arguments. sr3 ne connaît pas les
+arguments pris en charge par le broker et ne peut donc pas vérifier si vous avez spécifié
+une option non prise en charge.</p>
+<p>Par exemple :</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="c1"># x-consumer-timeout : si aucun accusé de réception n&#39;est reçu dans ce délai, le broker</span>
+<span class="c1"># considérera que le message a été perdu. (3600000 ms = 1 heure)</span>
+<span class="n">amqp_queue_args</span> <span class="n">x</span><span class="o">-</span><span class="n">consumer</span><span class="o">-</span><span class="n">timeout</span><span class="o">=</span><span class="mi">3600000</span>
+
+<span class="n">expire</span> <span class="mi">5</span><span class="n">m</span>
+<span class="c1"># Ceci remplace l&#39;expiration de 5 minutes par 3600000 ms</span>
+<span class="n">amqp_queue_args</span> <span class="n">x</span><span class="o">-</span><span class="n">expires</span><span class="o">=</span><span class="mi">3600000</span>
+</pre></div>
+</div>
 </section>
 <section id="attempts-count-defaut-3">
 <h4>attempts &lt;count&gt; (défaut: 3)<a class="headerlink" href="#attempts-count-defaut-3" title="Link to this heading"></a></h4>

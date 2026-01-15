@@ -113,7 +113,7 @@
 <dd class="field-odd"><p>7</p>
 </dd>
 <dt class="field-even">Date<span class="colon">:</span></dt>
-<dd class="field-even"><p>Jan 13, 2026</p>
+<dd class="field-even"><p>Jan 15, 2026</p>
 </dd>
 <dt class="field-odd">Version<span class="colon">:</span></dt>
 <dd class="field-odd"><p>3.01.01rc1</p>
@@ -488,6 +488,49 @@ In the both cases, the file downloaded and the corresponding message are both
 discarded.</p>
 <p>If the check of the upstream server fails, or the retrieve itself has failed,
 then it puts the resource on the retry queue for later attempts.</p>
+</section>
+<section id="amqp-queue-args-list-default-not-set">
+<h4>amqp_queue_args &lt;list&gt; (default: not set)<a class="headerlink" href="#amqp-queue-args-list-default-not-set" title="Link to this heading"></a></h4>
+<p><em>Only applies to subscriptions to AMQP brokers.</em></p>
+<p>This option is used to define optional queue arguments. The arguments that can be
+defined depend on the broker software and version used. For
+example, <a class="reference external" href="https://www.rabbitmq.com/docs/queues#optional-arguments">RabbitMQ</a>.</p>
+<p>Human-friendly values (e.g. <code class="docutils literal notranslate"><span class="pre">1m</span></code> for 1-minute) are <strong>not supported</strong>. You must
+use the unit expected by the broker.</p>
+<p>Note: any queue arguments that are already defined by other sr3 options that are
+also defined in <code class="docutils literal notranslate"><span class="pre">amqp_queue_args</span></code> will be <strong>overriden</strong> by the value from
+<code class="docutils literal notranslate"><span class="pre">amqp_queue_args</span></code>. This applies to:</p>
+<table class="docutils align-default">
+<thead>
+<tr class="row-odd"><th class="head"><p>sr3 option</p></th>
+<th class="head"><p>AMQP Queue Argument</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">expire</span></code></p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">x-expires</span></code></p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">messageAgeMax</span></code></p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">x-message-ttl</span></code></p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">queueType</span></code></p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">x-queue-type</span></code></p></td>
+</tr>
+</tbody>
+</table>
+<p>Warning: no validation is performed on these arguments. sr3 does not know what
+arguments are supported by the broker, so it can’t check if you have specified
+an unsupported option.</p>
+<p>For example:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="c1"># x-consumer-timeout: if an ack is not received within this timeframe, the broker</span>
+<span class="c1"># will assume the message has been lost. (3600000 ms = 1 hour)</span>
+<span class="n">amqp_queue_args</span> <span class="n">x</span><span class="o">-</span><span class="n">consumer</span><span class="o">-</span><span class="n">timeout</span><span class="o">=</span><span class="mi">3600000</span>
+
+<span class="n">expire</span> <span class="mi">5</span><span class="n">m</span>
+<span class="c1"># this overrides the x-expires 5 minute expiration to 3600000 ms</span>
+<span class="n">amqp_queue_args</span> <span class="n">x</span><span class="o">-</span><span class="n">expires</span><span class="o">=</span><span class="mi">3600000</span>
+</pre></div>
+</div>
 </section>
 <section id="attempts-count-default-3">
 <h4>attempts &lt;count&gt; (default: 3)<a class="headerlink" href="#attempts-count-default-3" title="Link to this heading"></a></h4>
