@@ -1823,13 +1823,17 @@ class Flow:
                         self.metrics['flow']['transferRxLast'] = msg['report']['timeCompleted']
                         # When it's a broken symlink, the upstream doesn't exist and we can't compare. The download
                         # will always fail. So return True and *don't fall through* to download for symlinks.
-                        return ('link' in msg['fileOp'])
+                        # Likewise, we can't "download" a directory. Once the directory has been renamed, fileOp
+                        # processing is complete. Return True and *don't fall through* to download
+                        # for directory rename fileOps (same as mkdir or rmdir).
+                        return ('link' in msg['fileOp'] or 'directory' in msg['fileOp'])
 
                     # if rename of *file* fails, fall through to download
-                    elif 'link' not in msg['fileOp'] and 'hlink' not in msg['fileOp']:
+                    elif ('link' not in msg['fileOp'] and 'hlink' not in msg['fileOp']
+                          and 'directory' not in msg['fileOp']):
                         return False # fall through to download
 
-                    # else: rename of link fails, retry until it succeeds (or expires from retry)
+                    # else: rename of link or directory fails, retry until it succeeds (or expires from retry)
 
             ## REMOVE DIRECTORY
             elif ('directory' in msg['fileOp']) and ('remove' in msg['fileOp'] ):
