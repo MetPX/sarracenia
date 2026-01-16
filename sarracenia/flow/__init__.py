@@ -1911,6 +1911,11 @@ class Flow:
                     logger.info( f"since hard link failed, fall back to copying from source" )
                     return False # fall through to download code
 
+            if self._stop_requested:
+                logger.info( f"stop requested deferring fileOp {msg['fileOp']} -> {new_path}" )
+                self.worklist.failed.append(msg)
+                return True
+
             attempt += 1
 
         # once attempts is exceeded, queue for retry later by putting the msg into worklist.failed
@@ -1955,6 +1960,11 @@ class Flow:
 
             new_path = msg['new_dir'] + os.path.sep + msg['new_file']
             new_file = msg['new_file']
+
+            if self._stop_requested:
+                logger.info(f"stop requested, deferring transfer of {new_file}")
+                self.worklist.failed.append(msg)
+                continue
 
             if not os.path.isdir(msg['new_dir']):
 
@@ -2106,6 +2116,9 @@ class Flow:
                 else:
                     logger.info("attempt %d failed to download %s/%s to %s" \
                         % ( i, msg['baseUrl'], msg['relPath'], new_path) )
+                    if self._stop_requested:
+                        break
+                continue
                 i = i + 1
 
             if not ok:
@@ -3092,6 +3105,11 @@ class Flow:
                 self.reject(msg, 413, f"Payload Too Large {msg.getIDStr()}") 
                 continue
 
+            if self._stop_requested:
+                logger.info(f"stop requested, deferring send of {msg.getIDStr()}")
+                self.worklist.failed.append(msg)
+                continue
+
             # weed out non-file transfer operations that are configured to not be done.
             if 'fileOp' in msg:
                 if ('directory' in msg['fileOp']) and ('remove' in msg['fileOp']) and ( 'rmdir' not in self.o.fileEvents ):
@@ -3132,6 +3150,9 @@ class Flow:
                     break
                 elif retval < 0:
                     self.worklist.rejected.append(msg)
+                    break
+                elif self._stop_requested:
+                    logger.info(f"stop requested, deferring send of {msg.getIDStr()}")
                     break
 
                 i = i + 1
