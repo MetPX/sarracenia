@@ -563,8 +563,10 @@ class Flow:
         spamming = True
         last_gather_len = 0
         stopping = False
+        run_count=0   # the number of times the loop is run.
 
         while True:
+            run_count+=1
 
             if self._stop_requested:
                 if stopping:
@@ -631,6 +633,7 @@ class Flow:
             elapsed = now - last_time
 
             self.metrics['flow']['msgRate'] = current_rate
+            self.metrics['flow']['meanBatch'] = total_messages / run_count 
             self.metrics['flow']['msgRateCpu'] = total_messages / (self.metrics['flow']['cpuTime']+self.metrics['flow']['last_housekeeping_cpuTime'] )
 
             # trigger shutdown once gather is finished, where sleep < 0 (e.g. a post)
