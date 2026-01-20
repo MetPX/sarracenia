@@ -110,7 +110,7 @@ class Resources(FlowCB):
             logger.info(
                 f"CPU threshold surpassed! Triggering a restart for '{sys.argv}' via '{sys.executable}'"
             )
-            self.restart()
+            self.shutdown()
         # self.restart()
 
         return True
@@ -141,6 +141,17 @@ class Resources(FlowCB):
         logger.critical(
             f'Plugin resources.py:restart() "execl" failed, this should never be logged.'
         )
+        exit(1)
+
+    def shutdown(self):
+        """
+        Shutdown the process. Leave the PID file and all other cached data intact. 
+        We want to leave the instance in a `missing` or `partial` state. `sr3 sanity` should identify these processes and restart them.
+
+        NOTE: All invocations of shutdown are dependent of `sr3 sanity` being ran as a cron on the same server.
+        Related issue: https://github.com/MetPX/sarracenia/issues/1528
+        """
+        logger.warning("Shutting down process due to threshold being surpassed. Expecting sr3 sanity to be running as a cron to restart this process.")
         exit(1)
 
     def after_work(self, worklist):
