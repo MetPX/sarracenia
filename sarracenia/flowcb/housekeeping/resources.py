@@ -34,15 +34,12 @@ Returns:
 
 import logging
 
-<<<<<<< HEAD
-import os, socket
-=======
 import os
 import time
 import signal
->>>>>>> ba2ba0c96 (implement a restart that can reset CPU times. and some rearranging and)
+
 from sarracenia.flowcb import FlowCB
-from sarracenia import naturalSize, naturalTime, user_cache_dir, nowstr
+from sarracenia import naturalSize, naturalTime, user_cache_dir, nowstr, nowflt
 from sarracenia.featuredetection import features
 
 if features['process']['present']:
@@ -75,10 +72,12 @@ class Resources(FlowCB):
         else:
             self.cpu_threshold_msg = ""
 
-    def on_housekeeping(self):
-        if self.stop_requested:
-            return
+        # self.stop_requested is changed by the rest of the sr3 code and can change at almost
+        # any time when SIGTERM is sent to this process.
+        # this variable specifically tracks if/when *this plugin* initiated the restart
+        self.restart_initiated_time = None
 
+    def on_housekeeping(self):
         if features['process']['present']:
             mem = psutil.Process().memory_info().vms
         else:
@@ -89,15 +88,13 @@ class Resources(FlowCB):
         logger.info(f"Current cpu_times: user={ost.user} system={ost.system} total={cpu_time_total:.2f}{self.cpu_threshold_msg}")
 
         # check current CPU and memory usage, restart if needed
-        if self.threshold_memory is not None and mem > self.threshold_memory:
-            logger.info(
-                f"Memory threshold surpassed! Triggering a restart for '{sys.argv}' via '{sys.executable}'"
-            )
+        if self.threshold_memory is not None and mem > self.threshold_memory and not self.stop_requested:
+            logger.info(f"Memory threshold surpassed! Triggering a restart for '{sys.argv}' via '{sys.executable}'")
             self.restart()
         elif self.o.CpuTimeMax > 0 and cpu_time_total > self.o.CpuTimeMax:
-            logger.info(
-                f"CPU threshold surpassed! Triggering a restart for '{sys.argv}' via '{sys.executable}'"
-            )
+            if not self.stop_requested:
+                logger.info(f"CPU threshold surpassed! Triggering a restart for '{sys.argv}' via '{sys.executable}'")
+            # this is not inside the if, because we want it to run and trigger SIGKILL if needed
             self.restart_reset()
 
         # User did not set MemoryMax, now to figure out what our baseline memory usage is at a steady state
@@ -123,17 +120,12 @@ class Resources(FlowCB):
         Do an in-place restart of the current process (keeps pid).
         Gets a new memory stack/heap, keeps all file descriptors but replaces the buffers.
         """
+        self.write_restart_statefile()
+
         # First arg must be the program to be run (absolute path to program)
         # Second arg has to be python for windows, see how this affects the linux side of things..
         # Third arg is the name of the program you wish to run (should be full path to script) plus all the args.
         #   The star unpacks the sys.argv list into the remaining function args
-
-        # Before triggering a restart, add a state file to prevent other processes to stop/start it at the same time.
-        self.state_file = self.o.cfg_run_dir + os.sep + 'resources_restart'
-
-        with open(self.state_file, "w") as f:
-            f.write(nowstr())
-
 
         if sys.platform.startswith(('linux', 'cygwin', 'darwin', 'aix')):
             # Unix* (Linux / Windows/Cygwin / MacOS / AIX) Specific restart
@@ -163,13 +155,12 @@ class Resources(FlowCB):
 
         parent_pid = os.getpid()
 
-        # only actually fork if we're not already in the middle of a restart
+        # only fork if we're not already in the middle of a restart
         if not self.stop_requested:
+            self.write_restart_statefile() # need to do this before it's done in restart()
             child_pid = os.fork()
         else:
             child_pid = parent_pid
-
-        # TODO: do we need to manipulate state files to ensure the sr3 sanity and sr3 start don't screw with the restart?
 
         if child_pid == 0:
             # this is the child
@@ -183,10 +174,18 @@ class Resources(FlowCB):
         else:
             # this is the parent, we want to shut down
             if not self.stop_requested:
+                self.write_restart_statefile()
                 logger.info(f"shutting down PID {parent_pid}, will auto-restart as PID {child_pid}")
                 self.stop_requested = True
-                #sys.exit()
+                self.restart_initiated_time = nowflt()
                 os.kill(parent_pid, signal.SIGTERM)
+            # if this plugin initiated a restart...
+            elif self.restart_initiated_time is not None:
+                # ... and a whole housekeeping interval has elapsed since then, something has gone wrong; the SIGTERM
+                # failed to shutdown the parent process. We need to kill it.
+                if (nowflt() - self.restart_initiated_time) >= self.o.housekeeping:
+                    logger.info(f"shutting down PID {parent_pid} by SIGKILL")
+                    os.kill(parent_pid, signal.SIGKILL)
 
     def after_work(self, worklist):
         self.transferCount += len(worklist.ok)
@@ -199,11 +198,34 @@ class Resources(FlowCB):
         #    TODO: Remove this callback when issue #444 is implemented
 
     def is_pid_running(self, pid):
-        # FIXME linux only
-        # https://stackoverflow.com/questions/568271/how-to-check-if-there-exists-a-process-with-a-given-pid-in-python
-        try:
-            os.kill(pid, 0)
-        except OSError:
+        """ return True if ``pid`` is running, False if not
+        """
+        if features['process']['present']:
+            try:
+                proc = psutil.Process(pid)
+                return proc.is_running()
+            except psutil.NoSuchProcess:
+                return False
+        elif sys.platform.startswith('win32'):
+            logger.warning("On Windows, can't check if a PID is running without psutil")
+            # hopefully the process shuts down in < 30 seconds
+            time.sleep(30)
             return False
         else:
-            return True
+            # Linux only method of checking if process is running
+            # stackoverflow.com/questions/568271/how-to-check-if-there-exists-a-process-with-a-given-pid-in-python
+            try:
+                os.kill(pid, 0)
+            except OSError:
+                return False
+            else:
+                return True
+
+    def write_restart_statefile(self):
+        """ Before triggering a restart, write a state file to prevent other processes (sr3 stop/start/sanity)
+            to stop/start it at the same time.
+        """
+        self.state_file = self.o.cfg_run_dir + os.sep + 'resources_restart'
+
+        with open(self.state_file, "w") as f:
+            f.write(nowstr())
