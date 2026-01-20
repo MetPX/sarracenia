@@ -34,7 +34,13 @@ Returns:
 
 import logging
 
+<<<<<<< HEAD
 import os, socket
+=======
+import os
+import time
+import signal
+>>>>>>> ba2ba0c96 (implement a restart that can reset CPU times. and some rearranging and)
 from sarracenia.flowcb import FlowCB
 from sarracenia import naturalSize, naturalTime, user_cache_dir, nowstr
 from sarracenia.featuredetection import features
@@ -55,65 +61,62 @@ class Resources(FlowCB):
         self.o.add_option('MemoryBaseLineFile', 'count', 100)
         self.o.add_option('MemoryMultiplier', 'float', 3)
 
-        self.threshold_memory = None
+        if type(self.o.MemoryMax) is not str and self.o.MemoryMax > 0:
+            self.threshold_memory = self.o.MemoryMax
+        else:
+            self.threshold_memory = None
+
         ''' Per-process maximum memory footprint that is considered too large, forcing a process restart.'''
         self.transferCount = 0
         self.msgCount = 0
 
+        if self.o.CpuTimeMax > 0:
+            self.cpu_threshold_msg = f" (CpuTimeMax threshold={self.o.CpuTimeMax:.2f})"
+        else:
+            self.cpu_threshold_msg = ""
+
     def on_housekeeping(self):
+        if self.stop_requested:
+            return
+
         if features['process']['present']:
             mem = psutil.Process().memory_info().vms
         else:
             mem = 0
 
         ost = os.times()
-        cpu_system_time = ost.system
-        logger.info(f"Current cpu_times: user={ost.user} system={ost.system}")
+        cpu_time_total = ost.system + ost.user
+        logger.info(f"Current cpu_times: user={ost.user} system={ost.system} total={cpu_time_total:.2f}{self.cpu_threshold_msg}")
 
-        # We must set a threshold **after** the config file has been parsed.
-        if self.threshold_memory is None:
-            # If the config set something, use it.
-            if self.o.MemoryMax != 0:
-                self.threshold_memory = self.o.MemoryMax
-
-            if self.threshold_memory is None:
-                # No user input set, now to figure out what our baseline memory usage is at a steady state
-                #   Process MemoryBaseLineFile(s)+ then get a memory reading before setting memory restart threshold.
-                if (self.transferCount < self.o.MemoryBaseLineFile) and (
-                        self.msgCount < self.o.MemoryBaseLineFile):
-                    # Not enough files processed for steady state, continue to wait..
-                    logger.info(
-                        f"Current mem usage: {naturalSize(mem)}, accumulating count "
-                        f"({self.transferCount} or {self.msgCount}/{self.o.MemoryBaseLineFile} so far) "
-                        f"before self-setting threshold")
-                    return True
-
-                self.threshold_memory = int(self.o.MemoryMultiplier * mem)
-
-
-            logger.info(f"Memory threshold set to: {naturalSize(self.threshold_memory)}")
-
-        logger.info(
-            f"Current Memory usage: {naturalSize(mem)} / "
-            f"{naturalSize(self.threshold_memory)} = {(mem/self.threshold_memory):.2%}"
-        )
-
-        if self.o.CpuTimeMax != 0:
-            logger.info(f"Current CPU time usage: {cpu_system_time}. CPU time threshold: {self.o.CpuTimeMax}.")
-
-        if mem > self.threshold_memory:
+        # check current CPU and memory usage, restart if needed
+        if self.threshold_memory is not None and mem > self.threshold_memory:
             logger.info(
                 f"Memory threshold surpassed! Triggering a restart for '{sys.argv}' via '{sys.executable}'"
             )
             self.restart()
-        elif self.o.CpuTimeMax != 0 and cpu_system_time > self.o.CpuTimeMax:
+        elif self.o.CpuTimeMax > 0 and cpu_time_total > self.o.CpuTimeMax:
             logger.info(
                 f"CPU threshold surpassed! Triggering a restart for '{sys.argv}' via '{sys.executable}'"
             )
-            self.restart()
-        # self.restart()
+            self.restart_reset()
 
-        return True
+        # User did not set MemoryMax, now to figure out what our baseline memory usage is at a steady state
+        if self.threshold_memory is None:
+            #   Process MemoryBaseLineFile(s)+ then get a memory reading before setting memory restart threshold.
+            if (self.transferCount < self.o.MemoryBaseLineFile) and (self.msgCount < self.o.MemoryBaseLineFile):
+                # Not enough files processed for steady state, continue to wait..
+                logger.info(
+                    f"Current mem usage: {naturalSize(mem)}, accumulating count "
+                    f"({self.transferCount} or {self.msgCount}/{self.o.MemoryBaseLineFile} so far) "
+                    f"before self-setting threshold")
+            else:
+                self.threshold_memory = int(self.o.MemoryMultiplier * mem)
+                logger.info(f"Memory threshold set to: {naturalSize(self.threshold_memory)}")
+        else:
+            logger.info(
+                f"Current Memory usage: {naturalSize(mem)} / "
+                f"{naturalSize(self.threshold_memory)} = {(mem/self.threshold_memory):.2%}"
+            )
 
     def restart(self):
         """
@@ -150,6 +153,41 @@ class Resources(FlowCB):
         )
         exit(1)
 
+    def restart_reset(self):
+        """
+        Restart the config (new PID, CPU time is reset). By:
+        1. Forking to get a new PID
+        2. Shutting down the process in the old PID (clean shutdown with SIGTERM)
+        3. (Re-)Starting up the process in the new PID
+        """
+
+        parent_pid = os.getpid()
+
+        # only actually fork if we're not already in the middle of a restart
+        if not self.stop_requested:
+            child_pid = os.fork()
+        else:
+            child_pid = parent_pid
+
+        # TODO: do we need to manipulate state files to ensure the sr3 sanity and sr3 start don't screw with the restart?
+
+        if child_pid == 0:
+            # this is the child
+            # not safe to use the logger here until the parent shuts down
+            # wait for the parent to shut down
+            while self.is_pid_running(parent_pid):
+                time.sleep(2)
+            logger.info(f"parent PID {parent_pid} has stopped, PID {os.getpid()} taking over")
+            logger.debug(f"CPU times in new process: {os.times()}")
+            self.restart()
+        else:
+            # this is the parent, we want to shut down
+            if not self.stop_requested:
+                logger.info(f"shutting down PID {parent_pid}, will auto-restart as PID {child_pid}")
+                self.stop_requested = True
+                #sys.exit()
+                os.kill(parent_pid, signal.SIGTERM)
+
     def after_work(self, worklist):
         self.transferCount += len(worklist.ok)
         # if self.threshold_memory is not None:
@@ -159,3 +197,13 @@ class Resources(FlowCB):
         self.msgCount += len(worklist.incoming)
         # if self.threshold_memory is not None:
         #    TODO: Remove this callback when issue #444 is implemented
+
+    def is_pid_running(self, pid):
+        # FIXME linux only
+        # https://stackoverflow.com/questions/568271/how-to-check-if-there-exists-a-process-with-a-given-pid-in-python
+        try:
+            os.kill(pid, 0)
+        except OSError:
+            return False
+        else:
+            return True
