@@ -504,6 +504,9 @@ class sr_GlobalState:
                         elif os.path.exists('shutdown'):
                             self.states[c][cfg]['status'] = 'shutdown'
                             self.flux[ f"{c}/{cfg}" ] = 'shutdown'
+                        elif os.path.exists('oom_restarting'):
+                            self.states[c][cfg]['status'] = 'oom_restarting'
+                            self.flux[ f"{c}/{cfg}" ] = 'oom_restarting'
 
                         state_files = os.listdir() 
                         if len(state_files) == 0:
@@ -622,7 +625,7 @@ class sr_GlobalState:
                         if not 'status' in self.configs[c][cfg]:
                             continue
 
-                        if self.configs[c][cfg]['status'] in [ 'disabled', 'interactive', 'new', 'stopped', 'stopping', 'starting' ]:
+                        if self.configs[c][cfg]['status'] in [ 'disabled', 'interactive', 'new', 'stopped', 'stopping', 'starting', 'oom_restarting']:
                             continue
 
                         if hasattr(self.configs[c][cfg]['options'],'statehost') and (statehost != self.configs[c][cfg]['options'].statehost):
@@ -896,6 +899,8 @@ class sr_GlobalState:
                     self.configs[c][cfg]['status'] = 'interactive'
                 if os.path.exists(self.user_cache_dir + os.sep + c + os.sep + cfg + os.sep + 'starting'):
                     self.configs[c][cfg]['status'] = 'starting'
+                if os.path.exists(self.user_cache_dir + os.sep + c + os.sep + cfg + os.sep + 'oom_restarting'):
+                    self.configs[c][cfg]['status'] = 'oom_restarting'
                 if os.path.exists(self.user_cache_dir + os.sep + c + os.sep + cfg + os.sep + 'shutdown'):
                     self.configs[c][cfg]['status'] = 'shutdown'
                 if os.path.exists(self.user_cache_dir + os.sep + c + os.sep + cfg + os.sep + 'running'):
@@ -1072,7 +1077,7 @@ class sr_GlobalState:
                                     hung_instances += 1
                                     self.states[c][cfg]['hung_instances'].append(i)
 
-                    if self.configs[c][cfg]['status'] in [ 'disabled', 'interactive', 'new', 'starting', 'shutdown', 'running' ]:
+                    if self.configs[c][cfg]['status'] in [ 'disabled', 'interactive', 'new', 'starting', 'shutdown', 'running', 'oom_restarting']:
                         flow_status = self.configs[c][cfg]['status']
                     else:
                         flow_status = 'unknown'
@@ -1095,7 +1100,7 @@ class sr_GlobalState:
                             if self.configs[c][cfg]['status'] not in [ 'disabled', 'new', 'interactive' ]:
                                 flow_status = 'stopped'
                         else:
-                            if observed_instances > 0 and flow_status not in ['starting','shutdown']:
+                            if observed_instances > 0 and flow_status not in ['starting','shutdown','oom_restarting']:
                                 flow_status = 'partial'
                                 for i in range(1, int(self.configs[c][cfg]['instances'])+1 ):
                                     if not i in self.states[c][cfg]['instance_pids']:
@@ -1105,7 +1110,7 @@ class sr_GlobalState:
                                     if flow_status not in [ 'interactive', 'new', 'running'] and len(self.states[c][cfg]['instance_pids']) == 0 :
                                         flow_status = 'stopped' 
                                     else:
-                                        if flow_status not in [ 'interactive', 'new', 'shutdown', 'starting' ]:
+                                        if flow_status not in [ 'interactive', 'new', 'shutdown', 'starting' , 'oom_restarting']:
                                             flow_status = 'missing' 
                                         for i in range(1, int(self.configs[c][cfg]['instances'])+1 ):
                                             if not i in self.states[c][cfg]['instance_pids']:
@@ -1319,7 +1324,7 @@ class sr_GlobalState:
             'sender', 'shovel', 'subscribe', 'watch', 'winnow'
         ]
         # active means >= 1 process exists on the node.
-        self.status_active =  ['cpuSlow', 'disconnected', 'down', 'hung', 'idle', 'lagging', 'partial', 'reject', 'retry', 'running', 'slow', 'standby', 'starting', 'shutdown', 'waitVip' ]
+        self.status_active =  ['cpuSlow', 'disconnected', 'down', 'hung', 'idle', 'lagging', 'partial', 'reject', 'retry', 'running', 'slow', 'standby', 'starting', 'shutdown', 'waitVip', 'oom_restarting']
         self.status_values = self.status_active + [ 'disabled', 'include', 'interactive', 'missing', 'new', 'stopped', 'unknown' ]
 
         self.bin_dir = os.path.dirname(os.path.realpath(__file__))

@@ -34,9 +34,9 @@ Returns:
 
 import logging
 
-import os
+import os, socket
 from sarracenia.flowcb import FlowCB
-from sarracenia import naturalSize, naturalTime
+from sarracenia import naturalSize, naturalTime, user_cache_dir, nowstr
 from sarracenia.featuredetection import features
 
 if features['process']['present']:
@@ -113,6 +113,18 @@ class Resources(FlowCB):
         # Second arg has to be python for windows, see how this affects the linux side of things..
         # Third arg is the name of the program you wish to run (should be full path to script) plus all the args.
         #   The star unpacks the sys.argv list into the remaining function args
+
+        # Before triggering a restart, add a state file to prevent other processes to stop/start it at the same time.
+        self.user_cache_dir = user_cache_dir('sr3', 'MetPX')
+        self.hostdir = socket.getfqdn().split('.')[0]
+        if self.o.statehost:
+            self.state_file = self.user_cache_dir + os.sep + self.hostdir + os.sep + self.o.component + os.sep + self.o.config + os.sep + 'oom_restarting'
+        else:
+            self.state_file = self.user_cache_dir + os.sep + self.o.component + os.sep + self.o.config + os.sep + 'oom_restarting'
+
+        with open(self.state_file, "w") as f:
+            f.write(nowstr())
+
 
         if sys.platform.startswith(('linux', 'cygwin', 'darwin', 'aix')):
             # Unix* (Linux / Windows/Cygwin / MacOS / AIX) Specific restart
