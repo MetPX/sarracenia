@@ -173,8 +173,7 @@ class instance:
             metricsfilename = sarracenia.config.get_metrics_filename( hostdir, component, config, cfg_preparse.no)
 
             # If OOM restart is invoked, remove state file now.
-            cache_dir = sarracenia.config.get_user_cache_dir(hostdir)
-            oom_state_file = cache_dir + os.sep + component + os.sep + config + os.sep + 'oom_restarting'
+            oom_state_file = cfg_preparse.cfg_run_dir + os.sep + 'resources_restart'
             if os.path.isfile(oom_state_file):
                 os.unlink(oom_state_file)
 
