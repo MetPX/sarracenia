@@ -1265,8 +1265,8 @@ messageRateMax <float> (default: 0)
 -----------------------------------
 
 if **messageRateMax** is greater than zero, the flow attempts to respect this delivery
-speed in terms of messages per second. Note that the throttle is on messages obtained or generated
-per second, prior to accept/reject filtering. the flow will sleep to limit the processing rate.
+speed in terms of messages per second. Note that the throttle is applied to the message rate
+*after* accept/reject filtering. The flow will sleep to limit the processing rate.
 
 
 messageRateMin <float> (default: 0)
