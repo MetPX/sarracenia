@@ -39,15 +39,21 @@ Installation Instructions
 git
 ---
 
+3.02.00
+-------
+
+*CHANGE*: ``messageRateMax`` now applies *after* accept/reject filtering. In previous versions, it limited the message
+rate *before* filtering.
+
 3.01.00
 -------
 
 *NOTICE*: can now subscribe to multiple brokers, and publish to multiple post_brokers with a single configuration.
 
 *CHANGE*: python API *bindings* being replaced by *subscriptions.* API is quite different, see examples.
-*Subscriptions* enables multi-queue and multi-broker support for subscribing. 
+*Subscriptions* enables multi-queue and multi-broker support for subscribing.
 
-*CHANGE*: python API post_ settings being replaced by *publishers.* need to build 
+*CHANGE*: python API ``post_`` settings being replaced by *publishers.* need to build
 sarracenia.config.publisher.Publisher structure now to publish messages.  It enables publishing
 to multiple destinations.
 

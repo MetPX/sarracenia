@@ -562,6 +562,7 @@ class Flow:
 
         spamming = True
         last_gather_len = 0
+        after_filter_len = 0
         stopping = False
 
         while True:
@@ -600,6 +601,7 @@ class Flow:
                     spamming = False
 
                 self.filter()
+                after_filter_len=len(self.worklist.incoming)+len(self.worklist.ok)
 
                 self.work()
 
@@ -620,7 +622,7 @@ class Flow:
 
             now = nowflt()
             run_time = now - start_time
-            total_messages += last_gather_len
+            total_messages += after_filter_len
 
             # trigger shutdown when messageCountMax is reached
             if (self.o.messageCountMax > 0) and (total_messages > self.o.messageCountMax):
