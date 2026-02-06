@@ -225,6 +225,12 @@ class Resources(FlowCB):
         """ Before triggering a restart, write a state file to prevent other processes (sr3 stop/start/sanity)
             to stop/start it at the same time.
         """
+
+        # We also need to remove the 'running' state file. Otherwise, sanity will still run.
+        running_state_file = self.o.cfg_run_dir + os.sep + 'running'
+        if os.path.isfile(running_state_file):
+            os.unlink(running_state_file)
+
         self.state_file = self.o.cfg_run_dir + os.sep + 'resources_restart'
 
         with open(self.state_file, "w") as f:
