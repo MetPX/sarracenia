@@ -167,7 +167,9 @@ class Resources(FlowCB):
             # not safe to use the logger here until the parent shuts down
             # wait for the parent to shut down
             while self.is_pid_running(parent_pid):
-                time.sleep(2)
+                time.sleep(0.1)
+            # Write the PID file of the child process as soon as it becomes available. We want to prevent `sr3 sanity` to find the running process in a 'missing' state.
+            self.write_pid_file()
             logger.info(f"parent PID {parent_pid} has stopped, PID {os.getpid()} taking over")
             logger.debug(f"CPU times in new process: {os.times()}")
             self.restart()
@@ -220,6 +222,16 @@ class Resources(FlowCB):
                 return False
             else:
                 return True
+
+    def write_pid_file(self):
+        """ Write the new PID to the PID file.
+            We want to write it as soon as possible to prevent `sr3 sanity` to think an instance is missing.
+        """
+        pidfilename = self.o.cfg_run_dir + os.sep + self.o.component + '_' + self.o.configuration + '_%02d' % self.o.no + '.pid'
+
+        with open(pidfilename, 'w') as pfn:
+            pfn.write('%d' % os.getpid())
+
 
     def write_restart_statefile(self):
         """ Before triggering a restart, write a state file to prevent other processes (sr3 stop/start/sanity)
