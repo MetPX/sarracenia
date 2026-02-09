@@ -268,6 +268,11 @@
 
             <span class="n">metricsfilename</span> <span class="o">=</span> <span class="n">sarracenia</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">get_metrics_filename</span><span class="p">(</span> <span class="n">hostdir</span><span class="p">,</span> <span class="n">component</span><span class="p">,</span> <span class="n">config</span><span class="p">,</span> <span class="n">cfg_preparse</span><span class="o">.</span><span class="n">no</span><span class="p">)</span>
 
+            <span class="c1"># If OOM restart is invoked, remove state file now.</span>
+            <span class="n">oom_state_file</span> <span class="o">=</span> <span class="n">cfg_preparse</span><span class="o">.</span><span class="n">cfg_run_dir</span> <span class="o">+</span> <span class="n">os</span><span class="o">.</span><span class="n">sep</span> <span class="o">+</span> <span class="s1">&#39;resources_restart&#39;</span>
+            <span class="k">if</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">isfile</span><span class="p">(</span><span class="n">oom_state_file</span><span class="p">):</span>
+                <span class="n">os</span><span class="o">.</span><span class="n">unlink</span><span class="p">(</span><span class="n">oom_state_file</span><span class="p">)</span>
+
             <span class="n">dir_not_there</span> <span class="o">=</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">dirname</span><span class="p">(</span><span class="n">metricsfilename</span><span class="p">))</span>
             <span class="k">while</span> <span class="n">dir_not_there</span><span class="p">:</span>
                 <span class="k">try</span><span class="p">:</span>
