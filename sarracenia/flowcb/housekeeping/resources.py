@@ -183,7 +183,7 @@ class Resources(FlowCB):
                     except:
                         logger.warning(f"failed to SIGKILL parent {parent_pid}, proceeding to start up in {child_pid}")
 
-                time.sleep(0.5) # small sleep so we can restart ASAP after parent shuts down
+                time.sleep(0.1) # small sleep so we can restart ASAP after parent shuts down
 
             # parent has finished shutting down
             # first thing we do after parent stops is to re-write pidfile, since the parent likely deleted it
