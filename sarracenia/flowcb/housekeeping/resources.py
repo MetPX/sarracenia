@@ -257,5 +257,9 @@ class Resources(FlowCB):
     def write_pidfile(self, pid):
         """ Write ``pid`` to the pidfile.
         """
-        with open(self.o.pid_filename, 'w') as f:
-            f.write(str(pid))
+        try:
+            with open(self.o.pid_filename, 'w') as f:
+                f.write(str(pid))
+                logger.debug(f"wrote {pid} to {self.o.pid_filename}")
+        except:
+            logger.warning("failed to update pidfile, sanity may interfere if it runs during the restart")
