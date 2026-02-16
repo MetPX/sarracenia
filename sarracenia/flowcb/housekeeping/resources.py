@@ -87,14 +87,16 @@ class Resources(FlowCB):
         cpu_time_total = ost.system + ost.user
         logger.info(f"Current cpu_times: user={ost.user} system={ost.system} total={cpu_time_total:.2f}{self.cpu_threshold_msg}")
 
+        if self.stop_requested:
+            logger.debug("already stopping, no need to do anything")
+            return
+
         # check current CPU and memory usage, restart if needed
-        if self.threshold_memory is not None and mem > self.threshold_memory and not self.stop_requested:
+        if self.threshold_memory is not None and mem > self.threshold_memory:
             logger.info(f"Memory threshold surpassed! Triggering a restart for '{sys.argv}' via '{sys.executable}'")
             self.restart()
         elif self.o.CpuTimeMax > 0 and cpu_time_total > self.o.CpuTimeMax:
-            if not self.stop_requested:
-                logger.info(f"CPU threshold surpassed! Triggering a restart for '{sys.argv}' via '{sys.executable}'")
-            # this is not inside the if, because we want it to run and trigger SIGKILL if needed
+            logger.info(f"CPU threshold surpassed! Triggering a restart for '{sys.argv}' via '{sys.executable}'")
             self.restart_reset()
 
         # User did not set MemoryMax, now to figure out what our baseline memory usage is at a steady state
@@ -158,36 +160,50 @@ class Resources(FlowCB):
         # only fork if we're not already in the middle of a restart
         if not self.stop_requested:
             self.write_restart_statefile() # need to do this before it's done in restart()
+            self.restart_initiated_time = nowflt()
             child_pid = os.fork()
         else:
-            child_pid = parent_pid
+            child_pid = -1
 
+        # 0 is the child
         if child_pid == 0:
-            # this is the child
-            # not safe to use the logger here until the parent shuts down
+            # NOTE: it's not safe to use the logger here until the parent shuts down
+            child_pid = os.getpid() # get the actual PID of the child
+
             # wait for the parent to shut down
             while self.is_pid_running(parent_pid):
-                time.sleep(0.1)
-            # Write the PID file of the child process as soon as it becomes available. We want to prevent `sr3 sanity` to find the running process in a 'missing' state.
-            self.write_pid_file()
-            logger.info(f"parent PID {parent_pid} has stopped, PID {os.getpid()} taking over")
+                # if >1 housekeeping interval passes since initiating the restart and the parent
+                # still hasn't stopped something has gone wrong; we need to kill the parent.
+                dt = nowflt() - self.restart_initiated_time
+                if dt >= 1.25*self.o.housekeeping:
+                    try:
+                        if self.is_pid_running(parent_pid):
+                            os.kill(parent_pid, signal.SIGKILL)
+                            logger.info(f"parent PID {parent_pid} did not shutdown after {dt:0.2f}, child sent SIGKILL")
+                    except:
+                        logger.warning(f"failed to SIGKILL parent {parent_pid}, proceeding to start up in {child_pid}")
+
+                time.sleep(0.5) # small sleep so we can restart ASAP after parent shuts down
+
+            # parent has finished shutting down
+            # first thing we do after parent stops is to re-write pidfile, since the parent likely deleted it
+            self.write_pidfile(child_pid)
+            logger.info(f"parent PID {parent_pid} has stopped, PID {child_pid} taking over")
             logger.debug(f"CPU times in new process: {os.times()}")
             self.restart()
+
+        # non-zero is the parent
         else:
-            # this is the parent, we want to shut down
+            # Need to shut down. This code should only run once.
             if not self.stop_requested:
-                self.write_restart_statefile()
+                # If sanity runs before parent shuts down, it will notice the child process and think it's a stray.
+                # To avoid that, write the child's PID to the pidfile. After that's done, if sanity runs, it will
+                # think the parent is a stray and kill it, which is fine. Better than killing the child. The restart
+                # file should still eliminate 99% of conflicts with sanity.
+                self.write_pidfile(child_pid)
                 logger.info(f"shutting down PID {parent_pid}, will auto-restart as PID {child_pid}")
                 self.stop_requested = True
-                self.restart_initiated_time = nowflt()
                 os.kill(parent_pid, signal.SIGTERM)
-            # if this plugin initiated a restart...
-            elif self.restart_initiated_time is not None:
-                # ... and a whole housekeeping interval has elapsed since then, something has gone wrong; the SIGTERM
-                # failed to shutdown the parent process. We need to kill it.
-                if (nowflt() - self.restart_initiated_time) >= self.o.housekeeping:
-                    logger.info(f"shutting down PID {parent_pid} by SIGKILL")
-                    os.kill(parent_pid, signal.SIGKILL)
 
     def after_work(self, worklist):
         self.transferCount += len(worklist.ok)
@@ -223,16 +239,6 @@ class Resources(FlowCB):
             else:
                 return True
 
-    def write_pid_file(self):
-        """ Write the new PID to the PID file.
-            We want to write it as soon as possible to prevent `sr3 sanity` to think an instance is missing.
-        """
-        pidfilename = self.o.cfg_run_dir + os.sep + self.o.component + '_' + self.o.configuration + '_%02d' % self.o.no + '.pid'
-
-        with open(pidfilename, 'w') as pfn:
-            pfn.write('%d' % os.getpid())
-
-
     def write_restart_statefile(self):
         """ Before triggering a restart, write a state file to prevent other processes (sr3 stop/start/sanity)
             to stop/start it at the same time.
@@ -247,3 +253,9 @@ class Resources(FlowCB):
 
         with open(self.state_file, "w") as f:
             f.write(nowstr())
+
+    def write_pidfile(self, pid):
+        """ Write ``pid`` to the pidfile.
+        """
+        with open(self.o.pid_filename, 'w') as f:
+            f.write(str(pid))
