@@ -158,12 +158,12 @@ class Resources(FlowCB):
         parent_pid = os.getpid()
 
         # only fork if we're not already in the middle of a restart
-        if not self.stop_requested:
-            self.write_restart_statefile() # need to do this before it's done in restart()
-            self.restart_initiated_time = nowflt()
-            child_pid = os.fork()
-        else:
-            child_pid = -1
+        if self.stop_requested:
+            return
+
+        self.write_restart_statefile() # need to do this before it's done in restart()
+        self.restart_initiated_time = nowflt()
+        child_pid = os.fork()
 
         # 0 is the child
         if child_pid == 0:
