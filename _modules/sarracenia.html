@@ -167,7 +167,13 @@
         <span class="k">return</span> <span class="n">humanize</span><span class="o">.</span><span class="n">naturaltime</span><span class="p">(</span><span class="n">dur</span><span class="p">)</span>
 
     <span class="k">def</span> <span class="nf">naturalDelta</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="n">months</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">minimum_unit</span><span class="o">=</span><span class="s1">&#39;seconds&#39;</span><span class="p">):</span>
-        <span class="k">return</span> <span class="n">humanize</span><span class="o">.</span><span class="n">naturaldelta</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="n">months</span><span class="o">=</span><span class="n">months</span><span class="p">,</span> <span class="n">minimum_unit</span><span class="o">=</span><span class="n">minimum_unit</span><span class="p">)</span>
+        <span class="c1"># older versions of humanize don&#39;t support minimum_unit</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">humanize</span><span class="o">.</span><span class="n">naturaldelta</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="n">months</span><span class="o">=</span><span class="n">months</span><span class="p">,</span> <span class="n">minimum_unit</span><span class="o">=</span><span class="n">minimum_unit</span><span class="p">)</span>
+        <span class="k">except</span> <span class="ne">TypeError</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">humanize</span><span class="o">.</span><span class="n">naturaldelta</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="n">months</span><span class="o">=</span><span class="n">months</span><span class="p">)</span>
+        <span class="k">except</span><span class="p">:</span>
+            <span class="k">return</span> <span class="s2">&quot;</span><span class="si">%d</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="n">value</span>
 
 <span class="k">else</span><span class="p">:</span>
   
