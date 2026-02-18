@@ -34,9 +34,9 @@ Returns:
 
 import logging
 
-import os
+import os, socket, time, random
 from sarracenia.flowcb import FlowCB
-from sarracenia import naturalSize, naturalTime
+from sarracenia import naturalSize, naturalTime, user_cache_dir, nowstr
 from sarracenia.featuredetection import features
 
 if features['process']['present']:
@@ -58,6 +58,7 @@ class Resources(FlowCB):
         ''' Per-process maximum memory footprint that is considered too large, forcing a process restart.'''
         self.transferCount = 0
         self.msgCount = 0
+        self.randomSleep = 1 + round(random.random(), 2)
 
     def on_housekeeping(self):
         if features['process']['present']:
@@ -113,6 +114,22 @@ class Resources(FlowCB):
         # Second arg has to be python for windows, see how this affects the linux side of things..
         # Third arg is the name of the program you wish to run (should be full path to script) plus all the args.
         #   The star unpacks the sys.argv list into the remaining function args
+
+        # Before triggering a restart, add a state file to prevent other processes to stop/start it at the same time.
+        self.state_file = self.o.cfg_run_dir + os.sep + 'resources_restart'
+
+        file_not_ready = True
+
+        # If another process is performing a OOM restart, wait until it is complete before creating a new state file to avoid a race-condition.
+        while file_not_ready:
+            if not os.path.exists(self.state_file):
+                file_not_ready = False
+                with open(self.state_file, "w") as f:
+                    f.write(nowstr())
+            else:
+                logger.info(f"State file already exists : {self.state_file}. Waiting {self.randomSleep} seconds.")
+                time.sleep(self.randomSleep)
+
 
         if sys.platform.startswith(('linux', 'cygwin', 'darwin', 'aix')):
             # Unix* (Linux / Windows/Cygwin / MacOS / AIX) Specific restart

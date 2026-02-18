@@ -103,7 +103,7 @@ class Log(FlowCB):
         if 'identity' in msg and 'value' in msg['identity']:
             s+=f"id: {msg['identity']['value'][0:7]} "
         if 'size' in msg:
-            s+=f"size: {msg['size']} "
+            s+=f"size: {naturalSize(msg['size'])} ({msg['size']}) "
         return s
         
     def _messagePostStr(self,msg):
@@ -161,9 +161,8 @@ class Log(FlowCB):
         if set(['reject']) & self.o.logEvents:
             for msg in worklist.rejected:
                 if 'report' in msg:
-                    logger.info(
-                        "%s rejected: %d %s " %
-                        (msg['relPath'], msg['report']['code'], msg['report']['message']))
+                    logger.info("rejected: %s (%d: %s)" % (
+                        self._messageAcceptStr(msg), msg['report']['code'], msg['report']['message']))
                 else:
                     logger.info("rejected: %s " % self._messageAcceptStr(msg))
         
@@ -177,7 +176,7 @@ class Log(FlowCB):
         for msg in worklist.incoming:
 
             lag = now - timestr2flt(msg['pubTime'])
-            if not ( '_isRetry' in msg and msg['_isRetry']):
+            if not msg.isRetry():
                self.lagTotal += lag
                if lag > self.lagMax:
                    self.lagMax = lag
@@ -221,7 +220,10 @@ class Log(FlowCB):
         for msg in worklist.ok:
             if 'size' in msg:
                 self.fileBytes += msg['size']
-                
+                size = f"size: {naturalSize(msg['size'])} ({msg['size']}) "
+            else:
+                size = ""
+
             if not self.o.download:
                 continue
 
@@ -240,11 +242,16 @@ class Log(FlowCB):
                 else:
                     verb = self.action_verb
 
+                if 'report' in msg and 'rate' in msg['report']:
+                    rate=f"rate: {naturalSize(msg['report']['rate'])}/s ({msg['report']['rate']:.2f} B/s)"
+                else:
+                    rate=""
+
                 if ('new_dir' in msg) and ('new_file' in msg):
-                    logger.info("%s ok: %s " %
-                                (verb, msg['new_dir'] + '/' + msg['new_file']))
+                    logger.info( f"{verb} ok: {msg['new_dir']+'/'+msg['new_file']} {size}{rate}" )
                 elif 'relPath' in msg:
-                    logger.info("%s ok: relPath: %s " % (verb, msg['relPath'] ))
+                    logger.info( f"{verb} ok: relPath: {msg['relPath']} {size}{rate}" )
+
 
                 if self.o.logMessageDump:
                     logger.info('message: %s' % msg.dumps())

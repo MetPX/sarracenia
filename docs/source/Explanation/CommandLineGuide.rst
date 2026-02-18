@@ -60,6 +60,7 @@ The remaining actions manage the resources (exchanges, queues) used by the compo
 the broker, or manage the configurations.
 
  - cleanup:       deletes the component's resources on the server.
+ - clean-restart: stop, cleanup and then start the configuration.
  - declare:       creates the component's resources on the server.
  - add:           copy to the list of available configurations.
  - list:          list all the configurations available.

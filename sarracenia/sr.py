@@ -165,7 +165,7 @@ class sr_GlobalState:
 
             # would like to forward things like --debug...
             for arg in sys.argv[1:-1]:
-                if arg in ['start', 'restart', 'run']:
+                if arg in ['start', 'clean-restart', 'restart', 'run']:
                     break
                 cmd.append(arg)
 
@@ -504,6 +504,9 @@ class sr_GlobalState:
                         elif os.path.exists('shutdown'):
                             self.states[c][cfg]['status'] = 'shutdown'
                             self.flux[ f"{c}/{cfg}" ] = 'shutdown'
+                        elif os.path.exists('resources_restart'):
+                            self.states[c][cfg]['status'] = 'resources_restart'
+                            self.flux[ f"{c}/{cfg}" ] = 'resources_restart'
 
                         state_files = os.listdir() 
                         if len(state_files) == 0:
@@ -540,7 +543,7 @@ class sr_GlobalState:
                                         self.states[c][cfg]['instance_metrics'] = {}
                                     try:
                                         self.states[c][cfg]['instance_metrics'][i] = json.loads(t)
-                                        self.states[c][cfg]['instance_metrics'][i]['status'] = { 'mtime':os.stat(p).st_mtime }
+                                        self.states[c][cfg]['instance_metrics'][i]['status'] = { 'mtime':ageOfFile(p) }
                                     except:
                                         logger.error( f"corrupt metrics file {pathname}: {t}" )
 
@@ -578,7 +581,7 @@ class sr_GlobalState:
                     t = f.read().strip()
 
                 self.states[c][cfg]['instance_metrics'][i] = json.loads(t)
-                self.states[c][cfg]['instance_metrics'][i]['status'] = { 'mtime':os.stat(p).st_mtime }
+                self.states[c][cfg]['instance_metrics'][i]['status'] = { 'mtime':ageOfFile(p) }
             except:
                 logger.error( f"corrupt metrics file {dir1+os.sep+l}: {t}" )
 
@@ -622,7 +625,7 @@ class sr_GlobalState:
                         if not 'status' in self.configs[c][cfg]:
                             continue
 
-                        if self.configs[c][cfg]['status'] in [ 'disabled', 'interactive', 'new', 'stopped', 'stopping', 'starting' ]:
+                        if self.configs[c][cfg]['status'] in [ 'disabled', 'interactive', 'new', 'stopped', 'stopping', 'starting', 'resources_restart']:
                             continue
 
                         if hasattr(self.configs[c][cfg]['options'],'statehost') and (statehost != self.configs[c][cfg]['options'].statehost):
@@ -896,6 +899,8 @@ class sr_GlobalState:
                     self.configs[c][cfg]['status'] = 'interactive'
                 if os.path.exists(self.user_cache_dir + os.sep + c + os.sep + cfg + os.sep + 'starting'):
                     self.configs[c][cfg]['status'] = 'starting'
+                if os.path.exists(self.user_cache_dir + os.sep + c + os.sep + cfg + os.sep + 'resources_restart'):
+                    self.configs[c][cfg]['status'] = 'resources_restart'
                 if os.path.exists(self.user_cache_dir + os.sep + c + os.sep + cfg + os.sep + 'shutdown'):
                     self.configs[c][cfg]['status'] = 'shutdown'
                 if os.path.exists(self.user_cache_dir + os.sep + c + os.sep + cfg + os.sep + 'running'):
@@ -1062,12 +1067,17 @@ class sr_GlobalState:
                             resource_usage[ 'system_cpu' ] += self.procs[pid]['cpu']['system'] 
                             self.resources[ 'system_cpu' ] += self.procs[pid]['cpu']['system'] 
 
+                            # GitHub 1480 - Add metrics check to verify if instance is hung
                             if ('logAge' in self.states[c][cfg]) and (i in self.states[c][cfg]['logAge'] ) and \
-                                    ( self.states[c][cfg]['logAge'][i] > self.configs[c][cfg]['options'].runStateThreshold_hung ):
-                                hung_instances += 1
-                                self.states[c][cfg]['hung_instances'].append(i)
+                                    (('instance_metrics' in self.states[c][cfg]) and (i in self.states[c][cfg]['instance_metrics'] ) and \
+                                    ('status' in self.states[c][cfg]['instance_metrics'][i] )):
+                                # Metrics file and log file need to both be outdated to have an instance be marked as hung
+                                if ( now - self.states[c][cfg]['instance_metrics'][i]['status']['mtime'] > self.configs[c][cfg]['options'].runStateThreshold_hung ) and \
+                                    ( self.states[c][cfg]['logAge'][i] > self.configs[c][cfg]['options'].runStateThreshold_hung):
+                                    hung_instances += 1
+                                    self.states[c][cfg]['hung_instances'].append(i)
 
-                    if self.configs[c][cfg]['status'] in [ 'disabled', 'interactive', 'new', 'starting', 'shutdown', 'running' ]:
+                    if self.configs[c][cfg]['status'] in [ 'disabled', 'interactive', 'new', 'starting', 'shutdown', 'running', 'resources_restart']:
                         flow_status = self.configs[c][cfg]['status']
                     else:
                         flow_status = 'unknown'
@@ -1090,7 +1100,7 @@ class sr_GlobalState:
                             if self.configs[c][cfg]['status'] not in [ 'disabled', 'new', 'interactive' ]:
                                 flow_status = 'stopped'
                         else:
-                            if observed_instances > 0 and flow_status not in ['starting','shutdown']:
+                            if observed_instances > 0 and flow_status not in ['starting','shutdown','resources_restart']:
                                 flow_status = 'partial'
                                 for i in range(1, int(self.configs[c][cfg]['instances'])+1 ):
                                     if not i in self.states[c][cfg]['instance_pids']:
@@ -1100,7 +1110,7 @@ class sr_GlobalState:
                                     if flow_status not in [ 'interactive', 'new', 'running'] and len(self.states[c][cfg]['instance_pids']) == 0 :
                                         flow_status = 'stopped' 
                                     else:
-                                        if flow_status not in [ 'interactive', 'new', 'shutdown', 'starting' ]:
+                                        if flow_status not in [ 'interactive', 'new', 'shutdown', 'starting' , 'resources_restart']:
                                             flow_status = 'missing' 
                                         for i in range(1, int(self.configs[c][cfg]['instances'])+1 ):
                                             if not i in self.states[c][cfg]['instance_pids']:
@@ -1314,7 +1324,7 @@ class sr_GlobalState:
             'sender', 'shovel', 'subscribe', 'watch', 'winnow'
         ]
         # active means >= 1 process exists on the node.
-        self.status_active =  ['cpuSlow', 'disconnected', 'down', 'hung', 'idle', 'lagging', 'partial', 'reject', 'retry', 'running', 'slow', 'standby', 'starting', 'shutdown', 'waitVip' ]
+        self.status_active =  ['cpuSlow', 'disconnected', 'down', 'hung', 'idle', 'lagging', 'partial', 'reject', 'retry', 'running', 'slow', 'standby', 'starting', 'shutdown', 'waitVip', 'resources_restart']
         self.status_values = self.status_active + [ 'disabled', 'include', 'interactive', 'missing', 'new', 'stopped', 'unknown' ]
 
         self.bin_dir = os.path.dirname(os.path.realpath(__file__))
@@ -1791,11 +1801,8 @@ class sr_GlobalState:
             logging.error( f'{self.leftovers} configuration not found' )
             return
 
-        if len(self.filtered_configurations) > 1 :
-            if len(self.filtered_configurations) != self.options.dangerWillRobinson:
-                logging.error(
-                        f"specify --dangerWillRobinson=<number> of configs to cleanup (actual: {len(self.filtered_configurations)}, given: {self.options.dangerWillRobinson} ) when cleaning more than one")
-                return False
+        if not self.validate_dangerWillRobinson():
+            return False
 
         all_stopped=True
         for f in self.filtered_configurations:
@@ -3032,6 +3039,9 @@ class sr_GlobalState:
                     elif ( k == 'acceptUnmatched' ):
                             acceptUnmatched_explicit=line[1]
                             continue
+                    elif ( k == 'strip' ) and component in [ 'post' , 'watch' ]:
+                        v3_cfg.write("# Commenting strip option because it shouldn't be used in a post config in sr3. See https://github.com/MetPX/sarracenia/issues/1506")
+                        k = "\n# " + k
                     elif ( k == 'post_baseUrl' ) and line[1][-1] != '/':
                             line[1]+='/'
                             # see: https://github.com/MetPX/sarracenia/issues/841
@@ -3179,6 +3189,15 @@ class sr_GlobalState:
                     print("exchange with no bindings: %s-%s " % (h, x), end='')
 
         return bad
+
+    def validate_dangerWillRobinson(self):
+        if len(self.filtered_configurations) > 1 :
+            if len(self.filtered_configurations) != self.options.dangerWillRobinson:
+                logging.error(
+                        f"specify --dangerWillRobinson=<number> of configs to cleanup (actual: {len(self.filtered_configurations)}, given: {self.options.dangerWillRobinson} ) when cleaning more than one")
+                return False
+        return True
+
 
     def _pid_running_foreground(self, pid):
         """Returns True if the specified pid is running in the foreground.
@@ -3335,7 +3354,7 @@ def main():
             logger.setLevel(logging.INFO)
 
     actions = [
-        'convert', 'declare', 'devsnap', 'dump', 'edit', 'features', 'log', 'overview', 'restart', 'run', 'sanity',
+        'clean-restart', 'convert', 'declare', 'devsnap', 'dump', 'edit', 'features', 'log', 'overview', 'restart', 'run', 'sanity',
         'setup', 'show', 'status', 'start', 'stop'
     ]
 
@@ -3426,6 +3445,16 @@ def main():
     elif action == 'restart':
         print('stopping: ', end='', flush=True)
         gs.stop()
+        print('starting: ', end='', flush=True)
+        gs.start()
+
+    elif action == 'clean-restart':
+        if not gs.validate_dangerWillRobinson():
+            sys.exit(1)
+        print('stopping: ', end='', flush=True)
+        gs.stop()
+        print('cleanup: ', end='', flush=True)
+        gs.cleanup()
         print('starting: ', end='', flush=True)
         gs.start()
 

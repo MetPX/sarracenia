@@ -1,10 +1,26 @@
-metpx-sr3 (3.01.00rc2) unstable; urgency=medium
+metpx-sr3 (3.02.00rc1) unstable; urgency=medium
 
-  * Just Debian packaging fixes (should work on Ubuntu 18.04 now)
+  * Add support for inlining content in messages from all sarracenia
+    components in #1478
+  * Updates to DD examples
+  * Various FlowCB plugin work: #1497, #1512, #1518
+  * Add better logging messages: #1488, #1534
+  * Add a new `clean-restart` command line option that combines a `stop,
+    cleanup and start`: #1540
+  * Have `messageRate` options be measured post filtering: #1530
+  * Add configurability to AMQP queue arguments: #1548
+  * Improve documentation on v2 to v3 porting: #1500
+  * Fix #1504: honor post_exchange in posting components (bug was introduced
+    in `v3.01.00`
+  * Fix #1495: use better checksum assigning on download
+  * Fix #1480: check metrics when an instance is hung
+  * Fix #1538: ensure sr3 works properly without humanize
+  * Fix #1525: implement tlsRigour for AMQP broker connection
+  * Second try at fixing #1439: Add new statefile for OOM restarting use case
 
- -- Reid Sunderland <reid.sunderland@ssc-spc.gc.ca>  Fri, 18 Jul 2025 19:16:48 +0000
+ -- Andre LeBlanc <andre.leblanc@ssc-spc.gc.ca>  Wed, 18 Feb 2026 16:23:27 +0000
 
-metpx-sr3 (3.01.00rc1) unstable; urgency=medium
+metpx-sr3 (3.01.00) unstable; urgency=medium
 
   * This release is the first of sr3 v3.01 because of a significant new
     feature: support for subscribing and/or publishing to multiple
@@ -29,7 +45,7 @@ metpx-sr3 (3.01.00rc1) unstable; urgency=medium
     housekeeping which caused problems when nodupe_ttl was < housekeeping
     interval.
 
- -- Reid Sunderland <reid.sunderland@ssc-spc.gc.ca>  Mon, 23 Jun 2025 16:04:01 +0000
+ -- Reid Sunderland <reid.sunderland@ssc-spc.gc.ca>  Fri, 15 Aug 2025 18:08:45 +0000
 
 metpx-sr3 (3.00.58) unstable; urgency=medium
 

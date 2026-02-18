@@ -427,6 +427,44 @@ If the check of the upstream server fails, or the retrieve itself has failed,
 then it puts the resource on the retry queue for later attempts.
 
 
+amqp_queue_args <list> (default: not set)
+-----------------------------------------
+
+*Only applies to subscriptions to AMQP brokers.*
+
+This option is used to define optional queue arguments. The arguments that can be
+defined depend on the broker software and version used. For
+example, `RabbitMQ <https://www.rabbitmq.com/docs/queues#optional-arguments>`_.
+
+Human-friendly values (e.g. ``1m`` for 1-minute) are **not supported**. You must
+use the unit expected by the broker.
+
+Note: any queue arguments that are already defined by other sr3 options that are
+also defined in ``amqp_queue_args`` will be **overriden** by the value from
+``amqp_queue_args``. This applies to:
+
+==================== =====================
+sr3 option           AMQP Queue Argument
+==================== =====================
+``expire``           ``x-expires``
+``messageAgeMax``    ``x-message-ttl``
+``queueType``        ``x-queue-type``
+==================== =====================
+
+Warning: no validation is performed on these arguments. sr3 does not know what
+arguments are supported by the broker, so it can't check if you have specified
+an unsupported option.
+
+For example: ::
+
+  # x-consumer-timeout: if an ack is not received within this timeframe, the broker
+  # will assume the message has been lost. (3600000 ms = 1 hour)
+  amqp_queue_args x-consumer-timeout=3600000
+
+  expire 5m
+  # this overrides the x-expires 5 minute expiration to 3600000 ms
+  amqp_queue_args x-expires=3600000
+
 attempts <count> (default: 3)
 -----------------------------
 
@@ -1227,8 +1265,8 @@ messageRateMax <float> (default: 0)
 -----------------------------------
 
 if **messageRateMax** is greater than zero, the flow attempts to respect this delivery
-speed in terms of messages per second. Note that the throttle is on messages obtained or generated
-per second, prior to accept/reject filtering. the flow will sleep to limit the processing rate.
+speed in terms of messages per second. Note that the throttle is applied to the message rate
+*after* accept/reject filtering. The flow will sleep to limit the processing rate.
 
 
 messageRateMin <float> (default: 0)
@@ -1391,6 +1429,18 @@ a **first layer of subscribers (shovels)** with duplicate suppression turned
 off and output with *post_exchangeSplit*, which route notification with the same path to
 the same member of a **second layer of subscribers (winnow) whose duplicate suppression caches 
 are active.**
+
+nofsetstat <off|on> (default: off)
+----------------------------------
+
+Error messages such as this::
+
+    [ERROR] sarracenia.flow send could not send /source/filename to inflight=None sftp://user@example.com/ /destination/filename: FSETSTAT unsupported
+
+Some SFTP servers will restrict permissions in ways which limit functionality. Cannot set modification times, or 
+truncate files (when new file is shorter than earlier version.), cannot set mode/permission bits.
+To avoid warnings or errors being generated about FSETSTAT, one can accept the limited functionality
+by setting **nofsetstat on**
 
 
 outlet post|json|url (default: post)
@@ -1882,9 +1932,11 @@ In a flow that transfers data, the last activity will be based on the last data 
 In a flow does neither of the above, then the last activity is based on the last message
 received.
 
-This isn't a problem in itself, unless one is expecting a continuous flow. If a continuous flow
-of a certain rate is expected, set the *runStateThreshold_slow* for the flow so that *sr3 status* flags
-it as a problem.
+Idle isn't a problem in itself, unless one is expecting to receive data at regular intervals (e.g. at least
+one file every 15 minutes).
+
+If a continuous flow of a certain data rate (bytes per second) is expected, set
+*runStateThreshold_slow* for the flow so that *sr3 status* flags it as a problem (too slow).
 
 
 runStateThreshold_lag <interval> (default: 30)
