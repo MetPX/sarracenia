@@ -85,7 +85,13 @@ if features['humanize']['present']:
         return humanize.naturaltime(dur)
 
     def naturalDelta(value, months=True, minimum_unit='seconds'):
-        return humanize.naturaldelta(value, months=months, minimum_unit=minimum_unit)
+        # older versions of humanize don't support minimum_unit
+        try:
+            return humanize.naturaldelta(value, months=months, minimum_unit=minimum_unit)
+        except TypeError:
+            return humanize.naturaldelta(value, months=months)
+        except:
+            return "%d" % value
 
 else:
   
