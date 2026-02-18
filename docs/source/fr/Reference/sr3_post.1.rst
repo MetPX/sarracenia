@@ -38,6 +38,12 @@ Les différences sont:
  - lorsque l'option *sleep* (utilisée uniquement dans l'implémentation C) est définie comme > 0,
     il transforme sr_cpost en démon qui fonctionne comme le composant *watch*
     de `sr3(1) <sr3.1.html>`_.  
+- L'interprétation des options en C est simpliste comparé à l'implémentation Python. Exemple::
+
+          Ligne de commande Python : --header='key=value'
+          Ligne de commande C : --header key=value
+
+  Le signe *=* après le mot-clé ne sera pas analysé comme il l'est en Python.
 
 Options obligatoires
 --------------------

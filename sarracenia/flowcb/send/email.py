@@ -160,7 +160,7 @@ class Email(FlowCB):
                 emsg.attach(emsg_text)
                 with open(ipath, 'rb') as fp:
                     attachment_data = fp.read()
-                attachment = MIMEApplication(attachment_data, name=os.path.basename(ipath))
+                attachment = MIMEApplication(attachment_data, name=msg['new_file'])
                 # Add the attachment data to the email
                 emsg.attach(attachment)
             else:

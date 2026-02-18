@@ -27,6 +27,7 @@ import sys
 import time
 import urllib, urllib.parse
 
+from ast import literal_eval
 from random import randint
 
 if sys.version_info[0] >= 3 and sys.version_info[1] < 8:
@@ -103,6 +104,7 @@ default_options = {
     'metrics_writeInterval': 5,
     'nodupe_driver': 'disk',
     'nodupe_ttl': 0,
+    'nofsetstat': False,
     'overwrite': True,
     'path': [],
     'permDefault' : octal_number(0),
@@ -148,7 +150,7 @@ flag_options = [ 'acceptSizeWrong', 'acceptUnmatched', 'amqp_consumer', 'baseUrl
     'delete', 'discard', 'download', 'dry_run', 'durable', 'exchangeDeclare', 'exchangeSplit', 
     'follow_symlinks', 'force_polling', 'inline', 'inlineOnly', 'inplace', 'logJson', 
     'logMetrics', 'logReject', 'logStdout', 'logReject', 'restore', 'messageDebugDump', 
-    'mirror', 'notify_only', 'overwrite', 'post_on_start', 'permCopy', 'persistent', 
+    'mirror', 'nofsetstat', 'notify_only', 'overwrite', 'post_on_start', 'permCopy', 'persistent', 
     'queueBind', 'queueDeclare', 'randomize', 'recursive', 'realpathFilter', 'realpathPost', 
     'reconnect', 'report', 'reset', 'retry_refilter', 'retryEmptyBeforeExit', 'save', 
     'sundew_compat_regex_first_match_is_zero', 'sourceFromExchange', 'sourceFromMessage', 
@@ -163,7 +165,7 @@ duration_options = [
     'runStateThreshold_idle', 'runStateThreshold_lag', 'retry_ttl', 'runStateThreshold_hung', 'sleep', 'timeout', 'varTimeOffset'
 ]
 
-list_options = [ 'path', 'vip' ]
+list_options = [ 'amqp_queue_args', 'path', 'vip' ]
 
 # set, valid values of the set.
 set_options = [ 'logEvents', 'fileEvents' ]
@@ -179,8 +181,8 @@ perm_options = [ 'permDefault', 'permDirDefault','permLog']
 
 # options that apply to queues, and so must appear before subtopic resolves queues characteristics.
 #
-queue_options = [ 'auto_delete', 'broker', 'clean_session', 'durable', 'exchange', 'exchangeSuffix',  \
-                  'expire', 'max_inflight_messages', 'max_queued_messages',  'prefetch',  \
+queue_options = [ 'amqp_queue_args', 'auto_delete', 'broker', 'clean_session', 'durable', 'exchange',   \
+                  'exchangeSuffix', 'expire', 'max_inflight_messages', 'max_queued_messages',  'prefetch',  \
                  'qos', 'queueBind',  'queueDeclare' , 'receiveMaximum', 'tlsRigour']
 
 size_options = ['accelThreshold', 'blockSize', 'bufSize', 'byteRateMax', 'fileSizeMax', 'inlineByteMax']
@@ -647,6 +649,15 @@ def config_path(subdir, config, mandatory=True, ctype='conf'):
 
     return False, config
 
+def guess_type(value:str):
+    """ try to parse a string into any type (int, float, string, etc.).
+        return the original string if anything goes wrong.
+    """
+    try:
+        value = literal_eval(value)
+    except Exception as e:
+        logger.debug(e)
+    return value
 
 class Config:
     r"""
@@ -707,7 +718,7 @@ class Config:
     ]
 
     actions = [
-        'add', 'cleanup', 'convert', 'devsnap', 'declare', 'disable', 'dump', 'edit',
+        'add', 'cleanup', 'clean-restart', 'convert', 'devsnap', 'declare', 'disable', 'dump', 'edit',
         'enable', 'features', 'foreground', 'log', 'list', 'remove', 'restart', 'run', 'sanity',
         'setup', 'show', 'start', 'stop', 'status', 'overview'
     ]
@@ -1117,7 +1128,7 @@ class Config:
         s = 'accept' if accepting else 'reject'
         if pstrip : strip=pstrip
         strip = '' if strip == 0 else f' strip:{strip}'
-        fn = '' if (maskFileOption == 'WHATFN') else f' filename:{maskFileOption}'
+        fn = f' filename:{maskFileOption}'
         flatten = '' if flatten == '/' else f' flatten:{flatten}'
         w = 'with ' if fn or flatten or strip else ''
         args = '' if len(args) == 0 else ' args:' + str(args)
@@ -1400,9 +1411,12 @@ class Config:
     def _parse_declare(self, words):
 
         if words[0] in ['env', 'envvar', 'var', 'value']:
-            name, value = words[1].split('=')
-            self.env[name] = value
-            self.env_declared.append(name)
+            name = words[1].split('=')[0]
+            if len(name) < len(words[1]):
+                self.env[name] = words[1][len(name)+1:]
+                self.env_declared.append(name)
+            else:
+                logging.error( f"malformed declaration: for {words[0]} need name and value separated by = sign" )
         elif words[0] in ['option', 'o']:
             self._parse_option(words[1], words[2:])
         elif words[0] in ['source', 'subscriber', 'subscribe']:
@@ -1614,6 +1628,9 @@ class Config:
                     logger.warning( f"{','.join(self.files)}:{lineno} {k} needs to be near the start of the file." )
             return
 
+        if k == 'broker':
+            self.subtopic_seen=False
+
         if k in queue_options and hasattr(self,'subtopic_seen') and self.subtopic_seen:
             logger.warning( f"{','.join(self.files)}:{lineno} {k} needs to appear before *subtopic*" \
                 " unless you need different queues to have different settings")
@@ -1639,8 +1656,12 @@ class Config:
             self.feeder = urllib.parse.urlparse(line[1])
             self.declared_users[self.feeder.username] = 'feeder'
         elif k in ['header', 'h']:
-            (kk, vv) = line[1].split('=')
-            self.fixed_headers[kk] = vv
+            kk = line[1].split('=')[0]
+            if len(kk) < len(line[1]):
+                self.fixed_headers[kk] = line[1][len(kk)+1:]
+            else:
+                logger.error( f"{','.join(self.files)}:{lineno} {k} keyword=value (no = sign found)" )
+
         elif k in ['include', 'config']:
             try:
                 self.parse_file(v)
@@ -2672,7 +2693,7 @@ class Config:
             choices=[
                 'notset', 'debug', 'info', 'warning', 'error', 'critical'
             ],
-            help='encode payload in base64 (for binary) or text (utf-8)')
+            help='set the log level (default is info)')
         parser.add_argument('--logReject',
                             action='store_true',
                             default=self.logReject,

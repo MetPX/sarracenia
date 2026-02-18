@@ -1,10 +1,10 @@
-metpx-sr3 (3.01.00rc2) unstable; urgency=medium
+metpx-sr3 (3.01.01rc1) UNRELEASED; urgency=medium
 
-  * Just Debian packaging fixes (should work on Ubuntu 18.04 now)
+  * incremented version number for new development work
 
- -- Reid Sunderland <reid.sunderland@ssc-spc.gc.ca>  Fri, 18 Jul 2025 19:16:48 +0000
+ -- Reid Sunderland <reid.sunderland@ssc-spc.gc.ca>  Fri, 15 Aug 2025 19:18:32 +0000
 
-metpx-sr3 (3.01.00rc1) unstable; urgency=medium
+metpx-sr3 (3.01.00) unstable; urgency=medium
 
   * This release is the first of sr3 v3.01 because of a significant new
     feature: support for subscribing and/or publishing to multiple
@@ -29,7 +29,7 @@ metpx-sr3 (3.01.00rc1) unstable; urgency=medium
     housekeeping which caused problems when nodupe_ttl was < housekeeping
     interval.
 
- -- Reid Sunderland <reid.sunderland@ssc-spc.gc.ca>  Mon, 23 Jun 2025 16:04:01 +0000
+ -- Reid Sunderland <reid.sunderland@ssc-spc.gc.ca>  Fri, 15 Aug 2025 18:08:45 +0000
 
 metpx-sr3 (3.00.58) unstable; urgency=medium
 

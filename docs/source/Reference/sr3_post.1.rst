@@ -38,6 +38,12 @@ Differences:
  - when the *sleep* option ( used only in the C implementation) is set to > 0,
    it transforms sr_cpost into a daemon that works like the *watch* component
    of `sr3(1) <sr3.1.html>`_.  
+ - Option parsing in C is simplistic compared to the Python implementation. Example::
+
+      Python command line: --header='key=value'
+           C command line: --header key=value
+
+   An *=* sign after the keyword will not be parsed as it is in Python.
 
 Mandatory Settings
 ------------------
