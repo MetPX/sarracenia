@@ -5,13 +5,13 @@ metpx-sr3 (3.02.00rc1) unstable; urgency=medium
   * Updates to DD examples
   * Various FlowCB plugin work: #1497, #1512, #1518
   * Add better logging messages: #1488, #1534
-  * Add a new `clean-restart` command line option that combines a `stop,
-    cleanup and start`: #1540
-  * Have `messageRate` options be measured post filtering: #1530
+  * Add a new "clean-restart" command line option that combines a "stop,
+    cleanup and start": #1540
+  * Have "messageRate" options be measured post filtering: #1530
   * Add configurability to AMQP queue arguments: #1548
   * Improve documentation on v2 to v3 porting: #1500
   * Fix #1504: honor post_exchange in posting components (bug was introduced
-    in `v3.01.00`
+    in "v3.01.00"
   * Fix #1495: use better checksum assigning on download
   * Fix #1480: check metrics when an instance is hung
   * Fix #1538: ensure sr3 works properly without humanize
