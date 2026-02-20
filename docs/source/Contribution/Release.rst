@@ -34,7 +34,7 @@ To publish a pre-release one needs to:
 - validate that the correct version of C stack will be running when running flow tests.
   on each server::
 
-      sr3_cpost -h
+      sr3_cpost -h |& head -3
 
   Is that the version wanted?
   Consult C installation/release info to make sure you have the version you want
