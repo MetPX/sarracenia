@@ -78,6 +78,10 @@ class Resources(FlowCB):
         self.restart_initiated_time = None
 
     def on_housekeeping(self):
+        if self.stop_requested:
+            logger.debug("already stopping, no need to do anything")
+            return
+
         if features['process']['present']:
             mem = psutil.Process().memory_info().vms
         else:
@@ -86,10 +90,6 @@ class Resources(FlowCB):
         ost = os.times()
         cpu_time_total = ost.system + ost.user
         logger.info(f"Current cpu_times: user={ost.user} system={ost.system} total={cpu_time_total:.2f}{self.cpu_threshold_msg}")
-
-        if self.stop_requested:
-            logger.debug("already stopping, no need to do anything")
-            return
 
         # check current CPU and memory usage, restart if needed
         if self.threshold_memory is not None and mem > self.threshold_memory:
@@ -183,11 +183,12 @@ class Resources(FlowCB):
                     except:
                         logger.warning(f"failed to SIGKILL parent {parent_pid}, proceeding to start up in {child_pid}")
 
+                self.write_pidfile(child_pid, overwrite=False) # re-write pidfile if it got deleted during shutdown
                 time.sleep(0.1) # small sleep so we can restart ASAP after parent shuts down
 
             # parent has finished shutting down
-            # first thing we do after parent stops is to re-write pidfile, since the parent likely deleted it
-            self.write_pidfile(child_pid)
+            # first thing we do after parent stops is to re-write pidfile, in case it was deleted or has the wrong pid
+            self.write_pidfile(child_pid, overwrite=True)
             logger.info(f"parent PID {parent_pid} has stopped, PID {child_pid} taking over")
             logger.debug(f"CPU times in new process: {os.times()}")
             self.restart()
@@ -200,7 +201,7 @@ class Resources(FlowCB):
                 # To avoid that, write the child's PID to the pidfile. After that's done, if sanity runs, it will
                 # think the parent is a stray and kill it, which is fine. Better than killing the child. The restart
                 # file should still eliminate 99% of conflicts with sanity.
-                self.write_pidfile(child_pid)
+                self.write_pidfile(child_pid, overwrite=True)
                 logger.info(f"shutting down PID {parent_pid}, will auto-restart as PID {child_pid}")
                 self.stop_requested = True
                 os.kill(parent_pid, signal.SIGTERM)
@@ -254,12 +255,15 @@ class Resources(FlowCB):
         with open(self.state_file, "w") as f:
             f.write(nowstr())
 
-    def write_pidfile(self, pid):
+    def write_pidfile(self, pid, overwrite=False):
         """ Write ``pid`` to the pidfile.
+            When overwrite is False, the pidfile will only be written if it does not exist. When True, the pidfile
+            will always be written, even if it already exists and has a different PID number in it.
         """
-        try:
-            with open(self.o.pid_filename, 'w') as f:
-                f.write(str(pid))
-                logger.debug(f"wrote {pid} to {self.o.pid_filename}")
-        except:
-            logger.warning("failed to update pidfile, sanity may interfere if it runs during the restart")
+        if overwrite or not os.path.exists(self.o.pid_filename):
+            try:
+                with open(self.o.pid_filename, 'w') as f:
+                    f.write(str(pid))
+                    logger.debug(f"wrote {pid} to {self.o.pid_filename}")
+            except:
+                logger.warning("failed to update pidfile, sanity may interfere if it runs during the restart")
