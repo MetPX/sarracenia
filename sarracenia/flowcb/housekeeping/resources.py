@@ -199,8 +199,8 @@ class Resources(FlowCB):
             if not self.stop_requested:
                 # If sanity runs before parent shuts down, it will notice the child process and think it's a stray.
                 # To avoid that, write the child's PID to the pidfile. After that's done, if sanity runs, it will
-                # think the parent is a stray and kill it, which is fine. Better than killing the child. The restart
-                # file should still eliminate 99% of conflicts with sanity.
+                # think the parent is a stray and send it TERM, which is fine. Better than killing the child. The
+                # restart file should still eliminate 99% of conflicts with sanity.
                 self.write_pidfile(child_pid, overwrite=True)
                 logger.info(f"shutting down PID {parent_pid}, will auto-restart as PID {child_pid}")
                 self.stop_requested = True
