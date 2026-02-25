@@ -78,6 +78,10 @@ class Resources(FlowCB):
         self.restart_initiated_time = None
 
     def on_housekeeping(self):
+        logger.error("RS going to write statefile")
+        self.write_restart_statefile()
+        return
+        
         if self.stop_requested:
             logger.debug("already stopping, no need to do anything")
             return
@@ -155,6 +159,8 @@ class Resources(FlowCB):
         3. (Re-)Starting up the process in the new PID
         """
 
+        # TODO: might need to check if sanity is currently running (how?) and wait for it to finish?
+
         parent_pid = os.getpid()
 
         # only fork if we're not already in the middle of a restart
@@ -169,6 +175,12 @@ class Resources(FlowCB):
         if child_pid == 0:
             # NOTE: it's not safe to use the logger here until the parent shuts down
             child_pid = os.getpid() # get the actual PID of the child
+
+            # As soon as the child is running, update the pidfile to point to the child's PID instead of the
+            # parent's. Now, if sanity runs before the parent shuts down, then it will detect the parent as a stray
+            # and send it SIGTERM, which is harmless. NOTE: tried doing this in the parent process, but sanity was
+            # detecting missing instances. Trying this here, not sure if it will be better.
+            self.write_pidfile(child_pid, overwrite=True)
 
             # wait for the parent to shut down
             while self.is_pid_running(parent_pid):
@@ -197,11 +209,6 @@ class Resources(FlowCB):
         else:
             # Need to shut down. This code should only run once.
             if not self.stop_requested:
-                # If sanity runs before parent shuts down, it will notice the child process and think it's a stray.
-                # To avoid that, write the child's PID to the pidfile. After that's done, if sanity runs, it will
-                # think the parent is a stray and send it TERM, which is fine. Better than killing the child. The
-                # restart file should still eliminate 99% of conflicts with sanity.
-                self.write_pidfile(child_pid, overwrite=True)
                 logger.info(f"shutting down PID {parent_pid}, will auto-restart as PID {child_pid}")
                 self.stop_requested = True
                 os.kill(parent_pid, signal.SIGTERM)
