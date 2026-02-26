@@ -78,10 +78,6 @@ class Resources(FlowCB):
         self.restart_initiated_time = None
 
     def on_housekeeping(self):
-        logger.error("RS going to write statefile")
-        self.write_restart_statefile()
-        return
-        
         if self.stop_requested:
             logger.debug("already stopping, no need to do anything")
             return
@@ -177,7 +173,7 @@ class Resources(FlowCB):
             child_pid = os.getpid() # get the actual PID of the child
 
             # As soon as the child is running, update the pidfile to point to the child's PID instead of the
-            # parent's. Now, if sanity runs before the parent shuts down, then it will detect the parent as a stray
+            # parent's. Now, if sanity runs before the parent shuts down, it will detect the parent as a stray
             # and send it SIGTERM, which is harmless. NOTE: tried doing this in the parent process, but sanity was
             # detecting missing instances. Trying this here, not sure if it will be better.
             self.write_pidfile(child_pid, overwrite=True)
