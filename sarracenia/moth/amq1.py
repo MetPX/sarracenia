@@ -214,9 +214,10 @@ class AMQ1(Moth):
             for debug logging add this to config:
             set sarracenia.moth.amq1.AMQ1.logLevel debug
 
+            AMQP 1.0 does not define server side concepts like queues or exchanges.
+
             RabbitMQ-specific AMQP 1.0 Notes:
             ---------------------------------
-            AMQP 1.0 does not define server side concepts like queues or exchanges.
             RabbitMQ's AMQP 1.0 implementation uses exchanges and queues (i.e. they use the
             AMQP 0.9.1 server model) with specific AMQP 1.0 *address* formats used to publish to
             exchanges, create and bind queues.
@@ -245,11 +246,19 @@ class AMQ1(Moth):
             where messages are published to and received from fixed addresses (the address is kind of like
             a queue in this case, and the publisher places messages directly in the "queue" (address))
 
+            Addresses in AMQP1.0 are static, and wildcards are not part of the spec. In MQTT, we map
+            the exchange and topicPrefix into the topic, but this causes issues
+            when trying to subscribe to sources where a static exchange and topicPrefix are not used.
+            We need a way to set no topicPrefix and no exchange, and allow the address to be defined only
+            by the subtopic. (Maybe the best way to do this is a fixed list of topics that overrides the
+            exchange, topicPrefix and subtopic convention. That would require some larger changes.)
+            Whatever we choose to do for AMQP1.0 should work for MQTT too.
+
+            For now, we are just ignoring topicPrefix and exchange and just use the subtopics as addresses.
+
             TODO:
             -----
             - Figure out how we want to define address(es) in the config.
-                - Whatever we do, imo (RS), should be re-usable for MQTT too, for cases where we can't
-                  want to use the normal sr3 exchange, topic_prefix, file path-based subtopic convention.
             - Concept of durable queues - can we have messages queue up on the broker while we're
                 disconnected?
             - Equivalent to queue names - can we specify the name of our queue/connection?
@@ -361,18 +370,7 @@ class AMQ1(Moth):
         broker = subscription['broker']
         bindings = subscription['bindings']
 
-        # TODO: AMQP1.0 does not have any concept of exchanges or topics. You just define the addresses
-        # you want to receive messages from. This is somewhat similar to MQTT topics, but MQTT's topics
-        # are more similar to AMQP0.9.1. Addresses in AMQP1.0 are static, and wildcards are not part of
-        # the spec. In MQTT, we map the exchange and topicPrefix into the topic, but this causes issues
-        # when trying to subscribe to sources where a static exchange and topicPrefix are not used.
-        # We need a way to set no topicPrefix and no exchange, and allow the address to be defined only
-        # by the subtopic. (Maybe the best way to do this is a fixed list of topics that overrides the
-        # exchange, topicPrefix and subtopic convention. That would require some larger changes.)
-        # Whatever we choose to do for AMQP1.0 should work for MQTT too.
-        # For now, ignore topicPrefix and exchange and just use the subtopics as addresses.
-
-        # translate sr3 bindings to AMQP1.0 addresses
+        # translate sr3 bindings to AMQP1.0 addresses (FIXME: currently ignoring exchange/topicPrefix)
         addresses = [ b['sub'][0] for b in bindings ]
         logger.debug(f"source addresses: {addresses}")
 
