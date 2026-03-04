@@ -1390,7 +1390,7 @@ class Config:
                 subtopic = subtopic_string.split('/')
             # for other protocols, e.g. AMQP1.0, leave the subtopic alone.
             else:
-                subtopic = subtopic_string
+                subtopic = [subtopic_string]
             
         if hasattr(self, 'exchange') and hasattr(self, 'topicPrefix'):
             self.subscriptions.add(Subscription(self, self.queueName, resolved_queueName, subtopic, topicOverride))
@@ -2551,7 +2551,7 @@ class Config:
                    topicPrefix = namespace.topicPrefix.split('/')
                # for other protocols, e.g. AMQP1.0, leave the topicPrefix alone.
                else:
-                   topicPrefix = namespace.topicPrefix
+                   topicPrefix = [namespace.topicPrefix]
 
                namespace.topicPrefix = topicPrefix
 
