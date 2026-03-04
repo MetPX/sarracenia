@@ -237,14 +237,19 @@ class AMQ1(Moth):
 
             Non-RabbitMQ AMQP 1.0:
             ----------------------
-            We want to support non-RabbitMQ AMQP 1.0 brokers, so we need to support
-            other address formats, without the concept of exchanges or queues.
+            We need to support non-RabbitMQ AMQP 1.0 brokers, so we can't rely on RabbitMQ's address
+            definitions.
 
-            FIXME: I think I'm going to add an *address* option to the subscription config,
-            and ignore queueName, exchange, subtopic, topicPrefix, etc.
+            In sr3, topics are normally related to file paths, so we can have the broker filter messages
+            that the client wants to receive. But this convention does not apply in all cases, like SWIM,
+            where messages are published to and received from fixed addresses (the address is kind of like
+            a queue in this case, and the publisher places messages directly in the "queue" (address))
 
             TODO:
             -----
+            - Figure out how we want to define address(es) in the config.
+                - Whatever we do, imo (RS), should be re-usable for MQTT too, for cases where we can't
+                  want to use the normal sr3 exchange, topic_prefix, file path-based subtopic convention.
             - Concept of durable queues - can we have messages queue up on the broker while we're
                 disconnected?
             - Equivalent to queue names - can we specify the name of our queue/connection?
@@ -764,7 +769,7 @@ class AMQ1(Moth):
 
 
     def __is_connected(self):
-        return self.client and self.client.is_connected
+        return self.client and self.client.is_connected()
 
     def close(self) -> None:
         if self.client:
