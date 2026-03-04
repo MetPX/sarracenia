@@ -40,20 +40,56 @@ class Amqp1Client(MessagingHandler):
         Based on https://qpid.apache.org/releases/qpid-proton-0.40.0/proton/python/examples/
         Docs: https://qpid.apache.org/releases/qpid-proton-0.40.0/proton/python/docs/index.html
     """
-    def __init__(self, url: str, topics: list, msg_q: queue.Queue, is_subscriber: bool):
+    def __init__(self, url: str, addresses: list, msg_q: queue.Queue, is_subscriber: bool, options: dict):
+        """ Handles communication with an AMQP1.0 broker.
+            Args:
+                url (str): The AMQP broker connection URL.
+                addresses (list): A list of source/destination addresses to receive from or publish to.
+                    When publishing, a copy of the message is sent to each destination address.
+                msg_q (queue.Queue): When subscribing, messages received from the broker are placed in this queue.
+                    When publishing, messages to be published are placed in this queue.
+                is_subscriber (bool): True when subscribing (receive messages from the broker), False when
+                    publishing messages to the broker.
+                options (dict): sr3 options dictionary
+        """
         super(Amqp1Client, self).__init__()
         self.url = url
-        self.topics = topics
+        self.addresses = addresses
         self.msg_q = msg_q
         self.is_subscriber = is_subscriber
 
-        self.is_connected = False # FIXME check connection.state can be UNINIT, ACTIVE, CLOSED https://qpid.apache.org/releases/qpid-proton-0.40.0/proton/python/docs/proton.html#proton.Connection.state
-        self.receiver = None
+        self.__connected = False
+        self.receivers = []
+        self.senders = []
         self.connection = None
         self.seq = 0
 
         scheme = self.url.split("://")[0].lower()
         self.__secure = scheme[-1] == 's'
+
+        self.o = options
+
+        self.username = self.o['broker'].url.username
+        self.password = self.o['broker'].url.password
+
+        self.anonymous = (self.username == 'anonymous' and self.password == 'anonymous')
+
+        # NAVCANADA requires [CLIENTNAME]-[ENDPOINT]-[PUB/SUB]
+        # TODO: revisit this
+        self.connection_name = "metpx-sr3_v" + sarracenia.__version__ + '-' + self.o['component'] + '_' + self.o['config']
+        if self.is_subscriber:
+            self.connection_name += '-SUB'
+        else:
+            self.connection_name += '-PUB'
+        logger.debug(f"connection name: {self.connection_name}")
+
+    def is_connected(self):
+        """ Return True when the connection is connected.
+            connection.state can be UNINIT, ACTIVE, CLOSED 
+            https://qpid.apache.org/releases/qpid-proton-0.40.0/proton/python/docs/proton.html#proton.Connection.state
+        """
+        logger.debug(f"__connected: {self.__connected} connection state: {self.connection.state}")
+        return (self.__connected and self.connection is not None and self.connection.state == 'ACTIVE')
 
     def on_start(self, event):
         """ Event loop in container has started, new receiver can be created.
@@ -65,85 +101,45 @@ class Amqp1Client(MessagingHandler):
         else:
             ssl_domain = None
 
-        self.connection = event.container.connect(self.url, ssl_domain=ssl_domain)
+        event.container.container_id = self.connection_name
 
-        # FIXME how to subscribe to multiple topics?
+        # TODO test anon
+        if self.anonymous:
+            self.connection = event.container.connect(self.url, ssl_domain=ssl_domain)
+        else:
+            self.connection = event.container.connect(self.url, ssl_domain=ssl_domain,
+                                                      user=self.username,
+                                                      password=self.password)
+
+        # subscriber: create receivers for each source address
         if self.is_subscriber:
-            self.receiver = event.container.create_receiver(self.connection, source=self.topics[0])
+            for addr in self.addresses:
+                try:
+                    rx = event.container.create_receiver(self.connection, source=addr)
+                    self.receivers.append(rx)
+                except Exception as e:
+                    logger.error("failed to create receiver for address: {addr}")
+                    logger.debug("Exception details:", exc_info=True)
+
+        # publisher: create senders for each destination address
+        else:
+            for addr in self.addresses:
+                try:
+                    tx = event.container.create_sender(self.connection, addr)
+                    self.senders.append(tx)
+                except Exception as e:
+                    logger.error("failed to create sender for address: {addr}")
+                    logger.debug("Exception details:", exc_info=True)
+                # event.container.declare_transaction(self.connection, handler=self)
+                # self.transaction = None
+
 
     def on_message(self, event):
         """ Handle message received from broker.
         """
         msg = event.message
         self.msg_q.put(msg)
-        logger.debug(f"new message pushed from broker: {msg}")
-
-    def on_connection_opened(self, event):
-        logger.info(f"connection opened {event}")
-        self.is_connected = True
-
-    def on_connection_closed(self, event):
-        logger.info(f"connection closed {event}")
-        self.is_connected = False
-
-    def close(self):
-        if self.receiver:
-            self.receiver.close()
-            self.receiver.free()
-            self.receiver = None
-            logger.debug("closed receiver")
-        if self.connection:
-            self.connection.close()
-            self.connection.free()
-            self.connection = None
-            logger.debug("closed connection")
-
-class Amqp1Pub(MessagingHandler):
-    """
-        Based on https://qpid.apache.org/releases/qpid-proton-0.40.0/proton/python/examples/
-        Docs: https://qpid.apache.org/releases/qpid-proton-0.40.0/proton/python/docs/index.html
-    """
-
-    def __init__(self, url: str, topics: list, msg_q: queue.Queue, options):
-        #super().__init__(default_options)
-        super(Amqp1Pub, self).__init__()
-        self.url = url
-        self.topics = topics
-        self.msg_q = msg_q
-
-        self.is_connected = False # FIXME check connection.state can be UNINIT, ACTIVE, CLOSED https://qpid.apache.org/releases/qpid-proton-0.40.0/proton/python/docs/proton.html#proton.Connection.state
-        self.sender = None
-        self.connection = None
-        self.sent = 0
-        self.total = 1
-        self.o = options
-
-        scheme = self.url.split("://")[0].lower()
-        self.host = self.url.split("://")[1]
-        self.__secure = scheme[-1] == 's'
-
-    def on_start(self, event):
-        """ Event loop in container has started, new sender can be created.
-        """
-        if self.__secure:
-            ssl_domain = SSLDomain(SSLDomain.MODE_CLIENT)
-            # FIXME: currently not verifying SSL at all
-            ssl_domain.set_peer_authentication(SSLDomain.ANONYMOUS_PEER)
-        else:
-            ssl_domain = None
-
-        if self.o['broker'].url.username and self.o['broker'].url.password:
-            self.connection = event.container.connect(self.url, user=self.o['broker'].url.username, \
-                                                      password=self.o['broker'].url.password)
-            logger.critical(f"Topic {self.topics}")
-        else:
-            self.connection = event.container.connect(self.url, ssl_domain=ssl_domain)
-
-        # FIXME Probably need to have a guard here. Correct guard?
-        self.sender = event.container.create_sender(self.connection, self.topics[0])
-        logger.critical(f"Sender container initialized!")
-        # event.container.declare_transaction(self.connection, handler=self)
-        # self.transaction = None
+        logger.debug(f"new message pushed from broker (address: {event.receiver.source.address}): {msg}")
 
     # From : https://qpid.apache.org/releases/qpid-proton-0.40.0/proton/python/examples/tx_send.py.html
     # def on_transaction_declared(self, event):
@@ -151,12 +147,16 @@ class Amqp1Pub(MessagingHandler):
     #     self.send()
 
     def on_sendable(self, event):
+        """ Publish a message.
+        """
         while event.sender.credit and self.sent < self.total:
             event.sender.send(self.msg_q.get_nowait())
             logger.critical("MESSAGE SENT!")
             self.sent += 1
 
     def on_accepted(self, event):
+        """ The broker has accepted a message we published.
+        """
         logger.critical("Message was accepted!!!")
         event.connection.close()
 
@@ -170,16 +170,31 @@ class Amqp1Pub(MessagingHandler):
     #     self.transaction.commit()
 
     def update_queue(self, new_q):
+        """ TODO
+        this is for publishing
+        """
         self.msg_q = new_q
         #logger.critical(f"Is the queue empty? {self.msg_q.empty()}")
 
+    def on_connection_opened(self, event):
+        logger.info(f"connection opened to {self.url} {event}")
+        self.__connected = True
+
+    def on_connection_closed(self, event):
+        logger.info(f"connection closed {event}")
+        self.__connected = False
 
     def close(self):
-        if self.sender:
-            self.sender.close()
-            self.sender.free()
-            self.sender = None
-            logger.debug("closed sender")
+        for rx in self.receivers:
+            rx.close()
+            rx.free()
+            logger.debug(f"closed receiver from address {rx.source.address}")
+        self.receivers = []
+        for tx in self.senders:
+            tx.close()
+            tx.free()
+            logger.debug(f"closed sender to address {tx.target.address}")
+        self.senders = []
         if self.connection:
             self.connection.close()
             self.connection.free()
@@ -338,8 +353,23 @@ class AMQ1(Moth):
             return
 
         subscription = self.o['subscriptions'][self.o['subscription_index']]
-        queuename = subscription['queue'] # FIXME: not used?
         broker = subscription['broker']
+        bindings = subscription['bindings']
+
+        # TODO: AMQP1.0 does not have any concept of exchanges or topics. You just define the addresses
+        # you want to receive messages from. This is somewhat similar to MQTT topics, but MQTT's topics
+        # are more similar to AMQP0.9.1. Addresses in AMQP1.0 are static, and wildcards are not part of
+        # the spec. In MQTT, we map the exchange and topicPrefix into the topic, but this causes issues
+        # when trying to subscribe to sources where a static exchange and topicPrefix are not used.
+        # We need a way to set no topicPrefix and no exchange, and allow the address to be defined only
+        # by the subtopic. (Maybe the best way to do this is a fixed list of topics that overrides the
+        # exchange, topicPrefix and subtopic convention. That would require some larger changes.)
+        # Whatever we choose to do for AMQP1.0 should work for MQTT too.
+        # For now, ignore topicPrefix and exchange and just use the subtopics as addresses.
+
+        # translate sr3 bindings to AMQP1.0 addresses
+        addresses = [ b['sub'][0] for b in bindings ]
+        logger.debug(f"source addresses: {addresses}")
 
         start = time.time()
         if start < self.next_connect_time:
@@ -371,9 +401,10 @@ class AMQ1(Moth):
         try:
             self.client = Amqp1Client(
                 host,
-                ["origin.a.wis2.com-ibl.data.core.weather.aviation.*"],
+                addresses,
                 self._raw_msg_q,
-                self.is_subscriber
+                self.is_subscriber,
+                self.o
             )
             self.reactor = Container(self.client)
             self.client_thread = threading.Thread(target=self.reactor.run)
@@ -674,10 +705,11 @@ class AMQ1(Moth):
 
         self._raw_msg_q = queue.Queue() # FIXME need to deal with messages still in q?
 
-        self.client = Amqp1Pub(
+        self.client = Amqp1Client(
             host,
-            topic,
+            [topic],
             self._raw_msg_q,
+            self.is_subscriber, # subscriber=False because we are a publisher
             self.o
         )
 
