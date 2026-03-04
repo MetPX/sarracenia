@@ -13,6 +13,7 @@ from proton.handlers import MessagingHandler
 from proton.reactor import Container
 from proton import SSLDomain
 from proton import Message
+from proton import Endpoint
 
 logger = logging.getLogger(__name__)
 
@@ -88,8 +89,30 @@ class Amqp1Client(MessagingHandler):
             connection.state can be UNINIT, ACTIVE, CLOSED 
             https://qpid.apache.org/releases/qpid-proton-0.40.0/proton/python/docs/proton.html#proton.Connection.state
         """
-        logger.debug(f"__connected: {self.__connected} connection state: {self.connection.state}")
-        return (self.__connected and self.connection is not None and self.connection.state == 'ACTIVE')
+        if self.connection is None:
+            logger.debug("no connection")
+            return False
+        else:
+            state = self.connection.state
+            # connection can be used when both REMOTE and LOCAL are active
+            if (state & Endpoint.LOCAL_ACTIVE) and (state & Endpoint.REMOTE_ACTIVE):
+                return True
+            else:
+                connection_state = ''
+                if state & Endpoint.LOCAL_UNINIT:
+                    connection_state += 'LOCAL_UNINIT '
+                if state & Endpoint.LOCAL_ACTIVE:
+                    connection_state += 'LOCAL_ACTIVE '
+                if state & Endpoint.LOCAL_CLOSED:
+                    connection_state += 'LOCAL_CLOSED '
+                if state & Endpoint.REMOTE_UNINIT:
+                    connection_state += 'REMOTE_UNINIT '
+                if state & Endpoint.REMOTE_ACTIVE:
+                    connection_state += 'REMOTE_ACTIVE '
+                if state & Endpoint.REMOTE_CLOSED:
+                    connection_state += 'REMOTE_CLOSED '
+                logger.debug(f"connection not active, state: {connection_state}")
+                return False
 
     def on_start(self, event):
         """ Event loop in container has started, new receiver can be created.
@@ -135,11 +158,13 @@ class Amqp1Client(MessagingHandler):
 
 
     def on_message(self, event):
-        """ Handle message received from broker.
+        """ Subscriber: handle message received from broker.
         """
+        # TODO: does this get called when we are a publisher, if yes, need an if statement here
         msg = event.message
         self.msg_q.put(msg)
         logger.debug(f"new message pushed from broker (address: {event.receiver.source.address}): {msg}")
+        logger.debug(f"testing: {event.receiver.source.properties}")
 
     # From : https://qpid.apache.org/releases/qpid-proton-0.40.0/proton/python/examples/tx_send.py.html
     # def on_transaction_declared(self, event):
@@ -260,10 +285,15 @@ class AMQ1(Moth):
             -----
             - Figure out how we want to define address(es) in the config.
             - Concept of durable queues - can we have messages queue up on the broker while we're
-                disconnected?
+                disconnected? durable source?
             - Equivalent to queue names - can we specify the name of our queue/connection?
             - How do we ack messages?
             - How to have multiple instances share a 'queue'?
+
+            More notes:
+              - A source can have filters configured?
+              - message distribution mode: copy (every receiver gets a copy) or move (only 1/n receivers gets a 
+                copy, what we need when using multiple nodes/instances)
         """
         super().__init__(props, is_subscriber)
 
