@@ -53,6 +53,7 @@ class Amqp1Client(MessagingHandler):
                     publishing messages to the broker.
                 options (dict): sr3 options dictionary
         """
+        # TODO: can pass prefetch as param
         super(Amqp1Client, self).__init__()
         self.url = url
         self.addresses = addresses
@@ -84,38 +85,8 @@ class Amqp1Client(MessagingHandler):
             self.connection_name += '-PUB'
         logger.debug(f"connection name: {self.connection_name}")
 
-    def is_connected(self):
-        """ Return True when the connection is connected.
-            connection.state can be UNINIT, ACTIVE, CLOSED 
-            https://qpid.apache.org/releases/qpid-proton-0.40.0/proton/python/docs/proton.html#proton.Connection.state
-        """
-        if self.connection is None:
-            logger.debug("no connection")
-            return False
-        else:
-            state = self.connection.state
-            # connection can be used when both REMOTE and LOCAL are active
-            if (state & Endpoint.LOCAL_ACTIVE) and (state & Endpoint.REMOTE_ACTIVE):
-                return True
-            else:
-                connection_state = ''
-                if state & Endpoint.LOCAL_UNINIT:
-                    connection_state += 'LOCAL_UNINIT '
-                if state & Endpoint.LOCAL_ACTIVE:
-                    connection_state += 'LOCAL_ACTIVE '
-                if state & Endpoint.LOCAL_CLOSED:
-                    connection_state += 'LOCAL_CLOSED '
-                if state & Endpoint.REMOTE_UNINIT:
-                    connection_state += 'REMOTE_UNINIT '
-                if state & Endpoint.REMOTE_ACTIVE:
-                    connection_state += 'REMOTE_ACTIVE '
-                if state & Endpoint.REMOTE_CLOSED:
-                    connection_state += 'REMOTE_CLOSED '
-                logger.debug(f"connection not active, state: {connection_state}")
-                return False
-
     def on_start(self, event):
-        """ Event loop in container has started, new receiver can be created.
+        """ Event loop in container has started, can now create senders/receivers.
         """
         if self.__secure:
             ssl_domain = SSLDomain(SSLDomain.MODE_CLIENT)
@@ -140,6 +111,7 @@ class Amqp1Client(MessagingHandler):
                 try:
                     rx = event.container.create_receiver(self.connection, source=addr)
                     self.receivers.append(rx)
+                    logger.info(f"created receiver for source address: {addr}")
                 except Exception as e:
                     logger.error("failed to create receiver for address: {addr}")
                     logger.debug("Exception details:", exc_info=True)
@@ -150,6 +122,7 @@ class Amqp1Client(MessagingHandler):
                 try:
                     tx = event.container.create_sender(self.connection, addr)
                     self.senders.append(tx)
+                    logger.info(f"created sender for destination address: {addr}")
                 except Exception as e:
                     logger.error("failed to create sender for address: {addr}")
                     logger.debug("Exception details:", exc_info=True)
@@ -172,18 +145,25 @@ class Amqp1Client(MessagingHandler):
     #     self.send()
 
     def on_sendable(self, event):
-        """ Publish a message.
+        """ Publisher: called when there is "credit" on the sender link.
+            FIXME: handle multiple destination addresses? or don't support that.
         """
-        while event.sender.credit and self.sent < self.total:
+        while event.sender.credit and not self.msg_q.empty():
             event.sender.send(self.msg_q.get_nowait())
             logger.critical("MESSAGE SENT!")
             self.sent += 1
 
     def on_accepted(self, event):
-        """ The broker has accepted a message we published.
+        """ Publisher: the broker has accepted a message we sent.
         """
         logger.critical("Message was accepted!!!")
-        event.connection.close()
+        # event.connection.close()
+
+    def on_rejected(self, event):
+        """ Publisher: the broker has rejected a message we sent.
+        """
+        logger.error("message rejected by broker")
+        # event.connection.close()
 
     # From : https://qpid.apache.org/releases/qpid-proton-0.40.0/proton/python/examples/tx_send.py.html
     # def send(self):
@@ -225,6 +205,36 @@ class Amqp1Client(MessagingHandler):
             self.connection.free()
             self.connection = None
             logger.debug("closed connection")
+    
+    def is_connected(self):
+        """ Return True when the connection is connected.
+            connection.state can be UNINIT, ACTIVE, CLOSED 
+            https://qpid.apache.org/releases/qpid-proton-0.40.0/proton/python/docs/proton.html#proton.Connection.state
+        """
+        if self.connection is None:
+            logger.debug("no connection")
+            return False
+        else:
+            state = self.connection.state
+            # connection can be used when both REMOTE and LOCAL are active
+            if (state & Endpoint.LOCAL_ACTIVE) and (state & Endpoint.REMOTE_ACTIVE):
+                return True
+            else:
+                connection_state = ''
+                if state & Endpoint.LOCAL_UNINIT:
+                    connection_state += 'LOCAL_UNINIT '
+                if state & Endpoint.LOCAL_ACTIVE:
+                    connection_state += 'LOCAL_ACTIVE '
+                if state & Endpoint.LOCAL_CLOSED:
+                    connection_state += 'LOCAL_CLOSED '
+                if state & Endpoint.REMOTE_UNINIT:
+                    connection_state += 'REMOTE_UNINIT '
+                if state & Endpoint.REMOTE_ACTIVE:
+                    connection_state += 'REMOTE_ACTIVE '
+                if state & Endpoint.REMOTE_CLOSED:
+                    connection_state += 'REMOTE_CLOSED '
+                logger.debug(f"connection not active, state: {connection_state}")
+                return False
 
 class AMQ1(Moth):
     def __init__(self, props, is_subscriber):
@@ -264,7 +274,11 @@ class AMQ1(Moth):
             Non-RabbitMQ AMQP 1.0:
             ----------------------
             We need to support non-RabbitMQ AMQP 1.0 brokers, so we can't rely on RabbitMQ's address
-            definitions.
+            definitions. Each broker's implementation of AMQP1.0 can be very different, so we're trying to
+            be as generic as possible. It's likely that additional subclasses may be required for interfacing
+            with specific brokers.
+
+            In AMQP1.0, addresses roughly map to the concept of queues in AMQP0.9.1 and MQTT.
 
             In sr3, topics are normally related to file paths, so we can have the broker filter messages
             that the client wants to receive. But this convention does not apply in all cases, like SWIM,
@@ -292,8 +306,8 @@ class AMQ1(Moth):
 
             More notes:
               - A source can have filters configured?
-              - message distribution mode: copy (every receiver gets a copy) or move (only 1/n receivers gets a 
-                copy, what we need when using multiple nodes/instances)
+              - message distribution mode: copy (every receiver gets a copy, messages remain in the 'queue')
+                  or move (only 1/n receivers gets the message, what we need when using multiple nodes/instances)
         """
         super().__init__(props, is_subscriber)
 
