@@ -11,6 +11,7 @@ from sarracenia.postformat import PostFormat
 
 from proton.handlers import MessagingHandler
 from proton.reactor import Container
+from proton.utils import BlockingConnection
 from proton import SSLDomain
 from proton import Message
 from proton import Endpoint
@@ -36,168 +37,155 @@ default_options = {
     'vhost': '/',
 }
 
-class Amqp1Client(MessagingHandler):
+class Amqp1ClientBase:
+    """ Base class for AMQP1 connections.
+        Just handles some instance variables that are shared between both receivers and publishers.
+    """
+    def __init__(self, broker_url: str, options: dict, is_subscriber=False):
+        self.broker_url = broker_url
+        self.o = options
+
+        scheme = self.broker_url.split("://")[0].lower()
+        self.__secure = scheme.endswith('s')
+
+        self.username = self.o['broker'].url.username
+        self.password = self.o['broker'].url.password
+        self.anonymous = (self.username == 'anonymous' and self.password == 'anonymous')
+
+        self.connection_name = f"metpx-sr3_v{sarracenia.__version__}-{self.o['component']}_{self.o['config']}"
+        self.connection_name += "-SUB" if is_subscriber else "-PUB"
+        logger.debug(f"connection name: {self.connection_name}")
+
+        if self.__secure:
+            self.ssl_domain = SSLDomain(SSLDomain.MODE_CLIENT)
+            # FIXME: currently not verifying SSL at all
+            self.ssl_domain.set_peer_authentication(SSLDomain.ANONYMOUS_PEER)
+        else:
+            self.ssl_domain = None
+
+class Amqp1Publisher(Amqp1ClientBase):
+    def __init__(self, broker_url: str, options: dict):
+        """ Handles publishing messages to an AMQP1.0 broker.
+        """
+        super().__init__(broker_url, options, is_subscriber=False)
+
+        self.container = None
+        self.connection = None
+        self.sender = None
+
+        self._connect()
+
+    def _connect(self):
+        container = Container()
+        container.container_id = self.connection_name
+
+        if self.anonymous:
+            self.connection = BlockingConnection(url=self.broker_url, ssl_domain=self.ssl_domain, container=container)
+        else:
+            self.connection = BlockingConnection(url=self.broker_url, ssl_domain=self.ssl_domain, container=container,
+                                                 user=self.username, password=self.password)
+        # addresses will be specified in the message
+        self.sender = self.connection.create_sender(address=None, name=self.connection_name)
+
+    def is_connected(self):
+        """ BlockingConnection doesn't expose a state like the async does.
+            If the connection is broken, we have no way of knowing until we attempt to publish.
+        """
+        return (self.connection is not None)
+
+    def publish(self, message):
+        """ Publish an AMQP1.0 message.
+            Return ???
+        """
+        try:
+            delivery = self.sender.send(message, timeout=self.o['timeout'])
+            logger.info(f"DEBUG: the delivery {delivery}")
+        except Exception as e:
+            err_name = ''
+            err_desc = ''
+            try:
+                if self.sender.remote_condition:
+                    err_name = self.sender.remote_condition.name
+                    err_desc = self.sender.remote_condition.description
+            except:
+                pass
+            logger.error(f"Failed to publish because {e} {err_name} {err_desc}")
+            logger.debug("Exception details:", exc_info=True)
+
+    def close(self):
+        try:
+            self.sender.close()
+            self.sender.free()
+            self.sender = None
+        except:
+            pass
+        try:
+            self.connection.close()
+            self.connection.free()
+            self.connection = None
+        except:
+            pass
+
+class Amqp1Receiver(MessagingHandler, Amqp1ClientBase):
     """
         Based on https://qpid.apache.org/releases/qpid-proton-0.40.0/proton/python/examples/
         Docs: https://qpid.apache.org/releases/qpid-proton-0.40.0/proton/python/docs/index.html
     """
-    def __init__(self, url: str, addresses: list, msg_q: queue.Queue, is_subscriber: bool, options: dict):
-        """ Handles communication with an AMQP1.0 broker.
+    def __init__(self, broker_url: str, options: dict, addresses: list, msg_q: queue.Queue):
+        """ Handles receiving messages from an AMQP1.0 broker. Reception is asynchronous.
+
             Args:
                 url (str): The AMQP broker connection URL.
+                options (dict): sr3 options dictionary
                 addresses (list): A list of source addresses to receive from. Not used for publishing. The publish
-                                    address is specified in the message's address field.
+                    address is specified in the message's address field.
                 msg_q (queue.Queue): When subscribing, messages received from the broker are placed in this queue.
                     When publishing, messages to be published are placed in this queue.
-                is_subscriber (bool): True when subscribing (receive messages from the broker), False when
-                    publishing messages to the broker.
-                options (dict): sr3 options dictionary
         """
         # TODO: can pass prefetch as param
-        super(Amqp1Client, self).__init__()
-        self.url = url
+        Amqp1ClientBase.__init__(self, broker_url, options, is_subscriber=True)
+        MessagingHandler.__init__(self)
+
         self.addresses = addresses
         self.msg_q = msg_q
-        self.is_subscriber = is_subscriber
 
         self.__connected = False
-        self.receivers = []
-        self.sender = None
         self.connection = None
-        self.seq = 0
-
-        self.pending_deliveries = queue.Queue()
-        self.pending_msgs = {}
-
-        scheme = self.url.split("://")[0].lower()
-        self.__secure = scheme[-1] == 's'
-
-        self.o = options
-
-        self.username = self.o['broker'].url.username
-        self.password = self.o['broker'].url.password
-
-        self.anonymous = (self.username == 'anonymous' and self.password == 'anonymous')
-
-        # NAVCANADA requires [CLIENTNAME]-[ENDPOINT]-[PUB/SUB]
-        # TODO: revisit this
-        self.connection_name = "metpx-sr3_v" + sarracenia.__version__ + '-' + self.o['component'] + '_' + self.o['config']
-        if self.is_subscriber:
-            self.connection_name += '-SUB'
-        else:
-            self.connection_name += '-PUB'
-        logger.debug(f"connection name: {self.connection_name}")
+        self.receivers = []
 
     def on_start(self, event):
-        """ Event loop in container has started, can now create senders/receivers.
+        """ Event loop in container has started, can now create receivers.
         """
-        if self.__secure:
-            ssl_domain = SSLDomain(SSLDomain.MODE_CLIENT)
-            # FIXME: currently not verifying SSL at all
-            ssl_domain.set_peer_authentication(SSLDomain.ANONYMOUS_PEER)
-        else:
-            ssl_domain = None
-
         event.container.container_id = self.connection_name
 
         # TODO test anon
-        logger.debug(f"attempting to connect to broker={self.url} user={self.username}")
         if self.anonymous:
-            self.connection = event.container.connect(self.url, ssl_domain=ssl_domain)
+            self.connection = event.container.connect(self.broker_url, ssl_domain=self.ssl_domain)
         else:
-            self.connection = event.container.connect(self.url, ssl_domain=ssl_domain,
+            self.connection = event.container.connect(self.broker_url, ssl_domain=self.ssl_domain,
                                                       user=self.username,
                                                       password=self.password)
 
         # subscriber: create receivers for each source address
-        if self.is_subscriber:
-            for addr in self.addresses:
-                try:
-                    rx = event.container.create_receiver(self.connection, source=addr)
-                    self.receivers.append(rx)
-                    logger.info(f"created receiver for source address: {addr}")
-                except Exception as e:
-                    logger.error("failed to create receiver for address: {addr}")
-                    logger.debug("Exception details:", exc_info=True)
-
-        # publisher: create senders for each destination address
-        else:
-            # anonymous sender, no address defined
-            self.sender = event.container.create_sender(self.connection)
-            # event.container.declare_transaction(self.connection, handler=self)
-            # self.transaction = None
-
+        for addr in self.addresses:
+            try:
+                rx = event.container.create_receiver(self.connection, source=addr, name=self.connection_name)
+                self.receivers.append(rx)
+                logger.info(f"created receiver for source address: {addr}")
+            except Exception as e:
+                logger.error("failed to create receiver for address: {addr}")
+                logger.debug("Exception details:", exc_info=True)
 
     def on_message(self, event):
         """ Subscriber: handle message received from broker.
         """
-        # TODO: does this get called when we are a publisher, if yes, need an if statement here
         msg = event.message
         self.msg_q.put(msg)
         logger.debug(f"new message pushed from broker (address: {event.receiver.source.address}): {msg}")
         logger.debug(f"testing: {event.receiver.source.properties}")
 
-    # From : https://qpid.apache.org/releases/qpid-proton-0.40.0/proton/python/examples/tx_send.py.html
-    # def on_transaction_declared(self, event):
-    #     self.transaction = event.transaction
-    #     self.send()
-
-    def on_sendable(self, event):
-        """ Publisher: called when there is "credit" on the sender link, publishes all messages in the msg_q.
-            TODO: how to detect when a message was published successfully and report back? transaction?
-        """
-        logger.warning("hello from on sendable")
-        # TODO: maybe only remove the message from the queue once it has been sent successfully, it that possible?
-        while event.sender.credit and not self.msg_q.empty():
-            msg = self.msg_q.get()
-            # NOTE: this is async
-            delivery = event.sender.send(msg)
-            self.pending_msgs[delivery] = msg
-            self.pending_deliveries.put(msg)
-            logger.critical(f"message passed to broker, hopefully it will send {delivery} {msg}")
-            # self.sent += 1
-
-    def on_accepted(self, event):
-        """ Publisher: the broker has accepted a message we sent.
-        """
-        msg = self.pending_msgs.pop(event.delivery)
-        logger.debug(f"Message was accepted!!! {event.delivery}")
-        self.pending_deliveries.get()
-        # event.connection.close()
-
-    def on_rejected(self, event):
-        """ Publisher: the broker has rejected a message we sent.
-        """
-        msg = self.pending_msgs.pop(event.delivery)
-        logger.error(f"message rejected by broker {event.delivery} {msg}")
-        self.pending_deliveries.get()
-        # event.connection.close()
-
-    def on_released(self, event):
-        """ Publisher: the message was returned to be retried.
-        """
-        logger.error("message released by broker")
-        self.pending_deliveries.get()
-        # TODO ??
-
-    # From : https://qpid.apache.org/releases/qpid-proton-0.40.0/proton/python/examples/tx_send.py.html
-    # def send(self):
-    #     self.transaction.commit()
-    #     # Send nothing for now
-    #     self.seq = self.seq + 1
-    #     msg = Message(id=self.seq, body={'sequence': self.seq})
-    #     self.transaction.send(self.sender, msg)
-    #     self.transaction.commit()
-
-    def update_queue(self, new_q):
-        """ TODO
-        this is for publishing
-        """
-        self.msg_q = new_q
-        #logger.critical(f"Is the queue empty? {self.msg_q.empty()}")
-
     def on_connection_opened(self, event):
-        logger.info(f"connection opened to {self.url} {event}")
+        logger.info(f"connection opened to {self.broker_url} {event}")
         self.__connected = True
 
     def on_connection_closed(self, event):
@@ -223,7 +211,7 @@ class Amqp1Client(MessagingHandler):
 
     def is_connected(self):
         """ Return True when the connection is connected.
-            connection.state can be UNINIT, ACTIVE, CLOSED 
+            connection.state can be UNINIT, ACTIVE, CLOSED
             https://qpid.apache.org/releases/qpid-proton-0.40.0/proton/python/docs/proton.html#proton.Connection.state
         """
         if self.connection is None:
@@ -346,7 +334,7 @@ class AMQ1(Moth):
         self.next_connect_failures = 0
         self.next_message = 0
 
-        # instance of Amqp1Client
+        # instance of Amqp1Receiver
         self.client = None
         self.reactor = None
 
@@ -426,41 +414,48 @@ class AMQ1(Moth):
             return
 
         if broker.url.hostname:
-            host = broker.url.hostname
+            broker_url = broker.url.hostname
             if broker.url.port is None:
                 if (broker.url.scheme[-1] == 's'):
-                    host += ':5671'
+                    broker_url += ':5671'
                 else:
-                    host += ':5672'
+                    broker_url += ':5672'
             else:
-                host += ':{}'.format(broker.url.port)
+                broker_url += ':{}'.format(broker.url.port)
             if (broker.url.scheme[-1] == 's'):
-                host = 'amqps://' + host
+                broker_url = 'amqps://' + broker_url
             else:
-                host = 'amqp://' + host
+                broker_url = 'amqp://' + broker_url
         else:
             logger.critical( f"invalid broker specification: {broker} " )
             return False
 
         # It does not really matter how it fails, the recovery approach is always the same:
         # tear the whole thing down, and start over.
-
-        self._raw_msg_q = queue.Queue() # FIXME need to deal with messages still in q? when subscribing
-
         try:
-            self.client = Amqp1Client(
-                host,
-                addresses,
-                self._raw_msg_q,
-                self.is_subscriber,
-                self.o
-            )
-            self.reactor = Container(self.client)
-            self.client_thread = threading.Thread(target=self.reactor.run)
-            self.client_thread.daemon = True
-            self.client_thread.start()
-            self.connection = True
-            return
+            if self.is_subscriber:
+                self._raw_msg_q = queue.Queue() # FIXME need to deal with messages still in q? when subscribing
+
+                self.client = Amqp1Receiver(
+                    broker_url,
+                    self.o,
+                    addresses,
+                    self._raw_msg_q
+                )
+                self.reactor = Container(self.client)
+                self.client_thread = threading.Thread(target=self.reactor.run)
+                self.client_thread.daemon = True
+                self.client_thread.start()
+                self.connection = True
+                return
+
+            else:
+                self.client = Amqp1Publisher(
+                    broker_url,
+                    self.o
+                )
+                self.connection = True
+                return
 
         except Exception as err:
             logger.error( f"failed connection to {str(broker)}: {err}" )
@@ -626,7 +621,7 @@ class AMQ1(Moth):
             # address to publish to is post_topicPrefix + a dynamic topic
             # FIXME: topic separator should be configurable
             address = headers['topic']
-            logger.error(f"TODO: address={address}")
+            del headers['topic']
 
             # TODO is there a length limit for address?
 
@@ -645,19 +640,8 @@ class AMQ1(Moth):
 
             logger.debug(f"FULL AMQP1 MESSAGE: {amqp1_msg}")
 
-            # place the message in the queue, the client will take care of sending it
-            # FIXME: blocking put used, need to timeout?
-            self._raw_msg_q.put(amqp1_msg)
+            self.client.publish(amqp1_msg)
 
-            # TODO: metrics
-            time.sleep(5)
-
-            # FIXME: need to check if the message was actually sent... then retry/return appropriately
-            while not self.client.pending_deliveries.empty():
-                logger.info(f"waiting for {self.client.pending_deliveries.qsize()} msgs to publish")
-                time.sleep(1)
-
-            
             return True
 
         except Exception as e:
