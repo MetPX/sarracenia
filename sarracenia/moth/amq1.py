@@ -45,8 +45,8 @@ class Amqp1Client(MessagingHandler):
         """ Handles communication with an AMQP1.0 broker.
             Args:
                 url (str): The AMQP broker connection URL.
-                addresses (list): A list of source/destination addresses to receive from or publish to.
-                    When publishing, a copy of the message is sent to each destination address.
+                addresses (list): A list of source addresses to receive from. Not used for publishing. The publish
+                                    address is specified in the message's address field.
                 msg_q (queue.Queue): When subscribing, messages received from the broker are placed in this queue.
                     When publishing, messages to be published are placed in this queue.
                 is_subscriber (bool): True when subscribing (receive messages from the broker), False when
@@ -62,9 +62,12 @@ class Amqp1Client(MessagingHandler):
 
         self.__connected = False
         self.receivers = []
-        self.senders = []
+        self.sender = None
         self.connection = None
         self.seq = 0
+
+        self.pending_deliveries = queue.Queue()
+        self.pending_msgs = {}
 
         scheme = self.url.split("://")[0].lower()
         self.__secure = scheme[-1] == 's'
@@ -98,6 +101,7 @@ class Amqp1Client(MessagingHandler):
         event.container.container_id = self.connection_name
 
         # TODO test anon
+        logger.debug(f"attempting to connect to broker={self.url} user={self.username}")
         if self.anonymous:
             self.connection = event.container.connect(self.url, ssl_domain=ssl_domain)
         else:
@@ -118,16 +122,10 @@ class Amqp1Client(MessagingHandler):
 
         # publisher: create senders for each destination address
         else:
-            for addr in self.addresses:
-                try:
-                    tx = event.container.create_sender(self.connection, addr)
-                    self.senders.append(tx)
-                    logger.info(f"created sender for destination address: {addr}")
-                except Exception as e:
-                    logger.error("failed to create sender for address: {addr}")
-                    logger.debug("Exception details:", exc_info=True)
-                # event.container.declare_transaction(self.connection, handler=self)
-                # self.transaction = None
+            # anonymous sender, no address defined
+            self.sender = event.container.create_sender(self.connection)
+            # event.container.declare_transaction(self.connection, handler=self)
+            # self.transaction = None
 
 
     def on_message(self, event):
@@ -145,25 +143,42 @@ class Amqp1Client(MessagingHandler):
     #     self.send()
 
     def on_sendable(self, event):
-        """ Publisher: called when there is "credit" on the sender link.
-            FIXME: handle multiple destination addresses? or don't support that.
+        """ Publisher: called when there is "credit" on the sender link, publishes all messages in the msg_q.
+            TODO: how to detect when a message was published successfully and report back? transaction?
         """
+        logger.warning("hello from on sendable")
+        # TODO: maybe only remove the message from the queue once it has been sent successfully, it that possible?
         while event.sender.credit and not self.msg_q.empty():
-            event.sender.send(self.msg_q.get_nowait())
-            logger.critical("MESSAGE SENT!")
-            self.sent += 1
+            msg = self.msg_q.get()
+            # NOTE: this is async
+            delivery = event.sender.send(msg)
+            self.pending_msgs[delivery] = msg
+            self.pending_deliveries.put(msg)
+            logger.critical(f"message passed to broker, hopefully it will send {delivery} {msg}")
+            # self.sent += 1
 
     def on_accepted(self, event):
         """ Publisher: the broker has accepted a message we sent.
         """
-        logger.critical("Message was accepted!!!")
+        msg = self.pending_msgs.pop(event.delivery)
+        logger.debug(f"Message was accepted!!! {event.delivery}")
+        self.pending_deliveries.get()
         # event.connection.close()
 
     def on_rejected(self, event):
         """ Publisher: the broker has rejected a message we sent.
         """
-        logger.error("message rejected by broker")
+        msg = self.pending_msgs.pop(event.delivery)
+        logger.error(f"message rejected by broker {event.delivery} {msg}")
+        self.pending_deliveries.get()
         # event.connection.close()
+
+    def on_released(self, event):
+        """ Publisher: the message was returned to be retried.
+        """
+        logger.error("message released by broker")
+        self.pending_deliveries.get()
+        # TODO ??
 
     # From : https://qpid.apache.org/releases/qpid-proton-0.40.0/proton/python/examples/tx_send.py.html
     # def send(self):
@@ -195,17 +210,17 @@ class Amqp1Client(MessagingHandler):
             rx.free()
             logger.debug(f"closed receiver from address {rx.source.address}")
         self.receivers = []
-        for tx in self.senders:
-            tx.close()
-            tx.free()
-            logger.debug(f"closed sender to address {tx.target.address}")
-        self.senders = []
+        if self.sender:
+            self.sender.close()
+            self.sender.free()
+            logger.debug(f"closed sender")
+        self.sender = None
         if self.connection:
             self.connection.close()
             self.connection.free()
             self.connection = None
             logger.debug("closed connection")
-    
+
     def is_connected(self):
         """ Return True when the connection is connected.
             connection.state can be UNINIT, ACTIVE, CLOSED 
@@ -392,16 +407,9 @@ class AMQ1(Moth):
 
         return message
 
-    def getSetup(self) -> None:
-        """ Setup as a consumer to receive messages.
+    def connect(self, broker, addresses=[]) -> bool:
+        """ General connection code, for subscriber or publisher.
         """
-        if not self.is_subscriber:
-            logger.critical("trying to call getSetup but not instantiated as a subscriber")
-            return
-
-        if self._stop_requested:
-            return
-
         if 'broker' not in self.o or self.o['broker'] is None:
             logger.critical( f"no broker given" )
             return
@@ -410,18 +418,10 @@ class AMQ1(Moth):
             logger.warning("Already connected, nothing to do")
             return
 
-        subscription = self.o['subscriptions'][self.o['subscription_index']]
-        broker = subscription['broker']
-        bindings = subscription['bindings']
-
-        # translate sr3 bindings to AMQP1.0 addresses (FIXME: currently ignoring exchange/topicPrefix)
-        addresses = [ b['sub'][0] for b in bindings ]
-        logger.debug(f"source addresses: {addresses}")
-
         start = time.time()
         if start < self.next_connect_time:
             if start > self.next_message:
-                logger.critical( f"too soon to connect again to {str(broker)} index={self.o['subscription_index']} will try in: {self.next_connect_time-start:.2f} seconds" )
+                logger.critical( f"too soon to connect again to {str(broker)} will try in: {self.next_connect_time-start:.2f} seconds" )
                 self.next_message=start+5
             return
 
@@ -444,7 +444,9 @@ class AMQ1(Moth):
 
         # It does not really matter how it fails, the recovery approach is always the same:
         # tear the whole thing down, and start over.
-        self._raw_msg_q = queue.Queue() # FIXME need to deal with messages still in q?
+
+        self._raw_msg_q = queue.Queue() # FIXME need to deal with messages still in q? when subscribing
+
         try:
             self.client = Amqp1Client(
                 host,
@@ -466,77 +468,41 @@ class AMQ1(Moth):
             self.setEbo(start)
             self.connection = None
 
-    def putSetup(self) -> None:
-        """ Setup as a publisher to post messages.
+    def getSetup(self) -> None:
+        """ Setup as a consumer to receive messages.
         """
+        if not self.is_subscriber:
+            logger.critical("trying to call getSetup but not instantiated as a subscriber")
+            return
+
         if self._stop_requested:
             return
 
-        start = time.time()
+        subscription = self.o['subscriptions'][self.o['subscription_index']]
+        broker = subscription['broker']
+        bindings = subscription['bindings']
 
-        if start < self.next_connect_time:
-            if start > self.next_message :
-                logger.critical( f"too soon to connect to {str(self.o['broker'])}. Will try again in: {self.next_connect_time-start:.2f} seconds" )
-                self.next_message=start+5
+        # translate sr3 bindings to AMQP1.0 addresses (FIXME: currently ignoring exchange/topicPrefix)
+        addresses = [ b['sub'][0] for b in bindings ]
+        logger.debug(f"source addresses: {addresses}")
+
+        self.connect(broker, addresses=addresses)
+
+
+    def putSetup(self) -> None:
+        """ Setup as a publisher to post messages.
+        """
+        if self.is_subscriber:
+            logger.critical("trying to call putSetup but not instantiated as a publisher")
             return
 
-        # subscription = self.o['subscriptions'][self.o['subscription_index']]
-        # subtopic = '.'.join(subscription['bindings'][self.o['subscription_index']]['sub'][:])
-        # prefix = '.'.join(subscription['bindings'][self.o['subscription_index']]['prefix'][:])
-        # topic = '.'.join(prefix + subtopic)
-
-        # It does not really matter how it fails, the recovery approach is always the same:
-        # tear the whole thing down, and start over.
-        try:
-            # if self.o['broker'] is None:
-            #     logger.critical( f"no broker given" )
-            #     return
-
-            # # FIXME?
-            # # if not self.__connect(self.o['broker']):
-            # #     self.setEbo(start)
-            # #     self.connection = None
-            # #     return
-
-            # if self.o['broker'].url.hostname:
-            #     host = self.o['broker'].url.hostname
-            #     if self.o['broker'].url.port is None:
-            #         if (self.o['broker'].url.scheme[-1] == 's'):
-            #             host += ':5671'
-            #         else:
-            #             host += ':5672'
-            #     else:
-            #         host += ':{}'.format(self.o['broker'].url.port)
-            #     if (self.o['broker'].url.scheme[-1] == 's'):
-            #         host = 'amqps://' + host
-            #     else:
-            #         host = 'amqp://' + host
-            # else:
-            #     logger.critical( f"invalid broker specification: {self.o['broker']} " )
-            #     return False
-
-            # self._raw_msg_q = queue.Queue() # FIXME need to deal with messages still in q?
-
-            # self.client = Amqp1Pub(
-            #     host,
-            #     topic,
-            #     self._raw_msg_q,
-            #     self.o
-            # )
-            # logger.critical(f"Host : {host}")
-
-            # self.connection = True
-
-            # logger.critical(f"AMQ1 client connection initialized")
+        if self._stop_requested:
+            return
+        if self.o['broker'] is None:
+            logger.critical( f"no broker given" )
             return
 
-        except Exception as err:
-            logger.error( f"failed connection to {str(self.o['broker'])}: {err}" )
-            logger.debug('Exception details: ', exc_info=True)
-            self.setEbo(start)
-            self.connection=None
-            self.close()
-
+        self.connect(self.o['broker'], addresses=[])
 
     def newMessages(self) -> list:
 
@@ -625,189 +591,80 @@ class AMQ1(Moth):
             logger.error("publishing from a consumer")
             return False
 
-        # Check connection status, try to reconnect if not connected
-        # if (not self.connection) or (not self.__is_connected):
-        #     try:
-        #         self.close()
-        #         self.putSetup()
-        #         if (not self.connection) or (not self.__is_connected):
-        #             return False
-        #     except Exception as err:
-        #         logger.warning(f"failed, connection was closed/broken and could not be re-opened {exchange}: {err}")
-        #         logger.debug('Exception details: ', exc_info=True)
-        #         return False
+        try:
+            if not self.__is_connected():
+                self.close()
+                self.putSetup()
+                time.sleep(5) # TODO
 
-        # The caller probably doesn't expect the message to get modified by this method, so use a copy of the message
-        body = copy.deepcopy(message)
+            # check again, fail if it didn't connect
+            if not self.__is_connected():
+                return False
+            
+            # The caller probably doesn't expect the message to get modified by this method, so use a copy of the message
+            sr3_msg = copy.deepcopy(message)
 
-        logger.critical(f"Message body {body}")
-
-        if 'format' in self.o:
-            version=self.o['format']
-        else:
-            version = body['_format']
-
-
-        if '_deleteOnPost' in body:
-            # FIXME: need to delete because building entire JSON object at once.
-            # makes this routine alter the message. Ideally, would use incremental
-            # method to build json and _deleteOnPost would be a guide of what to skip.
-            # library for that is jsonfile, but not present in repos so far.
-            for k in body['_deleteOnPost']:
-                if k in body:
-                    del body[k]
-            del body['_deleteOnPost']
-
-        #if not exchange:
-        #    if (type(self.o['exchange']) is list):
-        #        if (len(self.o['exchange']) > 1):
-        #            if ( 'exchangeSplit' in self.o) and self.o['exchangeSplit'] > 1:
-        #                exchange = self.o['exchange'][self.splitPick(message)]
-        #            else:
-        #                logger.error(
-        #                    'do not know which exchange to publish to: %s' %
-        #                    self.o['exchange'])
-        #                return False
-        #        else:
-        #            exchange = self.o['exchange'][0]
-        #    else:
-        #        exchange = self.o['exchange']
-
-        #if 'messageAgeMax' in self.o and self.o['messageAgeMax']:
-        #    ttl = "%d" * int(
-        #        sarracenia.durationToSeconds(self.o['messageAgeMax']) * 1000)
-        #else:
-        #    ttl = "0"
-        #
-        #if 'persistent' in self.o:
-        #    deliv_mode = 2 if self.o['persistent'] else 1
-        #else:
-        #    deliv_mode = 2
-
-        # Limit to only SWIM protocol now.
-        raw_body = PostFormat.exportAny( body, version, 'swim', self.o )
-        logger.critical(f"SWIM RAW MESSAGE BODY {raw_body}")
-
-        #subscription = self.o['subscriptions'][self.o['subscription_index']]
-        #subtopic = ''.join(subscription['bindings'][self.o['subscription_index']]['sub'][:])
-        #prefix = ''.join(subscription['bindings'][self.o['subscription_index']]['prefix'][:])
-        topic = raw_body['topic']
-
-        #logger.critical(f"Topic {topic} , prefix {prefix} , subtopic {subtopic}")
-
-        exchange = 'exchange-not-used' # FIXME: What to do about this?
-
-        #if len(topic) >= 255:  # ensure topic is <= 255 characters
-        #    logger.error("message topic too long, truncating")
-        #    mxlen = amqp_ss_maxlen
-        #    while (topic.encode("utf8")[mxlen - 1] & 0xc0 == 0xc0):
-        #        mxlen -= 1
-        #    topic = topic.encode("utf8")[0:mxlen].decode("utf8")
-
-        if self.o['messageDebugDump']:
-            logger.info('raw message body: version: %s type: %s %s' %
-                             (version, type(raw_body),  raw_body))
-            #logger.info('raw message headers: type: %s value: %s' % (type(headers),  headers))
-
-        if not 'posts' in message:
-            message['posts'] = []
-        message['posts'].append( { 'broker':str(self.o['broker']), 'topic': topic, 'exchange':exchange } ) 
-        message['_deleteOnPost'] |= set( ['posts'] )
-        #del headers['topic']
-
-        # if headers :  
-        #     for k in headers:
-        #         if (type(headers[k]) is str) and (len(headers[k]) >=
-        #                                               amqp_ss_maxlen):
-        #             logger.error("message header %s too long, dropping" % k)
-        #             return False
-
-        if self.o['broker'] is None:
-            logger.critical( f"no broker given" )
-            return
-
-        # FIXME?
-        # if not self.__connect(self.o['broker']):
-        #     self.setEbo(start)
-        #     self.connection = None
-        #     return
-    
-
-        if self.o['broker'].url.hostname:
-            host = self.o['broker'].url.hostname
-            if self.o['broker'].url.port is None:
-                if (self.o['broker'].url.scheme[-1] == 's'):
-                    host += ':5671'
-                else:
-                    host += ':5672'
+            if 'format' in self.o:
+                version=self.o['format']
             else:
-                host += ':{}'.format(self.o['broker'].url.port)
-            if (self.o['broker'].url.scheme[-1] == 's'):
-                host = 'amqps://' + host
-            else:
-                host = 'amqp://' + host
-        else:
-            logger.critical( f"invalid broker specification: {self.o['broker']} " )
+                version = sr3_msg['_format']
+
+            if '_deleteOnPost' in sr3_msg:
+                # FIXME: need to delete because building entire JSON object at once.
+                # makes this routine alter the message. Ideally, would use incremental
+                # method to build json and _deleteOnPost would be a guide of what to skip.
+                # library for that is jsonfile, but not present in repos so far.
+                for k in sr3_msg['_deleteOnPost']:
+                    if k in sr3_msg:
+                        del sr3_msg[k]
+                del sr3_msg['_deleteOnPost']
+
+            # convert sr3 message to desired raw format (e.g. SWIM, NAVCANADA)
+            # (NOTE: set post_format swim or post_format navcanada in config file TODO not sure if post_format or format)
+            raw_body, headers, content_type = PostFormat.exportAny(sr3_msg, version, self.o['topicPrefix'], self.o)
+
+            # address to publish to is post_topicPrefix + a dynamic topic
+            # FIXME: topic separator should be configurable
+            address = headers['topic']
+            logger.error(f"TODO: address={address}")
+
+            # TODO is there a length limit for address?
+
+            if self.o['messageDebugDump']:
+                logger.info('raw message body: version: %s type: %s %s' %
+                                (version, type(raw_body),  raw_body))
+                logger.info('raw message headers: type: %s value: %s' % (type(headers),  headers))
+
+            # TODO compare with regular AMQP, posts stuff?
+
+            # create AMQP1 message object to be published
+            # postformat stuff determines *what* the body is. For SWIM/NAVCANADA, the body is the inline content.
+            # for sr3 format, I think the body would be the JSON message itself.
+            amqp1_msg = Message(address=address, body=raw_body)
+            amqp1_msg.properties = headers
+
+            logger.debug(f"FULL AMQP1 MESSAGE: {amqp1_msg}")
+
+            # place the message in the queue, the client will take care of sending it
+            # FIXME: blocking put used, need to timeout?
+            self._raw_msg_q.put(amqp1_msg)
+
+            # TODO: metrics
+            time.sleep(5)
+
+            # FIXME: need to check if the message was actually sent... then retry/return appropriately
+            while not self.client.pending_deliveries.empty():
+                logger.info(f"waiting for {self.client.pending_deliveries.qsize()} msgs to publish")
+                time.sleep(1)
+
+            
+            return True
+
+        except Exception as e:
+            logger.error(f"message publish failed: {e}")
+            logger.debug("Exception details:", exc_info=True)
             return False
 
-        self._raw_msg_q = queue.Queue() # FIXME need to deal with messages still in q?
-
-        self.client = Amqp1Client(
-            host,
-            [topic],
-            self._raw_msg_q,
-            self.is_subscriber, # subscriber=False because we are a publisher
-            self.o
-        )
-
-        self.amq1msg = Message(id=1, body=raw_body)
-        self._raw_msg_q.put_nowait(self.amq1msg)
-        #logger.critical(f"Client : {self.client}")
-        self.client.update_queue(self._raw_msg_q)
-
-        # FIXME: Add metrics
-        # self.metrics['txByteCount'] += len(raw_body) 
-        # if headers:
-        #     self.metrics['txByteCount'] += len(''.join(str(headers)))
-        # self.metrics['txLast'] = sarracenia.nowstr()
-
-        # timeout option is a float and default is 0.0. basic_publish wants int or None for no timeout
-        try:
-            if self.o['timeout']:
-                pub_timeout = int(self.o['timeout'])
-            else:
-                pub_timeout = None
-        except Exception as err:
-            logger.debug('Set pub_timeout to None. Exception details: ', exc_info=True)
-            pub_timeout = None
-
-        body=raw_body
-        ebo = 1
-        try:
-            #logger.debug( f"trying to publish body: {body} headers: {headers} to {exchange} under: {topic} " )
-            #self.channel.basic_publish(AMQP_Message, exchange, topic, timeout=pub_timeout)
-            self.reactor = Container(self.client)
-            self.reactor.run()
-
-            # Issue #732: tx_commit can get stuck forever
-            #logger.debug("published body: {} headers: {} to {} under: {} ".format(
-            #              body, headers, exchange, topic))
-            self.metrics['txGoodCount'] += 1
-            return True  # no failure == success :-)
-
-        except Exception as err:
-            logger.warning("failed %s: %s" % (exchange, err))
-            logger.debug('Exception details: ', exc_info=True)
-
-            self.metrics['txBadCount'] += 1
-            # Issue #466: commenting this out until message_strategy stubborn is working correctly (Issue #537)
-            # Always return False when an error occurs and use the DiskQueues to retry, instead of looping. This should
-            # eventually be configurable with message_strategy stubborn
-            # if True or not self.o['message_strategy']['stubborn']:
-            #     return False
-
-            self.close()
-            return False # instead of looping
 
 
     def __is_connected(self):
