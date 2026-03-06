@@ -1405,6 +1405,8 @@ class Flow:
 
         if self.o.identity_method.startswith('cod,'):
             algo_method = self.o.identity_method[4:]
+        elif 'identity' not in msg:
+            algo_method = self.o.identity_method
         elif msg['identity']['method'] == 'cod':
             algo_method = msg['identity']['value']
         else:
