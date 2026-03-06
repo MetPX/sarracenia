@@ -538,7 +538,7 @@ class Message(dict):
                     'random', 'md5', 'md5name', 'sha512', 'cod,md5', 'cod,sha512'
                 ]
                 calc_method = random.choice(methods)
-            elif 'identity' in xattr.x and 'mtime' in xattr.x:
+            elif 'identity' in xattr.x and 'mtime' in xattr.x and 'mtime' in msg:
                 if xattr.get('mtime') >= msg['mtime']:
                     logger.debug("mtime remembered by xattr")
                     fxainteg = xattr.get('identity')
