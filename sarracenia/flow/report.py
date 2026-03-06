@@ -3,7 +3,7 @@ import logging
 
 logger = logging.getLogger(__name__)
 
-default_options = {'acceptUnmatched': True, 'nodupe_ttl': 0}
+default_options = { 'nodupe_ttl': 0}
 
 
 class Report(Flow):
