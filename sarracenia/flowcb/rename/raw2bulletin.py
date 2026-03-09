@@ -152,6 +152,7 @@ class Raw2bulletin(FlowCB):
             # Assign a default value for messages not coming from AM
             if 'isProblem' not in msg:
                 msg['isProblem'] = False
+                msg['_deleteOnPost'] |= set(['isProblem'])
 
 
             # Rename file with data fetched
