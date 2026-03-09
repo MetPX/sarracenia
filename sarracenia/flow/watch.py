@@ -4,7 +4,6 @@ import logging
 logger = logging.getLogger(__name__)
 
 default_options = {
-    'acceptUnmatched': True,
     'blockSize': 1,
     'bufSize': 1024 * 1024,
     'follow_symlinks': False,
