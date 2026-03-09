@@ -46,7 +46,7 @@ class Wis(PostFormat):
     def mine(payload, headers, content_type, options) -> bool:
         """
           return true if the message is in this encoding.
-       """
+        """
         if content_type == Wis.content_type():
             return True
         return False

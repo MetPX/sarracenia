@@ -13,7 +13,9 @@ logger = logging.getLogger(__name__)
 class Swim(PostFormat):
     """
         MET-SWIM message format (Meteorological System Wide Information Management)
-        https://github.com/iblsoft/swimdemo/blob/main/MET-SWIM-AMQP-Guidance.md
+        https://github.com/iblsoft/swimdemo/blob/main/MET-SWIM-AMQP-Guidance-CP1.md
+        https://github.com/iblsoft/swimdemo/blob/main/MET-SWIM-AMQP-Guidance-Next.md
+        https://swim-eurocontrol.atlassian.net/wiki/spaces/MSS/pages/638156804/AMQP+Message+Structure+in+MET-SWIM
 
         Used for aviation related data.
    """

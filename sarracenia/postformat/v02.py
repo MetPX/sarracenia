@@ -28,7 +28,7 @@ class V02(PostFormat):
     def mine(payload, headers, content_type, options) -> bool:
         """
           return true if the message is in this post format.
-       """
+        """
         if content_type == V02.content_type() :
             return True
 
