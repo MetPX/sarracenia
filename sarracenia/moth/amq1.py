@@ -116,15 +116,15 @@ class Amqp1Publisher(Amqp1ClientBase):
         try:
             self.sender.close()
             self.sender.free()
-            self.sender = None
         except:
             pass
+        self.sender = None
         try:
             self.connection.close()
             self.connection.free()
-            self.connection = None
         except:
             pass
+        self.connection = None
 
 class Amqp1Receiver(MessagingHandler, Amqp1ClientBase):
     """
@@ -182,7 +182,6 @@ class Amqp1Receiver(MessagingHandler, Amqp1ClientBase):
         msg = event.message
         self.msg_q.put(msg)
         logger.debug(f"new message pushed from broker (address: {event.receiver.source.address}): {msg}")
-        logger.debug(f"testing: {event.receiver.source.properties}")
 
     def on_connection_opened(self, event):
         logger.info(f"connection opened to {self.broker_url} {event}")
@@ -206,8 +205,8 @@ class Amqp1Receiver(MessagingHandler, Amqp1ClientBase):
         if self.connection:
             self.connection.close()
             self.connection.free()
-            self.connection = None
             logger.debug("closed connection")
+        self.connection = None
 
     def is_connected(self):
         """ Return True when the connection is connected.
@@ -298,6 +297,24 @@ class AMQ1(Moth):
 
             For now, we are just ignoring topicPrefix and exchange and just use the subtopics as addresses.
 
+            AMQP1.0 Delivery States: a message can be ACCEPTED, REJECTED, RELEASED or MODIFIED.
+                - ACCEPTED: a message that has been received and processed successfully 
+                - REJECTED: permanently failed
+                - RELEASED: put back to the source to be redelivered
+                - MODIFIED: redliver with changes (likely not useful to us)
+
+                By default, qpid proton sets auto_accept and auto_settle True, which is like auto-acking.
+                We probably want to set those to False, then we would "ack" by setting:
+                    delivery.update(proton.ACCEPTED)
+                    delivery.settle()
+
+            Delivery guarantees
+
+            AMQP 1.0 expresses guarantees via link settlement modes:
+                At-most-once - pre-settled messages (no redelivery)
+                At-least-once - receiver accepts after processing
+                Exactly-once - requires transactions
+
             TODO:
             -----
             - Figure out how we want to define address(es) in the config.
@@ -305,6 +322,7 @@ class AMQ1(Moth):
                 disconnected? durable source?
             - Equivalent to queue names - can we specify the name of our queue/connection?
             - How do we ack messages?
+        
             - How to have multiple instances share a 'queue'?
 
             More notes:
@@ -348,14 +366,14 @@ class AMQ1(Moth):
         """
         if self.o['messageDebugDump']:
             logger.info(f"Raw AMQP1.0 Message: {raw_msg}\n")
-            for thing in sorted(dir(raw_msg)):
-                if thing[0] != '_':
-                    try:
-                        val = getattr(raw_msg, thing)
-                        if not callable(val):
-                            logger.info(f"{thing:>20}: {val}")
-                    except:
-                        pass
+            # for thing in sorted(dir(raw_msg)):
+            #     if thing[0] != '_':
+            #         try:
+            #             val = getattr(raw_msg, thing)
+            #             if not callable(val):
+            #                 logger.debug(f"{thing:>20}: {val}")
+            #         except:
+            #             pass
 
         # at least for SWIM messages, msg.properties (AMQP 1.0 "Application Properties") is a dictionary
         # that contains the kind of info we'd put in the body of an sr3 format message.
@@ -375,23 +393,26 @@ class AMQ1(Moth):
                 except:
                     pass
 
-        # for decoding these messages, we map the Application Properties to "headers"
-        # the data (Message Payload/body), if present, is mapped to "payload"
-
-        # for SWIM messages, content_type and content_encoding fields in the message are for the data,
+        # for SWIM messages, content-type and content-encoding fields in the message are for the data,
         # not the message itself like in other protocols, and there are multiple possible types
         # we might receive that that could theoretically collide with the types we're using for
         # other messages (text/plain for v2, application/json for sr3, application/geo+json for WIS).
-        # FIXME:
-        # I'm not quite sure how to deal with content_type. For now we just give a fake content
-        # type to ensure we don't accidentally interpret the message as sr3, v2 or WIS, but that
-        # won't work if we want to receive one of those message formats over AMQP 1.0.
-        #
-        # We could potentially call the PostFormat.Swim.mine method here to check if the message
-        # is in SWIM format before checking any other types, and if it's NOT SWIM, then pass the
-        # actual content type?
-        message = PostFormat.importAny(raw_msg.body, app_properties, "amqp1", self.o)
-        logger.debug(f"sr3 message: {message}")
+
+        # i.e. content-type in the message is useless for determining the type of message received when we have a
+        # SWIM/NAVCAN message, but we still handle it here to allow v03 and v02 messages to be received via AMQP1
+        if hasattr(raw_msg, 'content_type'):
+            content_type = getattr(raw_msg, 'content_type')
+        elif hasattr(raw_msg, 'content-type'):
+            content_type = getattr(raw_msg, 'content-type')
+        else:
+            content_type = 'amqp1' # unknown
+
+        # for decoding AMQP1 messages, we map the Application Properties to "headers"
+        # the data (Message Payload/body), if present, is mapped to "payload"
+        message = PostFormat.importAny(raw_msg.body, app_properties, content_type, self.o)
+
+        if self.o['messageDebugDump']:
+            logger.debug(f"sr3 message: {message}")
 
         return message
 
@@ -483,7 +504,6 @@ class AMQ1(Moth):
 
         self.connect(broker, addresses=addresses)
 
-
     def putSetup(self) -> None:
         """ Setup as a publisher to post messages.
         """
@@ -536,7 +556,7 @@ class AMQ1(Moth):
                 return None
 
             try:
-                # don't block waiting for the queue to be available, better to just try again later
+                # don't block waiting for messages to be available, better to just try again later
                 raw_msg = self._raw_msg_q.get_nowait()
             except queue.Empty:
                 raw_msg = None
@@ -641,6 +661,12 @@ class AMQ1(Moth):
             logger.debug(f"FULL AMQP1 MESSAGE: {amqp1_msg}")
 
             self.client.publish(amqp1_msg)
+
+            # for logging
+            if not 'posts' in message:
+                message['posts'] = []
+            message['posts'].append( { 'broker':str(self.o['broker']), 'topic': address} )
+            message['_deleteOnPost'] |= set( ['posts'] )
 
             return True
 
