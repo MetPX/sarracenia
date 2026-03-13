@@ -756,7 +756,7 @@ class MQTT(Moth):
                     del body[k]
             del body['_deleteOnPost']
 
-        if not exchange:
+        if not exchange and not self.o['mqttExchangeBeforeTopicPrefix']:
             if (type(self.o['exchange']) is list):
                 if (len(self.o['exchange']) > 1):
                     if 'post_exchangeSplit' in self.o:
@@ -786,7 +786,7 @@ class MQTT(Moth):
             if not 'posts' in message:
                 message['posts'] = []
 
-            message['posts'].append({ 'broker':str(self.o['broker']), 'topic': topic, 'exchange':exchange } )
+            message['posts'].append({ 'broker':str(self.o['broker']), 'topic': topic  } )
 
             del headers['topic']
 

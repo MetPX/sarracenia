@@ -34,24 +34,26 @@ class Publisher(dict):
         already_a_list = hasattr(options,'post_exchange') and type(options.post_exchange) == list
         #logger.debug( f" {exchange_root=}  {already_a_list=} " )
 
-        if already_a_list:
-            self['exchange'] = options.post_exchange
-        else:
-           if hasattr(options, 'post_exchangeSuffix'):
-               exchange_root += '_%s' % options.post_exchangeSuffix
+        if options.mqttExchangeBeforeTopicPrefix or options.post_broker.url.scheme.startswith('amqp'):
+            if already_a_list:
+                self['exchange'] = options.post_exchange
+            else:
+               if hasattr(options, 'post_exchangeSuffix'):
+                   exchange_root += '_%s' % options.post_exchangeSuffix
 
-           if hasattr(options, 'post_exchangeSplit') and options.post_exchangeSplit > 1:
-               l = []
-               for i in range(0, int(options.post_exchangeSplit)):
-                   y = f"{exchange_root}{i:02d}"
-                   l.append(y)
-               self['exchange'] = l
-           else:
-               self['exchange'] = [ exchange_root ]
+               if hasattr(options, 'post_exchangeSplit') and options.post_exchangeSplit > 1:
+                   l = []
+                   for i in range(0, int(options.post_exchangeSplit)):
+                       y = f"{exchange_root}{i:02d}"
+                       l.append(y)
+                   self['exchange'] = l
+               else:
+                   self['exchange'] = [ exchange_root ]
 
-        if 'exchange' not in self:
-            logger.error("malformed publisher, missing (post_)exchange")
-            return
+            if 'exchange' not in self:
+                logger.error("malformed publisher, missing (post_)exchange")
+                return
+        # else, *exchange* will not be present...
 
         if hasattr(options,'post_format') :
             self['format'] = options.post_format
@@ -83,7 +85,7 @@ class Publisher(dict):
                 self['baseDir'] = u.path
 
 
-        for a in [ 'auto_delete', 'durable', 'exchangeDeclare', 'messageAgeMax', 
+        for a in [ 'auto_delete', 'durable', 'exchangeDeclare', 'messageAgeMax', 'mqttExchangeBeforeTopicPrefix', 
                   'messageDebugDump', 'persistent', 'timeout' ]:
             if hasattr(options, a):
                 self[a] = getattr(options,a)

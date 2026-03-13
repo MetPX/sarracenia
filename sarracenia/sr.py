@@ -836,10 +836,11 @@ class sr_GlobalState:
                 if hasattr(o,'publishers') and len(o.publishers):
                     for p in o.publishers:
                         host = self._init_broker_host(p['broker'].url.netloc)
-                        if 'exchange' in self.brokers[host]:
-                            self.brokers[host]['exchange'].extend(p['exchange'])
-                        else:
-                            self.brokers[host]['exchange'] = p['exchange']
+                        if 'exchange' in p:
+                            if 'exchange' in self.brokers[host]:
+                                self.brokers[host]['exchange'].extend(p['exchange'])
+                            else:
+                                self.brokers[host]['exchange'] = p['exchange']
 
         self.exchange_summary = {}
         for h in self.brokers:
