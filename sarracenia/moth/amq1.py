@@ -12,9 +12,7 @@ from sarracenia.postformat import PostFormat
 from proton.handlers import MessagingHandler
 from proton.reactor import Container
 from proton.utils import BlockingConnection
-from proton import SSLDomain
-from proton import Message
-from proton import Endpoint
+from proton import Delivery, Endpoint, Message, SSLDomain
 
 logger = logging.getLogger(__name__)
 
@@ -63,6 +61,21 @@ class Amqp1ClientBase:
         else:
             self.ssl_domain = None
 
+    @staticmethod
+    def delivery_state_to_str(delivery_state):
+        if delivery_state == Delivery.ACCEPTED:
+            return "accepted"
+        elif delivery_state == Delivery.REJECTED:
+            return "rejected"
+        elif delivery_state == Delivery.RELEASED:
+            return "released"
+        elif delivery_state == Delivery.MODIFIED:
+            return "modified"
+        elif delivery_state == 0:
+            return "no state"
+        else:
+            return "unknown"
+
 class Amqp1Publisher(Amqp1ClientBase):
     def __init__(self, broker_url: str, options: dict):
         """ Handles publishing messages to an AMQP1.0 broker.
@@ -95,11 +108,11 @@ class Amqp1Publisher(Amqp1ClientBase):
 
     def publish(self, message):
         """ Publish an AMQP1.0 message.
-            Return ???
+            Return True when successful, False when failed.
         """
         try:
             delivery = self.sender.send(message, timeout=self.o['timeout'])
-            logger.info(f"DEBUG: the delivery {delivery}")
+            return True
         except Exception as e:
             err_name = ''
             err_desc = ''
@@ -111,6 +124,7 @@ class Amqp1Publisher(Amqp1ClientBase):
                 pass
             logger.error(f"Failed to publish because {e} {err_name} {err_desc}")
             logger.debug("Exception details:", exc_info=True)
+        return False
 
     def close(self):
         try:
@@ -131,7 +145,7 @@ class Amqp1Receiver(MessagingHandler, Amqp1ClientBase):
         Based on https://qpid.apache.org/releases/qpid-proton-0.40.0/proton/python/examples/
         Docs: https://qpid.apache.org/releases/qpid-proton-0.40.0/proton/python/docs/index.html
     """
-    def __init__(self, broker_url: str, options: dict, addresses: list, msg_q: queue.Queue):
+    def __init__(self, broker_url: str, options: dict, addresses: list, msg_q: queue.Queue, ack_q: queue.Queue):
         """ Handles receiving messages from an AMQP1.0 broker. Reception is asynchronous.
 
             Args:
@@ -139,19 +153,22 @@ class Amqp1Receiver(MessagingHandler, Amqp1ClientBase):
                 options (dict): sr3 options dictionary
                 addresses (list): A list of source addresses to receive from. Not used for publishing. The publish
                     address is specified in the message's address field.
-                msg_q (queue.Queue): When subscribing, messages received from the broker are placed in this queue.
-                    When publishing, messages to be published are placed in this queue.
+                msg_q (queue.Queue): messages received from the broker are placed in this queue.
+                ack_q (queue.Queue): tags for messages ready to be acked should be placed in this queue.
         """
-        # TODO: can pass prefetch as param
         Amqp1ClientBase.__init__(self, broker_url, options, is_subscriber=True)
-        MessagingHandler.__init__(self)
+        # auto_accept and auto_settle False means we want to manually ack messages
+        MessagingHandler.__init__(self, prefetch=self.o['prefetch'], auto_accept=False, auto_settle=False)
 
         self.addresses = addresses
         self.msg_q = msg_q
+        self.ack_q = ack_q
 
         self.__connected = False
         self.connection = None
         self.receivers = []
+        self.ack_id_counter = 0
+        self.pending_deliveries = {}
 
     def on_start(self, event):
         """ Event loop in container has started, can now create receivers.
@@ -173,15 +190,54 @@ class Amqp1Receiver(MessagingHandler, Amqp1ClientBase):
                 self.receivers.append(rx)
                 logger.info(f"created receiver for source address: {addr}")
             except Exception as e:
-                logger.error("failed to create receiver for address: {addr}")
+                logger.error(f"failed to create receiver for address: {addr}")
                 logger.debug("Exception details:", exc_info=True)
+                # abort
+                self.close()
+                event.container.stop()
 
     def on_message(self, event):
         """ Subscriber: handle message received from broker.
         """
         msg = event.message
-        self.msg_q.put(msg)
+        delivery = event.delivery
+
+        # There is a delivery.tag value, but Proton tries to decode it as a UTF-8 string, which crashes
+        # because sometimes we receive messages with non-UTF-8-decodable tags. (from Solace brokers).
+        # Therefore we just assign our own ID and store it for future acking. (Delivery objects are not
+        # thread-safe according to C++ docs so we can't just use the delivery object itself).
+        # (https://qpid.apache.org/releases/qpid-proton-0.37.0/proton/cpp/api/mt_page.html)
+        self.pending_deliveries[self.ack_id_counter] = delivery
+
+        self.msg_q.put( (msg, self.ack_id_counter) )
+        self.ack_id_counter += 1
         logger.debug(f"new message pushed from broker (address: {event.receiver.source.address}): {msg}")
+
+    def on_timer_task(self, event):
+        """ Execute to handle message acking
+        """
+        # Ack:
+        if not self.ack_q.empty():
+            self.__ack()
+
+    def __ack(self):
+        """ Ack all IDs waiting in the ack_q
+        """
+        while not self.ack_q.empty():
+            tag = self.ack_q.get()
+            # FIXME: should maybe implement rollover for counter
+            if tag > self.ack_id_counter:
+                logger.warning(f"asked to ack ID {tag} less than current {self.ack_id_counter}")
+            try:
+                delivery = self.pending_deliveries.pop(tag, None)
+                if delivery:
+                    logger.debug(f"before ACK local_state: {Amqp1ClientBase.delivery_state_to_str(delivery.local_state)}, remote_state: {Amqp1ClientBase.delivery_state_to_str(delivery.remote_state)}, settled: {delivery.settled}")
+                    delivery.update(Delivery.ACCEPTED)
+                    delivery.settle()
+                    logger.debug(f" after ACK local_state: {Amqp1ClientBase.delivery_state_to_str(delivery.local_state)}, remote_state: {Amqp1ClientBase.delivery_state_to_str(delivery.remote_state)}, settled: {delivery.settled}")
+            except Exception as e:
+                logger.warning(f"ack failed for id: {tag}")
+
 
     def on_connection_opened(self, event):
         logger.info(f"connection opened to {self.broker_url} {event}")
@@ -191,17 +247,16 @@ class Amqp1Receiver(MessagingHandler, Amqp1ClientBase):
         logger.info(f"connection closed {event}")
         self.__connected = False
 
+    def on_link_error(self, event):
+        logger.error("link error")
+        self.close()
+
     def close(self):
         for rx in self.receivers:
             rx.close()
             rx.free()
             logger.debug(f"closed receiver from address {rx.source.address}")
         self.receivers = []
-        if self.sender:
-            self.sender.close()
-            self.sender.free()
-            logger.debug(f"closed sender")
-        self.sender = None
         if self.connection:
             self.connection.close()
             self.connection.free()
@@ -266,12 +321,12 @@ class AMQ1(Moth):
             To subscribe to a queue:
                 /queues/queue_name
 
-            FIXME: For subscribing to a queue, the documentation notes that the queue must already
-            exist, and it doesn't say anything about the queue's bindings. So I assume we can't currently
-            create exchanges/queues/bindings with AMQP 1.0, but this needs to be confirmed.
+            To subscribe, the documentation notes that the queue must already exist. The queue and bindings must be
+            created *somehow*, but AMQP1.0/proton has no way to do that. Any code implemented or other libraries
+            used to create queues and configure bindings would be RabbitMQ-specific.
 
-            Since we can use AMQP 0.9.1 for RabbitMQ, I'm not sure that we need to bother supporting
-            the RabbitMQ-specific AMQP 1.0 implementation.
+            Since we can use AMQP 0.9.1 for RabbitMQ, there isn't really any point in making our AMQP1.0
+            implementation work with RabbitMQ's model.
 
             Non-RabbitMQ AMQP 1.0:
             ----------------------
@@ -298,7 +353,7 @@ class AMQ1(Moth):
             For now, we are just ignoring topicPrefix and exchange and just use the subtopics as addresses.
 
             AMQP1.0 Delivery States: a message can be ACCEPTED, REJECTED, RELEASED or MODIFIED.
-                - ACCEPTED: a message that has been received and processed successfully 
+                - ACCEPTED: a message that has been received and processed successfully
                 - REJECTED: permanently failed
                 - RELEASED: put back to the source to be redelivered
                 - MODIFIED: redliver with changes (likely not useful to us)
@@ -308,7 +363,7 @@ class AMQ1(Moth):
                     delivery.update(proton.ACCEPTED)
                     delivery.settle()
 
-            Delivery guarantees
+            Delivery guarantees (similar to MQTT QoS)
 
             AMQP 1.0 expresses guarantees via link settlement modes:
                 At-most-once - pre-settled messages (no redelivery)
@@ -317,18 +372,16 @@ class AMQ1(Moth):
 
             TODO:
             -----
-            - Figure out how we want to define address(es) in the config.
-            - Concept of durable queues - can we have messages queue up on the broker while we're
-                disconnected? durable source?
-            - Equivalent to queue names - can we specify the name of our queue/connection?
+            - Figure out how we want to define address(es) in the config. (topic)
             - How do we ack messages?
-        
             - How to have multiple instances share a 'queue'?
 
-            More notes:
-              - A source can have filters configured?
-              - message distribution mode: copy (every receiver gets a copy, messages remain in the 'queue')
-                  or move (only 1/n receivers gets the message, what we need when using multiple nodes/instances)
+            Other Notes:
+            ------------
+              - It seems like most of the time we will be connecting to pre-existing addresses (that behave like
+                queues). This is broker dependent. At least for NAVCAN, they will pre-create our queues, with routing
+                and other options (e.g. durability, round-robin, etc.) already configured.
+              - Given a "queue-like" address, can we request additional broker-side filtering?
         """
         super().__init__(props, is_subscriber)
 
@@ -352,6 +405,8 @@ class AMQ1(Moth):
         self.next_connect_failures = 0
         self.next_message = 0
 
+        self.broker = None
+
         # instance of Amqp1Receiver
         self.client = None
         self.reactor = None
@@ -359,13 +414,13 @@ class AMQ1(Moth):
         self.client_thread = None
 
         self._raw_msg_q = None
-        self.amq1msg = None
+        self._ack_q = None
 
     def _msgRawToDict(self, raw_msg) -> sarracenia.Message:
         """ Convert AMQP1.0 raw message to sr3 message (dictionary)
         """
         if self.o['messageDebugDump']:
-            logger.info(f"Raw AMQP1.0 Message: {raw_msg}\n")
+            logger.info(f"raw message: {raw_msg}")
             # for thing in sorted(dir(raw_msg)):
             #     if thing[0] != '_':
             #         try:
@@ -456,33 +511,38 @@ class AMQ1(Moth):
         try:
             if self.is_subscriber:
                 self._raw_msg_q = queue.Queue() # FIXME need to deal with messages still in q? when subscribing
+                self._ack_q = queue.Queue()
 
                 self.client = Amqp1Receiver(
                     broker_url,
                     self.o,
                     addresses,
-                    self._raw_msg_q
+                    self._raw_msg_q,
+                    self._ack_q
                 )
                 self.reactor = Container(self.client)
                 self.client_thread = threading.Thread(target=self.reactor.run)
                 self.client_thread.daemon = True
                 self.client_thread.start()
-                self.connection = True
-                return
 
             else:
                 self.client = Amqp1Publisher(
                     broker_url,
                     self.o
                 )
-                self.connection = True
-                return
 
         except Exception as err:
             logger.error( f"failed connection to {str(broker)}: {err}" )
             logger.debug('Exception details: ', exc_info=True)
+
+        time.sleep(0.5)
+        if not self.__is_connected():
+            logger.error( f"failed connection to {str(broker)}" )
+            self.close()
             self.setEbo(start)
-            self.connection = None
+
+        self.broker = broker
+
 
     def getSetup(self) -> None:
         """ Setup as a consumer to receive messages.
@@ -499,6 +559,7 @@ class AMQ1(Moth):
         bindings = subscription['bindings']
 
         # translate sr3 bindings to AMQP1.0 addresses (FIXME: currently ignoring exchange/topicPrefix)
+        # and topic, which is used for MQTT but only allows one address
         addresses = [ b['sub'][0] for b in bindings ]
         logger.debug(f"source addresses: {addresses}")
 
@@ -557,30 +618,44 @@ class AMQ1(Moth):
 
             try:
                 # don't block waiting for messages to be available, better to just try again later
-                raw_msg = self._raw_msg_q.get_nowait()
+                raw_msg, ack_id = self._raw_msg_q.get_nowait()
             except queue.Empty:
                 raw_msg = None
+                ack_id = None
 
             if raw_msg is None:
                 return None
+            elif ack_id is None:
+                logger.error("received raw msg but ack_id")
             else:
                 # self.metrics['rxByteCount'] += len(raw_msg.body)
                 try:
                     msg = self._msgRawToDict(raw_msg)
+                    if ack_id:
+                        msg['ack_id'] = { 'tag': ack_id,
+                                        'broker': self.broker
+                                        }
+                        msg['_deleteOnPost'].add('ack_id')
                 except Exception as err:
                     logger.error("message decode failed. raw message: %s" % raw_msg.body )
                     logger.debug('Exception details: ', exc_info=True)
                     msg = None
-                # if msg is None:
-                #     self.metrics['rxBadCount'] += 1
-                #     return None
-                # else:
-                #     self.metrics['rxGoodCount'] += 1
-                # if hasattr(self.o, 'fixed_headers'):
-                #     for k in self.o.fixed_headers:
-                #         msg[k] = self.o.fixed_headers[k]
-                # logger.debug("new msg: %s" % msg)
+                    # tell the broker we've acked the message, even though we can't process
+                    if ack_id:
+                        self._ack_q.put(ack_id)
+
+                if msg is None:
+                    self.metrics['rxBadCount'] += 1
+                    return None
+                else:
+                    self.metrics['rxGoodCount'] += 1
+
+                if hasattr(self.o, 'fixed_headers'):
+                    for k in self.o.fixed_headers:
+                        msg[k] = self.o.fixed_headers[k]
+
                 return msg
+
         except Exception as err:
             subscription = self.o['subscriptions'][self.o['subscription_index']]
             sub_queue = subscription['queue']
@@ -594,6 +669,33 @@ class AMQ1(Moth):
         self.close()
         time.sleep(1)
         return None
+
+    def ack(self, m: sarracenia.Message) -> bool:
+        """ Acknowledge a received message
+        """
+        if not self.is_subscriber:
+            logger.error("getting from a publisher")
+            return False
+
+        # silent success. retry messages will not have an ack_id, and so will not require acknowledgement.
+        if not 'ack_id' in m:
+            #logger.warning( f"no ackid present" )
+            return True
+
+        # pass the ack_id to the AMQP thread and hope it works
+        # FIXME: check if it was acked successfully?
+        try:
+            self._ack_q.put(m['ack_id']['tag'])
+            # trigger the ack in the thread (on_timer_task will run)
+            self.reactor.schedule(0, self.client)
+            logger.debug(f"requested for {m['ack_id']}")
+            del m['ack_id']
+            m['_deleteOnPost'].remove('ack_id')
+            return True
+        except Exception as e:
+            logger.warning(f"failed for {m['ack_id']}")
+
+        return False
 
     def putNewMessage(self,
                       message: sarracenia.Message,
@@ -615,7 +717,7 @@ class AMQ1(Moth):
             # check again, fail if it didn't connect
             if not self.__is_connected():
                 return False
-            
+
             # The caller probably doesn't expect the message to get modified by this method, so use a copy of the message
             sr3_msg = copy.deepcopy(message)
 
@@ -643,24 +745,21 @@ class AMQ1(Moth):
             address = headers['topic']
             del headers['topic']
 
-            # TODO is there a length limit for address?
-
-            if self.o['messageDebugDump']:
-                logger.info('raw message body: version: %s type: %s %s' %
-                                (version, type(raw_body),  raw_body))
-                logger.info('raw message headers: type: %s value: %s' % (type(headers),  headers))
-
-            # TODO compare with regular AMQP, posts stuff?
+            # Address length limit is broker-specific
+            # Solace limits addresses to 250 bytes and 128 levels: https://docs.solace.com/Messaging/SMF-Topics.htm
+            if len(address) > 250:
+                logger.warning(f"address length is >250, message may fail to publish. address: {address}")
 
             # create AMQP1 message object to be published
             # postformat stuff determines *what* the body is. For SWIM/NAVCANADA, the body is the inline content.
             # for sr3 format, I think the body would be the JSON message itself.
-            amqp1_msg = Message(address=address, body=raw_body)
+            amqp1_msg = Message(address=address, body=raw_body, durable=True)
             amqp1_msg.properties = headers
 
-            logger.debug(f"FULL AMQP1 MESSAGE: {amqp1_msg}")
+            if self.o['messageDebugDump']:
+                logger.info(f"raw message: {amqp1_msg} (format: {version})")
 
-            self.client.publish(amqp1_msg)
+            result = self.client.publish(amqp1_msg)
 
             # for logging
             if not 'posts' in message:
@@ -668,7 +767,7 @@ class AMQ1(Moth):
             message['posts'].append( { 'broker':str(self.o['broker']), 'topic': address} )
             message['_deleteOnPost'] |= set( ['posts'] )
 
-            return True
+            return result
 
         except Exception as e:
             logger.error(f"message publish failed: {e}")
@@ -695,3 +794,4 @@ class AMQ1(Moth):
             logger.debug("thread terminated")
             self.client_thread = None
         # FIXME metrics stuff
+        self.broker = None
