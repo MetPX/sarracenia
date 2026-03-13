@@ -207,20 +207,20 @@ class Amqp1Receiver(MessagingHandler, Amqp1ClientBase):
         # Therefore we just assign our own ID and store it for future acking. (Delivery objects are not
         # thread-safe according to C++ docs so we can't just use the delivery object itself).
         # (https://qpid.apache.org/releases/qpid-proton-0.37.0/proton/cpp/api/mt_page.html)
-        self.pending_deliveries[self.ack_id_counter] = delivery
+        self.pending_deliveries[self.ack_id_counter] = (delivery, event.receiver)
 
         self.msg_q.put( (msg, self.ack_id_counter) )
         self.ack_id_counter += 1
-        logger.debug(f"new message pushed from broker (address: {event.receiver.source.address}): {msg}")
+        logger.debug(f"new message pushed from broker (address: {event.receiver.source.address}, delivery_count: {msg.delivery_count}): {msg}")
 
     def on_timer_task(self, event):
         """ Execute to handle message acking
         """
         # Ack:
         if not self.ack_q.empty():
-            self.__ack()
+            self.__ack(event)
 
-    def __ack(self):
+    def __ack(self, event):
         """ Ack all IDs waiting in the ack_q
         """
         while not self.ack_q.empty():
@@ -229,14 +229,21 @@ class Amqp1Receiver(MessagingHandler, Amqp1ClientBase):
             if tag > self.ack_id_counter:
                 logger.warning(f"asked to ack ID {tag} less than current {self.ack_id_counter}")
             try:
-                delivery = self.pending_deliveries.pop(tag, None)
+                delivery, receiver = self.pending_deliveries.pop(tag, (None,None))
                 if delivery:
-                    logger.debug(f"before ACK local_state: {Amqp1ClientBase.delivery_state_to_str(delivery.local_state)}, remote_state: {Amqp1ClientBase.delivery_state_to_str(delivery.remote_state)}, settled: {delivery.settled}")
+                    cb = receiver.credit
                     delivery.update(Delivery.ACCEPTED)
                     delivery.settle()
-                    logger.debug(f" after ACK local_state: {Amqp1ClientBase.delivery_state_to_str(delivery.local_state)}, remote_state: {Amqp1ClientBase.delivery_state_to_str(delivery.remote_state)}, settled: {delivery.settled}")
+                    # TODO: this doesn't seem right, but if the credit is 0 then the
+                    # ack doesn't seem to transmit (related to prefetch)
+                    if cb == 0:
+                        receiver.flow(1)
+                    logger.debug(f"local_state: {Amqp1ClientBase.delivery_state_to_str(delivery.local_state)}, " +
+                                 f"remote_state: {Amqp1ClientBase.delivery_state_to_str(delivery.remote_state)}, " +
+                                 f"settled: {delivery.settled}, credit before ack: {cb}, " +
+                                 f"credit after ack: {receiver.credit}")
             except Exception as e:
-                logger.warning(f"ack failed for id: {tag}")
+                logger.warning(f"ack failed for id: {tag} {e}")
 
     def on_connection_opened(self, event):
         logger.info(f"connection opened to {self.broker_url} {event}")
@@ -625,14 +632,15 @@ class AMQ1(Moth):
             if raw_msg is None:
                 return None
             elif ack_id is None:
-                logger.error("received raw msg but ack_id")
+                logger.error("received raw msg but no ack_id")
             else:
                 # self.metrics['rxByteCount'] += len(raw_msg.body)
                 try:
                     msg = self._msgRawToDict(raw_msg)
-                    if ack_id:
+                    logger.info(f"ACK ID is: {ack_id}")
+                    if ack_id is not None: # it can be 0, need to specifically check that it's not None
                         msg['ack_id'] = { 'tag': ack_id,
-                                        'broker': self.broker
+                                          'broker': self.broker, # must match broker in gather.message
                                         }
                         msg['_deleteOnPost'].add('ack_id')
                 except Exception as err:
