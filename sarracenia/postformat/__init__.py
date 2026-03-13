@@ -85,7 +85,7 @@ class PostFormat:
  
         p = options['publishers'][options['publisher_index']]
 
-        if p['broker'].url.scheme.startswith('mqtt'):
+        if p['broker'].url.scheme.startswith('mqtt') and p['mqttExchangeBeforeTopicPrefix']:
             if ( 'exchange' in p ) and ( 'topicPrefix' in p ):
                 if 'exchangeSplit' in p and p['exchangeSplit'] > 1:
                     idx = sum( bytearray(msg['identity']['value'], 'ascii')) % len(p['exchange'])
