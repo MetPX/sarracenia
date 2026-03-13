@@ -240,12 +240,11 @@ class MQTT(Moth):
             if 'topic' in queue:
                 subj=queue['topic']
             else:
-                exchange = binding_dict["exchange"]
                 prefix = binding_dict["prefix"]
                 subtopic = binding_dict["sub"]
-                logger.info( f"tuple: {exchange} {prefix} {subtopic}")
+                logger.info( f"tuple: {prefix} {subtopic}")
 
-                subj = '/'.join(['$share', queue['name'], exchange] +
+                subj = '/'.join(['$share', queue['name'] ] +
                                 prefix + subtopic)
 
             (res, mid) = client.subscribe(subj, qos=queue['qos'])
@@ -633,7 +632,10 @@ class MQTT(Moth):
             self.metrics['rxBadCount'] += 1
             return None
 
-        message['exchange'] = mqttMessage.topic.split('/')[0]
+        if self.o['mqttExchangeBeforeTopicPrefix']:
+            message['exchange'] = mqttMessage.topic.split('/')[0]
+            message['_deleteOnPost'] |= set( ['exchange' ])
+
         message.deriveSource( self.o )
         message.deriveTopics( self.o, topic=mqttMessage.topic, separator='/' )
 
@@ -643,7 +645,7 @@ class MQTT(Moth):
 
         message['qos'] = mqttMessage.qos
         message['local_offset'] = 0
-        message['_deleteOnPost'] |= set( ['exchange', 'local_offset', 'ack_id', 'qos' ])
+        message['_deleteOnPost'] |= set( [ 'local_offset', 'ack_id', 'qos' ])
 
         self.metrics['rxLast'] = sarracenia.nowstr()
         if message.validate():
