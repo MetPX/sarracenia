@@ -39,7 +39,12 @@ class Subscription(dict):
                     exchange += "%02d" % (options.no % options.exchangeSplit)
 
         self['broker'] = options.broker
-        self['bindings'] = [ { 'exchange': exchange, 'prefix': options.topicPrefix, 'sub': subtopic } ]
+        if self['broker'].url.scheme.lower().startswith('amqp'):
+            self['bindings'] = [ { 'exchange': exchange, 'prefix': options.topicPrefix, 'sub': subtopic } ]
+        elif 'mqtt' in self['broker'].url.scheme.lower() and options.mqttExchangeBeforeTopicPrefix:
+            self['bindings'] = [ { 'prefix': [exchange] + options.topicPrefix, 'sub': subtopic } ]
+        else:
+            self['bindings'] = [ { 'prefix': options.topicPrefix, 'sub': subtopic } ]
 
         self['queue']={ 'name': queueName, 'template': queueName_template, 'cleanup_needed': None }
         for a in [ 'queueBind', 'queueDeclare' , 'queueType' ]:

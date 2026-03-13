@@ -817,7 +817,8 @@ class sr_GlobalState:
                         host = self._init_broker_host(s['broker'].url.netloc)
                         xl=[]
                         for b in s['bindings']:
-                            xl.append(b['exchange'])
+                            if 'exchange' in b:
+                                xl.append(b['exchange'])
                         #logger.critical( f" {xl=}  ")
                         q = s['queue']['name']
 
