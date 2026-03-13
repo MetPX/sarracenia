@@ -238,7 +238,6 @@ class Amqp1Receiver(MessagingHandler, Amqp1ClientBase):
             except Exception as e:
                 logger.warning(f"ack failed for id: {tag}")
 
-
     def on_connection_opened(self, event):
         logger.info(f"connection opened to {self.broker_url} {event}")
         self.__connected = True
@@ -748,7 +747,8 @@ class AMQ1(Moth):
             # Address length limit is broker-specific
             # Solace limits addresses to 250 bytes and 128 levels: https://docs.solace.com/Messaging/SMF-Topics.htm
             if len(address) > 250:
-                logger.warning(f"address length is >250, message may fail to publish. address: {address}")
+                logger.error(f"message address is too long (>250), truncating. address: {address}")
+                address = address[:250]
 
             # create AMQP1 message object to be published
             # postformat stuff determines *what* the body is. For SWIM/NAVCANADA, the body is the inline content.
