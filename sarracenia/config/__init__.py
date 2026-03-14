@@ -2541,7 +2541,7 @@ class Config:
                 return
 
             if type(namespace.topicPrefix) is str:
-               if namespace.topicPrefix.lower() in [ 'None', 'off', 'false' ]:
+               if namespace.topicPrefix.lower() in [ 'none', 'off', 'false' ]:
                    topicPrefix=[]
                elif namespace.broker.scheme[0:3] == 'amq':
                    topicPrefix = namespace.topicPrefix.split('.')
