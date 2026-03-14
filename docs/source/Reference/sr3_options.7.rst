@@ -1313,48 +1313,6 @@ All the other components are used in data pumps, and usually preserving
 the entire tree is the desired behaviour. So for all other components
 *mirror on* is the default.
 
-mqttExchangeBeforeTopicPrefix <flag> (default: on)
---------------------------------------------------
-
-*Exchange* is a concept unique to the AMQP 0.9 message protocol. 
-It does not exist in AMQP 1.0, or in MQTT, the other message protocols
-supported by sr3 in 2026.  This flag is an sr3 compatibility mode, where AMQP 0.9 
-exchanges are mapped to a level in the MQTT topic hierarchy. This is useful 
-when running a broker solely for use with sr3. In cases where doing 
-interop with brokers shared with other application stacks, it might 
-be easier without this mapping active.
-
-when publishing settings::
-
-   queueName q_hoho123
-   path /tmp/Important/critical_file
-
-   broker mqtt://mybroker
-   mqttExchangeBeforeTopicPrefix on
-   post_baseDir /tmp
-   post_exchange xpublic
-   post_topicPrefix v03
-
-results in a file being posted with a topic like:  xpublic/v03/Important
-
-vs. with it off:  v03/Important
-
-    
-Note that when this option is turned off options for load sharing 
-like post_exchangeSplit become inactive, as they work by distributing
-publications across multiple exchange level topics.
-
-When subscribing, the topic resulting from above will  
-look like::
-
-    mqttExchangeBeforeTopicPrefix  On --> $shared/q_hoho123/xpublic/v03/Important
-    mqttExchangeBeforeTopicPrefix Off --> $shared/q_hoho123/v03/Important
-
-note: the $shared/q_hoho123 prefix comes from the use of MQTTv5 shared subscriptions.
-
-
-
-
 
 
 
@@ -2381,6 +2339,46 @@ Explicitly set a subscribing topic string, overriding the value usually
 derived from a group of settings. For sarracenia data pumps, this should never be needed,
 as the use of *exchange*, *topicPrefix*, and *subtopic* normally builds the right
 value.
+
+topicExchangePrepend <flag> (default: on)
+--------------------------------------------------
+
+*Exchange* is a concept unique to the AMQP 0.9 message protocol. 
+It does not exist in AMQP 1.0, or in MQTT, the other message protocols
+supported by sr3 in 2026.  This flag is an sr3 compatibility mode, where AMQP 0.9 
+exchanges are mapped to a level in the MQTT topic hierarchy. This is useful 
+when running a broker solely for use with sr3. In cases where doing 
+interop with brokers shared with other application stacks, it might 
+be easier without this mapping active.
+
+when publishing settings::
+
+   queueName q_hoho123
+   path /tmp/Important/critical_file
+
+   broker mqtt://mybroker
+   topicExchangePrepend on
+   post_baseDir /tmp
+   post_exchange xpublic
+   post_topicPrefix v03
+
+results in a file being posted with a topic like:  xpublic/v03/Important
+
+vs. with it off:  v03/Important
+
+    
+Note that when this option is turned off options for load sharing 
+like post_exchangeSplit become inactive, as they work by distributing
+publications across multiple exchange level topics.
+
+When subscribing, the topic resulting from above will  
+look like::
+
+    topicExchangePrepend  On --> $shared/q_hoho123/xpublic/v03/Important
+    topicExchangePrepend Off --> $shared/q_hoho123/v03/Important
+
+note: the $shared/q_hoho123 prefix comes from the use of MQTTv5 shared subscriptions.
+
 
 
 topicPrefix (default: v03)

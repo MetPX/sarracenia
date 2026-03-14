@@ -34,7 +34,7 @@ class Publisher(dict):
         already_a_list = hasattr(options,'post_exchange') and type(options.post_exchange) == list
         #logger.debug( f" {exchange_root=}  {already_a_list=} " )
 
-        if options.mqttExchangeBeforeTopicPrefix or options.post_broker.url.scheme.startswith('amqp'):
+        if options.topicExchangePrepend or options.post_broker.url.scheme.startswith('amqp'):
             if already_a_list:
                 self['exchange'] = options.post_exchange
             else:
@@ -88,7 +88,7 @@ class Publisher(dict):
                 self['baseDir'] = u.path
 
 
-        for a in [ 'auto_delete', 'durable', 'exchangeDeclare', 'messageAgeMax', 'mqttExchangeBeforeTopicPrefix', 
+        for a in [ 'auto_delete', 'durable', 'exchangeDeclare', 'messageAgeMax', 'topicExchangePrepend', 
                   'messageDebugDump', 'persistent', 'timeout' ]:
             if hasattr(options, a):
                 self[a] = getattr(options,a)
