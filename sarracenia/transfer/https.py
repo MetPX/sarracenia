@@ -162,6 +162,12 @@ class Https(Transfer):
         if not self.credentials(): 
             self.connected = False
 
+        ua = 'Sarracenia ' + sarracenia.__version__
+        if self.o.httpUserAgent:
+            safe_ua = self.o.httpUserAgent.replace('\r', '').replace('\n', '')
+            ua += ' ' + safe_ua
+        self.user_agent = ua
+
         self.connected = True
         return self.connected
 
@@ -260,6 +266,7 @@ class Https(Transfer):
         self.head_opener = None
         self.password_mgr = None
 
+        self.user_agent = 'Sarracenia ' + sarracenia.__version__
         self.urlstr = ''
         self.path = ''
         self.cwd = ''
@@ -349,8 +356,8 @@ class Https(Transfer):
         alarm_set(self.o.timeout)
 
         try:
-            headers = {'user-agent': 'Sarracenia ' + sarracenia.__version__}
-            
+            headers = {'user-agent': self.user_agent}
+
             # Bearer token credential is passed as a header
             if self.bearer_token:
                 logger.debug('bearer_token: %s' % self.bearer_token)
