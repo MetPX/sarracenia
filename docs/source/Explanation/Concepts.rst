@@ -261,6 +261,7 @@ MQTT is actually a better match to Sarracenia than AMQP, as it is entirely based
 
     * AMQP: A queue named *queuename* is bound to an exchange xpublic with key: v03.observations ...  
     * MQTT subscription: topic $shared/*queuename*/xpublic/v03/observations ...  
+    * This mapping can be turned off and overridden with a setting: *mqttExchangeBeforeTopicPrefix off* in which case, exchange will not be used.
 
   - Connections are clean_sesssion=0 normally, to recover notification messages when a connection is broken.
   - MQTT QoS==1 is used to assure notification messages are sent at least once, and avoid overhead
