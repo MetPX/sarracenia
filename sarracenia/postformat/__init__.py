@@ -92,7 +92,11 @@ class PostFormat:
                     exchange = p['exchange'][idx]
                 else:
                     exchange = p['exchange'][0]
-            topic_prefix = [exchange] + p['topicPrefix']
+            if exchange:
+                topic_prefix = [exchange] + p['topicPrefix']
+            else:
+                topic_prefix = p['topicPrefix']
+
             topic_separator='/'
         else:
             topic_prefix = p['topicPrefix']
@@ -106,12 +110,12 @@ class PostFormat:
         elif 'topic' in p and p['topic'] and (type(p['topic']) is not list):
             topic = p['topic'].split(topic_separator)
         else:
+            topic = topic_prefix
             if 'relPath' in msg: 
-                topic = topic_prefix + msg['relPath'].split('/')[0:-1]
+                topic += msg['relPath'].split('/')[0:-1]
             elif 'subtopic' in msg:
-                topic = topic_prefix + msg['subtopic']  
-            else:
-                topic = topic_prefix
+                topic += msg['subtopic']  
+
         return topic
 
    
