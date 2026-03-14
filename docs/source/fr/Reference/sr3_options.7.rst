@@ -1293,43 +1293,6 @@ Le composant *subscribe* est généralement utilisé pour le téléchargement fi
 Tous les autres composants sont utilisés dans les pompes de données, et la préservation de l'intégralité de l'arborescence est généralement souhaitée. Ainsi, pour tous les autres composants, *mirror on* est la valeur par défaut.
 
 
-mqttExchangeBeforeTopicPrefix <flag> (défaut: on)
--------------------------------------------------
-
-*Exchange* est un concept propre au protocole de messagerie AMQP 0.9.  Il n'existe pas dans AMQP 1.0, ni dans MQTT.
-Ce paramètre correspond à un mode de compatibilité sr3, où les échanges AMQP 0.9 sont mappés à un niveau de 
-la hiérarchie des sujets MQTT. Ceci est utile lorsqu'un broker est utilisé exclusivement avec sr3. Dans les 
-cas d'interopérabilité avec des brokers partagés par d'autres applications, il peut être
-plus simple de désactiver ce mappage.
-
-Paramètres de publication::
-
-   queueName q_hoho123
-   path /tmp/Important/critical_file
-
-   broker mqtt://mybroker
-   mqttExchangeBeforeTopicPrefix on
-   post_baseDir /tmp
-   post_exchange xpublic
-   post_topicPrefix v03
-
-
-Le résultat est un fichier publié avec un sujet tel que : xpublic/v03/Important
-Par opposition à : v03/Important (option désactivée)
-
-Notez que lorsque cette option est désactivée, les options de répartition de charge,
-
-comme post_exchangeSplit, deviennent inactives, car elles fonctionnent en distribuant
-les publications sur plusieurs sujets au niveau de l'échange.
-
-Lors de l'abonnement, le sujet résultant de l'opération ci-dessus ressemblera à ceci::
-
-
-    mqttExchangeBeforeTopicPrefix On --> $shared/q_hoho123/xpublic/v03/Important
-
-    mqttExchangeBeforeTopicPrefix Off --> $shared/q_hoho123/v03/Important
-
-Remarque : le préfixe $shared/q_hoho123 provient de l'utilisation des abonnements partagés MQTTv5.
 
 no <count>
 ----------
@@ -2345,6 +2308,42 @@ dériver à partir de l'habituel groupe de paramètres. Pour les pompes de donn�
 devrait jamais être nécessaire, car l'utilisation de l'*exchange*, *topicPrefix* et *subtopic*  
 construit normalement le bon valeur.
 
+topicExchangePrepend <flag> (défaut: on)
+-------------------------------------------------
+
+*Exchange* est un concept propre au protocole de messagerie AMQP 0.9.  Il n'existe pas dans AMQP 1.0, ni dans MQTT.
+Ce paramètre correspond à un mode de compatibilité sr3, où les échanges AMQP 0.9 sont mappés à un niveau de 
+la hiérarchie des sujets MQTT. Ceci est utile lorsqu'un broker est utilisé exclusivement avec sr3. Dans les 
+cas d'interopérabilité avec des brokers partagés par d'autres applications, il peut être
+plus simple de désactiver ce mappage.
+
+Paramètres de publication::
+
+   queueName q_hoho123
+   path /tmp/Important/critical_file
+
+   broker mqtt://mybroker
+   topicExchangePrepend on
+   post_baseDir /tmp
+   post_exchange xpublic
+   post_topicPrefix v03
+
+
+Le résultat est un fichier publié avec un sujet tel que : xpublic/v03/Important
+Par opposition à : v03/Important (option désactivée)
+
+Notez que lorsque cette option est désactivée, les options de répartition de charge,
+comme post_exchangeSplit, deviennent inactives, car elles fonctionnent en distribuant
+les publications sur plusieurs sujets au niveau de l'échange.
+
+Lors de l'abonnement, le sujet résultant de l'opération ci-dessus ressemblera à ceci::
+
+
+    topicExchangePrepend On --> $shared/q_hoho123/xpublic/v03/Important
+
+    topicExchangePrepend Off --> $shared/q_hoho123/v03/Important
+
+Remarque : le préfixe $shared/q_hoho123 provient de l'utilisation des abonnements partagés MQTTv5.
 topicPrefix (défaut: v03)
 -------------------------
 
