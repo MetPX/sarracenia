@@ -345,7 +345,8 @@ ne sont qu’un parmi une variété de choix pour les méthodes de routage dans 
 
     * AMQP: Une fil d’attente nommée *queuename* est liée à un échange xpublic avec clé: v03.observations ...
     * Abonnement MQTT: thème $shared/*queuename*/xpublic/v03/observations ...
-
+    * cette traduction de conceptes/hierarchies de thèmes peut être désactivé avec *mqttExchangeBeforeTopicPrefix off*
+ 
   - Les connexions sont normalement clean_sesssion = 0, pour récupérer les messages lorsqu’une connexion est rompue.
   - MQTT QoS==1 est utilisé pour s’assurer que les messages sont envoyés au moins une fois et éviter les frais généraux
     de ne s’assurer qu’une seule fois.
