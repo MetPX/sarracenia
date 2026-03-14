@@ -39,6 +39,7 @@ class Subscription(dict):
                     exchange += "%02d" % (options.no % options.exchangeSplit)
 
         self['broker'] = options.broker
+
         if self['broker'].url.scheme.lower().startswith('amqp'):
             self['bindings'] = [ { 'exchange': exchange, 'prefix': options.topicPrefix, 'sub': subtopic } ]
         elif 'mqtt' in self['broker'].url.scheme.lower() and options.mqttExchangeBeforeTopicPrefix:

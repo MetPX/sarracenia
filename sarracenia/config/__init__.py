@@ -930,7 +930,6 @@ class Config:
         self.messageAgeMax = 0
         self.post_exchanges = []
         self.post_messageAgeMax = 0
-	    #self.post_topicPrefix = None
         self.pstrip = False
         self.queueShare = "${USER}_${HOSTNAME}_${RAND8}"
         self.queueName = "q_${BROKER_USER}.${COMPONENT}.${CONFIG}.${QUEUESHARE}"
@@ -1673,13 +1672,17 @@ class Config:
             self.subtopic_seen=True
             self._parse_binding(v)
         elif k in ['topicPrefix']:
-            if '/' in v :
+            if v.lower() in [ 'none', 'off', 'false' ]:
+                self.topicPrefix = []
+            elif '/' in v :
                 self.topicPrefix = v.split('/')
             else:
                 self.topicPrefix = v.split('.')
         elif k in ['post_topicPrefix']:
             #if (not self.post_broker.url) or self.post_broker.url.scheme[0:3] == 'amq':
-            if '/' in v :
+            if v.lower() in [ 'none', 'off', 'false' ]:
+                self.post_topicPrefix = []
+            elif '/' in v :
                 self.post_topicPrefix = v.split('/')
             else:
                 self.post_topicPrefix = v.split('.')
@@ -2538,10 +2541,14 @@ class Config:
                 return
 
             if type(namespace.topicPrefix) is str:
-               if namespace.broker.scheme[0:3] == 'amq':
+               if namespace.topicPrefix.lower() in [ 'None', 'off', 'false' ]:
+                   topicPrefix=[]
+               elif namespace.broker.scheme[0:3] == 'amq':
                    topicPrefix = namespace.topicPrefix.split('.')
                else:
                    topicPrefix = namespace.topicPrefix.split('/')
+
+               namespace.topicPrefix = topicPrefix
 
             namespace.subscriptions.add(Subscription(namespace, namespace.queueName, resolved_qn, values))
 

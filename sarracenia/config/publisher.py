@@ -67,7 +67,7 @@ class Publisher(dict):
         elif hasattr(options, 'topicPrefix') and options.topicPrefix:
             self['topicPrefix'] = options.topicPrefix
         else:
-            self['topicPrefix'] = None
+            self['topicPrefix'] = []
 
         for a in [ 'baseDir', 'baseUrl', 'exchangeSplit', 'topicPrefix' ]:
             aa = "post_"+a
