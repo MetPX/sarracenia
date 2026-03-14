@@ -1664,6 +1664,7 @@ Sets the message format for posted messages. the currently included values are:
 When provided, this value overrides whatever can be deduced from the post_topicPrefix.
 
 
+
 post_messageAgeMax <duration>  (default: 0)
 -------------------------------------------
 
@@ -1696,7 +1697,9 @@ post_topicPrefix (default: topicPrefix)
 Prepended to the sub-topic to form a complete topic hierarchy. 
 This option applies to publishing.  Denotes the version of messages published 
 in the sub-topics. (v03 refers to `<sr3_post.7.html>`_) defaults to whatever
-was received. 
+was received.  suppress using::
+
+   post_topicPrefix None
 
 
 prefetch <N> (default: 1)
@@ -2394,6 +2397,11 @@ subscribe to.
 For example, Sr3 expects v03 messages by default, but there are
 plenty of sources that offer the old version (requiring a topicPrefix of *v02.post*)
 to specify the old version of messages.
+
+to disable::
+
+   topicPrefix None
+
 
 users <flag> (default: false)
 -----------------------------
