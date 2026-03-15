@@ -199,8 +199,8 @@ class Ftp(Transfer):
         except Exception as e:
             logger.error("FTP connection couldn't close properly.")
             logger.debug("Exception details:", exc_info=True)
-
-        alarm_cancel()
+        finally:
+            alarm_cancel()
 
     # connect...
     def connect(self):
@@ -309,7 +309,8 @@ class Ftp(Transfer):
             self.ftp.delete(path)
         except:
             d = self.ftp.pwd()
-        alarm_cancel()
+        finally:
+            alarm_cancel()
 
     # get
     def get(self,
