@@ -2287,6 +2287,10 @@ class Flow:
                     logger.debug("%s_transport download connects" % self.scheme)
                     ok = self.proto[self.scheme].connect()
                     if not ok:
+                        try:
+                            self.proto[self.scheme].close()
+                        except:
+                            logger.debug("ignoring close error on failed connection")
                         self.proto[self.scheme] = None
                         return 0
 
@@ -2621,10 +2625,23 @@ class Flow:
                          self.metrics['flow']['transferConnectStart'] = 0
                          self.metrics['flow']['transferConnected'] = False
 
+                    if self.scheme in self.proto and self.proto[self.scheme] is not None:
+                        try:
+                            self.proto[self.scheme].close()
+                        except:
+                            logger.debug("ignoring close error on stale connection")
+                        self.proto[self.scheme] = None
+
                     self.proto[self.scheme] = sarracenia.transfer.Transfer.factory( self.scheme, options)
-    
+
                     ok = self.proto[self.scheme].connect()
-                    if not ok: return 0
+                    if not ok:
+                        try:
+                            self.proto[self.scheme].close()
+                        except:
+                            logger.debug("ignoring close error on failed connection")
+                        self.proto[self.scheme] = None
+                        return 0
                     self.cdir = None
                     self.metrics['flow']['transferConnected'] = True
                     self.metrics['flow']['transferConnectStart'] = time.time() 
