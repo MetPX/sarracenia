@@ -573,10 +573,13 @@ class Sftp(Transfer):
 
     #when sftp is active, paramiko is present... STFPAttributes is then the same as FmdStat.
     def stat(self, path, msg=None) -> sarracenia.filemetadata.FmdStat:
+        alarm_set(self.o.timeout)
         try:
             return self.sftp.stat(path)
-        except:
+        except Exception:
             return None
+        finally:
+            alarm_cancel()
 
     # utime
     def utime(self, path, tup):
