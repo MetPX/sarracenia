@@ -372,17 +372,18 @@ class Sftp(Transfer):
 
         # read from rfp and write to local_file
 
-        rw_length = self.read_writelocal(remote_file, rfp, local_file,
-                                         local_offset, length, exactLength=False)
-
-        
-        # close
-
-        alarm_set(self.o.timeout)
         try:
-            rfp.close()
+            rw_length = self.read_writelocal(remote_file, rfp, local_file,
+                                             local_offset, length,
+                                             exactLength)
         finally:
-            alarm_cancel()
+            # close
+
+            alarm_set(self.o.timeout)
+            try:
+                rfp.close()
+            finally:
+                alarm_cancel()
 
         return rw_length
 
@@ -509,22 +510,25 @@ class Sftp(Transfer):
 
         # read from local_file and write to rfp
 
-        rw_length = self.readlocal_write(local_file, local_offset, length, rfp)
-
-        # no sparse file... truncate where we are at
-
-        alarm_set(self.o.timeout)
-        self.fpos = remote_offset + rw_length
-        if not self.o.nofsetstat and length != 0: 
-            try:
-                rfp.truncate(self.fpos)
-            except Exception as ex:
-                logger.warning( f"truncate {remote_file} failed: {ex}")
-                logging.debug("Exception details:", exc_info=True)
         try:
-            rfp.close()
+            rw_length = self.readlocal_write(local_file, local_offset,
+                                             length, rfp)
+
+            # no sparse file... truncate where we are at
+
+            self.fpos = remote_offset + rw_length
+            if not self.o.nofsetstat and length != 0:
+                try:
+                    rfp.truncate(self.fpos)
+                except Exception as ex:
+                    logger.warning(f"truncate {remote_file} failed: {ex}")
+                    logging.debug("Exception details:", exc_info=True)
         finally:
-            alarm_cancel()
+            alarm_set(self.o.timeout)
+            try:
+                rfp.close()
+            finally:
+                alarm_cancel()
 
         return rw_length
 
