@@ -411,10 +411,14 @@ class AMQP(Moth):
             if queue['bind'] and queue['name']:
                 for b in subscription['bindings']:
                     #exchange, prefix, subtopic = tup
-                    exchange = b['exchange']
-                    prefix= b['prefix']
-                    subtopic = b['sub']
-                    topic = '.'.join(prefix + subtopic)
+                    exchange = b['exchange'] if 'exchange' in b else None
+                    prefix= b['prefix'] if 'prefix' in b else None
+                    if 'topic' in b:
+                        topic = '.'.join(b['topic'])
+                        subtopic= None
+                    else:
+                        subtopic = b['sub']
+                        topic = '.'.join(prefix + subtopic)
 
                     if self.o['dry_run']:
                         logger.info('binding (dry run) %s with %s to %s (as: %s)' % \
