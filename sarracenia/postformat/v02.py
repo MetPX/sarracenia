@@ -37,7 +37,7 @@ class V02(PostFormat):
             return True
 
         # in the v02, we used topic to identify message format. (not reliable for other formats.)
-        if headers['topic'].startswith('v02.'):
+        if 'topic' in headers and headers['topic'].startswith('v02.'):
             return True
         
         return False
