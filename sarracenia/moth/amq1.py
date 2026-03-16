@@ -772,7 +772,7 @@ class AMQ1(Moth):
             # create AMQP1 message object to be published
             # postformat stuff determines *what* the body is. For SWIM/NAVCANADA, the body is the inline content.
             # for sr3 format, I think the body would be the JSON message itself.
-            amqp1_msg = Message(address=address, body=raw_body, durable=True)
+            amqp1_msg = Message(address=address, body=raw_body, durable=self.o.get('persistent', True))
             amqp1_msg.properties = properties
             amqp1_msg.content_type = content_type
 
