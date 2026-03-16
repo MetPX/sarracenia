@@ -41,8 +41,10 @@ class Subscription(dict):
         self['broker'] = options.broker
 
         if topicOverride:
-            if not options.topicExchangePrepend:
+            if self['broker'].url.scheme.lower().startswith('amqp'):
                 self['bindings'] = [ { 'exchange': exchange, 'topic': subtopic } ]
+            elif options.topicExchangePrepend:
+                self['bindings'] = [ { 'topic': [exchange] + subtopic } ]
             else:
                 self['bindings'] = [ { 'topic': subtopic } ]
         elif self['broker'].url.scheme.lower().startswith('amqp'):

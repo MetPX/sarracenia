@@ -238,7 +238,7 @@ class MQTT(Moth):
         for binding_dict in s['bindings']:
 
             if 'topic' in binding_dict:
-                subj=binding_dict['topic']
+                subj='/'.join(binding_dict['topic'])
             else:
                 prefix = binding_dict["prefix"]
                 subtopic = binding_dict["sub"]
