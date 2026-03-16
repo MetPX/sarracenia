@@ -645,7 +645,8 @@ class AMQ1(Moth):
                 try:
                     msg = self._msgRawToDict(raw_msg)
                     logger.info(f"ACK ID is: {ack_id}")
-                    if ack_id is not None: # it can be 0, need to specifically check that it's not None
+                    # ack_id can be 0, need to specifically check that it's not None
+                    if ack_id is not None and msg is not None:
                         msg['ack_id'] = { 'tag': ack_id,
                                           'broker': self.broker, # must match broker in gather.message
                                         }
