@@ -1372,7 +1372,7 @@ class Config:
             for k in oth.__dict__.keys():
                 self._override_field(k, self._varsub(getattr(oth, k)))
 
-    def _parse_binding(self, subtopic_string):
+    def _parse_binding(self, subtopic_string, topicOverride=False):
         """
          FIXME: see original parse, with substitions for url encoding.
                 also should sqwawk about error if no exchange or topicPrefix defined.
@@ -1391,7 +1391,7 @@ class Config:
                 subtopic = subtopic_string.split('/')
             
         if hasattr(self, 'exchange') and hasattr(self, 'topicPrefix'):
-            self.subscriptions.add(Subscription(self, self.queueName, resolved_queueName, subtopic))
+            self.subscriptions.add(Subscription(self, self.queueName, resolved_queueName, subtopic, topicOverride))
 
     def _parse_v2plugin(self, entryPoint, value):
         """
@@ -1668,9 +1668,9 @@ class Config:
             except Exception as ex:
                 logger.error( f"{','.join(self.files)}:{self.lineno} file {v} failed to parse:  {ex}" )
                 logger.debug('Exception details: ', exc_info=True)
-        elif k in ['subtopic']:
+        elif k in ['subtopic', 'topic']:
             self.subtopic_seen=True
-            self._parse_binding(v)
+            self._parse_binding(v, k in ['topic'] )
         elif k in ['topicPrefix']:
             if v.lower() in [ 'none', 'off', 'false' ]:
                 self.topicPrefix = []

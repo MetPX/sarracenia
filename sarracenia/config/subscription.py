@@ -11,7 +11,7 @@ logger = logging.getLogger(__name__)
 
 class Subscription(dict):
 
-    def __init__(self, options, queueName_template, queueName, subtopic):
+    def __init__(self, options, queueName_template, queueName, subtopic, topicOverride=False):
 
         exchange=None
         if hasattr(options,'exchange') and options.exchange:
@@ -40,7 +40,12 @@ class Subscription(dict):
 
         self['broker'] = options.broker
 
-        if self['broker'].url.scheme.lower().startswith('amqp'):
+        if topicOverride:
+            if not options.topicExchangePrepend:
+                self['bindings'] = [ { 'exchange': exchange, 'topic': subtopic } ]
+            else:
+                self['bindings'] = [ { 'topic': subtopic } ]
+        elif self['broker'].url.scheme.lower().startswith('amqp'):
             self['bindings'] = [ { 'exchange': exchange, 'prefix': options.topicPrefix, 'sub': subtopic } ]
         elif 'mqtt' in self['broker'].url.scheme.lower() and options.topicExchangePrepend:
             self['bindings'] = [ { 'prefix': [exchange] + options.topicPrefix, 'sub': subtopic } ]
