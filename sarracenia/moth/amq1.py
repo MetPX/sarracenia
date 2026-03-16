@@ -259,9 +259,10 @@ class Amqp1Receiver(MessagingHandler, Amqp1ClientBase):
     def on_link_opened(self, event):
         """ Set initial link credit using configured prefetch value.
         """
-        logger.debug(f"with credit: {event.receiver.credit} (prefetch set to: {self.prefetch})")
-        if event.receiver.credit < self.prefetch:
+        start_credit = event.receiver.credit
+        if start_credit < self.prefetch:
             event.receiver.flow(self.prefetch)
+        logger.debug(f"with credit: {start_credit}, prefetch set to: {self.prefetch}, credit increased to: {event.receiver.credit}")
 
     def on_connection_opened(self, event):
         logger.info(f"connection opened to {self.broker_url} {event}")
@@ -396,9 +397,10 @@ class AMQ1(Moth):
 
             TODO:
             -----
-            - Figure out how we want to define address(es) in the config. (topic)
-            - How do we ack messages?
+            - Figure out how we want to define address(es) in the config. 
             - How to have multiple instances share a 'queue'?
+            - Connection name based on queuename/queueshare/something that includes instance number? (not unique enough right now)
+            - Receiving bytes or other bodies? (currently handle plaintext and bytearray)
 
             Other Notes:
             ------------
