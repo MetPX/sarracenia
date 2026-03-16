@@ -164,8 +164,10 @@ class Amqp1Receiver(MessagingHandler, Amqp1ClientBase):
                 ack_q (queue.Queue): tags for messages ready to be acked should be placed in this queue.
         """
         Amqp1ClientBase.__init__(self, broker_url, options, is_subscriber=True)
+        # need prefetch 0 here, otherwise MessagingHandler/FlowController will auto-manage credit in a way that
+        # doesn't work the way we want it to.
         # auto_accept and auto_settle False means we want to manually ack messages
-        MessagingHandler.__init__(self, prefetch=self.o['prefetch'], auto_accept=False, auto_settle=False)
+        MessagingHandler.__init__(self, prefetch=0, auto_accept=False, auto_settle=False)
 
         self.addresses = addresses
         self.msg_q = msg_q
@@ -176,6 +178,8 @@ class Amqp1Receiver(MessagingHandler, Amqp1ClientBase):
         self.receivers = []
         self.ack_id_counter = 0
         self.pending_deliveries = {}
+
+        self.prefetch = self.o.get('prefetch', 1)
 
     def on_start(self, event):
         """ Event loop in container has started, can now create receivers.
@@ -218,7 +222,8 @@ class Amqp1Receiver(MessagingHandler, Amqp1ClientBase):
 
         self.msg_q.put( (msg, self.ack_id_counter) )
         self.ack_id_counter += 1
-        logger.debug(f"new message pushed from broker (address: {event.receiver.source.address}, delivery_count: {msg.delivery_count}): {msg}")
+        logger.debug(f"new message pushed from broker (address: {event.receiver.source.address}, " +
+                     f"delivery_count: {msg.delivery_count}, link credit: {event.receiver.credit}): {msg}")
 
     def on_timer_task(self, event):
         """ Execute to handle message acking
@@ -241,9 +246,8 @@ class Amqp1Receiver(MessagingHandler, Amqp1ClientBase):
                     cb = receiver.credit
                     delivery.update(Delivery.ACCEPTED)
                     delivery.settle()
-                    # TODO: this doesn't seem right, but if the credit is 0 then the
-                    # ack doesn't seem to transmit (related to prefetch)
-                    if cb == 0:
+                    # increase link credit so we can receive more messages
+                    if cb < self.prefetch:
                         receiver.flow(1)
                     logger.debug(f"local_state: {Amqp1ClientBase.delivery_state_to_str(delivery.local_state)}, " +
                                  f"remote_state: {Amqp1ClientBase.delivery_state_to_str(delivery.remote_state)}, " +
@@ -251,6 +255,13 @@ class Amqp1Receiver(MessagingHandler, Amqp1ClientBase):
                                  f"credit after ack: {receiver.credit}")
             except Exception as e:
                 logger.warning(f"ack failed for id: {tag} {e}")
+
+    def on_link_opened(self, event):
+        """ Set initial link credit using configured prefetch value.
+        """
+        logger.debug(f"with credit: {event.receiver.credit} (prefetch set to: {self.prefetch})")
+        if event.receiver.credit < self.prefetch:
+            event.receiver.flow(self.prefetch)
 
     def on_connection_opened(self, event):
         logger.info(f"connection opened to {self.broker_url} {event}")
@@ -432,6 +443,18 @@ class AMQ1(Moth):
     def _msgRawToDict(self, raw_msg) -> sarracenia.Message:
         """ Convert AMQP1.0 raw message to sr3 message (dictionary)
         """
+        # convert memory view where possible
+        # TODO: other possible types?
+        logger.debug(f"AMQP1 body content-type: {raw_msg.content_type}")
+        if isinstance(raw_msg.body, memoryview):
+            b = raw_msg.body.tobytes()
+            if raw_msg.content_type == 'text/plain':
+                try:
+                    b = b.decode()
+                except Exception as e:
+                    logger.debug(f"failed to decode body {b}")
+            raw_msg.body = b
+
         if self.o['messageDebugDump']:
             logger.info(f"raw message: {raw_msg}")
             # for thing in sorted(dir(raw_msg)):
@@ -478,6 +501,10 @@ class AMQ1(Moth):
         # for decoding AMQP1 messages, we map the Application Properties to "headers"
         # the data (Message Payload/body), if present, is mapped to "payload"
         message = PostFormat.importAny(raw_msg.body, app_properties, content_type, self.o)
+
+        # FIXME: don't really understand why we do this in every moth implementation and not somewhere else.
+        message['local_offset'] = 0
+        message['_deleteOnPost'].add('local_offset')
 
         if self.o['messageDebugDump']:
             logger.debug(f"sr3 message: {message}")
@@ -655,12 +682,11 @@ class AMQ1(Moth):
                     logger.error("message decode failed. raw message: %s" % raw_msg.body )
                     logger.debug('Exception details: ', exc_info=True)
                     msg = None
-                    # tell the broker we've acked the message, even though we can't process
-                    if ack_id:
-                        self._ack_q.put(ack_id)
 
                 if msg is None:
                     self.metrics['rxBadCount'] += 1
+                    # tell the broker we've ingested the message, even though it can't be decoded
+                    self.__ack_id(ack_id)
                     return None
                 else:
                     self.metrics['rxGoodCount'] += 1
@@ -685,6 +711,18 @@ class AMQ1(Moth):
         time.sleep(1)
         return None
 
+    def __ack_id(self, ack_id):
+        """ Request that the receiver acks the given ID.
+        """
+        # ignore None ack_id (makes the code in getNewMessage cleaner)
+        if ack_id is None:
+            return
+
+        self._ack_q.put(ack_id)
+        # trigger the ack in the thread (on_timer_task will run)
+        self.reactor.schedule(0, self.client)
+        logger.debug(f"requested for {ack_id}")
+
     def ack(self, m: sarracenia.Message) -> bool:
         """ Acknowledge a received message
         """
@@ -700,10 +738,7 @@ class AMQ1(Moth):
         # pass the ack_id to the AMQP thread and hope it works
         # FIXME: check if it was acked successfully?
         try:
-            self._ack_q.put(m['ack_id']['tag'])
-            # trigger the ack in the thread (on_timer_task will run)
-            self.reactor.schedule(0, self.client)
-            logger.debug(f"requested for {m['ack_id']}")
+            self.__ack_id(m['ack_id']['tag'])
             del m['ack_id']
             m['_deleteOnPost'].remove('ack_id')
             return True
