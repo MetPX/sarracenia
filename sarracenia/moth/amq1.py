@@ -129,7 +129,7 @@ class Amqp1Publisher(Amqp1ClientBase):
                     err_desc = self.sender.remote_condition.description
             except:
                 pass
-            logger.error(f"Failed to publish because {e} {err_name} {err_desc}")
+            logger.error(f"failed because {e} {err_name} {err_desc}")
             logger.debug("Exception details:", exc_info=True)
         return False
 
@@ -752,13 +752,16 @@ class AMQ1(Moth):
                 del sr3_msg['_deleteOnPost']
 
             # convert sr3 message to desired raw format (e.g. SWIM, NAVCANADA)
-            # (NOTE: set post_format swim or post_format navcanada in config file TODO not sure if post_format or format)
-            raw_body, headers, content_type = PostFormat.exportAny(sr3_msg, version, self.o['topicPrefix'], self.o)
+            # (NOTE: set post_format swim or post_format navcanada in config file)
+            raw_body, properties, content_type = PostFormat.exportAny(sr3_msg, version, self.o['topicPrefix'], self.o)
+
+            if raw_body is not None and len(raw_body) <= 0:
+                logger.warning(f"message body is empty (properties: {properties})")
 
             # address to publish to is post_topicPrefix + a dynamic topic
             # FIXME: topic separator should be configurable
-            address = headers['topic']
-            del headers['topic']
+            address = properties['topic']
+            del properties['topic']
 
             # Address length limit is broker-specific
             # Solace limits addresses to 250 bytes and 128 levels: https://docs.solace.com/Messaging/SMF-Topics.htm
@@ -770,7 +773,8 @@ class AMQ1(Moth):
             # postformat stuff determines *what* the body is. For SWIM/NAVCANADA, the body is the inline content.
             # for sr3 format, I think the body would be the JSON message itself.
             amqp1_msg = Message(address=address, body=raw_body, durable=True)
-            amqp1_msg.properties = headers
+            amqp1_msg.properties = properties
+            amqp1_msg.content_type = content_type
 
             if self.o['messageDebugDump']:
                 logger.info(f"trying to publish raw message: {amqp1_msg} (format: {version})")
@@ -782,12 +786,11 @@ class AMQ1(Moth):
             if result:
                     self.metrics['txGoodCount'] += 1
                     self.metrics['txByteCount'] += len(raw_body)
-                    if headers:
-                        self.metrics['txByteCount'] += len(''.join(str(headers)))
+                    if properties:
+                        self.metrics['txByteCount'] += len(''.join(str(properties)))
                     self.metrics['txLast'] = sarracenia.nowstr()
             else:
                 self.metrics['txBadCount'] += 1
-                logger.error(f"failed to publish")
                 self.close()
 
             # for logging
