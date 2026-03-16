@@ -294,8 +294,8 @@
         <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
             <span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="s2">&quot;FTP connection couldn&#39;t close properly.&quot;</span><span class="p">)</span>
             <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;Exception details:&quot;</span><span class="p">,</span> <span class="n">exc_info</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
-
-        <span class="n">alarm_cancel</span><span class="p">()</span>
+        <span class="k">finally</span><span class="p">:</span>
+            <span class="n">alarm_cancel</span><span class="p">()</span>
 
     <span class="c1"># connect...</span>
     <span class="k">def</span> <span class="nf">connect</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
@@ -404,7 +404,8 @@
             <span class="bp">self</span><span class="o">.</span><span class="n">ftp</span><span class="o">.</span><span class="n">delete</span><span class="p">(</span><span class="n">path</span><span class="p">)</span>
         <span class="k">except</span><span class="p">:</span>
             <span class="n">d</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">ftp</span><span class="o">.</span><span class="n">pwd</span><span class="p">()</span>
-        <span class="n">alarm_cancel</span><span class="p">()</span>
+        <span class="k">finally</span><span class="p">:</span>
+            <span class="n">alarm_cancel</span><span class="p">()</span>
 
     <span class="c1"># get</span>
     <span class="k">def</span> <span class="nf">get</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span>
