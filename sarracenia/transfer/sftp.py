@@ -189,16 +189,14 @@ class Sftp(Transfer):
 
         alarm_set(self.o.timeout)
         try:
-            try:
-                old_sftp.close()
-            except:
-                pass
-            try:
-                old_ssh.close()
-            except:
-                pass
-        finally:
-            alarm_cancel()
+            old_sftp.close()
+        except:
+            pass
+        try:
+            old_ssh.close()
+        except:
+            pass
+        alarm_cancel()
 
     # connect...
     def connect(self):
