@@ -86,6 +86,11 @@ class Amqp1Publisher(Amqp1ClientBase):
         self.connection = None
         self.sender = None
 
+        if options['timeout'] > 0:
+            self.timeout = options['timeout']
+        else:
+            self.timeout = None # default is 60 seconds
+
         self._connect()
 
     def _connect(self):
@@ -93,9 +98,11 @@ class Amqp1Publisher(Amqp1ClientBase):
         container.container_id = self.connection_name
 
         if self.anonymous:
-            self.connection = BlockingConnection(url=self.broker_url, ssl_domain=self.ssl_domain, container=container)
+            self.connection = BlockingConnection(url=self.broker_url, timeout=self.timeout,
+                                                 ssl_domain=self.ssl_domain, container=container)
         else:
-            self.connection = BlockingConnection(url=self.broker_url, ssl_domain=self.ssl_domain, container=container,
+            self.connection = BlockingConnection(url=self.broker_url, timeout=self.timeout,
+                                                 ssl_domain=self.ssl_domain, container=container,
                                                  user=self.username, password=self.password)
         # addresses will be specified in the message
         self.sender = self.connection.create_sender(address=None, name=self.connection_name)
@@ -719,10 +726,11 @@ class AMQ1(Moth):
             if not self.__is_connected():
                 self.close()
                 self.putSetup()
-                time.sleep(5) # TODO
+                time.sleep(1) # TODO
 
             # check again, fail if it didn't connect
             if not self.__is_connected():
+                logger.error("connection to broker was closed/broken and could not be re-opened")
                 return False
 
             # The caller probably doesn't expect the message to get modified by this method, so use a copy of the message
@@ -765,15 +773,28 @@ class AMQ1(Moth):
             amqp1_msg.properties = headers
 
             if self.o['messageDebugDump']:
-                logger.info(f"raw message: {amqp1_msg} (format: {version})")
+                logger.info(f"trying to publish raw message: {amqp1_msg} (format: {version})")
+            else:
+                logger.debug(f"trying to publish raw message: {amqp1_msg} (format: {version})")
 
             result = self.client.publish(amqp1_msg)
+
+            if result:
+                    self.metrics['txGoodCount'] += 1
+                    self.metrics['txByteCount'] += len(raw_body)
+                    if headers:
+                        self.metrics['txByteCount'] += len(''.join(str(headers)))
+                    self.metrics['txLast'] = sarracenia.nowstr()
+            else:
+                self.metrics['txBadCount'] += 1
+                logger.error(f"failed to publish")
+                self.close()
 
             # for logging
             if not 'posts' in message:
                 message['posts'] = []
             message['posts'].append( { 'broker':str(self.o['broker']), 'topic': address} )
-            message['_deleteOnPost'] |= set( ['posts'] )
+            message['_deleteOnPost'].add('posts')
 
             return result
 
