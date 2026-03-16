@@ -102,7 +102,7 @@ default_options = {
     'logMetrics': False,
     'logStdout': False,
     'metrics_writeInterval': 5,
-    'topicExchangePrepend': False,
+    'topicExchangePrepend': True,
     'nodupe_driver': 'disk',
     'nodupe_ttl': 0,
     'nofsetstat': False,
