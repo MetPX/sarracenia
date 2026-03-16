@@ -267,7 +267,8 @@ class Moth():
             publisher = props['publishers'][pubIndex]
             broker = publisher['broker']
             props['broker'] = broker
-            props['exchange'] = publisher['exchange']
+            if 'exchange' in publisher:
+                props['exchange'] = publisher['exchange']
         elif not props['broker']:
             logger.error('no broker specified')
             return None
@@ -333,13 +334,16 @@ class Moth():
                 subscription=self.o['subscriptions'][self.o['subscription_index']]
                 broker = subscription['broker']
                 self.o['broker'] = broker
-                self.o['exchange'] = subscription['exchange']
+                if 'exchange' in subscription:
+                    self.o['exchange'] = subscription['exchange']
         else:
             if 'publisher_index' in self.o:
                 publisher=self.o['publishers'][self.o['publisher_index']]
                 self.o['broker'] = publisher['broker']
-                self.o['exchange'] = publisher['exchange']
-                self.o['topicPrefix'] = publisher['topicPrefix']
+                if 'exchange' in publisher:
+                    self.o['exchange'] = publisher['exchange']
+                if 'topicPrefix' in publisher:
+                    self.o['topicPrefix'] = publisher['topicPrefix']
 
         # apply settings from props.
         if 'settings' in self.o:
