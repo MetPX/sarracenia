@@ -1881,7 +1881,7 @@ class sr_GlobalState:
                                     {
                                         'broker': p['broker'],
                                         'declare': False,
-                                        'exchange': p['exchange'],
+                                        'exchange': p['exchange'] if 'exchange' in p else None,
                                         'dry_run': self.options.dry_run,
                                         'broker': self.brokers[h]['admin'],
                                         'message_strategy': { 'stubborn':True }

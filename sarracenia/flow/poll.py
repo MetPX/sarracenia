@@ -56,8 +56,8 @@ class Poll(Flow):
 
         if hasattr(self.o,'publishers') and hasattr(self.o,'subscriptions') and \
             len(self.o.subscriptions) > 0 and len(self.o.publishers) > 0:
-            px = self.o.publishers[0]['exchange'][0]
             if 'exchange' in self.o.subscriptions[0]['bindings'][0]:
+                px = self.o.publishers[0]['exchange'][0]
                 sx = self.o.subscriptions[0]['bindings'][0]['exchange'] 
                 if px != sx:
                     logger.warning( f"post_exchange: {px} is different from exchange: {sx}. The settings need for multiple instances to share a poll." )
