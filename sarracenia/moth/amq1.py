@@ -405,7 +405,9 @@ class AMQ1(Moth):
             format=
             '%(asctime)s [%(levelname)s] %(name)s %(funcName)s %(message)s')
 
-        self.o = copy.deepcopy(default_options)
+        # replace Moth parent-class default options with AMQP1.0 defaults
+        self.o.update(default_options)
+        # replace merged defaults with values from the config file
         self.o.update(props)
 
         me = "%s.%s" % (__class__.__module__, __class__.__name__)
