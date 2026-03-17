@@ -197,7 +197,8 @@ class Amqp1Receiver(MessagingHandler, Amqp1ClientBase):
         # subscriber: create receivers for each source address
         for addr in self.addresses:
             try:
-                rx = event.container.create_receiver(self.connection, source=addr, name=self.connection_name)
+                # FIXME: connection name must be unique
+                rx = event.container.create_receiver(self.connection, source=addr, name=addr+self.connection_name)
                 self.receivers.append(rx)
                 logger.info(f"created receiver for source address: {addr}")
             except Exception as e:
@@ -249,10 +250,11 @@ class Amqp1Receiver(MessagingHandler, Amqp1ClientBase):
                     # increase link credit so we can receive more messages
                     if cb < self.prefetch:
                         receiver.flow(1)
-                    logger.debug(f"local_state: {Amqp1ClientBase.delivery_state_to_str(delivery.local_state)}, " +
+                    logger.debug(f"ID: {tag}, " +
+                                 f"local_state: {Amqp1ClientBase.delivery_state_to_str(delivery.local_state)}, " +
                                  f"remote_state: {Amqp1ClientBase.delivery_state_to_str(delivery.remote_state)}, " +
-                                 f"settled: {delivery.settled}, credit before ack: {cb}, " +
-                                 f"credit after ack: {receiver.credit}")
+                                 f"settled: {delivery.settled}, credit before: {cb}, " +
+                                 f"credit after: {receiver.credit}")
             except Exception as e:
                 logger.warning(f"ack failed for id: {tag} {e}")
 
@@ -262,7 +264,7 @@ class Amqp1Receiver(MessagingHandler, Amqp1ClientBase):
         start_credit = event.receiver.credit
         if start_credit < self.prefetch:
             event.receiver.flow(self.prefetch)
-        logger.debug(f"with credit: {start_credit}, prefetch set to: {self.prefetch}, credit increased to: {event.receiver.credit}")
+        logger.debug(f"with starting credit: {start_credit}, prefetch setting: {self.prefetch}, credit now set to: {event.receiver.credit}")
 
     def on_connection_opened(self, event):
         logger.info(f"connection opened to {self.broker_url} {event}")
@@ -673,7 +675,6 @@ class AMQ1(Moth):
                 # self.metrics['rxByteCount'] += len(raw_msg.body)
                 try:
                     msg = self._msgRawToDict(raw_msg)
-                    logger.info(f"ACK ID is: {ack_id}")
                     # ack_id can be 0, need to specifically check that it's not None
                     if ack_id is not None and msg is not None:
                         msg['ack_id'] = { 'tag': ack_id,
