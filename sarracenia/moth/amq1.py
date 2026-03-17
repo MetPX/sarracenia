@@ -33,6 +33,8 @@ default_options = {
     'messageDebugDump': False,
     'topicPrefix': ['v03'],
     'vhost': '/',
+    # TODO remove unused options
+    'topicSeparator': '/', # FIXME: should probably be part of the subscription/publisher but also useful in postformat, so maybe a global option? not sure yet.
 }
 
 class Amqp1ClientBase:
@@ -352,9 +354,6 @@ class AMQ1(Moth):
             created *somehow*, but AMQP1.0/proton has no way to do that. Any code implemented or other libraries
             used to create queues and configure bindings would be RabbitMQ-specific.
 
-            Since we can use AMQP 0.9.1 for RabbitMQ, there isn't really any point in making our AMQP1.0
-            implementation work with RabbitMQ's model.
-
             Non-RabbitMQ AMQP 1.0:
             ----------------------
             We need to support non-RabbitMQ AMQP 1.0 brokers, so we can't rely on RabbitMQ's address
@@ -362,22 +361,13 @@ class AMQ1(Moth):
             be as generic as possible. It's likely that additional subclasses may be required for interfacing
             with specific brokers.
 
-            In AMQP1.0, addresses roughly map to the concept of queues in AMQP0.9.1 and MQTT.
-
             In sr3, topics are normally related to file paths, so we can have the broker filter messages
             that the client wants to receive. But this convention does not apply in all cases, like SWIM,
             where messages are published to and received from fixed addresses (the address is kind of like
             a queue in this case, and the publisher places messages directly in the "queue" (address))
 
-            Addresses in AMQP1.0 are static, and wildcards are not part of the spec. In MQTT, we map
-            the exchange and topicPrefix into the topic, but this causes issues
-            when trying to subscribe to sources where a static exchange and topicPrefix are not used.
-            We need a way to set no topicPrefix and no exchange, and allow the address to be defined only
-            by the subtopic. (Maybe the best way to do this is a fixed list of topics that overrides the
-            exchange, topicPrefix and subtopic convention. That would require some larger changes.)
-            Whatever we choose to do for AMQP1.0 should work for MQTT too.
-
-            For now, we are just ignoring topicPrefix and exchange and just use the subtopics as addresses.
+            With most AMQP1.0 implementations, addresses typically refer to a "queue" when subscribing or
+            when publishing, a topic for routing/filtering.
 
             AMQP1.0 Delivery States: a message can be ACCEPTED, REJECTED, RELEASED or MODIFIED.
                 - ACCEPTED: a message that has been received and processed successfully
@@ -385,10 +375,8 @@ class AMQ1(Moth):
                 - RELEASED: put back to the source to be redelivered
                 - MODIFIED: redliver with changes (likely not useful to us)
 
-                By default, qpid proton sets auto_accept and auto_settle True, which is like auto-acking.
-                We probably want to set those to False, then we would "ack" by setting:
-                    delivery.update(proton.ACCEPTED)
-                    delivery.settle()
+            We manually ACCEPT and settle received messages after they have been successfully processed. (equivalent
+            to manual ack in AMQP0.9.1). (auto_accept, auto_settle both set to False)
 
             Delivery guarantees (similar to MQTT QoS)
 
@@ -399,10 +387,10 @@ class AMQ1(Moth):
 
             TODO:
             -----
-            - Figure out how we want to define address(es) in the config. 
             - How to have multiple instances share a 'queue'?
             - Connection name based on queuename/queueshare/something that includes instance number? (not unique enough right now)
             - Receiving bytes or other bodies? (currently handle plaintext and bytearray)
+            - Figure out how to properly configure RabbitMQ publishers/subscribers using topicPrefix
 
             Other Notes:
             ------------
@@ -599,12 +587,22 @@ class AMQ1(Moth):
             return
 
         subscription = self.o['subscriptions'][self.o['subscription_index']]
-        broker = subscription['broker']
+        broker   = subscription['broker']
         bindings = subscription['bindings']
 
-        # translate sr3 bindings to AMQP1.0 addresses (FIXME: currently ignoring exchange/topicPrefix)
-        # and topic, which is used for MQTT but only allows one address
-        addresses = [ b['sub'][0] for b in bindings ]
+        # translate sr3 bindings to AMQP1.0 addresses
+        addresses = []
+        for binding_dict in bindings:
+            if 'topic' in binding_dict:
+                address = self.o['topicSeparator'].join(binding_dict['topic'])
+            elif 'prefix' in binding_dict and 'sub' in binding_dict:
+                address = self.o['topicSeparator'].join(binding_dict['prefix'] + binding_dict['sub'])
+            else:
+                logger.error(f"invalid binding: {binding_dict}")
+                continue
+
+            addresses.append(address)
+
         logger.debug(f"source addresses: {addresses}")
 
         self.connect(broker, addresses=addresses)
