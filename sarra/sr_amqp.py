@@ -578,8 +578,9 @@ class Queue:
                     bound += 1
                     continue
                 # https://github.com/MetPX/sarracenia/issues/1449
-                # can't recover from these exceptions in this loop, need to reconnect to the broker
+                # need to reconnect to the broker when one of these exceptions occurs
                 except (BrokenPipeError, ConnectionResetError):
+                    self.logger.error("lost connection to broker, attempting to reconnect")
                     self.hc.reconnect()
                 except Exception as err:
                     self.logger.error("bind queue: %s to exchange: %s with key: %s failed with %s"
@@ -592,10 +593,6 @@ class Queue:
                 time.sleep(backoff)
                 if backoff < 60:
                     backoff *= 2
-                # https://github.com/MetPX/sarracenia/issues/1449
-                # don't get stuck in an infinite loop, try reconnecting if binding continues to fail
-                else:
-                    self.hc.reconnect()
 
         self.logger.debug("queue build done")
 
