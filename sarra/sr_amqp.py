@@ -595,6 +595,8 @@ class Queue:
                         self.logger.error("bind queue: %s to exchange: %s failed because exchange does not exist %s"
                                   % (self.name, exchange_name, err))
                         self.logger.debug('Exception details:', exc_info=True)
+                        # we don't declare exchanges in a subscriber, that's the publisher's responsibility
+                        # need to sit here and retry until the exchange gets created or permissions get fixed
                     else:
                         self.logger.error("bind queue: %s to exchange: %s with key: %s failed with %s"
                                   % (self.name, exchange_name, exchange_key, err))
