@@ -582,8 +582,6 @@ class Queue:
                 except (BrokenPipeError, ConnectionResetError):
                     self.logger.error("lost connection to broker, attempting to reconnect")
                     self.hc.reconnect()
-                    bound = 0 # restart binding from the beginning
-                    break # out of for loop
                 except Exception as err:
                     self.logger.error("bind queue: %s to exchange: %s with key: %s failed with %s"
                                   % (self.name, exchange_name, exchange_key, err))
@@ -595,6 +593,8 @@ class Queue:
                 time.sleep(backoff)
                 if backoff < 60:
                     backoff *= 2
+                bound = 0 # restart binding from the beginning
+                break # out of for loop
 
         self.logger.debug("queue build done")
 
