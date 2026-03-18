@@ -577,6 +577,10 @@ class Queue:
                     last_exchange_name = exchange_name
                     bound += 1
                     continue
+                # https://github.com/MetPX/sarracenia/issues/1449
+                # can't recover from these exceptions in this loop, caller needs to reconnect to the broker
+                except (BrokenPipeError, ConnectionResetError):
+                    raise
                 except Exception as err:
                     self.logger.error("bind queue: %s to exchange: %s with key: %s failed with %s"
                                   % (self.name, exchange_name, exchange_key, err))
