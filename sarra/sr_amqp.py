@@ -160,6 +160,10 @@ class HostConnect:
             except Exception as err:
                 self.logger.error("AMQP cannot connect to {} with {}".format(self.host, err))
                 self.logger.debug('Exception details: ', exc_info=True)
+                try:
+                    self.close()
+                except:
+                    pass
 
                 if not self.loop:
                     self.logger.error("giving up. Failed to connect to broker")
@@ -584,6 +588,11 @@ class Queue:
                 time.sleep(backoff)
                 if backoff < 60:
                     backoff *= 2
+                # https://github.com/MetPX/sarracenia/issues/1449
+                # don't get stuck in an infinite loop, give up if not bound successfully after multiple attempts
+                else:
+                    self.logger.error("failed to bind queue multiple times, giving up")
+                    raise Exception("failed to bind queue")
 
         self.logger.debug("queue build done")
 
