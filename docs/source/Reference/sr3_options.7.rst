@@ -825,16 +825,50 @@ how to process them. If it is not set, then no symbolic link events will ever be
 
    FIXME: rename algorithm improved in v3 to avoid use of double post... just
 
-exchange <name> (default: xpublic) and exchangeSuffix
+exchange <name> (default: default) and exchangeSuffix
 ------------------------------------------------------
 
-The convention on data pumps is to use the *xpublic* exchange. Users can establish
-private data flow for their own processing. Users can declare their own exchanges
-that always begin with *xs_<username>*, so to save having to specify that each
-time, one can just set *exchangeSuffix kk* which will result in the exchange
-being set to *xs_<username>_kk* (overriding the *xpublic* default).
+This setting determines the *exchange* that will be used in subscriptions.  In AMQP 0.9,
+the exchange is a required element of a subscription, separate from the topic hierarchy.
+In other protocols, it can be used as an organizing mechanism in the topic hierarchy.
 These settings must appear in the configuration file before the corresponding
 *topicPrefix* and *subtopic* settings.
+
+* exchange default
+
+When the setting is at it's *default* setting, then conventions apply:
+The convention on data pumps is to use the *xpublic* exchange. Users can establish
+private data flow for their own processing. 
+
+
+* exchange xs_username_hoho
+* exchangeSuffix hoho
+
+On sr3 dedicated brokers, users can declare their own exchanges that always begin 
+with *xs_<username>*, so to save having to specify that each time, one can just 
+set *exchangeSuffix kk* which will result in the exchange being set 
+to *xs_<username>_kk* (overriding the *xpublic* default).
+So the two above settings are equivalent alternatives.
+
+The *exchange* setting explicitly sets the exchange name for subscription bindings. 
+sr3 brokers apply the naming convention, but external brokers may not, 
+so any name is allowed here.
+
+on protocols that do not have *exchange* as a concept (every one other than AMQP 0.9), 
+specifying the *exchange* results in a topic hierarchy like so::
+
+   exchange xs_username_hoho
+   topicPrefix v02
+
+   xs_username_hoho/v03/post/relative/path/of/posting...
+
+
+* exchange None
+
+Setting exchange to None will cause errors and failure to connect in AMQP 0.9.
+For other protocols, it will suppress the prepending of the exchange before
+the *topicPrefix* in subscriptions.
+
 
 
 exchangeDeclare <flag>
@@ -1586,6 +1620,9 @@ When publishing a product, a user can trigger a script, using
 flow callback entry_points such as **after_accept**, and **after_work** 
 to modify messages generated about files prior to posting.
 
+Setting post_exchange to None will suppress it's inclusion in a posted
+message's topic hierarchy in non amqp 0.9 protocols.
+
 post_exchangeSplit <count> (default: 0)
 ---------------------------------------
 
@@ -1655,7 +1692,7 @@ post_topicPrefix (default: topicPrefix)
 Prepended to the sub-topic to form a complete topic hierarchy. 
 This option applies to publishing.  Denotes the version of messages published 
 in the sub-topics. (v03 refers to `<sr3_post.7.html>`_) defaults to whatever
-was received.  suppress using::
+was received. Suppress using::
 
    post_topicPrefix None
 
@@ -2339,47 +2376,6 @@ Explicitly set a subscribing topic string, overriding the value usually
 derived from a group of settings. For sarracenia data pumps, this should never be needed,
 as the use of *exchange*, *topicPrefix*, and *subtopic* normally builds the right
 value.
-
-topicExchangePrepend <flag> (default: on)
---------------------------------------------------
-
-*Exchange* is a concept unique to the AMQP 0.9 message protocol. 
-It does not exist in AMQP 1.0, or in MQTT, the other message protocols
-supported by sr3 in 2026.  This flag is an sr3 compatibility mode, where AMQP 0.9 
-exchanges are mapped to a level in the MQTT topic hierarchy. This is useful 
-when running a broker solely for use with sr3. In cases where doing 
-interop with brokers shared with other application stacks, it might 
-be easier without this mapping active.
-
-when publishing settings::
-
-   queueName q_hoho123
-   path /tmp/Important/critical_file
-
-   broker mqtt://mybroker
-   topicExchangePrepend on
-   post_baseDir /tmp
-   post_exchange xpublic
-   post_topicPrefix v03
-
-results in a file being posted with a topic like:  xpublic/v03/Important
-
-vs. with it off:  v03/Important
-
-    
-Note that when this option is turned off options for load sharing 
-like post_exchangeSplit become inactive, as they work by distributing
-publications across multiple exchange level topics.
-
-When subscribing, the topic resulting from above will  
-look like::
-
-    topicExchangePrepend  On --> $shared/q_hoho123/xpublic/v03/Important
-    topicExchangePrepend Off --> $shared/q_hoho123/v03/Important
-
-note: the $shared/q_hoho123 prefix comes from the use of MQTTv5 shared subscriptions.
-
-
 
 topicPrefix (default: v03)
 --------------------------
