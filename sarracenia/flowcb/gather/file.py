@@ -169,8 +169,7 @@ class File(FlowCB):
         if os_stat.S_ISDIR(lstat.st_mode):
             return [msg]
 
-        # complete message
-        if (self.o.post_topicPrefix[0] == 'v03') and self.o.inline:
+        if (self.o.post_format == 'v03') and self.o.inline:
             if fsiz < self.o.inlineByteMax:
 
                 if self.o.inlineEncoding == 'guess':
