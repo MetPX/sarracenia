@@ -622,7 +622,7 @@ class MQTT(Moth):
             self.metrics['rxBadCount'] += 1
             return None
 
-        if self.o['topicExchangePrepend']:
+        if self.o['exchange']:
             message['exchange'] = mqttMessage.topic.split('/')[0]
             message['_deleteOnPost'] |= set( ['exchange' ])
 
@@ -756,7 +756,7 @@ class MQTT(Moth):
                     del body[k]
             del body['_deleteOnPost']
 
-        if not exchange and not self.o['topicExchangePrepend']:
+        if not exchange and self.o['exchange']:
             if (type(self.o['exchange']) is list):
                 if (len(self.o['exchange']) > 1):
                     if 'post_exchangeSplit' in self.o:

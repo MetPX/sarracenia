@@ -26,15 +26,17 @@ class Publisher(dict):
 
         self['broker'] = copy.deepcopy(options.post_broker)
 
+        exchange_root = None
         if hasattr(options,'post_exchange'):
-            exchange_root = options.post_exchange
-        else:
-            exchange_root = 'xs_%s' % options.post_broker.url.username
+            if  options.post_exchange != 'default':
+                exchange_root = options.post_exchange
+            else:
+                exchange_root = 'xs_%s' % options.post_broker.url.username
 
         already_a_list = hasattr(options,'post_exchange') and type(options.post_exchange) == list
         #logger.debug( f" {exchange_root=}  {already_a_list=} " )
 
-        if options.topicExchangePrepend or options.post_broker.url.scheme.startswith('amqp'):
+        if exchange_root:
             if already_a_list:
                 self['exchange'] = options.post_exchange
             else:
@@ -53,6 +55,7 @@ class Publisher(dict):
             if 'exchange' not in self:
                 logger.error("malformed publisher, missing (post_)exchange")
                 return
+
         # else, *exchange* will not be present...
 
         if hasattr(options,'post_format') :
@@ -85,7 +88,7 @@ class Publisher(dict):
                 self['baseDir'] = u.path
 
 
-        for a in [ 'auto_delete', 'durable', 'exchangeDeclare', 'messageAgeMax', 'topicExchangePrepend', 
+        for a in [ 'auto_delete', 'durable', 'exchangeDeclare', 'messageAgeMax', 
                   'messageDebugDump', 'persistent', 'timeout' ]:
             if hasattr(options, a):
                 self[a] = getattr(options,a)

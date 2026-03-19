@@ -820,15 +820,46 @@ comment les traiter. S’il n’est pas défini, aucun événement de lien symbo
 FIXME : algorithme de renommage amélioré en v3 pour éviter l’utilisation de double post...
 
 
-exchange <nom> (défaut: xpublic) et exchangeSuffix
---------------------------------------------------
+exchange <nom> (par défaut : default) et exchange_suffix
+--------------------------------------------------------
 
-La norme pour les pompes de données est d’utiliser l’échange *xpublic*. Les utilisateurs peuvent établir un
-flux de données privées pour leur propre traitement. Les utilisateurs peuvent déclarer leurs propres échanges
-qui commencent toujours par *xs_<nom-d'utilisatueur>*. Pour éviter d’avoir à le spécifier à chaque
-fois, on peut simplement régler *exchangeSuffix kk* qui entraînera l’échange
-à être défini a *xs_<nom-d'utilisatueur>_kk* (en remplaçant le défaut *xpublic*).
-Ces paramètres doivent apparaître dans le fichier de configuration avant les paramètres *topicPrefix* et *subtopic*.
+Ce paramètre détermine l’*échange* utilisé dans les abonnements. Dans AMQP 0.9,
+l’échange est un élément obligatoire d’un abonnement, distinct de la hiérarchie des sujets.
+Dans d’autres protocoles, il peut servir de mécanisme d’organisation au dans l'hiérarchie des sujets.
+
+Ces paramètres doivent figurer dans le fichier de configuration avant les paramètres *topicPrefix* et *subtopic* correspondants.
+
+* exchange default
+
+Lorsque ce paramètre est à sa valeur par défaut, les conventions suivantes s’appliquent :
+La convention pour les pompes de données est d’utiliser l’échange *xpublic*. Les utilisateurs peuvent établir
+un flux de données privé pour leur propre traitement.
+
+* exchange xs_username_hoho
+* exchangeSuffix hoho
+
+Sur les courtiers dédiés SR3, les utilisateurs peuvent déclarer leurs propres échanges commençant toujours 
+par *xs_<nom_utilisateur>*. Pour éviter de le spécifier à chaque fois, il suffit de 
+définir *exchangeSuffix kk*, ce qui aura pour effet de définir l'échange 
+sur *xs_<nom_utilisateur>_kk* (remplaçant ainsi la valeur par défaut de *xpublic*).
+
+Les deux paramètres ci-dessus sont donc équivalents.
+Le paramètre *exchange* définit explicitement le nom de l'échange pour les liaisons d'abonnement.
+Les courtiers SR3 appliquent cette convention de nommage, mais ce n'est pas forcément le cas des courtiers externes.
+Par conséquent, tout nom est autorisé. Pour les protocoles qui n'ont pas le concept d'*exchange* (tous sauf AMQP 0.9),
+la spécification de l'*exchange* génère une hiérarchie de sujets comme suit::
+
+
+    exchange xs_username_hoho
+    topicPrefix v02
+
+    résultat:   xs_username_hoho/v03/post/relative/path/of/posting...
+
+* exchange None
+
+Définir l'échange sur None entraînera des erreurs et l'impossibilité de se connecter sous AMQP 0.9.
+Pour les autres protocoles, cela empêchera l'ajout de l'échange avant le *topicPrefix* dans les 
+abonnements.
 
 
 exchangeDeclare <flag>
@@ -2308,42 +2339,6 @@ dériver à partir de l'habituel groupe de paramètres. Pour les pompes de donn�
 devrait jamais être nécessaire, car l'utilisation de l'*exchange*, *topicPrefix* et *subtopic*  
 construit normalement le bon valeur.
 
-topicExchangePrepend <flag> (défaut: on)
--------------------------------------------------
-
-*Exchange* est un concept propre au protocole de messagerie AMQP 0.9.  Il n'existe pas dans AMQP 1.0, ni dans MQTT.
-Ce paramètre correspond à un mode de compatibilité sr3, où les échanges AMQP 0.9 sont mappés à un niveau de 
-la hiérarchie des sujets MQTT. Ceci est utile lorsqu'un broker est utilisé exclusivement avec sr3. Dans les 
-cas d'interopérabilité avec des brokers partagés par d'autres applications, il peut être
-plus simple de désactiver ce mappage.
-
-Paramètres de publication::
-
-   queueName q_hoho123
-   path /tmp/Important/critical_file
-
-   broker mqtt://mybroker
-   topicExchangePrepend on
-   post_baseDir /tmp
-   post_exchange xpublic
-   post_topicPrefix v03
-
-
-Le résultat est un fichier publié avec un sujet tel que : xpublic/v03/Important
-Par opposition à : v03/Important (option désactivée)
-
-Notez que lorsque cette option est désactivée, les options de répartition de charge,
-comme post_exchangeSplit, deviennent inactives, car elles fonctionnent en distribuant
-les publications sur plusieurs sujets au niveau de l'échange.
-
-Lors de l'abonnement, le sujet résultant de l'opération ci-dessus ressemblera à ceci::
-
-
-    topicExchangePrepend On --> $shared/q_hoho123/xpublic/v03/Important
-
-    topicExchangePrepend Off --> $shared/q_hoho123/v03/Important
-
-Remarque : le préfixe $shared/q_hoho123 provient de l'utilisation des abonnements partagés MQTTv5.
 topicPrefix (défaut: v03)
 -------------------------
 

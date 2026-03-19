@@ -269,6 +269,7 @@ class Moth():
             props['broker'] = broker
             if 'exchange' in publisher:
                 props['exchange'] = publisher['exchange']
+
         elif not props['broker']:
             logger.error('no broker specified')
             return None

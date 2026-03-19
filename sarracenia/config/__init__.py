@@ -102,7 +102,6 @@ default_options = {
     'logMetrics': False,
     'logStdout': False,
     'metrics_writeInterval': 5,
-    'topicExchangePrepend': True,
     'nodupe_driver': 'disk',
     'nodupe_ttl': 0,
     'nofsetstat': False,
@@ -150,7 +149,7 @@ count_options = [
 flag_options = [ 'acceptSizeWrong', 'acceptUnmatched', 'amqp_consumer', 'baseUrl_relPath', 'debug', 
     'delete', 'discard', 'download', 'dry_run', 'durable', 'exchangeDeclare', 'exchangeSplit', 
     'follow_symlinks', 'force_polling', 'inline', 'inlineOnly', 'inplace', 'logJson', 
-    'logMetrics', 'logReject', 'logStdout', 'logReject', 'restore', 'messageDebugDump', 'topicExchangePrepend', 
+    'logMetrics', 'logReject', 'logStdout', 'logReject', 'restore', 'messageDebugDump', 
     'mirror', 'nofsetstat', 'notify_only', 'overwrite', 'post_on_start', 'permCopy', 'persistent', 
     'queueBind', 'queueDeclare', 'randomize', 'recursive', 'realpathFilter', 'realpathPost', 
     'reconnect', 'report', 'reset', 'retry_refilter', 'retryEmptyBeforeExit', 'save', 
@@ -2061,7 +2060,7 @@ class Config:
                                             component, cfg)
 
         if self.post_broker is not None and self.post_broker.url is not None:
-            if not hasattr(self, 'post_exchange') or self.post_exchange is None:
+            if not hasattr(self, 'post_exchange'): 
                 self.post_exchange = 'xs_%s' % self.post_broker.url.username
 
             post_broker_isList = hasattr(self,'post_exchange') and type(self.post_exchange) is list

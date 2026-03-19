@@ -14,7 +14,7 @@ class Subscription(dict):
     def __init__(self, options, queueName_template, queueName, subtopic, topicOverride=False):
 
         exchange=None
-        if hasattr(options,'exchange') and options.exchange:
+        if hasattr(options,'exchange') and options.exchange != 'default':
             exchange=options.exchange
         else:
             if not hasattr(options.broker.url,'username') or ( options.broker.url.username == 'anonymous' ):
@@ -43,16 +43,16 @@ class Subscription(dict):
         if topicOverride:
             if self['broker'].url.scheme.lower().startswith('amqp'):
                 self['bindings'] = [ { 'exchange': exchange, 'topic': subtopic } ]
-            elif options.topicExchangePrepend:
+            elif exchange:
                 self['bindings'] = [ { 'topic': [exchange] + subtopic } ]
             else:
                 self['bindings'] = [ { 'topic': subtopic } ]
+        elif not exchange:
+            self['bindings'] = [ { 'prefix': options.topicPrefix, 'sub': subtopic } ]
         elif self['broker'].url.scheme.lower().startswith('amqp'):
             self['bindings'] = [ { 'exchange': exchange, 'prefix': options.topicPrefix, 'sub': subtopic } ]
-        elif 'mqtt' in self['broker'].url.scheme.lower() and options.topicExchangePrepend:
+        elif 'mqtt' in self['broker'].url.scheme.lower() and exchange:
             self['bindings'] = [ { 'prefix': [exchange] + options.topicPrefix, 'sub': subtopic } ]
-        else:
-            self['bindings'] = [ { 'prefix': options.topicPrefix, 'sub': subtopic } ]
 
         self['queue']={ 'name': queueName, 'template': queueName_template, 'cleanup_needed': None }
         for a in [ 'queueBind', 'queueDeclare' , 'queueType' ]:
