@@ -1542,7 +1542,8 @@ class sr_GlobalState:
                         'broker': self.default_cfg.admin,
                         'dry_run': self.options.dry_run,
                         'exchange': self.default_cfg.declared_exchanges,
-                        'message_strategy': { 'stubborn':True }
+                        'message_strategy': { 'stubborn':True },
+                        'tlsRigour': self.options.tlsRigour
                     })
                 xdc.putSetup()
                 xdc.close()
@@ -1564,7 +1565,8 @@ class sr_GlobalState:
                                 'broker': p['broker'],
                                 'dry_run': self.options.dry_run,
                                 'exchange': p['exchange'],
-                                'message_strategy': { 'stubborn':True }
+                                'message_strategy': { 'stubborn':True },
+                                'tlsRigour': p['tlsRigour']
                             })
                          xdc.putSetup()
                          xdc.close()
@@ -1882,7 +1884,8 @@ class sr_GlobalState:
                                         'exchange': p['exchange'],
                                         'dry_run': self.options.dry_run,
                                         'broker': self.brokers[h]['admin'],
-                                        'message_strategy': { 'stubborn':True }
+                                        'message_strategy': { 'stubborn':True },
+                                        'tlsRigour': p['tlsRigour']
                                     })
                                 if qdc:
                                     qdc.putSetup()
