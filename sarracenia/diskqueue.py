@@ -116,18 +116,21 @@ class DiskQueue():
         #   ... new messages will only be available in the next interval.
         self.msg_count_new = 0
 
-        if not os.path.isfile(self.queue_file):
+        try:
+            retry_age = os.path.getmtime(self.queue_file)
+        except FileNotFoundError:
             return
 
-        retry_age = os.path.getmtime(self.queue_file)
         self.msg_count = self._count_msgs(self.queue_file)
 
-        if os.path.isfile(self.new_path):
+        try:
             new_age = os.path.getmtime(self.new_path)
             if retry_age > new_age:
                 os.unlink(self.new_path)
             else:
                 self.msg_count_new = self._count_msgs(self.new_path)
+        except FileNotFoundError:
+            pass
 
 
 
@@ -189,13 +192,15 @@ class DiskQueue():
         """
         count = -1
 
-        if os.path.isfile(file_path):
-            count = 0
+        try:
             with open(file_path, mode='r') as f:
+                count = 0
                 for line in f:
                     if "{" in line:
                         count +=1
             logger.debug(f"counted {count} msgs in {file_path}")
+        except FileNotFoundError:
+            pass
 
         return count
 
@@ -346,9 +351,11 @@ class DiskQueue():
             read a message from the state file.
         """
         if fp is None:
-            if not os.path.isfile(path): return None, None
-            logger.debug("DEBUG %s open read" % path)
-            fp = open(path, 'r')
+            try:
+                logger.debug("DEBUG %s open read" % path)
+                fp = open(path, 'r')
+            except FileNotFoundError:
+                return None, None
 
         line = fp.readline()
         if not line:
