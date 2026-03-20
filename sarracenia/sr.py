@@ -1848,7 +1848,8 @@ class sr_GlobalState:
                             'echangeDeclare': False,
                             'subscription_index': 0,
                             'subscriptions' : [ s ],
-                            'message_strategy': { 'stubborn':True }
+                            'message_strategy': { 'stubborn':True },
+                            'tlsRigour': q['tlsRigour']
                         })
                     qdc.getSetup()
                     qdc.getCleanUp()
