@@ -92,6 +92,7 @@ class Retry(FlowCB):
                     del m[k]
             self.__set_isRetry(m)
 
+        message_list = self.__filter_by_retry_count(message_list)
 
         return (True, message_list)
 
@@ -121,6 +122,8 @@ class Retry(FlowCB):
 
         for m in mlist:
             self.__set_isRetry(m)
+
+        mlist = self.__filter_by_retry_count(mlist)
 
         #logger.debug("loading from %s: qty=%d ... got: %d " % (self.download_retry_name, qty, len(mlist)))
         if len(mlist) > 0:
@@ -170,7 +173,9 @@ class Retry(FlowCB):
         for m in worklist.failed:
             self.__set_isRetry(m)
 
-        self.post_retry.put(worklist.failed)
+        to_retry = self.__filter_by_retry_count(worklist.failed)
+
+        self.post_retry.put(to_retry)
         worklist.failed=[]
 
     def metricsReport(self) -> dict:
@@ -224,3 +229,17 @@ class Retry(FlowCB):
         if '_deleteOnPost' not in msg:
             msg['_deleteOnPost'] = set()
         msg['_deleteOnPost'].add('_isRetry')
+
+    def __filter_by_retry_count(self, message_list):
+        if self.o.retryCountMax <= 0:
+            return message_list
+
+        kept = []
+        for m in message_list:
+            count = m.get('_isRetry', 0)
+            if count > self.o.retryCountMax:
+                logger.error("gave up after %d retries: %s %s" %
+                             (count, m.get('baseUrl', ''), m.get('relPath', '')))
+            else:
+                kept.append(m)
+        return kept
