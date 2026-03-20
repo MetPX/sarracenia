@@ -680,7 +680,7 @@ class Flow:
                             % (stime, elapsed, self.o.sleep))
                 else:
                     logger.debug('worked too long to sleep!')
-                    last_time = nowflt()
+                    last_time = now
                     continue
 
             if not self._stop_requested and (stime > 0):
@@ -702,7 +702,7 @@ class Flow:
                     if now_for_hk > next_housekeeping:
                         next_housekeeping = self._runHousekeeping(now_for_hk)
 
-                last_time = now
+                last_time = nowflt()
 
 
     def sundew_getDestInfos(self, msg, currentFileOption, filename):
