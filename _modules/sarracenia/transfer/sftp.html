@@ -549,19 +549,17 @@
         <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;mkdir </span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="n">remote_dir</span><span class="p">)</span>
         <span class="n">alarm_set</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">o</span><span class="o">.</span><span class="n">timeout</span><span class="p">)</span>
         <span class="k">try</span><span class="p">:</span>
-            <span class="n">s</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">sftp</span><span class="o">.</span><span class="n">lstat</span><span class="p">(</span><span class="n">path</span><span class="p">)</span>
+            <span class="n">s</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">sftp</span><span class="o">.</span><span class="n">lstat</span><span class="p">(</span><span class="n">remote_dir</span><span class="p">)</span>
             <span class="k">if</span> <span class="n">S_ISDIR</span><span class="p">(</span><span class="n">s</span><span class="o">.</span><span class="n">st_mode</span><span class="p">):</span>
                 <span class="k">return</span>
-            <span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span> <span class="sa">f</span><span class="s2">&quot;cannot mkdir </span><span class="si">{</span><span class="n">path</span><span class="si">}</span><span class="s2">, file exists&quot;</span> <span class="p">)</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;cannot mkdir </span><span class="si">{</span><span class="n">remote_dir</span><span class="si">}</span><span class="s2">, file exists&quot;</span><span class="p">)</span>
             <span class="k">return</span>
         <span class="k">except</span> <span class="ne">FileNotFoundError</span><span class="p">:</span>
-            <span class="k">pass</span>
-        <span class="k">except</span><span class="p">:</span>
-            <span class="k">return</span>
-        <span class="k">else</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">sftp</span><span class="o">.</span><span class="n">mkdir</span><span class="p">(</span><span class="n">remote_dir</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">o</span><span class="o">.</span><span class="n">permDirDefault</span><span class="p">)</span>
             <span class="c1"># Apply permDirDefault value. mkdir is limited by SFTP server umask value</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">sftp</span><span class="o">.</span><span class="n">chmod</span><span class="p">(</span><span class="n">remote_dir</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">o</span><span class="o">.</span><span class="n">permDirDefault</span><span class="p">)</span>
+        <span class="k">except</span> <span class="ne">Exception</span><span class="p">:</span>
+            <span class="k">return</span>
         <span class="k">finally</span><span class="p">:</span>
             <span class="n">alarm_cancel</span><span class="p">()</span>
 
