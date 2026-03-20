@@ -916,7 +916,7 @@ class Config:
         self.log_flowcb_needed = False
         self.sleep = 0.1
         self.housekeeping = 300
-        self.httpUserAgent = None
+        self.httpUserAgent = 'Sarracenia ' + sarracenia.__version__
         self.inline = False
         self.inlineByteMax = 4096
         self.inlineEncoding = 'guess'
