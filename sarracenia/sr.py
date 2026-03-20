@@ -653,8 +653,7 @@ class sr_GlobalState:
                                             with p.open() as f:
                                                 t = f.read().strip()
                                     except FileNotFoundError:
-                                        logger.error("pid file %s disappeared (race condition, see #1571), treating as missing", filename)
-                                        missing.append([c, cfg, i])
+                                        logger.error("pid file %s disappeared (race condition, see #1571), skipping.", filename)
                                         continue
                                     if t.isdigit():
                                         pid = int(t)
