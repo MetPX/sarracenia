@@ -170,6 +170,9 @@ class Retry(FlowCB):
         for m in worklist.failed:
             self.__set_isRetry(m)
 
+        for m in worklist.failed:
+            logger.warning("post failed, queued to retry: %s %s" %
+                           (m.get('baseUrl', ''), m.get('relPath', '')))
         self.post_retry.put(worklist.failed)
         worklist.failed=[]
 
