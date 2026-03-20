@@ -680,7 +680,7 @@ class Flow:
                             % (stime, elapsed, self.o.sleep))
                 else:
                     logger.debug('worked too long to sleep!')
-                    last_time = now
+                    last_time = nowflt()
                     continue
 
             if not self._stop_requested and (stime > 0):
