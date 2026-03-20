@@ -662,11 +662,14 @@ class Flow:
 
             if (self.o.messageRateMax > 0) and (current_rate >=
                                                 self.o.messageRateMax):
-                stime = 1 + 2 * ((current_rate - self.o.messageRateMax) /
-                                 self.o.messageRateMax)
+                # sleep exactly long enough to bring the average rate to the target:
+                # we want total_messages / (run_time + sleep) == messageRateMax
+                stime = (total_messages / self.o.messageRateMax) - run_time
+                if stime < 0:
+                    stime = 0
                 logger.info(
-                    "current_rate/2 (%.2f) above messageRateMax(%.2f): throttling"
-                    % (current_rate, self.o.messageRateMax))
+                    "current_rate (%.2f) above messageRateMax(%.2f): sleeping %.2fs"
+                    % (current_rate, self.o.messageRateMax, stime))
             else:
                 logger.debug( f" not throttling: limit: {self.o.messageRateMax} " )
                 stime = 0
