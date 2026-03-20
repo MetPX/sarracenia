@@ -457,19 +457,17 @@ class Sftp(Transfer):
         logger.debug("mkdir %s" % remote_dir)
         alarm_set(self.o.timeout)
         try:
-            s = self.sftp.lstat(path)
+            s = self.sftp.lstat(remote_dir)
             if S_ISDIR(s.st_mode):
                 return
-            logger.error( f"cannot mkdir {path}, file exists" )
+            logger.error(f"cannot mkdir {remote_dir}, file exists")
             return
         except FileNotFoundError:
-            pass
-        except:
-            return
-        else:
             self.sftp.mkdir(remote_dir, self.o.permDirDefault)
             # Apply permDirDefault value. mkdir is limited by SFTP server umask value
             self.sftp.chmod(remote_dir, self.o.permDirDefault)
+        except Exception:
+            return
         finally:
             alarm_cancel()
 
