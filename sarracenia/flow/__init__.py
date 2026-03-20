@@ -702,7 +702,7 @@ class Flow:
                     if now_for_hk > next_housekeeping:
                         next_housekeeping = self._runHousekeeping(now_for_hk)
 
-                last_time = now
+                last_time = nowflt()
 
 
     def sundew_getDestInfos(self, msg, currentFileOption, filename):
