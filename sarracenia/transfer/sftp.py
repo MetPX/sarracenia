@@ -375,7 +375,7 @@ class Sftp(Transfer):
         try:
             rw_length = self.read_writelocal(remote_file, rfp, local_file,
                                              local_offset, length,
-                                             exactLength)
+                                             exactLength=False)
         finally:
             # close
 
