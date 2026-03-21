@@ -1,9 +1,5 @@
 """
 Regression test: _runCallbackMetrics must not mutate self.plugins["metricsReport"].
-
-Before the fix, it assigned the live list to a local variable and appended
-transfer protocol metricsReport functions onto it every housekeeping cycle,
-causing unbounded list growth and redundant metricsReport() calls.
 """
 
 import unittest
@@ -11,17 +7,22 @@ from unittest.mock import MagicMock
 
 
 class FakeProto:
-    """Fake transfer protocol with a metricsReport method."""
     def metricsReport(self):
-        return {'bytes': 42}
+        return {'byteRateInstant': 0}
+
+
+class FakePlugin:
+    __module__ = 'sarracenia.flowcb.fakeplugin'
+
+    def __call__(self):
+        return {'plugin_metric': 1}
 
 
 class TestMetricsReportListGrowth(unittest.TestCase):
 
     def _make_flow(self):
-        """Build a minimal Flow-like object with just enough state."""
         flow = MagicMock()
-        flow.plugins = {"metricsReport": []}
+        flow.plugins = {"metricsReport": [FakePlugin()]}
         flow.proto = {"sftp": FakeProto()}
         flow.o = MagicMock()
         flow.o.logLevel.lower.return_value = 'info'
@@ -39,12 +40,12 @@ class TestMetricsReportListGrowth(unittest.TestCase):
 
         flow = self._make_flow()
 
-        for i in range(5):
+        for _ in range(10):
             Flow._runCallbackMetrics(flow)
 
-        self.assertEqual(len(flow.plugins["metricsReport"]), 0,
-                         "plugins['metricsReport'] should stay empty — "
-                         "transfer protocol functions must not leak into it")
+        self.assertEqual(len(flow.plugins["metricsReport"]), 1,
+                         "plugins['metricsReport'] should keep its original "
+                         "entry count — proto functions must not leak into it")
 
 
 if __name__ == '__main__':
