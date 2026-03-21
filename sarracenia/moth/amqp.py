@@ -418,12 +418,7 @@ class AMQP(Moth):
                         exchange=None
 
                     prefix= b['prefix'] if 'prefix' in b else None
-                    if 'topic' in b:
-                        topic = '.'.join(b['topic'])
-                        subtopic= None
-                    else:
-                        subtopic = b['sub']
-                        topic = '.'.join(prefix + subtopic)
+                    topic = b['topic']
 
                     if self.o['dry_run']:
                         logger.info('binding (dry run) %s with %s to %s (as: %s)' % \

@@ -236,20 +236,9 @@ class MQTT(Moth):
         broker=s['broker']
 
         for binding_dict in s['bindings']:
-
-            if 'topic' in binding_dict:
-                subj='/'.join(binding_dict['topic'])
-            else:
-                prefix = binding_dict["prefix"]
-                subtopic = binding_dict["sub"]
-                logger.info( f"tuple: {prefix} {subtopic}")
-
-                subj = '/'.join(['$share', queue['name'] ] +
-                                prefix + subtopic)
-
-            (res, mid) = client.subscribe(subj, qos=queue['qos'])
+            (res, mid) = client.subscribe(binding_dict['topic'], qos=queue['qos'])
             userdata.subscribe_in_progress += 1
-            logger.info( f"request to subscribe to: {subj}, mid={mid} "
+            logger.info( f"request to subscribe to: {binding_dict['topic']}, mid={mid} "
                     f"qos={queue['qos']} sent: {paho.mqtt.client.error_string(res)}" )
         userdata.subscribe_mutex.release()
         userdata.metricsConnect()
