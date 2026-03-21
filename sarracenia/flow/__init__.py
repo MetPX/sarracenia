@@ -349,7 +349,7 @@ class Flow:
             self.metrics['flow']['transferConnectTime'] += now - self.metrics['flow']['transferConnectStart']
             self.metrics['flow']['transferConnectStart']=now
 
-        modules=self.plugins["metricsReport"]
+        modules=list(self.plugins["metricsReport"])
 
         if hasattr(self,'proto'): # gets re-spawned every batch, so not a permanent thing...
             for scheme in self.proto:
