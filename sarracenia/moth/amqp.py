@@ -685,8 +685,8 @@ class AMQP(Moth):
                 logger.debug('Exception details: ', exc_info=True)
                 return False
 
-        # The caller probably doesn't expect the message to get modified by this method, so use a copy of the message
-        body = copy.deepcopy(message)
+        # Shallow copy: only top-level keys are deleted (_deleteOnPost), nested dicts are read-only
+        body = dict(message)
 
         if 'format' in self.o:
             version=self.o['format']
