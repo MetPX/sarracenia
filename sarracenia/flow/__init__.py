@@ -285,19 +285,22 @@ class Flow:
 
     def _runCallbacksWorklist(self, entry_point):
 
-        if hasattr(self, entry_point):
-            if self.o.logLevel.lower() == 'debug' :
-                eval( f"self.{entry_point}(self.worklist)")
+        debug = self.o.logLevel.lower() == 'debug'
+
+        fn = getattr(self, entry_point, None)
+        if fn is not None:
+            if debug:
+                fn(self.worklist)
             else:
                 try:
-                    eval( f"self.{entry_point}(self.worklist)")
+                    fn(self.worklist)
                 except Exception as ex:
                     logger.error( f'flow {entry_point} crashed: {ex}' )
                     logger.debug( "details:", exc_info=True )
 
         if hasattr(self, 'plugins') and (entry_point in self.plugins):
             for p in self.plugins[entry_point]:
-                if self.o.logLevel.lower() == 'debug' :
+                if debug:
                     p(self.worklist)
                 else:
                     try:
@@ -308,25 +311,29 @@ class Flow:
 
     def runCallbacksTime(self, entry_point):
 
-        if hasattr(self, entry_point):
-            if self.o.logLevel.lower() == 'debug' :
-                eval( f"self.{entry_point}()")
+        debug = self.o.logLevel.lower() == 'debug'
+
+        fn = getattr(self, entry_point, None)
+        if fn is not None:
+            if debug:
+                fn()
             else:
                 try:
-                    eval( f"self.{entry_point}()")
+                    fn()
                 except Exception as ex:
                     logger.error( f'flow {entry_point} crashed: {ex}' )
                     logger.debug( "details:", exc_info=True )
 
-        for p in self.plugins[entry_point]:
-            if self.o.logLevel.lower() == 'debug' :
-                p()
-            else:
-                try:
+        if entry_point in self.plugins:
+            for p in self.plugins[entry_point]:
+                if debug:
                     p()
-                except Exception as ex:
-                    logger.error( f'flowCallback plugin {p}/{entry_point} crashed: {ex}' )
-                    logger.debug( "details:", exc_info=True )
+                else:
+                    try:
+                        p()
+                    except Exception as ex:
+                        logger.error( f'flowCallback plugin {p}/{entry_point} crashed: {ex}' )
+                        logger.debug( "details:", exc_info=True )
 
     def _runCallbackMetrics(self):
         """Collect metrics from plugins with a ``metricsReport`` entry point.
