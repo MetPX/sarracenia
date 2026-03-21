@@ -319,7 +319,9 @@ les protocoles sous-jacents, voici les mappages:
     - les utilisateurs définissent *subtopic*,
     - les sujets avec séparateur de points sont transformés au minimum, plutôt qu'encodés.
     - La fil d’attente est définie sur *durable* afin que les messages ne soient pas perdus lors des redémarrages du broker.
-    - nous utilisons des *en-têtes de message* (langage AMQP pour les paires clé-valeur) plutôt que d'encoder en JSON ou dans un autre format de charge utile.
+    - Dans les messages au format v02, nous utilisons des *en-têtes de message* (le terme AMQP pour désigner les paires clé-valeur) plutôt que
+      l'encodage en JSON ou dans un autre format de charge utile.
+    - Dans les messages au format v03, nous sommes passés à l'encodage JSON afin de contourner la limite de longueur (255) des en-têtes AMQP.
     - *expire* combien de temps pour conserver une fil d’attente inactive ou un échange.
 
 - réduire la complexité par le biais de conventions.

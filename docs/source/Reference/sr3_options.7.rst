@@ -2372,10 +2372,43 @@ the connection should succeed regardless.
 topic <string> 
 --------------
 
-Explicitly set a subscribing topic string, overriding the value usually
+Please use *subtopic*, this is for exceptional use only. *topic* is used to
+explicitly override a subscribing topic string, overriding the value usually
 derived from a group of settings. For sarracenia data pumps, this should never be needed,
 as the use of *exchange*, *topicPrefix*, and *subtopic* normally builds the right
 value.
+
+sample configuration::
+
+   broker mqtt://user@broker
+   queueName q_user_Doreen
+   subtopic #
+
+resulting subscription topic:   $share/q_user_Doreen/xpublic/v03/#
+
+The result is visible in the bindings field of the *sr3 show* command.
+
+The resulting subscription topic is built from:
+
+* the subscription sharing prefix used for all MQTT subscriptions (required for multiple 
+  instances to share a single subscription) 
+* the queueName is used to identify the subscription sharing group.
+* the default exchange (xpublic), 
+* the default topicPrefix (v03)
+* finally the given subtopic.
+
+all catenated together.
+
+vs::
+   broker mqtt://user@broker
+   queueName q_user_Doreen
+   topic #
+
+   resulting subscrption topic:   #
+
+Then specifying topic, all other settings are ignored and the provided setting
+taken literally.
+
 
 topicPrefix (default: v03)
 --------------------------

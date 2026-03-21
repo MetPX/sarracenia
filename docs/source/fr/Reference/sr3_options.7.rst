@@ -2334,10 +2334,50 @@ permettre la connexion de réussir.
 topic <chaine> 
 --------------
 
+Veuillez plutôt utiliser *subtopic*. *topic* sert à remplir explicitement la chaîne de 
+*topic* d'abonnement, en remplaçant la valeur généralement dérivée d'un ensemble 
+de paramètres. Pour les pompes de données Sarracenia, cela devrait être très rarement 
+nécessaire, car l'utilisation de *exchange*, *topicPrefix* et *subtopic* génère
+normalement une valeur appropriée.
+
+Exemple de configuration::
+
+    broker mqtt://user@broker
+    queueName q_user_Doreen
+    subtopic #
+
+Sujet d'abonnement résultant : $share/q_user_Doreen/xpublic/v03/#
+
+Le résultat est visible dans le champ *bindings* de la commande *sr3 show*.
+
+Le sujet d'abonnement résultant est construit à partir des éléments suivants:
+
+* l'identifiant de partage d'abonnement utilisé pour tous les abonnements MQTT (requis pour que plusieurs instances partagent un même abonnement)
+
+* le queueName (utilisateur comme identifiant de groupe de partage.)
+
+* l'échange par défaut (xpublic)
+
+* le *topicPrefix* par défaut (v03)
+
+* enfin, le *subtopics* spécifié.
+
+Tous ces éléments sont concaténés.
+
+vs::
+
+    broker mqtt://user@broker
+    queueName q_user_Doreen
+    topic #
+
+Sujet d'abonnement résultant : #
+
+Lorsque vous spécifiez un sujet, tous les autres paramètres sont ignorés et le paramètre fourni est pris au pied de la lettre.
 Définissez explicitement une chaîne de sujet d'abonnement ou de publication, en remplaçant la valeur
-dériver à partir de l'habituel groupe de paramètres. Pour les pompes de données Sarracenia, cela ne 
+dérivé à partir de l'habituel groupe de paramètres. Pour les pompes de données Sarracenia, cela ne 
 devrait jamais être nécessaire, car l'utilisation de l'*exchange*, *topicPrefix* et *subtopic*  
 construit normalement le bon valeur.
+
 
 topicPrefix (défaut: v03)
 -------------------------
