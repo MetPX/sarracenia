@@ -22,7 +22,6 @@
 #
 
 import collections
-import copy
 import json
 import logging
 
@@ -736,8 +735,8 @@ class MQTT(Moth):
             if not self.connected:
                 return False
 
-        # The caller probably doesn't expect the message to get modified by this method, so use a copy of the message
-        body = copy.deepcopy(message)
+        # Shallow copy: only top-level keys are deleted (_deleteOnPost), nested dicts are read-only
+        body = dict(message)
 
         if 'format' in self.o:
             postFormat=self.o['format']
