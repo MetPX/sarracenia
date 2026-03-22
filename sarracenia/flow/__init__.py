@@ -555,7 +555,7 @@ class Flow:
             logger.debug("options:")
             self.o.dump()
 
-        logger.debug("callbacks loaded: %s" % self.plugins['load'])
+        logger.debug("callbacks loaded: %s", self.plugins['load'])
         logger.debug(
             f'pid: {os.getpid()} {self.o.component}/{self.o.config} instance: {self.o.no}'
         )
@@ -588,7 +588,7 @@ class Flow:
             if (self.o.component == 'poll') or self.have_vip:
 
                 if ( self.o.messageRateMax > 0 ) and (current_rate > 0.8*self.o.messageRateMax ):
-                    logger.debug("current_rate (%.2f) vs. messageRateMax(%.2f)) " % (current_rate, self.o.messageRateMax))
+                    logger.debug("current_rate (%.2f) vs. messageRateMax(%.2f))", current_rate, self.o.messageRateMax)
 
                 if not stopping:
                     self.gather()
@@ -1007,8 +1007,8 @@ class Flow:
     def filter(self) -> None:
 
         logger.debug(
-            'start len(incoming)=%d, rejected=%d' %
-            (len(self.worklist.incoming), len(self.worklist.rejected)))
+            'start len(incoming)=%d, rejected=%d',
+            len(self.worklist.incoming), len(self.worklist.rejected))
         filtered_worklist = []
 
         if hasattr(self.o, 'directory'):
@@ -1076,7 +1076,7 @@ class Flow:
             else:
                 urlToMatch = url
 
-            logger.debug( f" urlToMatch: {urlToMatch} " )
+            logger.debug(" urlToMatch: %s", urlToMatch)
             # apply masks for accept/reject options.
             matched = False
             for mask_index, mask in enumerate(self.o.masks):
@@ -1122,7 +1122,7 @@ class Flow:
                     if not 'renameUnlink' in m:
                         m['renameUnlink'] = True
                         m['_deleteOnPost'] |= set(['renameUnlink'])
-                    logger.debug("rename deletion 2 %s" % (m['fileOp']['rename']))
+                    logger.debug("rename deletion 2 %s", m['fileOp']['rename'])
 
                     if self.updateFieldsAccepted(m, url, None,
                                            default_accept_directory,
@@ -1137,7 +1137,7 @@ class Flow:
                     continue
 
                 if self.o.acceptUnmatched:
-                    logger.debug("accept: unmatched pattern=%s" % (url))
+                    logger.debug("accept: unmatched pattern=%s", url)
                     # FIXME... missing dir mapping with mirror, strip, etc...
                     if self.updateFieldsAccepted(m, url, None,
                                            default_accept_directory,
@@ -1154,13 +1154,13 @@ class Flow:
 
         self.worklist.incoming = filtered_worklist
 
-        logger.debug( 'end len(incoming)=%d, rejected=%d' % (len(self.worklist.incoming), len(self.worklist.rejected)))
+        logger.debug('end len(incoming)=%d, rejected=%d', len(self.worklist.incoming), len(self.worklist.rejected))
 
         self._runCallbacksWorklist('after_accept')
 
-        logger.debug( 'B filtered incoming: %d, ok: %d (directories: %d), rejected: %d, failed: %d stop_requested: %s have_vip: %s'
-            % (len(self.worklist.incoming), len(self.worklist.ok), len(self.worklist.directories_ok),
-               len(self.worklist.rejected), len(self.worklist.failed), self._stop_requested, self.have_vip))
+        logger.debug('B filtered incoming: %d, ok: %d (directories: %d), rejected: %d, failed: %d stop_requested: %s have_vip: %s',
+            len(self.worklist.incoming), len(self.worklist.ok), len(self.worklist.directories_ok),
+            len(self.worklist.rejected), len(self.worklist.failed), self._stop_requested, self.have_vip)
 
         self.ack(self.worklist.ok)
         self.worklist.ok = []
@@ -1226,7 +1226,7 @@ class Flow:
             self.worklist.ok = self.worklist.incoming
             self.worklist.incoming = []
 
-        logger.debug('processing %d messages worked!' % len(self.worklist.ok))
+        logger.debug('processing %d messages worked!', len(self.worklist.ok))
 
     def work_message_adjust(self,m):
 
@@ -1645,14 +1645,14 @@ class Flow:
           process an unlink event, returning boolean success.
         """
 
-        logger.debug("path to remove: %s" % path)
+        logger.debug("path to remove: %s", path)
 
         ok = True
         try:
             if os.path.isfile(path): os.unlink(path)
             if os.path.islink(path): os.unlink(path)
             if os.path.isdir(path): os.rmdir(path)
-            logger.debug("removed %s" % path)
+            logger.debug("removed %s", path)
         except:
             logger.error("could not remove %s." % path)
             logger.debug('Exception details: ', exc_info=True)
@@ -2098,7 +2098,7 @@ class Flow:
 
                 ok = self.download(msg, self.o)
                 if ok == 1:
-                    logger.debug("downloaded ok: %s" % new_path)
+                    logger.debug("downloaded ok: %s", new_path)
                     end_time=time.perf_counter()
                     msg.setReport(201, "Download successful" )
                     if 'size' in msg:
@@ -2111,7 +2111,7 @@ class Flow:
                     self.metrics['flow']['transferRxLast'] = msg['report']['timeCompleted']
                     break
                 elif ok == -1:
-                    logger.debug("download failed permanently, discarding transfer: %s" % new_path)
+                    logger.debug("download failed permanently, discarding transfer: %s", new_path)
                     msg.setReport(410, "message received for content that is no longer available" )
                     self.worklist.rejected.append(msg)
                     break
@@ -2284,7 +2284,7 @@ class Flow:
                          self.metrics['flow']['transferConnectStart'] = 0
                          self.metrics['flow']['transferConnected'] = False
 
-                    logger.debug("%s_transport download connects" % self.scheme)
+                    logger.debug("%s_transport download connects", self.scheme)
                     ok = self.proto[self.scheme].connect()
                     if not ok:
                         self.proto[self.scheme] = None
@@ -2613,7 +2613,7 @@ class Flow:
             if not self.o.dry_run:
                 if (not (self.scheme in self.proto)) or \
                    (self.proto[self.scheme] is None) or not self.proto[self.scheme].check_is_connected():
-                    logger.debug("%s_transport send connects" % self.scheme)
+                    logger.debug("%s_transport send connects", self.scheme)
     
                     if self.metrics['flow']['transferConnected']: 
                          now = nowflt()
@@ -2630,7 +2630,7 @@ class Flow:
                     self.metrics['flow']['transferConnectStart'] = time.time() 
 
             elif not (self.scheme in self.proto) or self.proto[self.scheme] is None:
-                logger.debug("dry_run %s_transport send connects" % self.scheme)
+                logger.debug("dry_run %s_transport send connects", self.scheme)
                 self.proto[self.scheme] = sarracenia.transfer.Transfer.factory( self.scheme, options)
                 self.cdir = None
                 self.metrics['flow']['transferConnected'] = True
@@ -2695,7 +2695,7 @@ class Flow:
             if 'fileOp' in msg:
                 if 'remove' in msg['fileOp'] :
                     if hasattr(self.proto[self.scheme], 'delete'):
-                        logger.debug("message is to remove %s" % new_file)
+                        logger.debug("message is to remove %s", new_file)
                         if not self.o.dry_run:
                             if 'directory' in msg['fileOp']: 
                                 try:
@@ -3002,7 +3002,7 @@ class Flow:
         """
            after a file has been written, restore permissions and ownership if necessary.
         """
-        logger.debug("%s" % local_file)
+        logger.debug("%s", local_file)
 
         # if the file is not partitioned, the the onfly_checksum is for the whole file.
         # cache it here, along with the mtime, unless block_reassembly plugin is active...
