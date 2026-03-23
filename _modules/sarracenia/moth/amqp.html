@@ -270,7 +270,9 @@
             <span class="nb">format</span><span class="o">=</span>
             <span class="s1">&#39;</span><span class="si">%(asctime)s</span><span class="s1"> [</span><span class="si">%(levelname)s</span><span class="s1">] </span><span class="si">%(name)s</span><span class="s1"> </span><span class="si">%(funcName)s</span><span class="s1"> </span><span class="si">%(message)s</span><span class="s1">&#39;</span><span class="p">)</span>
 
-        <span class="bp">self</span><span class="o">.</span><span class="n">o</span> <span class="o">=</span> <span class="n">copy</span><span class="o">.</span><span class="n">deepcopy</span><span class="p">(</span><span class="n">default_options</span><span class="p">)</span>
+        <span class="c1"># update self.o (already set by super().__init__) with AMQP-specific defaults,</span>
+        <span class="c1"># then re-apply props so they take priority.</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">o</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">default_options</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">o</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">props</span><span class="p">)</span>
 
         <span class="bp">self</span><span class="o">.</span><span class="n">first_setup</span> <span class="o">=</span> <span class="kc">True</span>
