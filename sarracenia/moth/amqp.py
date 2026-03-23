@@ -184,7 +184,7 @@ class AMQP(Moth):
 
         # update self.o (already set by super().__init__) with AMQP-specific defaults,
         # then re-apply props so they take priority.
-        self.o.update(copy.deepcopy(default_options))
+        self.o.update(default_options)
         self.o.update(props)
 
         self.first_setup = True
