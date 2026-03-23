@@ -1384,7 +1384,7 @@ class Config:
         resolved_queueName = self._resolveQueueName(self.component,self.config)
 
         if type(subtopic_string) is str:
-            if self.broker.url.scheme == 'amq' :
+            if 'amqp' in self.broker.url.scheme.lower() :
                 subtopic = subtopic_string.split('.')
             else:
                 subtopic = subtopic_string.split('/')
@@ -2542,7 +2542,7 @@ class Config:
             if type(namespace.topicPrefix) is str:
                if namespace.topicPrefix.lower() in [ 'none', 'off', 'false' ]:
                    topicPrefix=[]
-               elif namespace.broker.scheme[0:3] == 'amq':
+               elif 'amqp' in namespace.broker.scheme.lower():
                    topicPrefix = namespace.topicPrefix.split('.')
                else:
                    topicPrefix = namespace.topicPrefix.split('/')

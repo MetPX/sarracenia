@@ -111,8 +111,8 @@ class Subscriptions(list):
 
         try:
             with open(fn,'r') as f:
-                #self=json.loads(f.readlines())
-                self=copy.deepcopy(json.load(f))
+                data = json.load(f)
+                self[:] = copy.deepcopy(data)
 
             for s in self:
                 if type(s['broker']) is str:
@@ -120,8 +120,8 @@ class Subscriptions(list):
                     if ok:
                         s['broker'] = broker
 
-                # old subscriptions that have subtopics in them need conversion.
-                if 'mqtt' in self['broker'].url.scheme.lower(): 
+                # old subscriptions (pre 3.02) that have "sub" fields in them need conversion.
+                if 'mqtt' in s['broker'].url.scheme.lower(): 
                     proto='mqtt'
                     sep = '/' 
                 else:
@@ -133,19 +133,21 @@ class Subscriptions(list):
                 for b in s['bindings']:
                     if 'sub' in b:
                          if proto in ['mqtt']:
-                             b['topic'] =  sep.join([ '$share' + s['queue']['name'] ] + b['prefix'] + b['sub'])
+                             b['topic'] =  sep.join( [ '$share', s['queue']['name'] ] + b.get('prefix',[]) + b['sub'])
                          else:
-                             b['topic'] =  sep.join(b['prefix'] + b['sub'])
+                             b['topic'] =  sep.join(b.get('prefix',[]) + b['sub'])
 
-                    del b['subtopic']
-                    del b['prefix']
+                    if 'sub' in b:
+                        del b['sub']
+                    if 'prefix' in b:
+                        del b['prefix']
 
                 if 'queue' in s:
                     if not 'tlsRigour' in s['queue']:
                          s['queue']['tlsRigour'] = options.tlsRigour
 
-            if 'auto_delete' not in self:
-                s['auto_delete'] = options.auto_delete
+                if 'auto_delete' not in s:
+                    s['auto_delete'] = options.auto_delete
      
             return self
 
