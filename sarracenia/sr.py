@@ -516,12 +516,16 @@ class sr_GlobalState:
                         for pathname in state_files:
                             p = pathlib.Path(pathname)
                             if p.suffix in ['.pid', '.qname', '.state', '.noVip']:
-                                if sys.version_info[0] > 3 or sys.version_info[
-                                        1] > 4:
-                                    t = p.read_text().strip()
-                                else:
-                                    with p.open() as f:
-                                        t = f.read().strip()
+                                try:
+                                    if sys.version_info[0] > 3 or sys.version_info[
+                                            1] > 4:
+                                        t = p.read_text().strip()
+                                    else:
+                                        with p.open() as f:
+                                            t = f.read().strip()
+                                except FileNotFoundError:
+                                    logger.error("state file %s disappeared (race condition, see #1571), skipping", pathname)
+                                    continue
                                 #print( 'read pathname:%s len: %d contents:%s' % ( pathname, len(t), t[0:10] ) )
                                 if len(t) == 0:
                                     continue
@@ -641,12 +645,16 @@ class sr_GlobalState:
                                 i_found.append(i)
                                 if i != 0:
                                     p = pathlib.Path(filename)
-                                    if sys.version_info[0] > 3 or sys.version_info[
-                                            1] > 4:
-                                        t = p.read_text().strip()
-                                    else:
-                                        with p.open() as f:
-                                            t = f.read().strip()
+                                    try:
+                                        if sys.version_info[0] > 3 or sys.version_info[
+                                                1] > 4:
+                                            t = p.read_text().strip()
+                                        else:
+                                            with p.open() as f:
+                                                t = f.read().strip()
+                                    except FileNotFoundError:
+                                        logger.error("pid file %s disappeared (race condition, see #1571), skipping.", filename)
+                                        continue
                                     if t.isdigit():
                                         pid = int(t)
                                         if pid not in self.procs:
@@ -690,12 +698,16 @@ class sr_GlobalState:
                         for filename in os.listdir():
                             if filename[-4:] == '.pid':
                                 p = pathlib.Path(filename)
-                                if sys.version_info[0] > 3 or sys.version_info[
-                                        1] > 4:
-                                    t = p.read_text().strip()
-                                else:
-                                    with p.open() as f:
-                                        t = f.read().strip()
+                                try:
+                                    if sys.version_info[0] > 3 or sys.version_info[
+                                            1] > 4:
+                                        t = p.read_text().strip()
+                                    else:
+                                        with p.open() as f:
+                                            t = f.read().strip()
+                                except FileNotFoundError:
+                                    logger.error("pid file %s disappeared (race condition, see #1571), skipping cleanup", filename)
+                                    continue
                                 if t.isdigit():
                                     pid = int(t)
                                     if pid not in self.procs:
