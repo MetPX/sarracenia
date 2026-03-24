@@ -479,6 +479,15 @@ class Flow:
     def close(self) -> None:
 
         self.runCallbacksTime('on_stop')
+
+        for scheme in list(self.proto):
+            if self.proto[scheme] is not None:
+                try:
+                    self.proto[scheme].close()
+                except Exception as err:
+                    logger.debug("proto %s close: %s", scheme, err)
+                self.proto[scheme] = None
+
         if os.path.exists( self.o.novipFilename ):
             os.unlink( self.o.novipFilename )
         logger.info(
