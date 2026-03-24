@@ -1,8 +1,18 @@
+metpx-sr3 (3.02.00rc3) UNRELEASED; urgency=medium
+
+  * Fix metricsReport plugin list leak in flow algorithm #1603
+  * Fix sleep duration in flow algorithm #1602
+  * Fix pid file race condition during sr3 restart #1595
+  * Propogate tlsRigour to avoid declare and cleanup failures #1593
+
+ -- Andre LeBlanc <andre.leblanc@ssc-spc.gc.ca>  Tue, 24 Mar 2026 13:33:23 +0000
+
 metpx-sr3 (3.02.00rc2) UNRELEASED; urgency=medium
 
   * Remove per component acceptUnmatched overrides in #1566
   * Guard for mtime being missing in message in #1567
   * Calculate onfly checksum if identity missing in #1563
+  * debian/changelog
 
  -- Andre LeBlanc <andre.leblanc@ssc-spc.gc.ca>  Mon, 09 Mar 2026 17:19:23 +0000
 
