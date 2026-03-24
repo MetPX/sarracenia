@@ -349,26 +349,30 @@ class Flow:
             self.metrics['flow']['transferConnectTime'] += now - self.metrics['flow']['transferConnectStart']
             self.metrics['flow']['transferConnectStart']=now
 
-        modules=self.plugins["metricsReport"]
-
-        if hasattr(self,'proto'): # gets re-spawned every batch, so not a permanent thing...
-            for scheme in self.proto:
-                if hasattr(self.proto[scheme], 'metricsReport'):
-                    fn = getattr(self.proto[scheme], 'metricsReport')
-                    if callable(fn):
-                       modules.append( fn )
-
-        for p in modules:
+        for p in self.plugins["metricsReport"]:
+            module_name = str(p.__module__).replace('sarracenia.flowcb.', '' )
             if self.o.logLevel.lower() == 'debug' :
-                module_name = str(p.__module__).replace('sarracenia.flowcb.', '' )
                 self.metrics[module_name] = p()
             else:
                 try:
-                    module_name = str(p.__module__).replace('sarracenia.flowcb.', '' )
                     self.metrics[module_name] = p()
                 except Exception as ex:
                     logger.error( f'flowCallback plugin {p}/metricsReport crashed: {ex}' )
                     logger.debug( "details:", exc_info=True )
+
+        if hasattr(self,'proto'):
+            for scheme in self.proto:
+                fn = getattr(self.proto[scheme], 'metricsReport', None)
+                if fn is not None and callable(fn):
+                    module_name = str(fn.__module__).replace('sarracenia.transfer.', '' )
+                    if self.o.logLevel.lower() == 'debug' :
+                        self.metrics[module_name] = fn()
+                    else:
+                        try:
+                            self.metrics[module_name] = fn()
+                        except Exception as ex:
+                            logger.error( f'transfer protocol {scheme}/metricsReport crashed: {ex}' )
+                            logger.debug( "details:", exc_info=True )
         ost = os.times()
         self.metrics['flow']['cpuTime'] = ost.user+ost.system-self.metrics['flow']['last_housekeeping_cpuTime']
 
