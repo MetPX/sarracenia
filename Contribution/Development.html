@@ -57,6 +57,7 @@
 <li class="toctree-l2"><a class="reference internal" href="AMQPprimer.html">AMQP - Primer for Sarracenia</a></li>
 <li class="toctree-l2 current"><a class="current reference internal" href="#">MetPX-Sarracenia Developer’s Guide</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="#tools-you-need">Tools you Need</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#coding-style">Coding Style</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#documentation">Documentation</a><ul>
 <li class="toctree-l4"><a class="reference internal" href="#where-to-put-options">Where to Put Options</a></li>
 </ul>
@@ -168,8 +169,6 @@
 <li><p>A linux development environment, either a workstation, or a VM of some kind.
 setup using ubuntu is automated, but adjustment for other distros is possible.
 command-line comfort a must.</p></li>
-<li><p>python3. The application is developed in and depends on python versions &gt;= 3.5.</p></li>
-<li><p>style: PEP8 except max line length is 119, enforced via <a class="reference external" href="https://pycodestyle.pycqa.org/en/latest/intro.html#disclaimer">pycodestyle</a> for VSCode, yapf3 or other similar tool.</p></li>
 <li><p>an account on github.com will help in submitting patches for consideration.</p></li>
 </ul>
 <p>Things that will be installed by automated setup:</p>
@@ -190,6 +189,51 @@ The flow test creates and destroys exchanges and will disrupt any active flows o
 </pre></div>
 </div>
 <p>The rest of the Guide takes the above for granted.</p>
+</section>
+<section id="coding-style">
+<h2>Coding Style<a class="headerlink" href="#coding-style" title="Link to this heading"></a></h2>
+<ul>
+<li><p>Python3. The application is developed in and depends on python versions &gt;= 3.6.
+Note that this means you need to make sure any contributions work on python 3.6, as we have
+deployments on ubuntu 18.04 and redhat 8 that use that version.</p>
+<ul class="simple">
+<li><p>e.g. do not use = in f-strings, as they only arrive in python 3.8 ( i.e. f” {foo=} “</p></li>
+</ul>
+</li>
+<li><p>style: Generally PEP8.</p>
+<blockquote>
+<div><ul class="simple">
+<li><p>except max line length is 119, enforced via <a class="reference external" href="https://pycodestyle.pycqa.org/en/latest/intro.html#disclaimer">pycodestyle</a> for VSCode, yapf3 or other similar tool.</p></li>
+<li><p>we also use camelCase for user visible options/settings, where PEP would require all caps for constants/settings.</p></li>
+<li><p><a href="#id4"><span class="problematic" id="id5">post_</span></a>  for settings that apply to posting (default assumed is for consuming.)</p></li>
+</ul>
+</div></blockquote>
+</li>
+<li><p>String formatting:</p>
+<blockquote>
+<div><ul>
+<li><dl class="simple">
+<dt>generally prefer python 3.6 f-string methods, as they are considered most legible.</dt><dd><ul class="simple">
+<li><p>NOT:   print( “%s” % hi )</p></li>
+<li><p>USE THIS INSTEAD: print( f” {hi} “ )</p></li>
+</ul>
+</dd>
+</dl>
+</li>
+<li><p>exception: logger.debug() calls should use lazy % formatting, with arguments as parameters, as this avoids
+evaluation of the string completely if not in debug mode.</p>
+<ul class="simple">
+<li><p>NOT:   logger.debug( f”{hi}” )</p></li>
+<li><p>USE THIS INSTEAD:   logger.debug( “%s”, hi )</p></li>
+</ul>
+<p>The choice of when to apply the exception depends on how often the string will be evaluated
+without printing the message, so for higher priority messages, this exception does not
+apply, and one should follow the normal string convention.</p>
+</li>
+</ul>
+</div></blockquote>
+</li>
+</ul>
 </section>
 <section id="documentation">
 <h2>Documentation<a class="headerlink" href="#documentation" title="Link to this heading"></a></h2>

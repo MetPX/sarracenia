@@ -63,6 +63,7 @@
 <li class="toctree-l2 current"><a class="reference internal" href="index.html">Contribuer à Sarracenia</a><ul class="current">
 <li class="toctree-l3 current"><a class="current reference internal" href="#">Guide du développeur MetPX-Sarracenia</a><ul>
 <li class="toctree-l4"><a class="reference internal" href="#outillage">Outillage</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#style-de-codage">Style de codage</a></li>
 <li class="toctree-l4"><a class="reference internal" href="#documentation">Documentation</a></li>
 <li class="toctree-l4"><a class="reference internal" href="#developpement">Développement</a></li>
 <li class="toctree-l4"><a class="reference internal" href="#installation-locale">Installation locale</a></li>
@@ -158,7 +159,50 @@ Le test de flux crée et détruit les échanges et perturbera tous les flux acti
 <span class="n">cd</span> <span class="n">sr3</span>
 </pre></div>
 </div>
-<p>Le reste du guide suppose que vous y êtes.</p>
+<p>Le reste de ce guide présume les prérequis sont présents.</p>
+</section>
+<section id="style-de-codage">
+<h2>Style de codage<a class="headerlink" href="#style-de-codage" title="Link to this heading"></a></h2>
+<ul>
+<li><p>Python 3. L’application est développée avec Python 3.6 ou une version supérieure. Par conséquent,
+toute contribution doit être compatible avec Python 3.6, car nous avons des déploiements sur
+Ubuntu 18.04 et Red Hat 8 qui utilisent cette version.</p>
+<ul class="simple">
+<li><p>Par exemple : N’utilisez pas le signe égal (=) dans les f-strings, car il n’est apparu qu’avec Python 3.8 (ex. : f” {foo=} “).</p></li>
+</ul>
+</li>
+<li><p>Style : Généralement conforme à la PEP 8.</p>
+<ul class="simple">
+<li><p>Sauf que la longueur maximale des lignes est de 119 caractères, imposée par <a class="reference external" href="https://pycodestyle.pycqa.org/en/latest/intro.html#disclaimer">pycodestyle</a> pour VSCode, yapf3 ou tout autre outil similaire.</p></li>
+<li><p>Nous utilisons également la notation camelCase pour les options/paramètres visibles par l’utilisateur, alors que la PEP exigerait des majuscules pour les constantes/paramètres.</p></li>
+<li><p><cite>post_</cite> pour les paramètres qui s’appliquent à la publication (par défaut, pour la consommation).</p></li>
+</ul>
+</li>
+<li><p>Formatage des chaînes de caractères:</p>
+<ul>
+<li><p>Nous privilégions généralement les méthodes des f-strings de Python 3.6, car elles sont considérées comme les plus lisibles.</p>
+<blockquote>
+<div><ul class="simple">
+<li><p>À ÉVITER : <cite>print(“%s” % hi)</cite></p></li>
+<li><p>UTILISEZ À LA PLACE : <cite>print(f” {hi} “)</cite></p></li>
+</ul>
+</div></blockquote>
+</li>
+<li><p>Exception : les appels à <cite>logger.debug()</cite> doivent utiliser le formatage paresseux <cite>%</cite>. Utilisez les arguments comme
+paramètres, car cela évite l’évaluation complète de la chaîne de caractères en dehors du mode débogage.</p>
+<blockquote>
+<div><ul class="simple">
+<li><p>NON : logger.debug( f”{hi}”)</p></li>
+<li><p>UTILISEZ PLUTÔT : logger.debug( “%s”, hi)</p></li>
+</ul>
+</div></blockquote>
+<p>Le choix du moment où appliquer l’exception dépend de la fréquence à laquelle la chaîne sera évaluée
+sans affichage du message. Ainsi, pour les messages prioritaires, cette exception ne s’applique pas
+et il convient de suivre la convention habituelle pour les chaînes de caractères.</p>
+</li>
+</ul>
+</li>
+</ul>
 </section>
 <section id="documentation">
 <h2>Documentation<a class="headerlink" href="#documentation" title="Link to this heading"></a></h2>
@@ -1438,7 +1482,7 @@ l’importation nécessaire et les fonctionnalités qu’il apporte à Sr3. Vous
 protections if feature[‘x’][‘present’] dans le code où vous utilisez la fonctionnalité, afin de
 permettre au code de se dégrader avec élégance.</p>
 <p>Si la dépendance est ajoutée dans un plugin, alors il y a aussi une méthode pour celle décrite ici :</p>
-<p><a href="#id4"><span class="problematic" id="id5">`Guide de Programmeur&lt;../Explication/SarraPluginDev.html#ajout-de-dépendance-python-dans-les-callbacks&gt;`_</span></a></p>
+<p><a href="#id5"><span class="problematic" id="id6">`Guide de Programmeur&lt;../Explication/SarraPluginDev.html#ajout-de-dépendance-python-dans-les-callbacks&gt;`_</span></a></p>
 </section>
 </section>
 
