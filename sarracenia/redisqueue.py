@@ -59,7 +59,7 @@ class RedisQueue():
     # ----------- magic Methods ------------
     def __init__(self, options, name):
 
-        logger.debug(" %s __init__" % (name))
+        logger.debug(' %s __init__', name)
 
         self.o = options
 
@@ -72,7 +72,7 @@ class RedisQueue():
         #                    level=getattr(logging, self.o.logLevel.upper()))
         logger.setLevel(getattr(logging, self.o.logLevel.upper()))
 
-        logger.debug('name=%s logLevel=%s' % (self.name, self.o.logLevel))
+        logger.debug('name=%s logLevel=%s', self.name, self.o.logLevel)
 
         if self.o.queueName == None: 
             self.key_name = 'sr3.retry_queue.' + name + '.' + self.o.component + '.' + self.o.config
@@ -215,7 +215,7 @@ class RedisQueue():
             return None
 
         msg = self._msgFromJSON(raw_msg)
-        logger.debug("lpop from list %s %s" % (queue, msg))
+        logger.debug('lpop from list %s %s', queue, msg)
 
         return msg
 
@@ -227,7 +227,7 @@ class RedisQueue():
         """
 
         for message in message_list:
-            logger.debug("rpush to list %s %s" % (self.key_name_new, message))
+            logger.debug('rpush to list %s %s', self.key_name_new, message)
             self.redis.rpush(self.key_name_new, self._msgToJSON(message))
 
     def cleanup(self):
@@ -323,14 +323,14 @@ class RedisQueue():
         # put this in try/except in case ctrl-c breaks something
         try:
             try:
-                logger.debug('delete list: %s' % (self.key_name_hk))
+                logger.debug('delete list: %s', self.key_name_hk)
                 self.redis.delete(self.key_name_hk)
             except:
                 pass
 
             i = 0
 
-            logger.debug("%s has queue %s" % (self.key_name, bool(self.redis.llen(self.key_name))))
+            logger.debug('%s has queue %s', self.key_name, bool(self.redis.llen(self.key_name)))
 
             # remaining of retry to housekeeping
             while True:
@@ -341,7 +341,7 @@ class RedisQueue():
                 i = i + 1
                 if not self._needs_requeuing(message): continue
 
-                logger.debug("remaining of retry - rpush to %s %s" % (self.key_name_hk, message))
+                logger.debug('remaining of retry - rpush to %s %s', self.key_name_hk, message)
                 self.redis.rpush(self.key_name_hk, self._msgToJSON(message))
                 N = N + 1
 
@@ -358,11 +358,11 @@ class RedisQueue():
                 #logger.debug("DEBUG message %s" % message)
                 if not self._needs_requeuing(message): continue
 
-                logger.debug("new to hk - rpush to %s %s" % (self.key_name_hk, message))
+                logger.debug('new to hk - rpush to %s %s', self.key_name_hk, message)
                 self.redis.rpush(self.key_name_hk, self._msgToJSON(message))
                 N = N + 1
 
-            logger.debug("FIXME DEBUG took %d out of the %d retry" % (N - j, i))
+            logger.debug('FIXME DEBUG took %d out of the %d retry', N - j, i)
 
         except Exception as Err:
             logger.error("something went wrong")
@@ -372,7 +372,7 @@ class RedisQueue():
         if N == 0:
             logger.info("No retry in list")
             try:
-                logger.debug('no more retry - delete list: %s' % (self.key_name_hk))
+                logger.debug('no more retry - delete list: %s', self.key_name_hk)
                 self.redis.delete(self.key_name_hk)
             except:
                 pass
@@ -382,7 +382,7 @@ class RedisQueue():
             logger.info("Number of messages in retry list %d" % (N))
 
             try:
-                logger.debug('rename list %s to %s' % (self.key_name_hk, self.key_name))
+                logger.debug('rename list %s to %s', self.key_name_hk, self.key_name)
                 self.redis.rename(self.key_name_hk, self.key_name)
 
             except Exception as Err:

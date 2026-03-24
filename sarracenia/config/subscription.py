@@ -95,7 +95,7 @@ class Subscriptions(list):
             return self
 
         except Exception as Ex:
-            logger.debug( f"failed {fn}: {Ex}" )
+            logger.debug('failed %s: %s', fn, Ex)
             logger.debug('Exception details: ', exc_info=True)
             return []
 

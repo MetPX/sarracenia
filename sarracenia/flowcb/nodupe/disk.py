@@ -69,7 +69,7 @@ class Disk(NoDupe):
 
     def on_housekeeping(self):
 
-        logger.debug("start with %d entries)" % len(self.cache_dict))
+        logger.debug('start with %d entries)', len(self.cache_dict))
 
         count = self.count
         self.save()
@@ -104,7 +104,7 @@ class Disk(NoDupe):
 
          
 
-        logger.debug( f"entry already in NoDupe cache: key={key}" )
+        logger.debug('entry already in NoDupe cache: key=%s', key)
         kdict = self.cache_dict[key]
         present = relpath in kdict and (kdict[relpath]+self.o.nodupe_ttl) >= self.now
 
@@ -115,11 +115,11 @@ class Disk(NoDupe):
         self.count += 1
 
         if present:
-            logger.debug( f"updated time of old NoDupe entry: relpath={relpath}" )
+            logger.debug('updated time of old NoDupe entry: relpath=%s', relpath)
             self.cache_hit = relpath
             return False
         else:
-            logger.debug( f"added relpath={relpath}")
+            logger.debug('added relpath=%s', relpath)
 
         return True
 
@@ -142,7 +142,7 @@ class Disk(NoDupe):
         msg['noDupe'] = { 'key': key, 'path': path }
         msg['_deleteOnPost'] |= set(['noDupe'])
 
-        logger.debug("NoDupe calling check( %s, %s )" % (key, path))
+        logger.debug('NoDupe calling check( %s, %s )', key, path)
         return self._not_in_cache(key, path)
 
     def after_accept(self, worklist):
@@ -186,7 +186,7 @@ class Disk(NoDupe):
 
         if self.fp:
             self.fp.flush()
-        logger.debug( f"items registered in duplicate suppression cache: {len(self.cache_dict.keys())}" )
+        logger.debug('items registered in duplicate suppression cache: %s', len(self.cache_dict.keys()))
         worklist.incoming = new_incoming
 
     def on_start(self):

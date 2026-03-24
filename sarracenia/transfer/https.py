@@ -48,8 +48,7 @@ class HTTPRedirectHandlerSameMethod(HTTPRedirectHandler):
         orig_method = req.get_method()
         new_req = super().redirect_request(req, fp, code, msg, headers, newurl)
         new_req.method = orig_method
-        logger.debug(f"redirect from {req.get_method()} {req.get_full_url()} "
-                     + f"to {new_req.get_method()} {new_req.get_full_url()}")
+        logger.debug('redirect from %s %s to %s %s', req.get_method(), req.get_full_url(), new_req.get_method(), new_req.get_full_url())
         return new_req
 
 class Https(Transfer):
@@ -103,7 +102,7 @@ class Https(Transfer):
 
     # cd
     def cd(self, path):
-        logger.debug("sr_http cd %s" % path)
+        logger.debug('sr_http cd %s', path)
         self.cwd = os.path.dirname(path)
         self.path = path
 
@@ -127,7 +126,7 @@ class Https(Transfer):
 
     # connect...
     def connect(self):
-        logger.debug("sr_http connect %s" % self.o.sendTo)
+        logger.debug('sr_http connect %s', self.o.sendTo)
 
         if self.connected: self.close()
 
@@ -167,7 +166,7 @@ class Https(Transfer):
 
     # credentials...
     def credentials(self):
-        logger.debug("sr_http credentials %s" % self.sendTo)
+        logger.debug('sr_http credentials %s', self.sendTo)
 
         try:
             ok, details = self.o.credentials.get(self.sendTo)
@@ -199,8 +198,8 @@ class Https(Transfer):
             remote_offset=0,
             local_offset=0,
             length=0, exactLength=False):
-        logger.debug("get %s %s %d" % (remote_file, local_file, local_offset))
-        logger.debug("sr_http self.path %s" % self.path)
+        logger.debug('get %s %s %d', remote_file, local_file, local_offset)
+        logger.debug('sr_http self.path %s', self.path)
 
         # open self.http
 
@@ -353,7 +352,7 @@ class Https(Transfer):
             
             # Bearer token credential is passed as a header
             if self.bearer_token:
-                logger.debug('bearer_token: %s' % self.bearer_token)
+                logger.debug('bearer_token: %s', self.bearer_token)
                 headers['Authorization'] = 'Bearer ' + self.bearer_token
 
             # set range in byte if needed
@@ -391,7 +390,7 @@ class Https(Transfer):
             try:
                 actual_url = self.http.geturl()
                 if actual_url != self.urlstr:
-                    logger.debug(f"{self.urlstr} redirected to {actual_url}")
+                    logger.debug('%s redirected to %s', self.urlstr, actual_url)
             except:
                 pass
 
@@ -434,11 +433,11 @@ class Https(Transfer):
 
         ok = self.__open__(url, method='HEAD', add_headers={'Accept-Encoding': 'identity'})
         if not ok:
-            logger.debug(f"failed")
+            logger.debug('failed')
             return None
         status_code = self.http.getcode()
         if status_code != 200:
-            logger.debug(f"status code {status_code}")
+            logger.debug('status code %s', status_code)
             return None
         
         have_metadata = False
@@ -467,6 +466,6 @@ class Https(Transfer):
                 result = str(self.http.info()).replace('\n', ' , ').strip()
             except Exception as e:
                 result = e
-            logger.debug(f"HEAD request for {self.__url_redir_str()} result: {result}")
+            logger.debug('HEAD request for %s result: %s', self.__url_redir_str(), result)
 
         return None

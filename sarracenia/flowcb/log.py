@@ -29,7 +29,7 @@ class Log(FlowCB):
         self.o.add_option('logEvents', 'set',
                           ['after_accept', 'on_housekeeping'])
         self.o.add_option('logMessageDump', 'flag', False)
-        logger.debug(f'{self.o.component}/{self.o.config} initialized with: logEvents: {self.o.logEvents},  logMessageDump: {self.o.logMessageDump}')
+        logger.debug('%s/%s initialized with: logEvents: %s,  logMessageDump: %s', self.o.component, self.o.config, self.o.logEvents, self.o.logMessageDump)
         if self.o.component in ['sender']:
             self.action_verb = 'sent'
         elif self.o.component in ['subscribe', 'sarra' ]:

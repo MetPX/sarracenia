@@ -258,7 +258,7 @@ class CredentialDB:
         Args:
             urlstr(str): credentials in a URL string.
         """
-        logger.debug("has %s" % urlstr)
+        logger.debug('has %s', urlstr)
         return urlstr in self.credentials
 
     def isTrue(self, S):

@@ -103,9 +103,7 @@ class Message(FlowCB):
             i=0
             for p in self.posters:
                 m = p.metricsReport()
-                logger.debug(
-                        f"messages to {str(self.o.publishers[i]['broker'])} good: {m['txGoodCount']} bad: {m['txBadCount']} bytes: {m['txByteCount']}"
-                )
+                logger.debug('messages to %s good: %s bad: %s bytes: %s', str(self.o.publishers[i]['broker']), m['txGoodCount'], m['txBadCount'], m['txByteCount'])
                 p.metricsReset()
                 i+=1
         else:

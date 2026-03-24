@@ -74,7 +74,7 @@ class File(Transfer):
            cd is for REMOTE directory... when file remote as a protocol it is for the source.
            should not change the "local" working directory when downloading.
         """
-        logger.debug("sr_file cd %s" % path)
+        logger.debug('sr_file cd %s', path)
         #os.chdir(path)
         self.cwd = path
         self.path = path
@@ -84,7 +84,7 @@ class File(Transfer):
 
     # chmod
     def chmod(self, perm, path):
-        logger.debug("sr_file chmod %s %s" % ("{0:o}".format(perm), path))
+        logger.debug('sr_file chmod %s %s', '{0:o}'.format(perm), path)
         os.chmod(path, perm)
 
     # close
@@ -94,7 +94,7 @@ class File(Transfer):
 
     # connect
     def connect(self):
-        logger.debug("sr_file connect %s" % self.o.sendTo)
+        logger.debug('sr_file connect %s', self.o.sendTo)
 
         self.recursive = True
         self.connected = True
@@ -104,7 +104,7 @@ class File(Transfer):
     # delete
     def delete(self, path):
         p = os.path.join( self.cwd, path )
-        logger.debug("sr_file rm %s" % p)
+        logger.debug('sr_file rm %s', p)
         os.unlink(p)
 
     # get
@@ -118,7 +118,7 @@ class File(Transfer):
 
         remote_path = self.cwd + os.sep + remote_file
 
-        logger.debug( "get %s %s (cwd: %s) %d" % (remote_path,local_file,os.getcwd(), local_offset))
+        logger.debug('get %s %s (cwd: %s) %d', remote_path, local_file, os.getcwd(), local_offset)
 
         if not os.path.exists(remote_path):
             logger.warning("file to read not found %s" % (remote_path))
@@ -305,7 +305,7 @@ def file_write_length(req, msg, bufsize, filesize, options):
     msg.onfly_checksum = None
 
     chk = msg.sumalgo
-    logger.debug("file_write_length chk = %s" % chk)
+    logger.debug('file_write_length chk = %s', chk)
     if chk: chk.set_path(msg['new_file'])
 
     # file should exists

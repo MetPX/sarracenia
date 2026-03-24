@@ -39,7 +39,7 @@ class Pathreplace(FlowCB):
             logger.error("pathReplace setting mandatory")
             return
 
-        logger.debug("pathReplace is %s " % self.o.pathReplace )
+        logger.debug('pathReplace is %s ', self.o.pathReplace)
 
     def after_accept(self, worklist):
         if self.o.pathReplace == None:

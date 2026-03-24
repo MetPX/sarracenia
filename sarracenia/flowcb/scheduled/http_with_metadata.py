@@ -79,10 +79,10 @@ class Http_with_metadata(Scheduled):
                         logger.warning(f"HEAD request returned {resp.status_code} but metadata was " +
                                        f"not available for {url}, not posting")
                         continue
-                    logger.debug(f"modified stat: {st} for {url}")
+                    logger.debug('modified stat: %s for %s', st, url)
             except Exception as e:
                 if not self.o.post_whenNoMetadata:
-                    logger.debug(f"Failed to get metadata for {url} ({e}), not posting")
+                    logger.debug('Failed to get metadata for %s (%s), not posting', url, e)
                     continue
                 else:
                     logger.info(f"Failed to get metadata for {url} ({e}), posting anyways")

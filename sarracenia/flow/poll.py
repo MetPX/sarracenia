@@ -61,7 +61,7 @@ class Poll(Flow):
             if px != sx:
                 logger.warning( f"post_exchange: {px} is different from exchange: {sx}. The settings need for multiple instances to share a poll." )
             else:
-                logger.debug( f"Good! post_exchange: {px} and exchange: {sx} match so multiple instances to share a poll." )
+                logger.debug('Good! post_exchange: %s and exchange: %s match so multiple instances to share a poll.', px, sx)
 
         if not 'scheduled' in ','.join(self.plugins['load']):
             self.plugins['load'].append('sarracenia.flowcb.scheduled.poll.Poll')

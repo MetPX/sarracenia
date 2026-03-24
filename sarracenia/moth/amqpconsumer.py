@@ -65,7 +65,7 @@ class AMQPConsumer(AMQP):
     def __get_on_message(self, msg):
         """ Callback for AMQP basic_consume, called when the broker sends a new message.
         """
-        logger.debug(f"new message pushed from broker: {msg.body}")
+        logger.debug('new message pushed from broker: %s', msg.body)
         # This will block until the msg can be put in the queue
         self._raw_msg_q.put(msg)
 
@@ -139,7 +139,7 @@ class AMQPConsumer(AMQP):
                 if hasattr(self.o, 'fixed_headers'):
                     for k in self.o.fixed_headers:
                         msg[k] = self.o.fixed_headers[k]
-                logger.debug("new msg: %s" % msg)
+                logger.debug('new msg: %s', msg)
                 return msg
         except Exception as err:
             subscription = self.o['subscriptions'][self.o['subscription_index']]

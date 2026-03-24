@@ -139,7 +139,7 @@ class Am(FlowCB):
                 break
                 
             except socket.error as e:
-                logger.debug("Error msg: %s" % str(e.args))
+                logger.debug('Error msg: %s', str(e.args))
                 logger.error("Trying to establish connection in %d seconds" % (2**backoff_range))
                 self.s.close()
                 time.sleep(2**backoff_range)

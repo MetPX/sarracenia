@@ -80,8 +80,7 @@ class Rootchown(FlowCB):
             if 'ownership' in message:
                 ug = message['ownership']
                 if ug in self.mapping:
-                    logger.debug("ROOT_CHOWN mapping from %s to %s" %
-                                 (ug, self.mapping[ug]))
+                    logger.debug('ROOT_CHOWN mapping from %s to %s', ug, self.mapping[ug])
                     message['ownership'] = self.mapping[ug]
 
             # need to add ownership in message
@@ -97,13 +96,11 @@ class Rootchown(FlowCB):
 
                 # check for mapping switch
                 if ug in self.mapping:
-                    logger.debug("ROOT_CHOWN mapping from %s to %s" %
-                                 (ug, self.mapping[ug]))
+                    logger.debug('ROOT_CHOWN mapping from %s to %s', ug, self.mapping[ug])
                     ug = self.mapping[ug]
 
                 message['ownership'] = ug
-                logger.debug("ROOT_CHOWN set ownership field %s" %
-                             message['ownership'])
+                logger.debug('ROOT_CHOWN set ownership field %s', message['ownership'])
 
             except:
                 logger.error("ROOT_CHOWN could not set ownership  %s" %
@@ -125,8 +122,7 @@ class Rootchown(FlowCB):
 
             ug = message['ownership']
             if ug in self.mapping:
-                logger.debug("received ownership %s mapped to %s" %
-                             (ug, self.mapping[ug]))
+                logger.debug('received ownership %s mapped to %s', ug, self.mapping[ug])
                 ug = self.mapping[ug]
 
             # try getting/setting ownership info to local_file
