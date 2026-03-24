@@ -159,17 +159,18 @@ class DiskQueue():
         """
         try:
             self.housekeeping_fp.close()
-        except:
-            pass
+        except Exception as err:
+            logger.debug("housekeeping_fp close: %s" % err)
         try:
-            os.fsync(self.new_fp)
+            self.new_fp.flush()
+            os.fsync(self.new_fp.fileno())
             self.new_fp.close()
-        except:
-            pass
+        except Exception as err:
+            logger.debug("new_fp close: %s" % err)
         try:
             self.queue_fp.close()
-        except:
-            pass
+        except Exception as err:
+            logger.debug("queue_fp close: %s" % err)
         self.housekeeping_fp = None
         self.new_fp = None
         self.queue_fp = None
@@ -247,7 +248,7 @@ class DiskQueue():
             if not message:
                 try:
                     os.unlink(self.queue_file)
-                except:
+                except Exception:
                     pass
                 self.queue_fp = None
                 self.msg_count = 0
@@ -271,7 +272,7 @@ class DiskQueue():
         if self.msg_count == 0:
             try:
                 os.unlink(self.queue_file)
-            except:
+            except Exception:
                 pass
             self.queue_fp = None
 
@@ -353,7 +354,7 @@ class DiskQueue():
         if not line:
             try:
                 fp.close()
-            except:
+            except Exception:
                 pass
             return None, None
 
@@ -395,7 +396,7 @@ class DiskQueue():
             self.close()
             try:
                 os.unlink(self.housekeeping_path)
-            except:
+            except Exception:
                 pass
             fp = open(self.housekeeping_path, 'w')
             fp.close()
@@ -419,7 +420,7 @@ class DiskQueue():
 
             try:
                 fp.close()
-            except:
+            except Exception:
                 pass
 
             i = 0
@@ -439,7 +440,7 @@ class DiskQueue():
                 N = N + 1
             try:
                 fp.close()
-            except:
+            except Exception:
                 pass
 
             logger.debug('retrieved %d from the %d retry', N - j, i)
@@ -457,7 +458,7 @@ class DiskQueue():
             logger.debug('%s No retry in list', self.name)
             try:
                 os.unlink(self.housekeeping_path)
-            except:
+            except Exception:
                 pass
 
         # housekeeping file becomes new retry
@@ -466,14 +467,14 @@ class DiskQueue():
             logger.info("%s Number of messages in retry list %d" % (self.name, N))
             try:
                 os.rename(self.housekeeping_path, self.queue_file)
-            except:
+            except Exception:
                 logger.error("Something went wrong with rename")
 
         # cleanup
         self.msg_count_new = 0
         try:
             os.unlink(self.new_path)
-        except:
+        except Exception:
             pass
 
         elapse = sarracenia.nowflt() - self.now
