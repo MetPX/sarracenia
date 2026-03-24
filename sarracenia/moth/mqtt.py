@@ -426,6 +426,12 @@ class MQTT(Moth):
 
             logger.info( f"is no around? {self.o['no']} " )
             if ('no' in self.o) and self.o['no'] > 0: # instances 'started'
+                if hasattr(self, 'client') and self.client is not None:
+                    try:
+                        self.client.loop_stop()
+                        self.client.disconnect()
+                    except Exception:
+                        pass
                 self.client = self.__clientSetup(cid)
                 self.client.connect( broker.url.hostname, port=self.__sslClientSetup(), \
                        clean_start=False, properties=props )
@@ -489,17 +495,24 @@ class MQTT(Moth):
             return
 
         try:
+            if hasattr(self, 'client') and self.client is not None:
+                try:
+                    self.client.loop_stop()
+                    self.client.disconnect()
+                except Exception:
+                    pass
+
             self.pending_publishes = collections.deque()
             self.unexpected_publishes = collections.deque()
- 
+
             props = Properties(PacketTypes.CONNECT)
             if self.o['messageAgeMax'] > 0:
                 props.MessageExpiryInterval = int(self.o['messageAgeMax'])
- 
+
             self.transport = 'websockets' if (self.o['broker'].url.scheme[-2:] == 'ws' ) or  \
                (self.o['broker'].url.scheme[-1] == 'w' ) else 'tcp'
- 
-            self.client = paho.mqtt.client.Client( 
+
+            self.client = paho.mqtt.client.Client(
                     callback_api_version = paho.mqtt.client.CallbackAPIVersion.VERSION2, \
                     userdata=self, transport=self.transport, protocol=self.proto_version )
  
@@ -843,4 +856,5 @@ class MQTT(Moth):
                         ebo *= 2
                 logger.info('no more pending messages')
             self.client.disconnect()
+            self.client.loop_stop()
         self.connected=False
