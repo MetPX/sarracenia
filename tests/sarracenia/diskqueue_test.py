@@ -1,5 +1,6 @@
 import pytest
 from tests.conftest import *
+from unittest.mock import patch, MagicMock
 
 import jsonpickle, os
 
@@ -400,6 +401,92 @@ def test_diskqueue(tmp_path, caplog):
     assert dq.msg_count == 2
 
 
+def test_close__None_fps(tmp_path):
+    """close() should not crash when file pointers are None."""
+    BaseOptions = Options()
+    BaseOptions.pid_filename = str(tmp_path) + os.sep + "pidfilename.txt"
+    dq = DiskQueue(BaseOptions, 'test_close__None_fps')
+
+    assert dq.housekeeping_fp is None
+    assert dq.new_fp is None
+    assert dq.queue_fp is None
+
+    dq.close()
+
+    assert dq.housekeeping_fp is None
+    assert dq.new_fp is None
+    assert dq.queue_fp is None
 
 
+def test_close__already_closed_fps(tmp_path):
+    """close() should handle already-closed file pointers gracefully."""
+    BaseOptions = Options()
+    BaseOptions.pid_filename = str(tmp_path) + os.sep + "pidfilename.txt"
+    dq = DiskQueue(BaseOptions, 'test_close__already_closed')
+
+    message = make_message()
+    dq.put([message])
+
+    assert dq.new_fp is not None
+    dq.new_fp.close()
+
+    dq.close()
+
+    assert dq.new_fp is None
+    assert dq.msg_count == 0
+
+
+def test_close__fsync_uses_fileno(tmp_path):
+    """close() should call os.fsync with fileno(), not the file object.
+
+    The old code had os.fsync(self.new_fp) which passes a file object
+    instead of a file descriptor. This would raise TypeError, but the
+    bare except:pass hid the bug. Verify fsync is called correctly now.
+    """
+    BaseOptions = Options()
+    BaseOptions.pid_filename = str(tmp_path) + os.sep + "pidfilename.txt"
+    dq = DiskQueue(BaseOptions, 'test_close__fsync')
+
+    message = make_message()
+    dq.put([message])
+
+    assert dq.new_fp is not None
+    fd = dq.new_fp.fileno()
+
+    with patch('os.fsync') as mock_fsync:
+        dq.close()
+        mock_fsync.assert_called_once_with(fd)
+
+
+def test_close__keyboard_interrupt_propagates(tmp_path):
+    """KeyboardInterrupt must not be caught by close().
+
+    The old bare except: would swallow KeyboardInterrupt and SystemExit.
+    After narrowing to except Exception:, these should propagate.
+    """
+    BaseOptions = Options()
+    BaseOptions.pid_filename = str(tmp_path) + os.sep + "pidfilename.txt"
+    dq = DiskQueue(BaseOptions, 'test_close__kb_interrupt')
+
+    mock_fp = MagicMock()
+    mock_fp.close.side_effect = KeyboardInterrupt
+    dq.housekeeping_fp = mock_fp
+
+    with pytest.raises(KeyboardInterrupt):
+        dq.close()
+
+
+def test_get__keyboard_interrupt_propagates(tmp_path):
+    """KeyboardInterrupt in os.unlink during get() should propagate."""
+    BaseOptions = Options()
+    BaseOptions.pid_filename = str(tmp_path) + os.sep + "pidfilename.txt"
+    dq = DiskQueue(BaseOptions, 'test_get__kb_interrupt')
+
+    fp = open(dq.queue_file, 'w')
+    fp.close()
+    dq.msg_count = 1
+
+    with patch('os.unlink', side_effect=KeyboardInterrupt):
+        with pytest.raises(KeyboardInterrupt):
+            dq.get()
 
