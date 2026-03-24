@@ -773,7 +773,7 @@ class AMQ1(Moth):
                 return False
 
             # The caller probably doesn't expect the message to get modified by this method, so use a copy of the message
-            sr3_msg = copy.deepcopy(message)
+            sr3_msg = dict(message)
 
             if 'format' in self.o:
                 version=self.o['format']
