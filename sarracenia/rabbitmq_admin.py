@@ -11,6 +11,7 @@ import os
 import re
 import socket
 import subprocess
+import time
 
 #rabbitmqadmin = '.' + os.sep + 'rabbitmqadmin'
 rabbitmqadmin = 'rabbitmqadmin'
@@ -29,52 +30,77 @@ def exec_rabbitmqadmin(url, options, simulate=False):
        invoke rabbitmqadmin using a sub-process, with the given options.
     """
 
-    try:
-        command = rabbitmqadmin
-        command += ' --host \'' + url.hostname
-        command += '\' --user \'' + url.username
-        command += '\' -p \'' + urllib.parse.unquote(url.password)
-        command += '\' --format raw_json '
-        if url.scheme == 'amqps':
-            command += ' --ssl --port=15671 '
-        command += ' ' + options
+    attempts = 0
+    max_attempts = 3
+    while True:
+        try:
+            command = rabbitmqadmin
+            command += ' --host \'' + url.hostname
+            command += '\' --user \'' + url.username
+            command += '\' -p \'' + urllib.parse.unquote(url.password)
+            command += '\' --format raw_json '
+            if url.scheme == 'amqps':
+                command += ' --ssl --port=15671 '
+            command += ' ' + options
 
-        logger.debug('command = %s', command)
-        if sys.version_info.major < 3 or (sys.version_info.major == 3
-                                          and sys.version_info.minor < 5):
-            if logger: logger.debug("using subprocess.getstatusoutput")
+            logger.debug('command = %s', command)
+            if sys.version_info.major < 3 or (sys.version_info.major == 3
+                                              and sys.version_info.minor < 5):
+                if logger: logger.debug("using subprocess.getstatusoutput")
 
-            if simulate:
-                print("dry_run: %s" % ' '.join(command))
-                return 0, None
+                if simulate:
+                    print("dry_run: %s" % ' '.join(command))
+                    return 0, None
 
-            return subprocess.getstatusoutput(command)
-        else:
-            cmdlin = command.replace("'", '')
-            cmdlst = cmdlin.split()
-            if logger:
-                logger.debug('using subprocess.run cmdlst=%s', ' '.join(cmdlst))
+                status, output = subprocess.getstatusoutput(command)
+                if status == 0:
+                    return status, output
+                
+                attempts += 1
+                if attempts < max_attempts:
+                    logger.warning("rabbitmqadmin failed (status %d), retrying... %d/%d", status, attempts, max_attempts)
+                    time.sleep(1)
+                    continue
+                return status, None
+            else:
+                cmdlin = command.replace("'", '')
+                cmdlst = cmdlin.split()
+                if logger:
+                    logger.debug('using subprocess.run cmdlst=%s', ' '.join(cmdlst))
 
-            if simulate:
-                print("dry_run: %s" % cmdlin)
-                return 0, None
+                if simulate:
+                    print("dry_run: %s" % cmdlin)
+                    return 0, None
 
-            rclass = subprocess.run(cmdlst, stdout=subprocess.PIPE)
-            if rclass.returncode == 0:
-                output = rclass.stdout
-                if type(output) == bytes: output = output.decode("utf-8")
-                return rclass.returncode, output
-            return rclass.returncode, None
-    except:
-        if sys.version_info.major < 3 or (sys.version_info.major == 3
-                                          and sys.version_info.minor < 5):
-            if logger: logger.error("trying run command %s %s" % command)
-        else:
-            if logger:
-                logger.error("trying run command %s %s" % ' '.join(cmdlst))
-        if logger: logger.debug('Exception details:', exc_info=True)
+                rclass = subprocess.run(cmdlst, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+                if rclass.returncode == 0:
+                    output = rclass.stdout
+                    if type(output) == bytes: output = output.decode("utf-8")
+                    return rclass.returncode, output
+                
+                attempts += 1
+                if attempts < max_attempts:
+                    logger.warning("rabbitmqadmin failed (status %d), retrying... %d/%d", rclass.returncode, attempts, max_attempts)
+                    if rclass.stderr:
+                        logger.debug("stderr: %s", rclass.stderr.decode("utf-8"))
+                    time.sleep(1)
+                    continue
+                return rclass.returncode, None
+        except Exception as e:
+            attempts += 1
+            if attempts < max_attempts:
+                logger.warning("rabbitmqadmin exception, retrying... %d/%d: %s", attempts, max_attempts, e)
+                time.sleep(1)
+                continue
 
-    return 0, None
+            if sys.version_info.major < 3 or (sys.version_info.major == 3
+                                              and sys.version_info.minor < 5):
+                if logger: logger.error("trying run command %s %s" % command)
+            else:
+                if logger:
+                    logger.error("trying run command %s %s" % ' '.join(cmdlst))
+            if logger: logger.debug('Exception details:', exc_info=True)
+            return 1, None
 
 
 def add_user(url, role, user, passwd, simulate):

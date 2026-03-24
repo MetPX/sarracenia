@@ -105,23 +105,29 @@ class AMQPConsumer(AMQP):
             if not self.connection:
                 return None
 
-            # trigger incoming event processing
             try:
-                self.connection.drain_events(timeout=0.1) # TODO configurable timeout?
-            except TimeoutError:
-                pass
-            # In newer Python versions, socket.timeout is "a deprecated alias of TimeoutError", but it's not on
-            # older versions (3.6) and needs to be handled separately
-            except socket.timeout:
-                pass
-
-            try:
-                # don't block waiting for the queue to be available, better to just try again later
+                # check if there is something already in the queue from a previous drain_events
                 raw_msg = self._raw_msg_q.get_nowait()
             except queue.Empty:
-                raw_msg = None
+                # nothing in the local queue, trigger incoming event processing
+                try:
+                    self.connection.drain_events(timeout=0.1) # TODO configurable timeout?
+                except TimeoutError:
+                    pass
+                # In newer Python versions, socket.timeout is "a deprecated alias of TimeoutError", but it's not on
+                # older versions (3.6) and needs to be handled separately
+                except socket.timeout:
+                    pass
+
+                try:
+                    # check again after draining
+                    raw_msg = self._raw_msg_q.get_nowait()
+                except queue.Empty:
+                    raw_msg = None
             
-            if (raw_msg is None) and (self.connection.connected):
+            if (raw_msg is None):
+                if not self.connection.connected:
+                    logger.warning("connection lost during drain_events")
                 return None
             else:
                 self.metrics['rxByteCount'] += len(raw_msg.body)
