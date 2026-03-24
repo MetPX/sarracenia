@@ -59,6 +59,7 @@ declare env TESTDOCROOT=${HOME}/sarra_devdocroot
 declare env MQP=amqp
 declare env several=3
 logEvents after_accept,after_work,on_housekeeping,post,after_post
+prefetch 1 # for test reliability purposes.
 EOF
 cp ~/.config/sarra/default.conf ~/.config/sr3
 
