@@ -472,7 +472,7 @@ class AMQP(Moth):
             broker_str = self.o['broker'].url.geturl().replace(
                 ':' + self.o['broker'].url.password + '@', '@')
 
-            logger.debug( f"putSetup ... 1. connected to {broker_str}" )
+            logger.debug('putSetup ... 1. connected to %s', broker_str)
 
             if self.o['exchangeDeclare']:
                 logger.debug('putSetup ... 1. declaring {}'.format(
@@ -602,7 +602,7 @@ class AMQP(Moth):
                     for k in self.o.fixed_headers:
                         msg[k] = self.o.fixed_headers[k]
 
-                logger.debug("new msg: %s" % msg)
+                logger.debug('new msg: %s', msg)
                 return msg
         except Exception as err:
             logger.warning("failed %s: %s" % (queue['name'], err))
@@ -786,7 +786,7 @@ class AMQP(Moth):
         body=raw_body
         ebo = 1
         try:
-            logger.debug( f"trying to publish body: {body} headers: {headers} to {exchange} under: {topic} " )
+            logger.debug('trying to publish body: %s headers: %s to %s under: %s ', body, headers, exchange, topic)
             self.channel.basic_publish(AMQP_Message, exchange, topic, timeout=pub_timeout)
             # Issue #732: tx_commit can get stuck forever
             self.channel.tx_commit()

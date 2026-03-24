@@ -36,7 +36,7 @@ class Airnow(FlowCB):
                     hours=Hours)
                 Filename = 'HourlyData_%s.dat' % last_hour_date_time.strftime(
                     '%Y%m%d%H')
-                logger.debug("poll_airnow_http Filename: %s" % Filename)
+                logger.debug('poll_airnow_http Filename: %s', Filename)
                 URL = self.o.pollUrl + '/' + Filename
                 logger.info('INFO %s ' % URL)
                 #resp = requests.get(self.o.pollUrl + '/' + Filename)

@@ -897,7 +897,7 @@ class sr_GlobalState:
                     self.cumulative_stats['flowNameWidth'] = len( f"{c}/{cfg}" ) 
 
                 if cfg not in self.states[c]:
-                    logger.debug('no existing state files for %s/%s' % (c,cfg))
+                    logger.debug('no existing state files for %s/%s', c, cfg)
                     self.states[c][cfg] = {}
                     self.states[c][cfg]['instance_pids'] = {}
                     self.states[c][cfg]['queueName'] = None
@@ -928,7 +928,7 @@ class sr_GlobalState:
                     metrics=copy.deepcopy(empty_metrics)
                     for i in self.states[c][cfg]['instance_metrics']:
                         if self.states[c][cfg]['instance_metrics'][i]['status']['mtime'] < expiry:
-                            logger.debug( f"metrics for {c}/{cfg}/ instance {i} too old ignoring." )
+                            logger.debug('metrics for %s/%s/ instance %s too old ignoring.', c, cfg, i)
                             continue
 
                         #print( f"states of {c}/{cfg}: {self.states[c][cfg]} " )
@@ -1204,7 +1204,7 @@ class sr_GlobalState:
                 candidates.append(fcc)
     
         self.all_configs = candidates
-        logger.debug( f"candidates: {candidates}" )
+        logger.debug('candidates: %s', candidates)
         new_patterns=[]
         for p in patterns:
             if p in [ 'examples','eg','ie', 'flow_callback','flowcb','fcb','v2plugins','v2p']:
@@ -1217,7 +1217,7 @@ class sr_GlobalState:
             leftover_matches[p] = 0
         patterns=new_patterns
 
-        logger.debug( f"patterns: {patterns}" )
+        logger.debug('patterns: %s', patterns)
         for fcc in candidates:
             if (patterns is None) or (len(patterns) < 1):
                 self.filtered_configurations.append(fcc)
@@ -1537,7 +1537,7 @@ class sr_GlobalState:
                                 user = f"{u_url.username}@{h}"
 
                                 if filtered_users and user not in filtered_users:
-                                    logger.debug(f"not adding {user}")
+                                    logger.debug('not adding %s', user)
                                     continue
 
                                 sarracenia.rabbitmq_admin.add_user( \
@@ -2381,11 +2381,11 @@ class sr_GlobalState:
                      return
 
                  partial=True
-                 logger.debug( f"{pid_count}/{self.configs[c][cfg]['options'].instances} instances started." )
+                 logger.debug('%s/%s instances started.', pid_count, self.configs[c][cfg]['options'].instances)
                  time.sleep(5)
                  pid_count = self._pid_file_count(c,cfg)
 
-            logger.debug( f"{c}/{cfg}: {pid_count}/{self.configs[c][cfg]['options'].instances} instances started." )
+            logger.debug('%s/%s: %s/%s instances started.', c, cfg, pid_count, self.configs[c][cfg]['options'].instances)
 
             # skip posts that cannot run as daemons
             if c in ['post', 'cpost'] and not self._post_can_be_daemon(c, cfg): continue
@@ -2596,7 +2596,7 @@ class sr_GlobalState:
                     elif self.options.dangerWillRobinson: 
                          print( f"\tforeground {p}: \"{' '.join(self.procs[p]['cmdline'])}\"" )
                 else:
-                    logger.debug( f"\tdid not even try to kill: {p}: \"{' '.join(self.procs[p]['cmdline'])}\"" )
+                    logger.debug('\tdid not even try to kill: %s: "%s"', p, ' '.join(self.procs[p]['cmdline']))
             return 1
 
     def dump(self): 

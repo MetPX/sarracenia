@@ -83,9 +83,9 @@ class Sftp(Transfer):
 
         alarm_set(self.o.timeout)
         try:
-            logger.debug("first cd to %s" % self.originalDir)
+            logger.debug('first cd to %s', self.originalDir)
             self.sftp.chdir(self.originalDir)
-            logger.debug("then cd to %s" % path)
+            logger.debug('then cd to %s', path)
             self.sftp.chdir(path)
             self.pwd = path
         finally:
@@ -95,7 +95,7 @@ class Sftp(Transfer):
     def cd_forced(self, path):
         """ try to cd to a directory. If the cd fails, create the directory
         """
-        logger.debug("sr_sftp cd_forced %o %s" % (self.o.permDirDefault, path))
+        logger.debug('sr_sftp cd_forced %o %s', self.o.permDirDefault, path)
 
         # try to go directly to path
 
@@ -168,7 +168,7 @@ class Sftp(Transfer):
     # chmod
     def chmod(self, perm, path):
         if not self.o.nofsetstat: 
-            logger.debug("sr_sftp chmod %s %s" % ("{0:o}".format(perm), path))
+            logger.debug('sr_sftp chmod %s %s', '{0:o}'.format(perm), path)
             alarm_set(self.o.timeout)
             try:
                 self.sftp.chmod(path, perm)
@@ -201,7 +201,7 @@ class Sftp(Transfer):
     # connect...
     def connect(self):
 
-        logger.debug("sr_sftp connect %s" % self.o.sendTo)
+        logger.debug('sr_sftp connect %s', self.o.sendTo)
 
         if self.connected: self.close()
 
@@ -230,8 +230,7 @@ class Sftp(Transfer):
 
             sftp = self.ssh.open_sftp()
             if self.o.timeout != None:
-                logger.debug("sr_sftp connect setting timeout %f" %
-                             self.o.timeout)
+                logger.debug('sr_sftp connect setting timeout %f', self.o.timeout)
                 channel = sftp.get_channel()
                 channel.settimeout(self.o.timeout)
 
@@ -308,7 +307,7 @@ class Sftp(Transfer):
     # delete
     # MG sneak rmdir here in case 'R' message implies a directory (remote mirroring)
     def delete(self, path):
-        logger.debug("sr_sftp rm %s" % path)
+        logger.debug('sr_sftp rm %s', path)
 
         alarm_set(self.o.timeout)
         # check if the file is there... if not we are done,no error
@@ -321,18 +320,18 @@ class Sftp(Transfer):
         try:
             # proceed with file/link removal
             if not S_ISDIR(s.st_mode):
-                logger.debug("sr_sftp remove %s" % path)
+                logger.debug('sr_sftp remove %s', path)
                 self.sftp.remove(path)
 
             # proceed with directory removal
             else:
-                logger.debug("sr_sftp rmdir %s" % path)
+                logger.debug('sr_sftp rmdir %s', path)
                 self.sftp.rmdir(path)
         finally:
             alarm_cancel()
 
     def readlink(self, link):
-        logger.debug("%s" % (link))
+        logger.debug('%s', link)
         alarm_set(self.o.timeout)
         try:
             value = self.sftp.readlink(link)
@@ -342,7 +341,7 @@ class Sftp(Transfer):
 
     # symlink
     def symlink(self, link, path):
-        logger.debug("(in %s), create this file %s as a link to: %s" % (self.getcwd(), path, link) )
+        logger.debug('(in %s), create this file %s as a link to: %s', self.getcwd(), path, link)
         alarm_set(self.o.timeout)
         try:
             self.sftp.symlink(link, path)
@@ -358,9 +357,7 @@ class Sftp(Transfer):
             remote_offset=0,
             local_offset=0,
             length=0, exactLength=False):
-        logger.debug(
-            "sr_sftp get %s %s %d %d %d %s" %
-            (remote_file, local_file, remote_offset, local_offset, length, exactLength))
+        logger.debug('sr_sftp get %s %s %d %d %d %s', remote_file, local_file, remote_offset, local_offset, length, exactLength)
 
         alarm_set(2 * self.o.timeout)
         try:
@@ -454,7 +451,7 @@ class Sftp(Transfer):
 
     # mkdir
     def mkdir(self, remote_dir):
-        logger.debug("mkdir %s" % remote_dir)
+        logger.debug('mkdir %s', remote_dir)
         alarm_set(self.o.timeout)
         try:
             s = self.sftp.lstat(remote_dir)
@@ -479,7 +476,7 @@ class Sftp(Transfer):
             local_offset=0,
             remote_offset=0,
             length=0):
-        logger.debug( f" local_file={local_file} remote_file={remote_file} local_offset={local_offset} remote_offset={remote_offset} length={length}"  )
+        logger.debug(' local_file=%s remote_file=%s local_offset=%s remote_offset=%s length=%s', local_file, remote_file, local_offset, remote_offset, length)
 
         # simple file
 
@@ -549,7 +546,7 @@ class Sftp(Transfer):
 
     # rename
     def rename(self, remote_old, remote_new):
-        logger.debug("sr_sftp rename %s %s" % (remote_old, remote_new))
+        logger.debug('sr_sftp rename %s %s', remote_old, remote_new)
         try:
             self.delete(remote_new)
         except:
@@ -562,7 +559,7 @@ class Sftp(Transfer):
 
     # rmdir
     def rmdir(self, path):
-        logger.debug("sr_sftp rmdir %s " % path)
+        logger.debug('sr_sftp rmdir %s ', path)
         alarm_set(self.o.timeout)
         try:
             self.sftp.rmdir(path)
@@ -581,7 +578,7 @@ class Sftp(Transfer):
 
     # utime
     def utime(self, path, tup):
-        logger.debug("sr_sftp utime %s %s " % (path, tup))
+        logger.debug('sr_sftp utime %s %s ', path, tup)
         alarm_set(self.o.timeout)
 
         if not self.o.nofsetstat: 

@@ -89,7 +89,7 @@ class S3(Transfer):
         self._Metadata_Key = 'sarracenia_v3'
 
     def __credentials(self) -> bool:
-        logger.debug("%s" % self.sendTo)
+        logger.debug('%s', self.sendTo)
 
         try:
             ok, details = self.o.credentials.get(self.sendTo)
@@ -123,12 +123,12 @@ class S3(Transfer):
     ##  ---------------------- PUBLIC METHODS ---------------------
 
     def cd(self, path):
-        logger.debug("sr_s3 cd %s" % path)
+        logger.debug('sr_s3 cd %s', path)
         self.cwd = os.path.dirname(path)
         self.path = path.strip('/') + "/"
 
     def cd_forced(self, path):
-        logger.debug("sr_s3 cd %s" % path)
+        logger.debug('sr_s3 cd %s', path)
         self.cwd = os.path.dirname(path)
         self.path = path.strip('/') + "/"
 
@@ -145,7 +145,7 @@ class S3(Transfer):
         return True
 
     def chmod(self, perms):
-        logger.debug(f"sr_s3 chmod {perms}")
+        logger.debug('sr_s3 chmod %s', perms)
         return
         
     def close(self):
@@ -171,7 +171,7 @@ class S3(Transfer):
             try:
                 response = self.client.head_bucket(Bucket=self.bucket)
                 exists = True
-                logger.debug(f"bucket exists: {response}")
+                logger.debug('bucket exists: %s', response)
             except botocore.exceptions.ClientError:
                 exists = False
             
@@ -206,7 +206,7 @@ class S3(Transfer):
         return False 
 
     def delete(self, path):
-        logger.debug("deleting %s" % path)
+        logger.debug('deleting %s', path)
         self.client.delete_object(Bucket=self.bucket, Key=path)
 
     def get(self,
@@ -217,10 +217,10 @@ class S3(Transfer):
             local_offset=0,
             length=0, exactLength=False) -> int:
         
-        logger.debug("sr_s3 get; self.path %s" % self.path)
+        logger.debug('sr_s3 get; self.path %s', self.path)
 
         file_key = self.path + remote_file
-        logger.debug(f"get s3://{self.bucket}/{file_key} to {local_file}")
+        logger.debug('get s3://%s/%s to %s', self.bucket, file_key, local_file)
 
         self.client.download_file(Bucket=self.bucket, Key=file_key, Filename=local_file, Config=self.s3_transfer_config)
 
@@ -235,7 +235,7 @@ class S3(Transfer):
             return None
     
     def ls(self):
-        logger.debug(f"ls-ing items in {self.bucket}/{self.path}")
+        logger.debug('ls-ing items in %s/%s', self.bucket, self.path)
 
         self.entries = {}
 
@@ -272,7 +272,7 @@ class S3(Transfer):
 
             if 'CommonPrefixes' in page:
                 for prefix in page['CommonPrefixes']:
-                    logger.debug(f"Found folder {prefix['Prefix']}")
+                    logger.debug('Found folder %s', prefix['Prefix'])
 
                     filename = prefix['Prefix'].replace(self.path, '', 1).rstrip("/")
                     if filename == "":
@@ -283,11 +283,11 @@ class S3(Transfer):
         
                     self.entries[filename] = entry
 
-        logger.debug(f"self.entries={self.entries}")
+        logger.debug('self.entries=%s', self.entries)
         return self.entries
     
     def mkdir(self, remote_dir):
-        logger.debug(f"mkdir {remote_dir}; {self.path}")
+        logger.debug('mkdir %s; %s', remote_dir, self.path)
         return
 
     def put(self,
@@ -297,11 +297,11 @@ class S3(Transfer):
             local_offset=0,
             remote_offset=0,
             length=0) -> int:
-        logger.debug("sr_s3 put; %s %s" % (local_file, remote_file))
+        logger.debug('sr_s3 put; %s %s', local_file, remote_file)
 
         file_key = self.path + remote_file
-        logger.debug(f"put {local_file} to s3://{self.bucket}/{file_key}")
-        logger.debug(f"msg={msg}")
+        logger.debug('put %s to s3://%s/%s', local_file, self.bucket, file_key)
+        logger.debug('msg=%s', msg)
 
         extra_args = {
             'Metadata': {
@@ -326,12 +326,12 @@ class S3(Transfer):
         return ['s3']
     
     def rename(self, remote_old, remote_new):
-        logger.debug(f"remote_old={remote_old}; remote_new={remote_new}")
+        logger.debug('remote_old=%s; remote_new=%s', remote_old, remote_new)
         self.client.copy_object(Bucket=self.bucket, CopySource=self.bucket + "/" + remote_old, Key=remote_new)
         self.client.delete_object(Bucket=self.bucket, Key=remote_old)
     
     def rmdir(self, path):
-        logger.debug("%s" % path)
+        logger.debug('%s', path)
         paginator = self.client.get_paginator('list_objects_v2')
         pages = paginator.paginate(Bucket=self.bucket, Prefix=path + "/")
 

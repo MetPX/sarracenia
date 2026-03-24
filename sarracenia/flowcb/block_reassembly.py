@@ -165,9 +165,9 @@ class Block_reassembly(FlowCB):
 
             # update old_blocks to reflect receipt of this block.
             if old_blocks and 'manifest' in old_blocks:
-                logger.debug( f" read {len(old_blocks['manifest'])} blocks in manifest, waiting for {len(old_blocks['waiting'])} " )
-                logger.debug( f" read old block manifest from attributes: {old_blocks['manifest']}" )
-                logger.debug( f" also show waiting: {old_blocks['waiting']}" )
+                logger.debug(' read %s blocks in manifest, waiting for %s ', len(old_blocks['manifest']), len(old_blocks['waiting']))
+                logger.debug(' read old block manifest from attributes: %s', old_blocks['manifest'])
+                logger.debug(' also show waiting: %s', old_blocks['waiting'])
                 found=False
                 sz=0
                 # add

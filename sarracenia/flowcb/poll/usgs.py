@@ -89,7 +89,7 @@ class Usgs(FlowCB):
             ]:
                 stns = ','.join([s for s in sites])
                 file_cnt += 1
-                logger.debug('getting: %s' % self.o.pollUrl.format(stns))
+                logger.debug('getting: %s', self.o.pollUrl.format(stns))
 
                 status_code = urllib.request.urlopen(
                     self.o.pollUrl.format(stns)).getcode()
@@ -109,11 +109,10 @@ class Usgs(FlowCB):
 							blocked your IP. Use the contact form on their site to be \
 							unblocked.''')
                 else:
-                    logger.debug("poll_usgs file not found: %s" %
-                                 self.o.pollUrl.format(stns))
+                    logger.debug('poll_usgs file not found: %s', self.o.pollUrl.format(stns))
         else:  # Get stations one at a time
             for site in self.sitecodes:
-                logger.debug('getting: %s' % self.o.pollUrl.format(site))
+                logger.debug('getting: %s', self.o.pollUrl.format(site))
                 status_code = urllib.request.urlopen(
                     self.o.pollUrl.format(site)).getcode()
                 if status_code == 200:
@@ -129,6 +128,5 @@ class Usgs(FlowCB):
 							blocked your IP. Use the contact form on their site to be \
 							unblocked.''')
                 else:
-                    logger.debug("poll_usgs file not found: %s" %
-                                 self.o.pollUrl.format(site))
+                    logger.debug('poll_usgs file not found: %s', self.o.pollUrl.format(site))
         return gathered_messages

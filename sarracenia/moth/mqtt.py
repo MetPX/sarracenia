@@ -223,9 +223,7 @@ class MQTT(Moth):
             return
 
         if not flags.session_present:
-            logger.debug(
-                f"no existing session, no recovery of inflight messages from previous connection"
-            )
+            logger.debug('no existing session, no recovery of inflight messages from previous connection')
         logger.info( f"connection succeeded" )
 
         # else reason_code == 0 ... success.

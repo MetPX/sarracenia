@@ -39,7 +39,7 @@ def exec_rabbitmqadmin(url, options, simulate=False):
             command += ' --ssl --port=15671 '
         command += ' ' + options
 
-        logger.debug("command = %s" % command)
+        logger.debug('command = %s', command)
         if sys.version_info.major < 3 or (sys.version_info.major == 3
                                           and sys.version_info.minor < 5):
             if logger: logger.debug("using subprocess.getstatusoutput")
@@ -53,8 +53,7 @@ def exec_rabbitmqadmin(url, options, simulate=False):
             cmdlin = command.replace("'", '')
             cmdlst = cmdlin.split()
             if logger:
-                logger.debug("using subprocess.run cmdlst=%s" %
-                             ' '.join(cmdlst))
+                logger.debug('using subprocess.run cmdlst=%s', ' '.join(cmdlst))
 
             if simulate:
                 print("dry_run: %s" % cmdlin)
@@ -318,7 +317,7 @@ def run_rabbitmqadmin(url, options, simulate=False):
       capture result.
     """
 
-    logger.debug("sr_rabbit run_rabbitmqadmin %s" % options)
+    logger.debug('sr_rabbit run_rabbitmqadmin %s', options)
     try:
         (status, answer) = exec_rabbitmqadmin(url, options, simulate)
 

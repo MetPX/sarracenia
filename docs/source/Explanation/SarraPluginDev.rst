@@ -1231,7 +1231,7 @@ Here it the complete poll callback::
             st.filename = data
     
             if 'MLS-Aura' in data:
-                   logger.debug("data %s" %data)
+                   logger.debug("data %s", data)
                    self.entries[data]=st
     
                    logger.info("(%s) = %s" % (self.myfname,st))

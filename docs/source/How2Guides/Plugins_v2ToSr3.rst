@@ -775,9 +775,9 @@ Here is a v2 plugin nsa_mls_nrt.py:
             import time
     
             if 'MLS-Aura' in data:
-                   self.logger.debug("data %s" %data)
+                   self.logger.debug("data %s", data)
                    self.entries[self.myfname] = '-rwxr-xr-x 1 101 10 ' +'_' + ' ' + 'Jan 1 00:01' + ' ' + data
-                   self.logger.debug("(%s) = %s" % (self.myfname,self.entries[self.myfname]))
+                   self.logger.debug("(%s) = %s", self.myfname, self.entries[self.myfname])
             if self.myfname == None : return
             if self.myfname == data : return
             ''' 
@@ -806,7 +806,7 @@ Here is a v2 plugin nsa_mls_nrt.py:
             mysize = '_'
      
             self.entries[self.myfname] = '-rwxr-xr-x 1 101 10 ' + mysize + ' ' + mydate + ' ' + data
-            self.logger.debug("(%s) = %s" % (self.myfname,self.entries[self.myfname]))
+            self.logger.debug("(%s) = %s", self.myfname, self.entries[self.myfname])
             '''
     
         def parse(self,parent):
@@ -814,7 +814,7 @@ Here is a v2 plugin nsa_mls_nrt.py:
             self.entries = {}
             self.myfname = None
     
-            self.logger.debug("data %s" % parent.data)
+            self.logger.debug("data %s", parent.data)
             self.parser.feed(parent.data)
             self.parser.close()
     
@@ -862,7 +862,7 @@ sr3 version of same plugin (nasa_mls_nrt.py):
             st.filename = data
     
             if 'MLS-Aura' in data:
-                   logger.debug("data %s" %data)
+                   logger.debug("data %s", data)
                    #self.entries[self.myfname] = '-rwxr-xr-x 1 101 10 ' +'_' + ' ' + 'Jan 1 00:01' + ' ' + data
                    self.entries[data]=st
     
