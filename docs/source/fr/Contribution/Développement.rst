@@ -43,7 +43,44 @@ après avoir cloné le code source::
     git clone https://github.com/MetPX/sr_insects insects
     cd sr3
 
-Le reste du guide suppose que vous y êtes.
+Le reste de ce guide présume les prérequis sont présents.
+
+
+Style de codage
+------------
+
+- Python 3. L'application est développée avec Python 3.6 ou une version supérieure. Par conséquent, 
+  toute contribution doit être compatible avec Python 3.6, car nous avons des déploiements sur 
+  Ubuntu 18.04 et Red Hat 8 qui utilisent cette version.
+
+  * Par exemple : N'utilisez pas le signe égal (=) dans les f-strings, car il n'est apparu qu'avec Python 3.8 (ex. : f" {foo=} ").
+
+- Style : Généralement conforme à la PEP 8.
+
+  * Sauf que la longueur maximale des lignes est de 119 caractères, imposée par `pycodestyle <https://pycodestyle.pycqa.org/en/latest/intro.html#disclaimer>`_ pour VSCode, yapf3 ou tout autre outil similaire.
+
+  * Nous utilisons également la notation camelCase pour les options/paramètres visibles par l'utilisateur, alors que la PEP exigerait des majuscules pour les constantes/paramètres.
+
+  * `post_` pour les paramètres qui s'appliquent à la publication (par défaut, pour la consommation).
+
+- Formatage des chaînes de caractères:
+
+  * Nous privilégions généralement les méthodes des f-strings de Python 3.6, car elles sont considérées comme les plus lisibles.
+
+      * À ÉVITER : `print("%s" % hi)`
+      * UTILISEZ À LA PLACE : `print(f" {hi} ")`
+
+  * Exception : les appels à `logger.debug()` doivent utiliser le formatage paresseux `%`. Utilisez les arguments comme 
+    paramètres, car cela évite l'évaluation complète de la chaîne de caractères en dehors du mode débogage.
+
+      * NON : logger.debug( f"{hi}")
+      * UTILISEZ PLUTÔT : logger.debug( "%s", hi)
+
+    Le choix du moment où appliquer l'exception dépend de la fréquence à laquelle la chaîne sera évaluée
+    sans affichage du message. Ainsi, pour les messages prioritaires, cette exception ne s'applique pas
+    et il convient de suivre la convention habituelle pour les chaînes de caractères.
+
+
 
 Documentation
 -------------
