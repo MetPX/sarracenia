@@ -157,7 +157,7 @@
 <a class="viewcode-back" href="../../Reference/code.html#sarracenia.diskqueue.DiskQueue.__init__">[docs]</a>
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">options</span><span class="p">,</span> <span class="n">name</span><span class="p">):</span>
 
-        <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot; </span><span class="si">%s</span><span class="s2"> __init__&quot;</span> <span class="o">%</span> <span class="n">name</span><span class="p">)</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s1">&#39; </span><span class="si">%s</span><span class="s1"> __init__&#39;</span><span class="p">,</span> <span class="n">name</span><span class="p">)</span>
 
         <span class="bp">self</span><span class="o">.</span><span class="n">o</span> <span class="o">=</span> <span class="n">options</span>
 
@@ -170,7 +170,7 @@
         <span class="c1">#                    level=getattr(logging, self.o.logLevel.upper()))</span>
         <span class="n">logger</span><span class="o">.</span><span class="n">setLevel</span><span class="p">(</span><span class="nb">getattr</span><span class="p">(</span><span class="n">logging</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">o</span><span class="o">.</span><span class="n">logLevel</span><span class="o">.</span><span class="n">upper</span><span class="p">()))</span>
 
-        <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s1">&#39;name=</span><span class="si">%s</span><span class="s1"> logLevel=</span><span class="si">%s</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">o</span><span class="o">.</span><span class="n">logLevel</span><span class="p">))</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s1">&#39;name=</span><span class="si">%s</span><span class="s1"> logLevel=</span><span class="si">%s</span><span class="s1">&#39;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">o</span><span class="o">.</span><span class="n">logLevel</span><span class="p">)</span>
 
         <span class="c1"># initialize all retry path if retry_path is provided</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">working_dir</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">dirname</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">o</span><span class="o">.</span><span class="n">pid_filename</span><span class="p">)</span>
@@ -230,8 +230,7 @@
             <span class="bp">self</span><span class="o">.</span><span class="n">new_fp</span> <span class="o">=</span> <span class="nb">open</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">new_path</span><span class="p">,</span> <span class="s1">&#39;a&#39;</span><span class="p">)</span>
 
         <span class="k">for</span> <span class="n">message</span> <span class="ow">in</span> <span class="n">message_list</span><span class="p">:</span>
-            <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;DEBUG add to new file </span><span class="si">%s</span><span class="s2"> </span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span>
-                         <span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">basename</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">new_path</span><span class="p">),</span> <span class="n">message</span><span class="p">))</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s1">&#39;DEBUG add to new file </span><span class="si">%s</span><span class="s1"> </span><span class="si">%s</span><span class="s1">&#39;</span><span class="p">,</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">basename</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">new_path</span><span class="p">),</span> <span class="n">message</span><span class="p">)</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">new_fp</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">msgToJSON</span><span class="p">(</span><span class="n">message</span><span class="p">))</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">msg_count_new</span> <span class="o">+=</span> <span class="mi">1</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">new_fp</span><span class="o">.</span><span class="n">flush</span><span class="p">()</span></div>
@@ -294,7 +293,7 @@
                 <span class="k">for</span> <span class="n">line</span> <span class="ow">in</span> <span class="n">f</span><span class="p">:</span>
                     <span class="k">if</span> <span class="s2">&quot;{&quot;</span> <span class="ow">in</span> <span class="n">line</span><span class="p">:</span>
                         <span class="n">count</span> <span class="o">+=</span><span class="mi">1</span>
-            <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;counted </span><span class="si">{</span><span class="n">count</span><span class="si">}</span><span class="s2"> msgs in </span><span class="si">{</span><span class="n">file_path</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s1">&#39;counted </span><span class="si">%s</span><span class="s1"> msgs in </span><span class="si">%s</span><span class="s1">&#39;</span><span class="p">,</span> <span class="n">count</span><span class="p">,</span> <span class="n">file_path</span><span class="p">)</span>
 
         <span class="k">return</span> <span class="n">count</span></div>
 
@@ -464,7 +463,7 @@
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="n">fp</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
             <span class="k">if</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">isfile</span><span class="p">(</span><span class="n">path</span><span class="p">):</span> <span class="k">return</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span>
-            <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;DEBUG </span><span class="si">%s</span><span class="s2"> open read&quot;</span> <span class="o">%</span> <span class="n">path</span><span class="p">)</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s1">&#39;DEBUG </span><span class="si">%s</span><span class="s1"> open read&#39;</span><span class="p">,</span> <span class="n">path</span><span class="p">)</span>
             <span class="n">fp</span> <span class="o">=</span> <span class="nb">open</span><span class="p">(</span><span class="n">path</span><span class="p">,</span> <span class="s1">&#39;r&#39;</span><span class="p">)</span>
 
         <span class="n">line</span> <span class="o">=</span> <span class="n">fp</span><span class="o">.</span><span class="n">readline</span><span class="p">()</span>
@@ -498,7 +497,7 @@
 <span class="sd">           remove .new</span>
 <span class="sd">           rename housekeeping to queue for next period.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2"> on_housekeeping, </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">msg_count</span><span class="si">}</span><span class="s2"> msgs in queue file, </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">msg_count_new</span><span class="si">}</span><span class="s2"> in new file&quot;</span><span class="p">)</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s1">&#39;</span><span class="si">%s</span><span class="s1"> on_housekeeping, </span><span class="si">%s</span><span class="s1"> msgs in queue file, </span><span class="si">%s</span><span class="s1"> in new file&#39;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">msg_count</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">msg_count_new</span><span class="p">)</span>
 
         <span class="c1"># finish retry before reshuffling all retries entries</span>
 
@@ -527,8 +526,7 @@
             <span class="n">fp</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">queue_fp</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">housekeeping_fp</span> <span class="o">=</span> <span class="nb">open</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">housekeeping_path</span><span class="p">,</span> <span class="s1">&#39;a&#39;</span><span class="p">)</span>
 
-            <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;has queue </span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span>
-                         <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">isfile</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">queue_file</span><span class="p">))</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s1">&#39;has queue </span><span class="si">%s</span><span class="s1">&#39;</span><span class="p">,</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">isfile</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">queue_file</span><span class="p">))</span>
 
             <span class="c1"># remaining of retry to housekeeping</span>
             <span class="k">while</span> <span class="kc">True</span><span class="p">:</span>
@@ -553,7 +551,7 @@
                 <span class="n">fp</span><span class="p">,</span> <span class="n">message</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">msg_get_from_file</span><span class="p">(</span><span class="n">fp</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">new_path</span><span class="p">)</span>
                 <span class="k">if</span> <span class="ow">not</span> <span class="n">message</span><span class="p">:</span> <span class="k">break</span>
                 <span class="n">i</span> <span class="o">=</span> <span class="n">i</span> <span class="o">+</span> <span class="mi">1</span>
-                <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;DEBUG message </span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="n">message</span><span class="p">)</span>
+                <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s1">&#39;DEBUG message </span><span class="si">%s</span><span class="s1">&#39;</span><span class="p">,</span> <span class="n">message</span><span class="p">)</span>
                 <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">needs_requeuing</span><span class="p">(</span><span class="n">message</span><span class="p">):</span> <span class="k">continue</span>
 
                 <span class="c1">#logger.debug(&quot;MG DEBUG flush retry to state %s&quot; % message)</span>
@@ -564,8 +562,7 @@
             <span class="k">except</span><span class="p">:</span>
                 <span class="k">pass</span>
 
-            <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;retrieved </span><span class="si">%d</span><span class="s2"> from the </span><span class="si">%d</span><span class="s2"> retry&quot;</span> <span class="o">%</span>
-                         <span class="p">(</span><span class="n">N</span> <span class="o">-</span> <span class="n">j</span><span class="p">,</span> <span class="n">i</span><span class="p">))</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s1">&#39;retrieved </span><span class="si">%d</span><span class="s1"> from the </span><span class="si">%d</span><span class="s1"> retry&#39;</span><span class="p">,</span> <span class="n">N</span> <span class="o">-</span> <span class="n">j</span><span class="p">,</span> <span class="n">i</span><span class="p">)</span>
 
             <span class="bp">self</span><span class="o">.</span><span class="n">housekeeping_fp</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
 
@@ -577,7 +574,7 @@
 
         <span class="bp">self</span><span class="o">.</span><span class="n">msg_count</span> <span class="o">=</span> <span class="n">N</span>
         <span class="k">if</span> <span class="n">N</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
-            <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;</span><span class="si">%s</span><span class="s2"> No retry in list&quot;</span> <span class="o">%</span> <span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="p">)</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s1">&#39;</span><span class="si">%s</span><span class="s1"> No retry in list&#39;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="p">)</span>
             <span class="k">try</span><span class="p">:</span>
                 <span class="n">os</span><span class="o">.</span><span class="n">unlink</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">housekeeping_path</span><span class="p">)</span>
             <span class="k">except</span><span class="p">:</span>
@@ -600,7 +597,7 @@
             <span class="k">pass</span>
 
         <span class="n">elapse</span> <span class="o">=</span> <span class="n">sarracenia</span><span class="o">.</span><span class="n">nowflt</span><span class="p">()</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">now</span>
-        <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;on_housekeeping elapse </span><span class="si">%f</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="n">elapse</span><span class="p">)</span></div>
+        <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s1">&#39;on_housekeeping elapse </span><span class="si">%f</span><span class="s1">&#39;</span><span class="p">,</span> <span class="n">elapse</span><span class="p">)</span></div>
 </div>
 
 </pre></div>
