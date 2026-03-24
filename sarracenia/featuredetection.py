@@ -125,9 +125,9 @@ for x in features:
            # but something that it depends on is missing, so it's clearer to just try an import.
 
            exec( f"import {y}" )
-           logger.debug( f'found feature {y}, which should help to enable {x}')
+           logger.debug('found feature %s, which should help to enable %s', y, x)
        except:
-           logger.debug( f"extra feature {x} needs missing module {y}. Disabled" ) 
+           logger.debug('extra feature %s needs missing module %s. Disabled', x, y) 
            features[x]['present']=False
 
 
@@ -135,12 +135,12 @@ if features['filetypes']['present']:
     import magic
     if not hasattr(magic,'from_file'):
         features['filetypes']['present'] = False
-        logger.debug( f'redhat magic bindings not supported.')
+        logger.debug('redhat magic bindings not supported.')
 
 if features['mqtt']['present']:
     import paho.mqtt
     if not paho.mqtt.__version__ >= '2.1.0' :
         features['mqtt']['present'] = False
-        logger.debug( f'paho-mqtt minimum version needed is 2.1.0')
+        logger.debug('paho-mqtt minimum version needed is 2.1.0')
 
 

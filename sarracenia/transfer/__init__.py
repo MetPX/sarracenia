@@ -161,8 +161,7 @@ class Transfer():
 
         logger.setLevel(getattr(logging, ll.upper()))
 
-        logger.debug("class=%s , subclasses=%s" %
-                     (type(self).__name__, Transfer.__subclasses__()))
+        logger.debug('class=%s , subclasses=%s', type(self).__name__, Transfer.__subclasses__())
         self.init()
 
     def init(self):
@@ -206,8 +205,7 @@ class Transfer():
             self.data_checksum = self.data_sumalgo.value
 
     def local_read_open(self, local_file, local_offset=0):
-        logger.debug("sr_proto local_read_open getcwd=%s self.cwd=%s" %
-                     (os.getcwd(), self.getcwd()))
+        logger.debug('sr_proto local_read_open getcwd=%s self.cwd=%s', os.getcwd(), self.getcwd())
 
         self.checksum = None
 
@@ -370,9 +368,7 @@ class Transfer():
         # 2022/12/02 - pas should see a lot of these messages in HPC case from now on...
         
         if not self.o.acceptSizeWrong and length != 0 and rw_length != length:
-            logger.debug(
-                "util/writelocal mismatched file length writing %s. Message said to expect %d bytes.  Got %d bytes."
-                % (local_file, length, rw_length))
+            logger.debug('util/writelocal mismatched file length writing %s. Message said to expect %d bytes.  Got %d bytes.', local_file, length, rw_length)
 
         return rw_length
 
@@ -403,7 +399,7 @@ class Transfer():
         return rw_length
 
     def set_sumalgo(self, sumalgo):
-        logger.debug("sr_proto set_sumalgo %s" % sumalgo)
+        logger.debug('sr_proto set_sumalgo %s', sumalgo)
         self.sumalgo = sarracenia.identity.Identity.factory(sumalgo)
         self.data_sumalgo = sarracenia.identity.Identity.factory(sumalgo)
 

@@ -516,12 +516,16 @@ class sr_GlobalState:
                         for pathname in state_files:
                             p = pathlib.Path(pathname)
                             if p.suffix in ['.pid', '.qname', '.state', '.noVip']:
-                                if sys.version_info[0] > 3 or sys.version_info[
-                                        1] > 4:
-                                    t = p.read_text().strip()
-                                else:
-                                    with p.open() as f:
-                                        t = f.read().strip()
+                                try:
+                                    if sys.version_info[0] > 3 or sys.version_info[
+                                            1] > 4:
+                                        t = p.read_text().strip()
+                                    else:
+                                        with p.open() as f:
+                                            t = f.read().strip()
+                                except FileNotFoundError:
+                                    logger.error("state file %s disappeared (race condition, see #1571), skipping", pathname)
+                                    continue
                                 #print( 'read pathname:%s len: %d contents:%s' % ( pathname, len(t), t[0:10] ) )
                                 if len(t) == 0:
                                     continue
@@ -641,12 +645,16 @@ class sr_GlobalState:
                                 i_found.append(i)
                                 if i != 0:
                                     p = pathlib.Path(filename)
-                                    if sys.version_info[0] > 3 or sys.version_info[
-                                            1] > 4:
-                                        t = p.read_text().strip()
-                                    else:
-                                        with p.open() as f:
-                                            t = f.read().strip()
+                                    try:
+                                        if sys.version_info[0] > 3 or sys.version_info[
+                                                1] > 4:
+                                            t = p.read_text().strip()
+                                        else:
+                                            with p.open() as f:
+                                                t = f.read().strip()
+                                    except FileNotFoundError:
+                                        logger.error("pid file %s disappeared (race condition, see #1571), skipping.", filename)
+                                        continue
                                     if t.isdigit():
                                         pid = int(t)
                                         if pid not in self.procs:
@@ -690,12 +698,16 @@ class sr_GlobalState:
                         for filename in os.listdir():
                             if filename[-4:] == '.pid':
                                 p = pathlib.Path(filename)
-                                if sys.version_info[0] > 3 or sys.version_info[
-                                        1] > 4:
-                                    t = p.read_text().strip()
-                                else:
-                                    with p.open() as f:
-                                        t = f.read().strip()
+                                try:
+                                    if sys.version_info[0] > 3 or sys.version_info[
+                                            1] > 4:
+                                        t = p.read_text().strip()
+                                    else:
+                                        with p.open() as f:
+                                            t = f.read().strip()
+                                except FileNotFoundError:
+                                    logger.error("pid file %s disappeared (race condition, see #1571), skipping cleanup", filename)
+                                    continue
                                 if t.isdigit():
                                     pid = int(t)
                                     if pid not in self.procs:
@@ -887,7 +899,7 @@ class sr_GlobalState:
                     self.cumulative_stats['flowNameWidth'] = len( f"{c}/{cfg}" ) 
 
                 if cfg not in self.states[c]:
-                    logger.debug('no existing state files for %s/%s' % (c,cfg))
+                    logger.debug('no existing state files for %s/%s', c, cfg)
                     self.states[c][cfg] = {}
                     self.states[c][cfg]['instance_pids'] = {}
                     self.states[c][cfg]['queueName'] = None
@@ -918,7 +930,7 @@ class sr_GlobalState:
                     metrics=copy.deepcopy(empty_metrics)
                     for i in self.states[c][cfg]['instance_metrics']:
                         if self.states[c][cfg]['instance_metrics'][i]['status']['mtime'] < expiry:
-                            logger.debug( f"metrics for {c}/{cfg}/ instance {i} too old ignoring." )
+                            logger.debug('metrics for %s/%s/ instance %s too old ignoring.', c, cfg, i)
                             continue
 
                         #print( f"states of {c}/{cfg}: {self.states[c][cfg]} " )
@@ -1194,7 +1206,7 @@ class sr_GlobalState:
                 candidates.append(fcc)
     
         self.all_configs = candidates
-        logger.debug( f"candidates: {candidates}" )
+        logger.debug('candidates: %s', candidates)
         new_patterns=[]
         for p in patterns:
             if p in [ 'examples','eg','ie', 'flow_callback','flowcb','fcb','v2plugins','v2p']:
@@ -1207,7 +1219,7 @@ class sr_GlobalState:
             leftover_matches[p] = 0
         patterns=new_patterns
 
-        logger.debug( f"patterns: {patterns}" )
+        logger.debug('patterns: %s', patterns)
         for fcc in candidates:
             if (patterns is None) or (len(patterns) < 1):
                 self.filtered_configurations.append(fcc)
@@ -1527,7 +1539,7 @@ class sr_GlobalState:
                                 user = f"{u_url.username}@{h}"
 
                                 if filtered_users and user not in filtered_users:
-                                    logger.debug(f"not adding {user}")
+                                    logger.debug('not adding %s', user)
                                     continue
 
                                 sarracenia.rabbitmq_admin.add_user( \
@@ -1544,7 +1556,8 @@ class sr_GlobalState:
                         'broker': self.default_cfg.admin,
                         'dry_run': self.options.dry_run,
                         'exchange': self.default_cfg.declared_exchanges,
-                        'message_strategy': { 'stubborn':True }
+                        'message_strategy': { 'stubborn':True },
+                        'tlsRigour': self.options.tlsRigour
                     })
                 xdc.putSetup()
                 xdc.close()
@@ -1566,7 +1579,8 @@ class sr_GlobalState:
                                 'broker': p['broker'],
                                 'dry_run': self.options.dry_run,
                                 'exchange': p['exchange'],
-                                'message_strategy': { 'stubborn':True }
+                                'message_strategy': { 'stubborn':True },
+                                'tlsRigour': p['tlsRigour']
                             })
                          xdc.putSetup()
                          xdc.close()
@@ -1848,7 +1862,8 @@ class sr_GlobalState:
                             'echangeDeclare': False,
                             'subscription_index': 0,
                             'subscriptions' : [ s ],
-                            'message_strategy': { 'stubborn':True }
+                            'message_strategy': { 'stubborn':True },
+                            'tlsRigour': q['tlsRigour']
                         })
                     qdc.getSetup()
                     qdc.getCleanUp()
@@ -1884,7 +1899,8 @@ class sr_GlobalState:
                                         'exchange': p['exchange'] if 'exchange' in p else None,
                                         'dry_run': self.options.dry_run,
                                         'broker': self.brokers[h]['admin'],
-                                        'message_strategy': { 'stubborn':True }
+                                        'message_strategy': { 'stubborn':True },
+                                        'tlsRigour': p['tlsRigour']
                                     })
                                 if qdc:
                                     qdc.putSetup()
@@ -2367,11 +2383,11 @@ class sr_GlobalState:
                      return
 
                  partial=True
-                 logger.debug( f"{pid_count}/{self.configs[c][cfg]['options'].instances} instances started." )
+                 logger.debug('%s/%s instances started.', pid_count, self.configs[c][cfg]['options'].instances)
                  time.sleep(5)
                  pid_count = self._pid_file_count(c,cfg)
 
-            logger.debug( f"{c}/{cfg}: {pid_count}/{self.configs[c][cfg]['options'].instances} instances started." )
+            logger.debug('%s/%s: %s/%s instances started.', c, cfg, pid_count, self.configs[c][cfg]['options'].instances)
 
             # skip posts that cannot run as daemons
             if c in ['post', 'cpost'] and not self._post_can_be_daemon(c, cfg): continue
@@ -2582,7 +2598,7 @@ class sr_GlobalState:
                     elif self.options.dangerWillRobinson: 
                          print( f"\tforeground {p}: \"{' '.join(self.procs[p]['cmdline'])}\"" )
                 else:
-                    logger.debug( f"\tdid not even try to kill: {p}: \"{' '.join(self.procs[p]['cmdline'])}\"" )
+                    logger.debug('\tdid not even try to kill: %s: "%s"', p, ' '.join(self.procs[p]['cmdline']))
             return 1
 
     def dump(self): 

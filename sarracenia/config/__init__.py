@@ -484,7 +484,7 @@ def get_metrics_filename(hostdir, component, configuration, no):
     return metricsdir + os.sep + component + configuration + '_%02d' % no + '.json'
 
 def wget_config(urlstr, path, remote_config_url=False):
-    logger.debug("wget_config %s %s" % (urlstr, path))
+    logger.debug('wget_config %s %s', urlstr, path)
 
     try:
         req = urllib.request.Request(urlstr)
@@ -576,7 +576,7 @@ def config_path(subdir, config, mandatory=True, ctype='conf'):
 
     return Tuple:   Found (True/False), path_of_file_found|config_that_was_not_found
     """
-    logger.debug("config_path = %s %s" % (subdir, config))
+    logger.debug('config_path = %s %s', subdir, config)
 
     if config == None: return False, None
 
@@ -589,7 +589,7 @@ def config_path(subdir, config, mandatory=True, ctype='conf'):
         path = get_user_config_dir() + os.sep + subdir + os.sep + name
         config = name
 
-        logger.debug("http url %s path %s name %s" % (urlstr, path, name))
+        logger.debug('http url %s path %s name %s', urlstr, path, name)
 
         # do not allow plugin (Peter's mandatory decision)
         # because plugins may need system or python packages
@@ -601,7 +601,7 @@ def config_path(subdir, config, mandatory=True, ctype='conf'):
 
     # priority 1 : config given is a valid path
 
-    logger.debug("config_path %s " % config)
+    logger.debug('config_path %s ', config)
     if os.path.isfile(config):
         return True, config
     config_file = os.path.basename(config)
@@ -618,7 +618,7 @@ def config_path(subdir, config, mandatory=True, ctype='conf'):
 
     config_path = os.path.join(get_user_config_dir(), subdir,
                                config_name + ext)
-    logger.debug("config_path %s " % config_path)
+    logger.debug('config_path %s ', config_path)
 
     if os.path.isfile(config_path):
         return True, config_path
@@ -627,7 +627,7 @@ def config_path(subdir, config, mandatory=True, ctype='conf'):
 
     config_path = os.path.join(get_site_config_dir(), subdir,
                                config_name + ext)
-    logger.debug("config_path %s " % config_path)
+    logger.debug('config_path %s ', config_path)
 
     if os.path.isfile(config_path):
         return True, config_path
@@ -637,7 +637,7 @@ def config_path(subdir, config, mandatory=True, ctype='conf'):
     if subdir == 'plugins':
         config_path = get_package_lib_dir(
         ) + os.sep + 'plugins' + os.sep + config_name + ext
-        logger.debug("config_path %s " % config_path)
+        logger.debug('config_path %s ', config_path)
         if os.path.isfile(config_path):
             return True, config_path
 
@@ -1254,7 +1254,7 @@ class Config:
             logger.error( f"{','.join(self.files)}{self.lineno} invalid kind: {kind} for option: {option} ignored" )
             return
 
-        logger.debug( f"{','.join(self.files)}{self.lineno} {option} declared as type:{type(getattr(self,option))} value:{v}" )
+        logger.debug('%s%s %s declared as type:%s value:%s', ','.join(self.files), self.lineno, option, type(getattr(self, option)), v)
 
     def dump(self):
         """ print out what the configuration looks like.
@@ -1581,9 +1581,9 @@ class Config:
                     line = convert_to_v3[k][v]
                     k = line[0]
                     if 'continue' in line:
-                        logger.debug( f'{cfname}:{lineno} obsolete v2: \"{l}\" ignored' )
+                        logger.debug('%s:%s obsolete v2: "%s" ignored', cfname, lineno, l)
                     else:
-                        logger.debug( f'{cfname}:{lineno} obsolete v2:\"{l}\" converted to sr3:\"{" ".join(line)}\"' )
+                        logger.debug('%s:%s obsolete v2:"%s" converted to sr3:"%s"', cfname, lineno, l, ' '.join(line))
             else:
                 if convert_to_v3[k] == 'continue':
                     if k in self.undeclared:
@@ -1799,7 +1799,7 @@ class Config:
         else:
             #FIXME: with _options lists for all types and addition of declare, this is probably now dead code.
             if k not in self.undeclared:
-                logger.debug( f'{",".join(self.files)}:{self.lineno} possibly undeclared option: {line}' )
+                logger.debug('%s:%s possibly undeclared option: %s', ','.join(self.files), self.lineno, line)
             v = ' '.join(line[1:])
             if hasattr(self, k):
                 if type(getattr(self, k)) is float:
@@ -2130,7 +2130,7 @@ class Config:
 
         if hasattr(self, 'pollUrl'):
             if not hasattr(self,'post_baseUrl') or not self.post_baseUrl :
-                logger.debug( f"{component}/{config} defaulting post_baseUrl to match pollURl, since it isn't specified." )
+                logger.debug("%s/%s defaulting post_baseUrl to match pollURl, since it isn't specified.", component, config)
                 self.post_baseUrl = self.pollUrl
             
         # verify post_baseDir
@@ -2149,7 +2149,7 @@ class Config:
                 self.post_baseDir = u.path
             elif self.baseDir is not None:
                 self.post_baseDir = os.path.expanduser(self.baseDir)
-                logger.debug( f"{component}/{config} defaulting post_baseDir to same as baseDir")
+                logger.debug('%s/%s defaulting post_baseDir to same as baseDir', component, config)
 
 
         if self.messageCountMax > 0:
@@ -2213,7 +2213,7 @@ class Config:
              if not hasattr(self,u):
                 no_defaults.add( u )
 
-        logger.debug("missing defaults: %s" % no_defaults)
+        logger.debug('missing defaults: %s', no_defaults)
 
     """
       2020/05/26 FIXME here begins sheer terror.
@@ -2920,8 +2920,8 @@ def one_config(component, config, action, isPost=False, hostDir=None):
                 cfg.postpath.extend(cfg.path)
             else:
                 cfg.postpath.append(cfg.path)
-            logger.debug('path is : %s' % cfg.path)
-            logger.debug('postpath is : %s' % cfg.postpath)
+            logger.debug('path is : %s', cfg.path)
+            logger.debug('postpath is : %s', cfg.postpath)
         
     #pp = pprint.PrettyPrinter(depth=6)
     #pp.pprint(cfg)

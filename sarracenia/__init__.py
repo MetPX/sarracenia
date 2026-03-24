@@ -561,7 +561,7 @@ class Message(dict):
         if 'mtime' in msg:
             xattr.set('mtime', msg['mtime'])
 
-        logger.debug( f"mtime persisted, calc_method: {calc_method}" )
+        logger.debug('mtime persisted, calc_method: %s', calc_method)
 
         if calc_method[:4] == 'cod,' and len(calc_method) > 2:
             sumstr = {
@@ -943,8 +943,7 @@ class Message(dict):
                 text = 'unknown disposition'
 
         if 'report' in msg:
-            logger.debug('overriding initial report: %d: %s' %
-                           (msg['report']['code'], msg['report']['message']))
+            logger.debug('overriding initial report: %d: %s', msg['report']['code'], msg['report']['message'])
 
         msg['report'] = {'code': code, 'timeCompleted': nowstr(), 'message': text}
         msg['_deleteOnPost'] |= set(['report'])
@@ -1145,7 +1144,7 @@ class Message(dict):
 
             # We want to update the message size with the recently fetched content.
             if 'size' not in msg:
-                logger.debug(f"Size in incoming message not found. Including new size: {sz}")
+                logger.debug('Size in incoming message not found. Including new size: %s', sz)
                 msg['size'] = sz
             elif sz != msg['size']:
                 logger.warning(f"Size from getContent doesn't match previously assigned size. Reassigning size to {sz}")

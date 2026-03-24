@@ -58,6 +58,9 @@ class Publisher(dict):
 
         # else, *exchange* will not be present...
 
+        if hasattr(options,'tlsRigour') :
+            self['tlsRigour'] = options.tlsRigour
+    
         if hasattr(options,'post_format') :
             self['format'] = options.post_format
         elif hasattr(options,'post_topicPrefix') and options.post_topicPrefix[0] in [ 'v02', 'v03' ]:

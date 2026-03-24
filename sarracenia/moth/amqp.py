@@ -182,7 +182,9 @@ class AMQP(Moth):
             format=
             '%(asctime)s [%(levelname)s] %(name)s %(funcName)s %(message)s')
 
-        self.o = copy.deepcopy(default_options)
+        # update self.o (already set by super().__init__) with AMQP-specific defaults,
+        # then re-apply props so they take priority.
+        self.o.update(default_options)
         self.o.update(props)
 
         self.first_setup = True
@@ -479,7 +481,7 @@ class AMQP(Moth):
             broker_str = self.o['broker'].url.geturl().replace(
                 ':' + self.o['broker'].url.password + '@', '@')
 
-            logger.debug( f"putSetup ... 1. connected to {broker_str}" )
+            logger.debug('putSetup ... 1. connected to %s', broker_str)
 
             if self.o['exchangeDeclare']:
                 logger.debug('putSetup ... 1. declaring {}'.format(
@@ -610,7 +612,7 @@ class AMQP(Moth):
                     for k in self.o.fixed_headers:
                         msg[k] = self.o.fixed_headers[k]
 
-                logger.debug("new msg: %s" % msg)
+                logger.debug('new msg: %s', msg)
                 return msg
         except Exception as err:
             logger.warning("failed %s: %s" % (queue['name'], err))
@@ -695,8 +697,8 @@ class AMQP(Moth):
                 logger.debug('Exception details: ', exc_info=True)
                 return False
 
-        # The caller probably doesn't expect the message to get modified by this method, so use a copy of the message
-        body = copy.deepcopy(message)
+        # Shallow copy: only top-level keys are deleted (_deleteOnPost), nested dicts are read-only
+        body = dict(message)
 
         if 'format' in self.o:
             version=self.o['format']
@@ -794,7 +796,7 @@ class AMQP(Moth):
         body=raw_body
         ebo = 1
         try:
-            logger.debug( f"trying to publish body: {body} headers: {headers} to {exchange} under: {topic} " )
+            logger.debug('trying to publish body: %s headers: %s to %s under: %s ', body, headers, exchange, topic)
             self.channel.basic_publish(AMQP_Message, exchange, topic, timeout=pub_timeout)
             # Issue #732: tx_commit can get stuck forever
             self.channel.tx_commit()

@@ -107,8 +107,7 @@ class Wmo2msc(FlowCB):
 
         (self.o.filter_olddir, self.o.filter_newdir) = self.o.filter_wmo2msc_replace_dir.split(',')
 
-        logger.debug("old-dir=%s, new-dir=%s" %
-                    (self.o.filter_olddir, self.o.filter_newdir))
+        logger.debug('old-dir=%s, new-dir=%s', self.o.filter_olddir, self.o.filter_newdir)
 
         self.trimre = re.compile(b" +\n")
 
@@ -224,7 +223,7 @@ class Wmo2msc(FlowCB):
 
             # read once to get headers and type.
 
-            logger.debug('reading file: %s' % (input_file))
+            logger.debug('reading file: %s', input_file)
 
             with open(input_file, 'rb') as s:
                 self.bulletin = [s.readline(), s.read(4)]
@@ -240,7 +239,7 @@ class Wmo2msc(FlowCB):
             with open(input_file, 'rb') as s:
                 self.bintxt = s.read()
 
-            logger.debug('read twice: %s ' % (input_file))
+            logger.debug('read twice: %s ', input_file)
 
             # Determine file format (fmt) and apply transformation.
             if self.bulletin[1].lstrip()[:4] in ['BUFR', 'GRIB', '\211PNG']:
@@ -275,21 +274,20 @@ class Wmo2msc(FlowCB):
 
             if self.o.filter_wmo2msc_treeify:
                 d = os.path.dirname(input_file)
-                logger.debug('check %s start match: %s' %
-                             (d, self.o.filter_olddir))
+                logger.debug('check %s start match: %s', d, self.o.filter_olddir)
                 d = d.replace(self.o.filter_olddir, self.o.filter_newdir)
-                logger.debug('check %s after replace' % (d))
+                logger.debug('check %s after replace', d)
                 if not os.path.isdir(d):
                     os.makedirs(d, self.o.permDirDefault, True)
 
                 d = d + os.sep + self.bulletin[0][0:2].decode('ascii')
                 d = d + os.sep + self.bulletin[0][7:11].decode('ascii')
-                logger.debug('check %s' % (d))
+                logger.debug('check %s', d)
                 if not os.path.isdir(d):
                     os.makedirs(d, self.o.permDirDefault, True)
 
                 d = d + os.sep + self.bulletin[0][14:16].decode('ascii')
-                logger.debug('check %s' % (d))
+                logger.debug('check %s', d)
                 if not os.path.isdir(d):
                     os.makedirs(d, self.o.permDirDefault, True)
 
@@ -331,7 +329,7 @@ class Wmo2msc(FlowCB):
 
             relPath = relPath.replace('//', '/')
             message['relPath'] = relPath
-            logger.debug('relPath %s' % relPath)
+            logger.debug('relPath %s', relPath)
 
             # from tolocal.py if used
             if 'savedUrl' in message:

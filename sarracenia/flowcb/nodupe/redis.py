@@ -95,7 +95,7 @@ class Redis(NoDupe):
         message['noDupe'] = { 'key': key, 'path': path }
         message['_deleteOnPost'] |= set(['noDupe'])
 
-        logger.debug("checking (%s, %s)" % (key, path))
+        logger.debug('checking (%s, %s)', key, path)
 
         self.cache_hit = None
         key_hashed = self._hash(key)
@@ -110,12 +110,12 @@ class Redis(NoDupe):
         self._redis.set(redis_key, str(self.now) + "|" + path_quoted, ex=int(self.o.nodupe_ttl))
         
         if got != None:
-            logger.debug("entry already in cache: key=%s" % (redis_key) )
-            logger.debug("updated time entry: time=%s" % (str(self.now)) )
+            logger.debug('entry already in cache: key=%s', redis_key)
+            logger.debug('updated time entry: time=%s', str(self.now))
             self.cache_hit = path_quoted
             return False
         else:
-            logger.debug("adding entry to cache; key=%s" % (redis_key) )
+            logger.debug('adding entry to cache; key=%s', redis_key)
             #self._redis.incr(self._rkey_count)
             return True
 
@@ -181,7 +181,7 @@ class Redis(NoDupe):
                 m.setReport(304, 'Not modified 1 (nodupe check)')
                 worklist.rejected.append(m)
 
-        logger.debug("items registered in duplicate suppression cache: %d" % (len(self._redis.keys(self._rkey_base + ":*"))) )
+        logger.debug('items registered in duplicate suppression cache: %d', len(self._redis.keys(self._rkey_base + ':*')))
         worklist.incoming = new_incoming
 
     def on_start(self):

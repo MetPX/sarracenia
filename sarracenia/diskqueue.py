@@ -70,7 +70,7 @@ class DiskQueue():
     """
     def __init__(self, options, name):
 
-        logger.debug(" %s __init__" % name)
+        logger.debug(' %s __init__', name)
 
         self.o = options
 
@@ -83,7 +83,7 @@ class DiskQueue():
         #                    level=getattr(logging, self.o.logLevel.upper()))
         logger.setLevel(getattr(logging, self.o.logLevel.upper()))
 
-        logger.debug('name=%s logLevel=%s' % (self.name, self.o.logLevel))
+        logger.debug('name=%s logLevel=%s', self.name, self.o.logLevel)
 
         # initialize all retry path if retry_path is provided
         self.working_dir = os.path.dirname(self.o.pid_filename)
@@ -140,8 +140,7 @@ class DiskQueue():
             self.new_fp = open(self.new_path, 'a')
 
         for message in message_list:
-            logger.debug("DEBUG add to new file %s %s" %
-                         (os.path.basename(self.new_path), message))
+            logger.debug('DEBUG add to new file %s %s', os.path.basename(self.new_path), message)
             self.new_fp.write(self.msgToJSON(message))
             self.msg_count_new += 1
         self.new_fp.flush()
@@ -160,17 +159,18 @@ class DiskQueue():
         """
         try:
             self.housekeeping_fp.close()
-        except:
-            pass
+        except Exception as err:
+            logger.debug("housekeeping_fp close: %s" % err)
         try:
-            os.fsync(self.new_fp)
+            self.new_fp.flush()
+            os.fsync(self.new_fp.fileno())
             self.new_fp.close()
-        except:
-            pass
+        except Exception as err:
+            logger.debug("new_fp close: %s" % err)
         try:
             self.queue_fp.close()
-        except:
-            pass
+        except Exception as err:
+            logger.debug("queue_fp close: %s" % err)
         self.housekeeping_fp = None
         self.new_fp = None
         self.queue_fp = None
@@ -195,7 +195,7 @@ class DiskQueue():
                 for line in f:
                     if "{" in line:
                         count +=1
-            logger.debug(f"counted {count} msgs in {file_path}")
+            logger.debug('counted %s msgs in %s', count, file_path)
 
         return count
 
@@ -248,7 +248,7 @@ class DiskQueue():
             if not message:
                 try:
                     os.unlink(self.queue_file)
-                except:
+                except Exception:
                     pass
                 self.queue_fp = None
                 self.msg_count = 0
@@ -272,7 +272,7 @@ class DiskQueue():
         if self.msg_count == 0:
             try:
                 os.unlink(self.queue_file)
-            except:
+            except Exception:
                 pass
             self.queue_fp = None
 
@@ -347,14 +347,14 @@ class DiskQueue():
         """
         if fp is None:
             if not os.path.isfile(path): return None, None
-            logger.debug("DEBUG %s open read" % path)
+            logger.debug('DEBUG %s open read', path)
             fp = open(path, 'r')
 
         line = fp.readline()
         if not line:
             try:
                 fp.close()
-            except:
+            except Exception:
                 pass
             return None, None
 
@@ -378,7 +378,7 @@ class DiskQueue():
            remove .new
            rename housekeeping to queue for next period.
         """
-        logger.debug(f"{self.name} on_housekeeping, {self.msg_count} msgs in queue file, {self.msg_count_new} in new file")
+        logger.debug('%s on_housekeeping, %s msgs in queue file, %s in new file', self.name, self.msg_count, self.msg_count_new)
 
         # finish retry before reshuffling all retries entries
 
@@ -396,7 +396,7 @@ class DiskQueue():
             self.close()
             try:
                 os.unlink(self.housekeeping_path)
-            except:
+            except Exception:
                 pass
             fp = open(self.housekeeping_path, 'w')
             fp.close()
@@ -407,8 +407,7 @@ class DiskQueue():
             fp = self.queue_fp
             self.housekeeping_fp = open(self.housekeeping_path, 'a')
 
-            logger.debug("has queue %s" %
-                         os.path.isfile(self.queue_file))
+            logger.debug('has queue %s', os.path.isfile(self.queue_file))
 
             # remaining of retry to housekeeping
             while True:
@@ -421,7 +420,7 @@ class DiskQueue():
 
             try:
                 fp.close()
-            except:
+            except Exception:
                 pass
 
             i = 0
@@ -433,7 +432,7 @@ class DiskQueue():
                 fp, message = self.msg_get_from_file(fp, self.new_path)
                 if not message: break
                 i = i + 1
-                logger.debug("DEBUG message %s" % message)
+                logger.debug('DEBUG message %s', message)
                 if not self.needs_requeuing(message): continue
 
                 #logger.debug("MG DEBUG flush retry to state %s" % message)
@@ -441,11 +440,10 @@ class DiskQueue():
                 N = N + 1
             try:
                 fp.close()
-            except:
+            except Exception:
                 pass
 
-            logger.debug("retrieved %d from the %d retry" %
-                         (N - j, i))
+            logger.debug('retrieved %d from the %d retry', N - j, i)
 
             self.housekeeping_fp.close()
 
@@ -457,10 +455,10 @@ class DiskQueue():
 
         self.msg_count = N
         if N == 0:
-            logger.debug("%s No retry in list" % self.name)
+            logger.debug('%s No retry in list', self.name)
             try:
                 os.unlink(self.housekeeping_path)
-            except:
+            except Exception:
                 pass
 
         # housekeeping file becomes new retry
@@ -469,15 +467,15 @@ class DiskQueue():
             logger.info("%s Number of messages in retry list %d" % (self.name, N))
             try:
                 os.rename(self.housekeeping_path, self.queue_file)
-            except:
+            except Exception:
                 logger.error("Something went wrong with rename")
 
         # cleanup
         self.msg_count_new = 0
         try:
             os.unlink(self.new_path)
-        except:
+        except Exception:
             pass
 
         elapse = sarracenia.nowflt() - self.now
-        logger.debug("on_housekeeping elapse %f" % elapse)
+        logger.debug('on_housekeeping elapse %f', elapse)

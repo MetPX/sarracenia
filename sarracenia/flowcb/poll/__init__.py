@@ -45,7 +45,7 @@ def file_size_fix(str_value) -> int:
         isize = int(fsize)
 
     except:
-        logger.debug("bad size %s" % str_value)
+        logger.debug('bad size %s', str_value)
         return -1
 
     return isize
@@ -178,7 +178,7 @@ class Poll(FlowCB):
            the tabular format is provided by a vanilla apache2 on a debian derived system.
 
         """
-        logger.debug( f"handling_data {data} column={self.table_column}" )
+        logger.debug('handling_data %s column=%s', data, self.table_column)
 
         if self.tabular_format:
             if self.table_column == 2:
@@ -206,7 +206,7 @@ class Poll(FlowCB):
 
         t=None
         for f in [  '%d-%b-%Y %H:%M', '%Y-%m-%d %H:%M' ]:
-            logger.debug( f" try parsing +{sdate}+ using {f}" )
+            logger.debug(' try parsing +%s+ using %s', sdate, f)
             try:
                 t = time.strptime(sdate, f)
                 break
@@ -402,7 +402,7 @@ class Poll(FlowCB):
             # apply selection on the list
 
             for f in ls:
-                logger.debug( f"line to parse: {f}" )
+                logger.debug('line to parse: %s', f)
                 matched = False
                 line = ls[f]
 
@@ -427,7 +427,7 @@ class Poll(FlowCB):
         msgs = []
 
         # cd to that directory
-        logger.debug(" cd %s" % pdir)
+        logger.debug(' cd %s', pdir)
         ok = self.cd(pdir)
         if not ok: return []
 
@@ -439,7 +439,7 @@ class Poll(FlowCB):
         filelst = file_dict.keys()
         desclst = file_dict
 
-        logger.debug("poll_directory: new files found %d" % len(filelst))
+        logger.debug('poll_directory: new files found %d', len(filelst))
 
         # post poll list
 
@@ -491,7 +491,7 @@ class Poll(FlowCB):
 
         post_relPath = destDir + '/' + remote_file
 
-        logger.debug('desc: type: %s, value: %s' % (type(desc), desc))
+        logger.debug('desc: type: %s, value: %s', type(desc), desc)
 
         if type(desc) == str:
             line = desc.split()
@@ -582,7 +582,7 @@ class Poll(FlowCB):
 
             if currentDir == '': currentDir = destDir
             msgs.extend(self.poll_directory(currentDir))
-            logger.debug('poll_directory returned: %s' % len(msgs))
+            logger.debug('poll_directory returned: %s', len(msgs))
 
         # close connection
 

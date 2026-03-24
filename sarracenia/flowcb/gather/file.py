@@ -69,7 +69,7 @@ class File(FlowCB):
     also should likely switch from listdir to scandir
     """
     def on_add(self, event, src, dst):
-        logger.debug("%s %s %s" % ( event, src, dst ) )
+        logger.debug('%s %s %s', event, src, dst)
         self.new_events['%s %s' % (src, dst)] = (event, src, dst)
 
     def on_created(self, event):
@@ -104,7 +104,7 @@ class File(FlowCB):
         if not features['watch']['present']:
             logger.critical("watchdog module must be installed to watch directories")
             
-        logger.debug("%s used to be overwrite_defaults" % self.o.component)
+        logger.debug('%s used to be overwrite_defaults', self.o.component)
 
         self.obs_watched = []
         self.watch_handler = None
@@ -211,7 +211,7 @@ class File(FlowCB):
 
         msg = sarracenia.Message.fromFileInfo(path, self.o, lstat)
 
-        logger.debug( f"initial msg:{msg}" )
+        logger.debug('initial msg:%s', msg)
         # check the value of blockSize
 
         fsiz = lstat.st_size
@@ -240,7 +240,7 @@ class File(FlowCB):
             'number': -1,
             'manifest': {}
         }
-        logger.debug( f" blocks:{blocks} " )
+        logger.debug(' blocks:%s ', blocks)
 
         for current_block in blocks:
 
@@ -472,15 +472,15 @@ class File(FlowCB):
             age = time.time() - lstat.st_mtime
 
             if age < self.o.fileAgeMin:
-                logger.debug("%d vs (fileAgeMin setting) %d seconds. Too New! %s" % (age,self.o.fileAgeMin,src) )
+                logger.debug('%d vs (fileAgeMin setting) %d seconds. Too New! %s', age, self.o.fileAgeMin, src)
                 return (False, [])
 
             if self.o.fileAgeMax > 0 and age > self.o.fileAgeMax:
-                logger.debug("%d vs (fileAgeMax setting) %d seconds. Too Old! %s" % (age,self.o.fileAgeMax,src) )
+                logger.debug('%d vs (fileAgeMax setting) %d seconds. Too Old! %s', age, self.o.fileAgeMax, src)
                 return (True, [])
         else:
-            logger.debug(f"lstat or st_mtime problem? lstat={lstat}")
-            logger.debug(f"st_mtime={lstat.st_mtime}")
+            logger.debug('lstat or st_mtime problem? lstat=%s', lstat)
+            logger.debug('st_mtime=%s', lstat.st_mtime)
 
         # post it
 
@@ -551,7 +551,7 @@ class File(FlowCB):
         """
           walk directory tree returning 1 message for each file in it.
         """
-        logger.debug("walk %s" % src)
+        logger.debug('walk %s', src)
 
         # how to proceed with symlink
 
@@ -645,7 +645,7 @@ class File(FlowCB):
         return True
 
     def watch_dir(self, sld):
-        logger.debug("watch_dir %s" % sld)
+        logger.debug('watch_dir %s', sld)
 
         if not features['watch']['present']:
             logger.critical("sr_watch needs the python watchdog library to be installed.")
@@ -726,7 +726,7 @@ class File(FlowCB):
             if d[0] != os.sep: d = cwd + os.sep + d
 
             d=self.o.variableExpansion(d)
-            logger.debug("postpath = %s" % d)
+            logger.debug('postpath = %s', d)
 
             if self.o.sleep > 0:
                 if features['watch']['present']:
@@ -736,7 +736,7 @@ class File(FlowCB):
                 continue
 
             if os.path.isdir(d):
-                logger.debug("postpath = %s" % d)
+                logger.debug('postpath = %s', d)
                 messages.extend(self.walk(d))
             elif os.path.islink(d):
                 messages.extend(self.post1file(d, None))

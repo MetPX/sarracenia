@@ -356,7 +356,7 @@ class Moth():
 
         logging.basicConfig(format=self.o['logFormat'],
                             level=getattr(logging, self.o['logLevel'].upper()))
-        logger.debug( f" Maximum interval exponential back off of connecting to broker: {eboIntervalMaximum} " )
+        logger.debug(' Maximum interval exponential back off of connecting to broker: %s ', eboIntervalMaximum)
 
     def ack(self, message: sarracenia.Message ) -> bool:
         """

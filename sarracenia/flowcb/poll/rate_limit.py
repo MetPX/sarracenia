@@ -64,7 +64,7 @@ class Rate_limit(sarracenia.flowcb.poll.Poll):
         self.o.add_option('pollLsdirRateMax', kind='float', default_value=0.0)
 
         if self.o.pollLsdirRateMax != 0.0:
-            logger.debug(f"Setting pollRateLimit_count and pollRateLimit_period using pollLsdirRateMax")
+            logger.debug('Setting pollRateLimit_count and pollRateLimit_period using pollLsdirRateMax')
             if self.o.pollRateLimit_count != 0 or self.o.pollRateLimit_period != 0:
                 logger.warning("Using pollLsdirRateMax, ignoring pollRateLimit_count and pollRateLimit_period")
             self.o.pollRateLimit_count = 1
@@ -87,7 +87,7 @@ class Rate_limit(sarracenia.flowcb.poll.Poll):
     
     def poll_directory(self, pdir):
         if self.o.pollRateLimit_count and self._lsdir_count >= self.o.pollRateLimit_count:
-            logger.debug(f"{self._lsdir_count} requests have been made since {self._last_limit}")
+            logger.debug('%s requests have been made since %s', self._lsdir_count, self._last_limit)
             time_to_sleep = int(self.o.pollRateLimit_period - (datetime.datetime.utcnow() - self._last_limit).seconds)
             if time_to_sleep > 0:
                 logger.info(f"poll rate limit reached, need to sleep for {time_to_sleep} seconds")
@@ -97,7 +97,7 @@ class Rate_limit(sarracenia.flowcb.poll.Poll):
                     time.sleep(min(5, time_to_sleep))
                     time_to_sleep -= 5
             else:
-                logger.debug(f"not sleeping, time_to_sleep={time_to_sleep} <= 0")
+                logger.debug('not sleeping, time_to_sleep=%s <= 0', time_to_sleep)
             self._lsdir_count = 0
             self._last_limit = datetime.datetime.utcnow()
         
