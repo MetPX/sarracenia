@@ -688,7 +688,8 @@ class AMQP(Moth):
                 return False
 
         # Shallow copy: only top-level keys are deleted (_deleteOnPost), nested dicts are read-only
-        body = dict(message)
+        # copy.copy(message) produces a sarracenia.Message object
+        body = copy.copy(message)
 
         if 'format' in self.o:
             version=self.o['format']
