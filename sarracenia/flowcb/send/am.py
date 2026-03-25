@@ -124,7 +124,7 @@ class Am(FlowCB):
         if self.host == 'None':
             raise Exception("No remote host specified.")
 
-        logger.info("Trying to connect to remote host %s and port %d" % (str(self.host) , self.port))
+        logger.info( f"Trying to connect to remote host {str(self.host)} and port {self.port:d}" )
 
         backoff_range = 1
         while True:
@@ -140,7 +140,7 @@ class Am(FlowCB):
                 
             except socket.error as e:
                 logger.debug('Error msg: %s', str(e.args))
-                logger.error("Trying to establish connection in %d seconds" % (2**backoff_range))
+                logger.error("Trying to establish connection in {(2**backoff_range):d} seconds " )
                 self.s.close()
                 time.sleep(2**backoff_range)
                 if backoff_range < 6:

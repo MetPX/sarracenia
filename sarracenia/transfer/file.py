@@ -276,8 +276,7 @@ def file_process(options):
         ok = file_insert(options, msg)
         if options.delete:
             if msg.partflg.startswith('i'):
-                logger.info("delete unimplemented for in-place part files %s" %
-                            (msg['relPath']))
+                logger.info( f"delete unimplemented for in-place part files {msg['relPath']}" )
             else:
                 try:
                     os.unlink(p)

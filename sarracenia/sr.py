@@ -523,7 +523,7 @@ class sr_GlobalState:
                                         with p.open() as f:
                                             t = f.read().strip()
                                 except FileNotFoundError:
-                                    logger.error("state file %s disappeared (race condition, see #1571), skipping", pathname)
+                                    logger.error( f"state file {pathname} disappeared (race condition, see #1571), skipping" )
                                     continue
                                 #print( 'read pathname:%s len: %d contents:%s' % ( pathname, len(t), t[0:10] ) )
                                 if len(t) == 0:
@@ -652,7 +652,7 @@ class sr_GlobalState:
                                             with p.open() as f:
                                                 t = f.read().strip()
                                     except FileNotFoundError:
-                                        logger.error("pid file %s disappeared (race condition, see #1571), skipping.", filename)
+                                        logger.error( f"pid file {filename} disappeared (race condition, see #1571), skipping." )
                                         continue
                                     if t.isdigit():
                                         pid = int(t)
@@ -705,7 +705,7 @@ class sr_GlobalState:
                                         with p.open() as f:
                                             t = f.read().strip()
                                 except FileNotFoundError:
-                                    logger.error("pid file %s disappeared (race condition, see #1571), skipping cleanup", filename)
+                                    logger.error( f"pid file {filename} disappeared (race condition, see #1571), skipping cleanup" )
                                     continue
                                 if t.isdigit():
                                     pid = int(t)

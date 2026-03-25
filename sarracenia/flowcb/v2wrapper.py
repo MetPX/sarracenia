@@ -298,8 +298,7 @@ class V2Wrapper(FlowCB):
 
         if opname == 'plugin':
             if getattr(self, 'v2plugin') is None:
-                logger.error("%s plugin %s incorrect: does not set self.%s" %
-                             ('v2plugin', path, 'v2plugin'))
+                logger.error( f"v2plugin {path} incorrect: does not set self.v2plugin"  )
                 return False
 
             # pci plugin-class-instance... parent is self (a v2wrapper)
@@ -322,8 +321,7 @@ class V2Wrapper(FlowCB):
                          when + ')')
         else:
             if getattr(self, opname) is None:
-                logger.error("%s plugin %s incorrect: does not set self.%s" %
-                             (opname, path, opname))
+                logger.error( f"{opname} plugin {path} incorrect: does not set self.{opname}" )
                 return False
 
             #eval( 'self.' + opname + '_list.append(self.' + opname + ')' )

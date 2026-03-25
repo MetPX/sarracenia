@@ -242,8 +242,7 @@ class Sftp(Transfer):
             return True
 
         except:
-            logger.error("sr_sftp/connect: unable to connect to %s (user:%s)" %
-                         (self.host, self.user))
+            logger.error( f"sr_sftp/connect: unable to connect to {self.host} (user:{self.user})" )
             logger.debug('Exception details: ', exc_info=True)
 
         finally:
