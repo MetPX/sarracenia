@@ -129,7 +129,7 @@ class Am(FlowCB):
             self.s.listen(1)
             # Set timeout higher so that exponential backoff isn't triggered on startup.
             self.s.settimeout(self.timeout*100)
-            logger.info("Socket listening on host %s and port %d.", self.host, self.port)
+            logger.info( f"Socket listening on host {self.host} and port {self.port:d}." )
             logger.info("Trying to accept connection.")
         except socket.error as e:
                 logger.error(f"Bind failed. Retrying. Error message: {e.args}")
@@ -284,7 +284,7 @@ class Am(FlowCB):
 
         # except socket.error:
             # (type, value, tb) = sys.exc_info()
-            # logger.warning("Type: %s, Value: %s, [socket.recv(%d)]" % (type, value, self.limit))
+            # logger.warning( f"Type: {type:d}, Value: {value}, [socket.recv({self.limit:d})]" )
             
             
     def checkNextMsgStatus(self):

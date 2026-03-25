@@ -28,8 +28,7 @@ class PClean_F92(PClean):
         for msg in worklist.incoming:
             result = True
             ext = self.get_extension('/' + msg['relPath'])
-            logger.info("relPath=%s ext: %s in %s ?" %
-                        (msg['relPath'], ext, self.test_extension_list))
+            logger.info( f"relPath={msg['relPath']} ext: {ext} in {self.test_extension_list} ?" )
 
             if ext in self.test_extension_list:
                 f20_path = '/' + msg['relPath'].replace(

@@ -65,7 +65,8 @@ class Speedo(FlowCB):
             lag = now - msgtime
             msgpersec = self.msg_speedo_msgcount / (now - self.msg_speedo_last)
             bytespersec = self.msg_speedo_bytecount / (now - self.msg_speedo_last)
-            logger.info("speedo: %3d messages received: %5.4f msg/s, %4.2f bytes/s, lag: %4.0f s" % (self.msg_speedo_msgcount, msgpersec, bytespersec, lag))
+            logger.info( f"speedo: {self.msg_speedo_msgcount} messages received: {msgpersec:4.2f} " \
+                 f"msg/s, {bytespersec:4.2f} bytes/s, lag: {lag:4.0f}s" )
 
             # If lag is higher than max allowed, emmit a warning
             if lag > self.o.msg_speedo_maxlag:
