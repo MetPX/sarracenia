@@ -51,7 +51,7 @@ class Redis(NoDupe):
 
         self.o.add_option( 'nodupe_ttl', 'duration', 0 ) 
 
-        logger.info('time_to_live=%d, ' % (self.o.nodupe_ttl))
+        logger.info( f"time_to_live={self.o.nodupe_ttl:d}" )
 
         self.o.add_option( 'nodupe_redis_serverurl', 'str')
         self.o.add_option( 'nodupe_redis_keybase', 'str', 'sr3.nodupe.' + self.o.component + '.' + self.o.config.replace(".","_")) 
@@ -134,7 +134,8 @@ class Redis(NoDupe):
         new_count = len(self._redis.keys(self._rkey_base + ":*"))
         self.now = nowflt()
         
-        logger.info("cache size was %d items %5.2f sec ago, now saved %d entries" % (self._last_count, self.now - self._last_time, new_count))
+        logger.info( f"cache size was {self.last_count:d} items " \
+              f"{self.now - self._last_time:5.2f} sec ago, now saved {new_count:d} entries" )
 
         self._last_time = self.now
 
