@@ -53,6 +53,8 @@ class Message(FlowCB):
                         if not p.putNewMessage(m):
                             failures.append(i)
                     except Exception as e:
+                        logger.warning(f"putNewMessage crashed {e}")
+                        logger.debug("Exception details:", exc_info=True)
                         failures.append(i)
             else:
                 for p in self.posters:
