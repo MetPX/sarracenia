@@ -31,9 +31,9 @@ class PostOverride(FlowCB):
         self.o.add_option('postOverrideDel', 'list')
 
         if self.o.postOverride != None:
-            logger.info('postOverride settings: %s' % self.o.postOverride)
+            logger.info(f'postOverride settings: {self.o.postOverride}')
         if self.o.postOverrideDel != None:
-            logger.info('postOverrideDel settings: %s' % self.o.postOverrideDel)
+            logger.info(f'postOverrideDel settings: {self.o.postOverrideDel}')
 
     def after_accept(self, worklist):
         for message in worklist.incoming:

@@ -48,7 +48,7 @@ class Check(FlowCB):
         for msg in worklist.ok:
     
             local_file = os.path.join( msg['new_dir'], msg['new_file'] )
-            logger.info("start local file %s " % local_file )
+            logger.info(f"start local file {local_file} " )
 
             if 'fileOp' in msg:
                 logger.warning("ignore unordinary files fileOps")
@@ -58,8 +58,8 @@ class Check(FlowCB):
                     os.unlink(local_file)
                 continue
 
-            logger.info("identity     %s " % msg['identity'] )
-            logger.info("filesize   %s " % msg['size'])
+            logger.info(f"identity     {msg['identity']} " )
+            logger.info(f"filesize   {msg['size']} ")
     
             lstat = os.stat(local_file)
             fsiz = lstat[stat.ST_SIZE]

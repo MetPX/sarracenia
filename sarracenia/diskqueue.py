@@ -160,17 +160,17 @@ class DiskQueue():
         try:
             self.housekeeping_fp.close()
         except Exception as err:
-            logger.debug("housekeeping_fp close: %s" % err)
+            logger.debug(f"housekeeping_fp close: {err}")
         try:
             self.new_fp.flush()
             os.fsync(self.new_fp.fileno())
             self.new_fp.close()
         except Exception as err:
-            logger.debug("new_fp close: %s" % err)
+            logger.debug(f"new_fp close: {err}")
         try:
             self.queue_fp.close()
         except Exception as err:
-            logger.debug("queue_fp close: %s" % err)
+            logger.debug(f"queue_fp close: {err}")
         self.housekeeping_fp = None
         self.new_fp = None
         self.queue_fp = None
@@ -215,7 +215,7 @@ class DiskQueue():
         try:
             msg = jsonpickle.decode(line)
         except ValueError:
-            logger.error("corrupted line in retry file: %s " % line)
+            logger.error(f"corrupted line in retry file: {line} ")
             logger.debug("Error information: ", exc_info=True)
             return None
 
@@ -335,8 +335,7 @@ class DiskQueue():
 
         # log is info... it is good to log a retry message that expires
         if self.is_expired(message):
-            logger.info("discarding expired message in (%s): %s" %
-                        (self.name, message))
+            logger.info(f"discarding expired message in ({self.name}): {message}")
             return False
 
         return True

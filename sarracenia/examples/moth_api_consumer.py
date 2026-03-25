@@ -58,7 +58,7 @@ options['subscription_index'] = 0
 
 #options['logLevel'] = 'debug'
 
-print('options: %s' % options)
+print(f'options: {options}')
 
 h = sarracenia.moth.Moth.subFactory(options)
 
@@ -66,7 +66,7 @@ count = 0
 while count < 5:
     m = h.getNewMessage()
     if m is not None:
-        print("message: %s" % m)
+        print(f"message: {m}")
         #content = m.getContent()
         #print("corresponding file: %s" % content)
         h.ack(m)

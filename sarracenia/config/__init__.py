@@ -497,7 +497,7 @@ def wget_config(urlstr, path, remote_config_url=False):
                 last_mod_remote = time.mktime(ts)
                 last_mod_local = os.stat(path).st_mtime
                 if last_mod_remote <= last_mod_local:
-                    logger.info("file %s is up to date (%s)" % (path, urlstr))
+                    logger.info(f"file {path} is up to date ({urlstr})")
                     return True
             except:
                 logger.error(
@@ -514,7 +514,7 @@ def wget_config(urlstr, path, remote_config_url=False):
         # (and damagable for plugins)
 
         if remote_config_url:
-            fp.write(bytes("remote_config_url %s\n" % urlstr, 'utf-8'))
+            fp.write(bytes(f"remote_config_url {urlstr}\n", 'utf-8'))
         while True:
             chunk = resp.read(8192)
             if not chunk: break
@@ -527,36 +527,33 @@ def wget_config(urlstr, path, remote_config_url=False):
             pass
         os.rename(path + '.downloading', path)
 
-        logger.info("file %s downloaded (%s)" % (path, urlstr))
+        logger.info(f"file {path} downloaded ({urlstr})")
 
         return True
 
     except urllib.error.HTTPError as e:
         if os.path.isfile(path):
-            logger.warning('file %s could not be processed1 (%s)' %
-                           (path, urlstr))
+            logger.warning(f'file {path} could not be processed1 ({urlstr})')
             logger.warning('resume with the one on the server')
         else:
-            logger.error('Download failed 0: %s' % urlstr)
+            logger.error(f'Download failed 0: {urlstr}')
             logger.error('Server couldn\'t fulfill the request')
-            logger.error('Error code: %s, %s' % (e.code, e.reason))
+            logger.error(f'Error code: {e.code}, {e.reason}')
 
     except urllib.error.URLError as e:
         if os.path.isfile(path):
-            logger.warning('file %s could not be processed2 (%s)' %
-                           (path, urlstr))
+            logger.warning(f'file {path} could not be processed2 ({urlstr})')
             logger.warning('resume with the one on the server')
         else:
-            logger.error('Download failed 1: %s' % urlstr)
-            logger.error('Failed to reach server. Reason: %s' % e.reason)
+            logger.error(f'Download failed 1: {urlstr}')
+            logger.error(f'Failed to reach server. Reason: {e.reason}')
 
     except Exception as e:
         if os.path.isfile(path):
-            logger.warning('file %s could not be processed3 (%s) %s' %
-                           (path, urlstr, e.reason))
+            logger.warning(f'file {path} could not be processed3 ({urlstr}) {e.reason}')
             logger.warning('resume with the one on the server')
         else:
-            logger.error('Download failed 2: %s %s' % (urlstr, e.reason))
+            logger.error(f'Download failed 2: {urlstr} {e.reason}')
             logger.debug('Exception details: ', exc_info=True)
 
     try:
@@ -565,7 +562,7 @@ def wget_config(urlstr, path, remote_config_url=False):
         pass
 
     if os.path.isfile(path):
-        logger.warning("continue using existing %s" % path)
+        logger.warning(f"continue using existing {path}")
 
     return False
 
@@ -643,9 +640,9 @@ def config_path(subdir, config, mandatory=True, ctype='conf'):
 
     # return bad file ...
     if mandatory:
-        if subdir == 'plugins': logger.error("script not found %s" % config)
+        if subdir == 'plugins': logger.error(f"script not found {config}")
         elif config_name != 'plugins':
-            logger.error("file not found %s" % config)
+            logger.error(f"file not found {config}")
 
     return False, config
 
@@ -936,7 +933,7 @@ class Config:
         self.queueName = "q_${BROKER_USER}.${COMPONENT}.${CONFIG}.${QUEUESHARE}"
         self.randomize = False
         self.rename = None
-        self.randid = "%04x" % randint(0, 65536)
+        self.randid = f"{randint(0, 65536):04x}"
         self.statehost = False
         self.settings = {}
         self.strip = 0
@@ -1401,7 +1398,7 @@ class Config:
        """
         if not entryPoint in Config.v2entry_points:
             logging.error(
-                "undefined entry point: {} skipped".format(entryPoint))
+                f"undefined entry point: {entryPoint} skipped")
             return
 
         if not entryPoint in self.v2plugins:
@@ -2059,7 +2056,7 @@ class Config:
 
         if self.post_broker is not None and self.post_broker.url is not None:
             if not hasattr(self, 'post_exchange') or self.post_exchange is None:
-                self.post_exchange = 'xs_%s' % self.post_broker.url.username
+                self.post_exchange = f'xs_{self.post_broker.url.username}'
 
             post_broker_isList = hasattr(self,'post_exchange') and type(self.post_exchange) is list
 
@@ -2574,7 +2571,7 @@ class Config:
         """
 
         parser=argparse.ArgumentParser( \
-             description='version: %s\nSarracenia flexible tree copy ( https://MetPX.github.io/sarracenia ) ' % sarracenia.__version__ ,\
+             description=f'version: {sarracenia.__version__}\nSarracenia flexible tree copy ( https://MetPX.github.io/sarracenia ) ' ,\
              formatter_class=argparse.ArgumentDefaultsHelpFormatter )
 
         if sys.version_info[0] >= 3 and sys.version_info[1] < 8:
@@ -2760,7 +2757,7 @@ class Config:
             '--version',
             '-v',
             action='version',
-            version='%s' % sarracenia.__version__,
+            version=f'{sarracenia.__version__}',
             help=
             'server-side filtering: MQTT subtopic, wilcards # to match rest, + to match one topic'
         )
@@ -2883,7 +2880,7 @@ def one_config(component, config, action, isPost=False, hostDir=None):
     if os.path.exists(fname):
          cfg.parse_file(fname,component)
     else:
-         logger.error('config %s not found' % fname )
+         logger.error(f'config {fname} not found' )
          return None
 
     os.chdir(store_pwd)
@@ -2944,7 +2941,7 @@ def cfglogs(cfg_preparse, component, config, logLevel, child_inst):
             except FileExistsError:
                 dir_not_there = False
             except Exception as ex:
-                logging.error( "makedirs {} failed err={}".format(os.path.dirname(metricsfilename),ex))
+                logging.error( f"makedirs {os.path.dirname(metricsfilename)} failed err={ex}")
                 logging.debug("Exception details:", exc_info=True)
                 time.sleep(0.1)
 
@@ -2960,7 +2957,7 @@ def cfglogs(cfg_preparse, component, config, logLevel, child_inst):
             except FileExistsError:
                 dir_not_there = False
             except Exception as ex:
-                logging.error( "makedirs {} failed err={}".format(os.path.dirname(logfilename),ex))
+                logging.error( f"makedirs {os.path.dirname(logfilename)} failed err={ex}")
                 logging.debug("Exception details:", exc_info=True)
                 time.sleep(0.1)
 

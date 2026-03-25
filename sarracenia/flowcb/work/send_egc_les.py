@@ -188,8 +188,8 @@ class Send_egc_les(FlowCB):
                     "file_send_egc_les: ({0} bytes) file {1} delivered to: {2}, took {3}s"
                     .format(nbBytes, os.path.basename(filepath), setting,
                             end - start))
-                logger.info("file_send_egc_les: egc used: %s" % egc)
-                logger.info("file_send_egc_les: return message: %s" % info)
+                logger.info(f"file_send_egc_les: egc used: {egc}")
+                logger.info(f"file_send_egc_les: return message: {info}")
     
                 if 'Storing' in info and 'Submitted' in info and 'Reference' in info:
                     os.unlink(filepath)

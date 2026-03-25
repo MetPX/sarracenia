@@ -29,7 +29,7 @@ class Publisher(dict):
         if hasattr(options,'post_exchange'):
             exchange_root = options.post_exchange
         else:
-            exchange_root = 'xs_%s' % options.post_broker.url.username
+            exchange_root = f'xs_{options.post_broker.url.username}'
 
         already_a_list = hasattr(options,'post_exchange') and type(options.post_exchange) == list
         #logger.debug( f" {exchange_root=}  {already_a_list=} " )
@@ -38,7 +38,7 @@ class Publisher(dict):
             self['exchange'] = options.post_exchange
         else:
            if hasattr(options, 'post_exchangeSuffix'):
-               exchange_root += '_%s' % options.post_exchangeSuffix
+               exchange_root += f'_{options.post_exchangeSuffix}'
 
            if hasattr(options, 'post_exchangeSplit') and options.post_exchangeSplit > 1:
                l = []

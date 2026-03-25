@@ -55,7 +55,7 @@ class AMQPConsumer(AMQP):
 
         # control log level in config file:
         # set sarracenia.moth.amqpconsumer.AMQPConsumer.logLevel debug
-        me = "%s.%s" % (__class__.__module__, __class__.__name__)
+        me = f"{__class__.__module__}.{__class__.__name__}"
         if ('settings' in self.o) and (me in self.o['settings']):
             for s in self.o['settings'][me]:
                 self.o[s] = self.o['settings'][me][s]
@@ -128,7 +128,7 @@ class AMQPConsumer(AMQP):
                 try: 
                     msg = self._msgRawToDict(raw_msg)
                 except Exception as err:
-                    logger.error("message decode failed. raw message: %s" % raw_msg.body )
+                    logger.error(f"message decode failed. raw message: {raw_msg.body}" )
                     logger.debug('Exception details: ', exc_info=True)
                     msg = None
                 if msg is None:
@@ -144,7 +144,7 @@ class AMQPConsumer(AMQP):
         except Exception as err:
             subscription = self.o['subscriptions'][self.o['subscription_index']]
             sub_queue = subscription['queue']
-            logger.warning("failed %s: %s" % (sub_queue['name'], err))
+            logger.warning(f"failed {sub_queue['name']}: {err}")
             logger.debug('Exception details: ', exc_info=True)
 
         if not self.o['message_strategy']['stubborn']:

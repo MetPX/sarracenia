@@ -69,7 +69,7 @@ class Speedo(FlowCB):
 
             # If lag is higher than max allowed, emmit a warning
             if lag > self.o.msg_speedo_maxlag:
-                logger.warning("speedo: Excessive lag! Messages posted %4.0f s ago" % lag)
+                logger.warning(f"speedo: Excessive lag! Messages posted {lag:4.0f} s ago")
 
             self.msg_speedo_last = now
             self.msg_speedo_msgcount = 0

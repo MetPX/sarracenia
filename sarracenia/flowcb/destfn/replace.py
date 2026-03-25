@@ -37,7 +37,7 @@ class Replace(FlowCB):
           for r in self.o.destfn_replace:
                (before,after) = r.split(',')
                new_name = new_name.replace( before, after, 1)
-          logger.info('from: %s,  to: %s' % (old_name, new_name ))
+          logger.info(f'from: {old_name},  to: {new_name}')
  
           return new_name
 

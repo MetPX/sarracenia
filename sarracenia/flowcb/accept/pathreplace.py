@@ -50,7 +50,7 @@ class Pathreplace(FlowCB):
                 (b, a) = p.split(",")
 
                 # not sure if replacing in the main path is needed... maybe just in fileOp fields?
-                logger.info("replace: %s by %s in: %s" % (b, a, self.o.pathReplaceFields) )
+                logger.info(f"replace: {b} by {a} in: {self.o.pathReplaceFields}" )
 
                 if 'dir' in self.o.pathReplaceFields:
                     new_new_dir = msg['new_dir'].replace(b, a, 1)
