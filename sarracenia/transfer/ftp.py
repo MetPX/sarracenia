@@ -133,7 +133,7 @@ class Ftp(Transfer):
             # chmod
             alarm_set(self.o.timeout)
             try:
-                self.ftp.voidcmd('SITE CHMOD ' + "{0:o}".format(self.o.permDirDefault) + ' ' + d)
+                self.ftp.voidcmd('SITE CHMOD ' + f"{self.o.permDirDefault:o}" + ' ' + d)
             finally:
                 alarm_cancel()
 
@@ -175,7 +175,7 @@ class Ftp(Transfer):
         logger.debug('sr_ftp chmod %s %s', str(perm), path)
         alarm_set(self.o.timeout)
         try:
-            self.ftp.voidcmd('SITE CHMOD ' + "{0:o}".format(perm) + ' ' + path)
+            self.ftp.voidcmd('SITE CHMOD ' + f"{perm:o}" + ' ' + path)
         finally:
             alarm_cancel()
 
@@ -264,8 +264,7 @@ class Ftp(Transfer):
             self.ftp = ftp
 
         except:
-            logger.error("Unable to connect to %s (user:%s)" %
-                         (self.host, self.user))
+            logger.error(f"Unable to connect to {self.host} (user:{self.user})")
             logger.debug('Exception details: ', exc_info=True)
 
         alarm_cancel()
@@ -294,8 +293,7 @@ class Ftp(Transfer):
 
         except:
             logger.error(
-                "sr_ftp/credentials: unable to get credentials for %s" %
-                self.sendTo)
+                f"sr_ftp/credentials: unable to get credentials for {self.sendTo}")
             logger.debug('Exception details: ', exc_info=True)
 
         return False
@@ -359,7 +357,7 @@ class Ftp(Transfer):
         cmd = self.o.accelFtpgetCommand.replace('%s', arg1)
         cmd = cmd.replace('%d', arg2).split()
 
-        logger.info("accel_ftp:  %s" % ' '.join(cmd))
+        logger.info(f"accel_ftp:  {' '.join(cmd)}")
         p = subprocess.Popen(cmd)
         p.wait()
         if p.returncode != 0:
@@ -434,7 +432,7 @@ class Ftp(Transfer):
         alarm_set(self.o.timeout)
         try:
             self.ftp.voidcmd('SITE CHMOD ' +
-                         "{0:o}".format(self.o.permDirDefault) + ' ' +
+                         f"{self.o.permDirDefault:o}" + ' ' +
                          remote_dir)
         finally:
             alarm_cancel()
@@ -482,7 +480,7 @@ class Ftp(Transfer):
         cmd = self.o.accelFtpputCommand.replace('%s', arg1)
         cmd = cmd.replace('%d', arg2).split()
 
-        logger.info("accel_ftp:  %s" % ' '.join(cmd))
+        logger.info(f"accel_ftp:  {' '.join(cmd)}")
         p = subprocess.Popen(cmd)
         p.wait()
         if p.returncode != 0:

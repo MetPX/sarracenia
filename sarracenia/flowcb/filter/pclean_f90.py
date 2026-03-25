@@ -31,8 +31,7 @@ class PClean_F90(PClean):
     """
     def after_accept(self, worklist):
 
-        logger.info("start len(worklist.incoming) = %d" %
-                    len(worklist.incoming))
+        logger.info(f"start len(worklist.incoming) = {len(worklist.incoming)}")
 
         outgoing = []
 
@@ -40,22 +39,22 @@ class PClean_F90(PClean):
 
             result = True
             f20_path = '/' + msg['relPath'].replace(
-                "{}/".format(self.all_fxx_dirs[1]), self.all_fxx_dirs[0])
+                f"{self.all_fxx_dirs[1]}/", self.all_fxx_dirs[0])
             path_dict = self.build_path_dict(self.all_fxx_dirs[2:],
                                              '/' + msg['relPath'])
             ext = self.get_extension('/' + msg['relPath'])
-            logger.info('looking at: %s' % msg['relPath'])
-            logger.info('path_dict: %s' % path_dict)
+            logger.info(f"looking at: {msg['relPath']}")
+            logger.info(f'path_dict: {path_dict}')
 
             for fxx_dir, path in path_dict.items():
                 # f90 test
-                logger.info('for looping: %s' % path)
+                logger.info(f'for looping: {path}')
                 if not (os.path.isfile(path) or os.path.islink(path)):
                     # propagation check to all path except f20 which is the origin
                     err_msg = "file not in folder {} with {:.3f}s elapsed"
                     lag = nowflt() - timestr2flt(msg['pubTime'])
                     logger.error(err_msg.format(fxx_dir, lag))
-                    logger.debug("file missing={}".format(path))
+                    logger.debug(f"file missing={path}")
                     result = False
                     worklist.failed.append(msg)
                     break
@@ -63,8 +62,7 @@ class PClean_F90(PClean):
                         f20_path, path):
                     # file differ check: f20 against others
                     logger.error(
-                        "skipping, file differs from f20 file: {}".format(
-                            path))
+                        f"skipping, file differs from f20 file: {path}")
                     with open(f20_path, 'r', encoding='iso-8859-1') as f:
                         f20_lines = f.readlines()
                     with open(path, 'r', encoding='iso-8859-1') as f:
@@ -72,12 +70,12 @@ class PClean_F90(PClean):
                     diff = Differ().compare(f20_lines, f_lines)
                     diff = [d for d in diff
                             if d[0] != ' ']  # Diffs without context
-                    logger.info("a: len(%s) = %d" % (f20_path, len(f20_lines)))
-                    logger.info("b: len(%s) = %d" % (path, len(f_lines)))
+                    logger.info(f"a: len({f20_path}) = {len(f20_lines)}")
+                    logger.info(f"b: len({path}) = {len(f_lines)}")
                     if len(f20_lines) > 10 or len(f_lines) > 10:
                         logger.info(" long diff omitted ")
                     else:
-                        logger.info("diffs found:\n{}".format("".join(diff)))
+                        logger.info(f"diffs found:\n{''.join(diff)}")
 
             if not result:
                 logger.info('queued for retry because propagation not done yet.')
@@ -97,25 +95,24 @@ class PClean_F90(PClean):
                 try:
                     if test_extension == '.slink':
                         os.symlink(src, dest)
-                        logger.info('symlinked %s %s' % (src, dest))
+                        logger.info(f'symlinked {src} {dest}')
                     elif test_extension == '.hlink':
                         os.link(src, dest)
-                        logger.info('hlinked %s %s' % (src, dest))
+                        logger.info(f'hlinked {src} {dest}')
                     elif test_extension == '.moved':
                         os.rename(src, dest)
-                        logger.info('moved %s %s' % (src, dest))
+                        logger.info(f'moved {src} {dest}')
                     else:
-                        logger.error("test '{}' is not supported".format(
-                            test_extension))
+                        logger.error(f"test '{test_extension}' is not supported")
                 except FileNotFoundError as err:
                     # src is not there
-                    logger.error("test failed: {}".format(err))
+                    logger.error(f"test failed: {err}")
                     logger.debug("Exception details:", exc_info=True)
                     result = False
                 except FileExistsError as err:
                     # dest is already there
                     logger.error(
-                        'skipping, found a moving target {}'.format(err))
+                        f'skipping, found a moving target {err}')
                     logger.debug("Exception details:", exc_info=True)
                     result = False
             else:
@@ -131,5 +128,5 @@ class PClean_F90(PClean):
                 worklist.rejected.append(msg)
 
         worklist.incoming = outgoing
-        logger.info("end len(worklist.incoming) = %d" % len(worklist.incoming))
-        logger.info("end len(worklist.rejected) = %d" % len(worklist.rejected))
+        logger.info(f"end len(worklist.incoming) = {len(worklist.incoming)}")
+        logger.info(f"end len(worklist.rejected) = {len(worklist.rejected)}")

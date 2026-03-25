@@ -84,7 +84,7 @@ class File(Transfer):
 
     # chmod
     def chmod(self, perm, path):
-        logger.debug('sr_file chmod %s %s', '{0:o}'.format(perm), path)
+        logger.debug('sr_file chmod %s %s', f'{perm:o}', path)
         os.chmod(path, perm)
 
     # close
@@ -121,7 +121,7 @@ class File(Transfer):
         logger.debug('get %s %s (cwd: %s) %d', remote_path, local_file, os.getcwd(), local_offset)
 
         if not os.path.exists(remote_path):
-            logger.warning("file to read not found %s" % (remote_path))
+            logger.warning(f"file to read not found {remote_path}")
             return -1
 
         src = self.local_read_open(remote_path, remote_offset)
@@ -150,7 +150,7 @@ class File(Transfer):
         cmd = self.o.accelCpCommand.replace('%s', arg1)
         cmd = cmd.replace('%d', arg2).split()
 
-        logger.info("accel_cp:  %s" % ' '.join(cmd))
+        logger.info(f"accel_cp:  {' '.join(cmd)}")
         p = subprocess.Popen(cmd)
         p.wait()
         if p.returncode != 0:
@@ -244,7 +244,7 @@ def file_process(options):
     # I decided for the moment to warn and to return success... it preserves old behavior without the 0 byte file generated
 
     if not os.path.isfile(msg['relPath']):
-        logger.warning("%s moved or removed since announced" % msg['relPath'])
+        logger.warning(f"{msg['relPath']} moved or removed since announced")
         return True
 
     try:
@@ -267,7 +267,7 @@ def file_process(options):
                 try:
                     os.unlink(p)
                 except:
-                    logger.error("delete of link to %s failed" % p)
+                    logger.error(f"delete of link to {p} failed")
             return ok
 
     # This part is for 2 reasons : insert part
@@ -282,7 +282,7 @@ def file_process(options):
                 try:
                     os.unlink(p)
                 except:
-                    logger.error("delete of %s after copy failed" % p)
+                    logger.error(f"delete of {p} after copy failed")
 
         if ok: return ok
 
@@ -290,7 +290,7 @@ def file_process(options):
         logger.error('sr_file/file_process error')
         logger.debug('Exception details: ', exc_info=True)
 
-    logger.error("could not copy %s in %s" % (p, msg['new_file']))
+    logger.error(f"could not copy {p} in {msg['new_file']}")
 
     return False
 
@@ -352,7 +352,7 @@ def file_write_length(req, msg, bufsize, filesize, options):
                  times=(timestr2flt(h['atime']), timestr2flt(h['mtime'])))
 
     if chk:
-        msg.onfly_checksum = "{},{}".format(chk.registered_as(), chk.value)
+        msg.onfly_checksum = f"{chk.registered_as()},{chk.value}"
 
     return True
 

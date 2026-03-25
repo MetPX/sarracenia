@@ -40,14 +40,14 @@ class SundewPxRoute(FlowCB):
             logger.error("sundew_pxroute pxRouting file not defined")
             return
         elif not os.path.exists(self.o.pxRouting):
-            logger.error("sundew_pxroute pxRouting file (%s) not found" % self.o.pxRouting)
+            logger.error(f"sundew_pxroute pxRouting file ({self.o.pxRouting}) not found")
             return
         
         self.ahls_to_route = {}
         
         pxrf = open(self.o.pxRouting, 'r')
         possible_references = self.o.pxClient.split(',')
-        logger.info("sundew_pxroute, target clients: %s" % possible_references)
+        logger.info(f"sundew_pxroute, target clients: {possible_references}")
 
         for line in pxrf:
             words = line.split()

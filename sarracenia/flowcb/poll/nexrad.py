@@ -115,7 +115,7 @@ class Nexrad(FlowCB):
             DD = str(self.minutetracker.day).zfill(2)
             HH = str(self.minutetracker.hour).zfill(2)
             mm = str(self.minutetracker.minute).zfill(2)
-            logger.info("Date: %s" % self.minutetracker)
+            logger.info(f"Date: {self.minutetracker}")
 
             for station in ICAOs:
                 try:
@@ -134,7 +134,7 @@ class Nexrad(FlowCB):
         i = 0
         gathered_messages = []
         while i < len(keys):
-            logger.info("poll_nexrad: key received {}".format(keys[i]))
+            logger.info(f"poll_nexrad: key received {keys[i]}")
 
             fakeStat = paramiko.SFTPAttributes()
             fakeStat.st_size = keysizes[i]

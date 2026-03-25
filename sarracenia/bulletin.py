@@ -74,7 +74,7 @@ class Bulletin:
         # Remove the ['z', 'Z'] or ['utc', 'UTC'] if they're present in the group DDHHmm
         if len(tokens[2]) > 6: 
             tokens[2] = tokens[2][0:6]
-            logger.info("Header normalized (%s): truncated the DDHHMM group (>6 characters)" % str(header))
+            logger.info(f"Header normalized ({header!s}): truncated the DDHHMM group (>6 characters)")
             rebuild = 1
 
         # Verify first three fields, T1T2AiA2ii CCCC DDHHmm -> https://www.weather.gov/tg/headef 

@@ -20,20 +20,20 @@ class Subscription(dict):
             if not hasattr(options.broker.url,'username') or ( options.broker.url.username == 'anonymous' ):
                 exchange = 'xpublic'
             else:
-                exchange = 'xs_%s' % options.broker.url.username
+                exchange = f'xs_{options.broker.url.username}'
 
             if options.component in [ 'poll', 'post', 'watch' ]:
                 if hasattr(options,'post_exchange') and options.post_exchange:
                     exchange = options.post_exchange
 
                 if hasattr(options,'post_exchangeSuffix') and options.post_exchangeSuffix:
-                    exchange += '_%s' % options.post_exchangeSuffix
+                    exchange += f'_{options.post_exchangeSuffix}'
 
                 if hasattr(options, 'post_exchangeSplit') and hasattr( options, 'no') and (options.no > 0):
                     exchange += "%02d" % (options.no % options.post_exchangeSplit)
             else:
                 if hasattr(options, 'exchangeSuffix'):
-                    exchange += '_%s' % options.exchangeSuffix
+                    exchange += f'_{options.exchangeSuffix}'
 
                 if hasattr(options, 'exchangeSplit') and hasattr( options, 'no') and (options.no > 0):
                     exchange += "%02d" % (options.no % options.exchangeSplit)

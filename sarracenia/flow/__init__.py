@@ -513,13 +513,13 @@ class Flow:
         self.have_vip = self.has_vip()
         if (self.o.component == 'poll') and not self.have_vip:
             if self.had_vip:
-                logger.info("now passive on vips %s" % self.o.vip )
+                logger.info(f"now passive on vips {self.o.vip}" )
                 with open( self.o.novipFilename, 'w' ) as f:
                     f.write(str(nowflt()) + '\n' )
                 self.had_vip=False
         else:
             if not self.had_vip:
-                logger.info("now active on vip %s" % self.have_vip )
+                logger.info(f"now active on vip {self.have_vip}" )
                 self.had_vip=True
                 if os.path.exists( self.o.novipFilename ):
                     os.unlink( self.o.novipFilename )
@@ -845,7 +845,7 @@ class Flow:
 
         # relative path by default mirror
 
-        relPath = '%s' % msg['relPath']
+        relPath = f"{msg['relPath']}"
 
         if self.o.baseUrl_relPath:
             u = sarracenia.baseUrlParse(msg['baseUrl'])
@@ -853,7 +853,7 @@ class Flow:
 
         if self.o.download and 'rename' in msg: 
             # FIXME... why the % ? why not just assign it to copy the value?
-            relPath = '%s' % msg['rename']
+            relPath = f"{msg['rename']}"
 
             # after download we dont propagate renaming... once used, get rid of it
             del msg['rename']
@@ -1103,8 +1103,7 @@ class Flow:
                             logger.debug('rename deletion 1 %s', m['fileOp']['rename'])
                         else:
                             self.reject(
-                                m, 404, "mask=%s strip=%s url=%s" %
-                                (str(mask), strip, urlToMatch))
+                                m, 404, f"mask={mask!s} strip={strip} url={urlToMatch}")
                         break
 
 
@@ -1116,7 +1115,7 @@ class Flow:
                                            pstrip, flatten):
                         filtered_worklist.append(m)
                     else:
-                        self.reject(m, 404, "unable to update fields %s" % url)
+                        self.reject(m, 404, f"unable to update fields {url}")
 
 
                     break
@@ -1135,7 +1134,7 @@ class Flow:
                                            self.o.flatten):
                         filtered_worklist.append(m)
                     else:
-                        self.reject(m, 404, "unable to update fields %s" % url)
+                        self.reject(m, 404, f"unable to update fields {url}")
 
 
                     continue
@@ -1151,10 +1150,10 @@ class Flow:
 
                         filtered_worklist.append(m)
                     else:
-                        self.reject(m, 404, "unable to update fields %s" % url)
+                        self.reject(m, 404, f"unable to update fields {url}")
 
                 else:
-                    self.reject(m, 404, "unmatched pattern %s" % url)
+                    self.reject(m, 404, f"unmatched pattern {url}")
 
         self.worklist.incoming = filtered_worklist
 
@@ -1386,8 +1385,7 @@ class Flow:
                 self.worklist.directories_ok.append(msg['new_dir'])
                 os.makedirs(msg['new_dir'], self.o.permDirDefault, True)
             except Exception as ex:
-                logger.error("failed to make directory %s: %s" %
-                             (msg['new_dir'], ex))
+                logger.error(f"failed to make directory {msg['new_dir']}: {ex}")
                 return False
 
         logger.debug("data inlined with message, no need to download")
@@ -1397,7 +1395,7 @@ class Flow:
         try:
             f = os.fdopen(os.open(path, os.O_RDWR | os.O_CREAT), 'rb+')
         except Exception as ex:
-            logger.warning("could not open %s to write: %s" % (path, ex))
+            logger.warning(f"could not open {path} to write: {ex}")
             return False
 
         if msg['content']['encoding'] == 'base64':
@@ -1605,7 +1603,7 @@ class Flow:
 
                 if new_mtime <= old_mtime:
                     self.reject(msg, 406,
-                            "mtime not newer %s " % (msg['new_path']))
+                            f"mtime not newer {msg['new_path']} ")
                     return False
                 else:
                     logger.debug('%s new version is %s newer (new: %s vs old: %s )', msg['new_path'], new_mtime - old_mtime, (new_mtime,), old_mtime)
@@ -1652,7 +1650,7 @@ class Flow:
             if os.path.isdir(path): os.rmdir(path)
             logger.debug('removed %s', path)
         except:
-            logger.error("could not remove %s." % path)
+            logger.error(f"could not remove {path}.")
             logger.debug('Exception details: ', exc_info=True)
             ok = False
 
@@ -1665,7 +1663,7 @@ class Flow:
         ok = True
         # it turns out that links that exist but point to non-existent files return exists: False.
         if not os.path.islink(old) and not os.path.exists(old):
-            logger.info("old file %s not found, can't rename to %s" % (old, path))
+            logger.info(f"old file {old} not found, can't rename to {path}")
             # if the destination file exists, assume rename already happenned,
             # otherwis return false so that caller falls back to downloading/sending the file.
             # return os.path.isfile(path) 
@@ -1678,11 +1676,10 @@ class Flow:
             if os.path.islink(path): os.unlink(path)
             if os.path.isdir(path): os.rmdir(path)
             os.rename(old, path)
-            logger.info("renamed %s -> %s" % (old, path))
+            logger.info(f"renamed {old} -> {path}")
         except:
             logger.error(
-                "sr_subscribe/doit_download: could not rename %s to %s " %
-                (old, path))
+                f"sr_subscribe/doit_download: could not rename {old} to {path} ")
             logger.debug('Exception details: ', exc_info=True)
             ok = False
         return ok
@@ -1700,7 +1697,7 @@ class Flow:
             try:
                 os.makedirs(msg['new_dir'], self.o.permDirDefault, True)
             except Exception as ex:
-                logger.warning("making %s: %s" % (msg['new_dir'], ex))
+                logger.warning(f"making {msg['new_dir']}: {ex}")
                 logger.debug('Exception details:', exc_info=True)
                 return False
 
@@ -1751,7 +1748,7 @@ class Flow:
                 self.worklist.directories_ok.append(msg['new_dir'])
                 os.makedirs(msg['new_dir'], self.o.permDirDefault, True)
             except Exception as ex:
-                logger.warning("making %s: %s" % (msg['new_dir'], ex))
+                logger.warning(f"making {msg['new_dir']}: {ex}")
                 logger.debug('Exception details:', exc_info=True)
                 return False
 
@@ -1765,15 +1762,14 @@ class Flow:
 
             if 'hlink' in msg['fileOp'] :
                 os.link(msg['fileOp']['hlink'], path)
-                logger.info("%s hard-linked to %s " % (msg['new_file'], msg['fileOp']['hlink']))
+                logger.info(f"{msg['new_file']} hard-linked to {msg['fileOp']['hlink']} ")
             else:
                 os.symlink(msg['fileOp']['link'], path)
-                logger.info("%s sym-linked to %s " % (msg['new_file'], msg['fileOp']['link']))
+                logger.info(f"{msg['new_file']} sym-linked to {msg['fileOp']['link']} ")
 
         except:
             ok = False
-            logger.error("link of %s %s failed." %
-                         (msg['new_file'], msg['fileOp']))
+            logger.error(f"link of {msg['new_file']} {msg['fileOp']} failed.")
             logger.debug('Exception details:', exc_info=True)
 
         return ok
@@ -1804,7 +1800,7 @@ class Flow:
                 if 'renameUnlink' in msg:
                     # if remove fails, assume it's because the file to be renamed is already gone
                     self.removeOneFile(msg['fileOp']['rename'])
-                    msg.setReport(201, 'old unlinked %s' % msg['fileOp']['rename'])
+                    msg.setReport(201, f"old unlinked {msg['fileOp']['rename']}")
                     self.worklist.ok.append(msg)
                     self.metrics['flow']['transferRxFiles'] += 1
                     self.metrics['flow']['transferRxLast'] = msg['report']['timeCompleted']
@@ -1838,7 +1834,7 @@ class Flow:
             ## REMOVE DIRECTORY
             elif ('directory' in msg['fileOp']) and ('remove' in msg['fileOp'] ):
                 if  'rmdir' not in self.o.fileEvents:
-                    self.reject(msg, 202, "skipping rmdir %s" % new_path)
+                    self.reject(msg, 202, f"skipping rmdir {new_path}")
                     return True # done fileOp processing, continue
 
                 if self.removeOneFile(new_path):
@@ -1855,7 +1851,7 @@ class Flow:
             ## REMOVE FILE
             elif ('remove' in msg['fileOp']):
                 if 'delete' not in self.o.fileEvents:
-                    self.reject(msg, 202, "skipping delete %s" % new_path)
+                    self.reject(msg, 202, f"skipping delete {new_path}")
                     return True # done fileOp processing, continue
 
                 if self.removeOneFile(new_path):
@@ -1874,7 +1870,7 @@ class Flow:
                     # But that could cause problems in other situations: if a file is created, deleted, then created
                     # again. In this case,  it's better to ignore the remove failure (reject the msg) because the new
                     # file will overwrite the old one that got left on disk.
-                    self.reject(msg, 500, "remove %s failed" % new_path)
+                    self.reject(msg, 500, f"remove {new_path} failed")
                     return True # don't continue to download, don't retry, see above comment.
 
             # no elif because if rename fails and operation is an mkdir or a symlink..
@@ -1882,7 +1878,7 @@ class Flow:
             ## MKDIR
             if 'directory' in msg['fileOp'] and 'remove' not in msg['fileOp']:
                 if 'mkdir' not in self.o.fileEvents:
-                    self.reject(msg, 202, "skipping mkdir %s" % new_path)
+                    self.reject(msg, 202, f"skipping mkdir {new_path}")
                     return True # done fileOp processing, continue
 
                 if self.mkdir(msg):
@@ -1899,7 +1895,7 @@ class Flow:
             # ignore link renames here, we want them to retry if they fail
             elif ('link' in msg['fileOp'] or 'hlink' in msg['fileOp']) and 'rename' not in msg['fileOp']:
                 if 'link' not in self.o.fileEvents:
-                    self.reject(msg, 202, "skipping link %s" % new_path)
+                    self.reject(msg, 202, f"skipping link {new_path}")
                     return True # done fileOp processing, continue
 
                 if self.link1file(msg):
@@ -1912,7 +1908,7 @@ class Flow:
                     # as above...
                     # hard link creation failure: continue to download, symlink failure: reject and ignore
                     if 'hlink' not in msg['fileOp']:
-                        self.reject(msg, 500, "link %s failed" % msg['fileOp'])
+                        self.reject(msg, 500, f"link {msg['fileOp']} failed")
                         return True # done fileOp processing, continue RS TODO are you sure?
                     logger.info( f"since hard link failed, fall back to copying from source" )
                     return False # fall through to download code
@@ -1980,7 +1976,7 @@ class Flow:
                     os.makedirs(msg['new_dir'], self.o.permDirDefault, True)
                     self.worklist.directories_ok.append(msg['new_dir'])
                 except Exception as ex:
-                    logger.warning("making %s: %s" % (msg['new_dir'], ex))
+                    logger.warning(f"making {msg['new_dir']}: {ex}")
                     logger.debug('Exception details:', exc_info=True)
                     self.reject(msg, 422, f"cannot create directory {msg['new_dir']} to put file in it." )
                     continue
@@ -2030,8 +2026,7 @@ class Flow:
                              self.o.inflight)
                 # FIXME... what to do?
                 self.reject(
-                    msg, 503, "invalid inflight %s settings %s" %
-                    (self.o.inflight, new_path))
+                    msg, 503, f"invalid inflight {self.o.inflight} settings {new_path}")
                 continue
 
             msg['new_inflight_path'] = new_inflight_path
@@ -2064,7 +2059,7 @@ class Flow:
             if os.path.isfile(new_path):
                 if not self.o.overwrite:
                     self.reject(msg, 204,
-                                "not overwriting existing file %s" % new_path)
+                                f"not overwriting existing file {new_path}")
                     continue
 
                 if not self.file_should_be_downloaded(msg):
@@ -2207,8 +2202,7 @@ class Flow:
             elif options.inflight[0] == '.':
                 new_inflight_path = new_file + options.inflight
         else:
-            logger.error('inflight setting: %s, not for downloads.' %
-                         options.inflight)
+            logger.error(f'inflight setting: {options.inflight}, not for downloads.')
         if new_inflight_path:
             msg['new_inflight_path'] = new_inflight_path
             msg['_deleteOnPost'] |= set(['new_inflight_path'])
@@ -2262,7 +2256,7 @@ class Flow:
                 os.chdir(new_dir)
                 logger.debug('local cd to %s', new_dir) 
             except Exception as ex:
-                logger.warning("making %s: %s" % (new_dir, ex))
+                logger.warning(f"making {new_dir}: {ex}")
                 logger.debug('Exception details:', exc_info=True)
                 return 0
 
@@ -2314,7 +2308,7 @@ class Flow:
                     try:
                          self.proto[self.scheme].cd(cdir)
                     except Exception as ex:
-                         logger.error("chdir %s: %s" % (cdir, ex))
+                         logger.error(f"chdir {cdir}: {ex}")
                          return 0
 
             remote_offset = 0
@@ -2410,7 +2404,7 @@ class Flow:
                     if accelerated:
                         self.proto[self.scheme].update_file(new_inflight_path)
             elif len_written < 0:
-                logger.error("failed to download %s" % new_file)
+                logger.error(f"failed to download {new_file}")
                 if (self.o.inflight != None) and os.path.isfile(new_inflight_path):
                     os.remove(new_inflight_path)
                 return 0
@@ -2512,7 +2506,7 @@ class Flow:
 
         except Exception as ex:
             logger.debug('Exception details: ', exc_info=True)
-            logger.warning("failed to write %s: %s" % (new_inflight_path, ex))
+            logger.warning(f"failed to write {new_inflight_path}: {ex}")
 
             #closing on problem
             if not self.o.dry_run:
@@ -2595,7 +2589,7 @@ class Flow:
             try:
                 os.chdir(local_dir)
             except Exception as ex:
-                logger.error("could not chdir locally to %s: %s" % (local_dir, ex))
+                logger.error(f"could not chdir locally to {local_dir}: {ex}")
                 return -1
         try:
 
@@ -2632,8 +2626,7 @@ class Flow:
             if not self.o.dry_run and not hasattr(self.proto[self.scheme],
                            'seek') and ('blocks' in msg) and (
                                msg['blocks']['method'] == 'inplace'):
-                logger.error("%s, inplace part file not supported" %
-                             self.scheme)
+                logger.error(f"{self.scheme}, inplace part file not supported")
                 return -1
 
             #=================================
@@ -2643,7 +2636,7 @@ class Flow:
             inflight = options.inflight
             if not hasattr(self.proto[self.scheme],
                            'umask') and options.inflight == 'umask':
-                logger.warning("%s, umask not supported" % self.scheme)
+                logger.warning(f"{self.scheme}, umask not supported")
                 inflight = None
 
             #=================================
@@ -2651,7 +2644,7 @@ class Flow:
             #=================================
 
             if not hasattr(self.proto[self.scheme], 'rename') and options.inflight:
-                logger.warning("%s, rename not supported" % self.scheme)
+                logger.warning(f"{self.scheme}, rename not supported")
                 inflight = None
 
             #=================================
@@ -2702,7 +2695,7 @@ class Flow:
                         self.metrics['flow']['transferTxFiles'] += 1
                         self.metrics['flow']['transferTxLast'] = msg['report']['timeCompleted']
                         return 1
-                    logger.error("%s, delete not supported" % self.scheme)
+                    logger.error(f"{self.scheme}, delete not supported")
                     return -1
 
                 if 'rename' in msg['fileOp'] :
@@ -2719,7 +2712,7 @@ class Flow:
                         self.metrics['flow']['transferTxFiles'] += 1
                         self.metrics['flow']['transferTxLast'] = msg['report']['timeCompleted']
                         return 1
-                    logger.error("%s, delete not supported" % self.scheme)
+                    logger.error(f"{self.scheme}, delete not supported")
                     return -1
 
                 if 'directory' in msg['fileOp'] :
@@ -2737,7 +2730,7 @@ class Flow:
                         self.metrics['flow']['transferTxFiles'] += 1
                         self.metrics['flow']['transferTxLast'] = msg['report']['timeCompleted']
                         return 1
-                    logger.error("%s, mkdir not supported" % self.scheme)
+                    logger.error(f"{self.scheme}, mkdir not supported")
                     return -1
 
 
@@ -2757,7 +2750,7 @@ class Flow:
                                 logger.error( f"could not link {sendTo} in {msg['new_dir']}{os.sep}{msg['fileOp']['hlink']} to {new_file}: {ex}" )
                                 return 0
                         return 1
-                    logger.error("%s, hardlinks not supported" % self.scheme)
+                    logger.error(f"{self.scheme}, hardlinks not supported")
                     return -1
                 elif 'link' in msg['fileOp']:
                     if 'contentType' not in msg:
@@ -2774,7 +2767,7 @@ class Flow:
                         self.metrics['flow']['transferTxFiles'] += 1
                         self.metrics['flow']['transferTxLast'] = msg['report']['timeCompleted']
                         return 1
-                    logger.error("%s, symlink not supported" % self.scheme)
+                    logger.error(f"{self.scheme}, symlink not supported")
                     return -1
 
             #=================================
@@ -2977,7 +2970,7 @@ class Flow:
             self.cdir = None
             self.proto[self.scheme] = None
 
-            logger.error("Delivery failed %s" % msg['new_dir'] + '/' +
+            logger.error(f"Delivery failed {msg['new_dir']}" + '/' +
                          msg['new_file'])
             logger.debug('Exception details: ', exc_info=True)
 

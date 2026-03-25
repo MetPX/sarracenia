@@ -21,8 +21,7 @@ class PClean_F92(PClean):
     def after_accept(self, worklist):
         import os
 
-        logger.info("start len(worklist.incoming) = %d" %
-                    len(worklist.incoming))
+        logger.info(f"start len(worklist.incoming) = {len(worklist.incoming)}")
 
         outgoing = []
 
@@ -34,14 +33,13 @@ class PClean_F92(PClean):
 
             if ext in self.test_extension_list:
                 f20_path = '/' + msg['relPath'].replace(
-                    "{}/".format(self.all_fxx_dirs[1]), self.all_fxx_dirs[0])
+                    f"{self.all_fxx_dirs[1]}/", self.all_fxx_dirs[0])
                 f20_path = f20_path.replace(ext, '')
                 try:
                     os.unlink(f20_path)
-                    logger.info("unlinked 1: %s" % f20_path)
+                    logger.info(f"unlinked 1: {f20_path}")
                 except FileNotFoundError as err:
-                    logger.error("could not unlink 1 in {}: {}".format(
-                        f20_path, err))
+                    logger.error(f"could not unlink 1 in {f20_path}: {err}")
                     logger.debug("Exception details:", exc_info=True)
                     result = False
                 fxx_dirs = self.all_fxx_dirs[1:2] + self.all_fxx_dirs[6:]
@@ -50,14 +48,12 @@ class PClean_F92(PClean):
                 for fxx_dir, path in path_dict.items():
                     try:
                         os.unlink(path)
-                        logger.info("unlinked 2: %s" % path)
+                        logger.info(f"unlinked 2: {path}")
                         if ext != '.moved':
                             os.unlink(path.replace(ext, ''))
-                            logger.info("unlinked 3: %s" %
-                                        path.replace(ext, ''))
+                            logger.info(f"unlinked 3: {path.replace(ext, '')}")
                     except OSError as err:
-                        logger.error("could not unlink 2or3 in {}: {}".format(
-                            fxx_dir, err))
+                        logger.error(f"could not unlink 2or3 in {fxx_dir}: {err}")
                         logger.debug("Exception details:", exc_info=True)
                         result = False
             if result:
@@ -67,5 +63,5 @@ class PClean_F92(PClean):
                 worklist.rejected.append(msg)
 
         worklist.incoming = outgoing
-        logger.info("len(worklist.incoming) = %d" % len(worklist.incoming))
-        logger.info("len(worklist.rejected) = %d" % len(worklist.rejected))
+        logger.info(f"len(worklist.incoming) = {len(worklist.incoming)}")
+        logger.info(f"len(worklist.rejected) = {len(worklist.rejected)}")

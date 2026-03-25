@@ -70,7 +70,7 @@ class File(FlowCB):
     """
     def on_add(self, event, src, dst):
         logger.debug('%s %s %s', event, src, dst)
-        self.new_events['%s %s' % (src, dst)] = (event, src, dst)
+        self.new_events[f'{src} {dst}'] = (event, src, dst)
 
     def on_created(self, event):
         # on_created (for SimpleEventHandler)
@@ -597,7 +597,7 @@ class File(FlowCB):
             if sys.platform == 'win32':
                 realp = realp.replace('\\', '/')
 
-            logger.info("sr_watch %s is a link to directory %s" % (p, realp))
+            logger.info(f"sr_watch {p} is a link to directory {realp}")
             if self.o.realpathPost:
                 d = realp
             else:
@@ -607,11 +607,11 @@ class File(FlowCB):
 
         try:
             fs = sarracenia.stat(d)
-            dir_dev_id = '%s,%s' % (fs.st_dev, fs.st_ino)
+            dir_dev_id = f'{fs.st_dev},{fs.st_ino}'
             if dir_dev_id in self.inl:
                 return True
         except OSError as err:
-            logger.warning("could not stat file ({}): {}".format(d, err))
+            logger.warning(f"could not stat file ({d}): {err}")
             logger.debug("Exception details:", exc_info=True)
 
         if os.access(d, os.R_OK | os.X_OK):
@@ -625,8 +625,7 @@ class File(FlowCB):
                     "sr_watch priming watch (instance=%d) scheduled for: %s " %
                     (len(self.obs_watched), d))
             except:
-                logger.warning("sr_watch priming watch: %s failed, deferred." %
-                               d)
+                logger.warning(f"sr_watch priming watch: {d} failed, deferred.")
                 logger.debug('Exception details:', exc_info=True)
 
                 # add path created
@@ -635,8 +634,7 @@ class File(FlowCB):
 
         else:
             logger.warning(
-                "sr_watch could not schedule priming watch of: %s (EPERM) deferred."
-                % d)
+                f"sr_watch could not schedule priming watch of: {d} (EPERM) deferred.")
             logger.debug('Exception details:', exc_info=True)
 
             # add path created
@@ -744,12 +742,11 @@ class File(FlowCB):
             elif os.path.isfile(d):
                 messages.extend(self.post1file(d, sarracenia.stat(d)))
             else:
-                logger.error("could not post %s (exists %s)" %
-                             (d, os.path.exists(d)))
+                logger.error(f"could not post {d} (exists {os.path.exists(d)})")
 
         if len(messages) > self.o.batch:
             self.queued_messages = messages[self.o.batch:]
-            logger.info("len(queued_messages)=%d" % len(self.queued_messages))
+            logger.info(f"len(queued_messages)={len(self.queued_messages)}")
             messages = messages[0:self.o.batch]
 
         self.primed = True

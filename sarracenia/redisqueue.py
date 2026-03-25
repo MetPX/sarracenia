@@ -179,12 +179,12 @@ class RedisQueue():
             * False otherwise.   
         """
         if self._in_cache(message):
-            logger.info("discarding duplicate message (in %s cache) %s" % (self.name, message))
+            logger.info(f"discarding duplicate message (in {self.name} cache) {message}")
             return False
 
         # log is info... it is good to log a retry message that expires
         if self._is_expired(message):
-            logger.info("discarding expired message in (%s): %s" % (self.name, message))
+            logger.info(f"discarding expired message in ({self.name}): {message}")
             return False
 
         return True
@@ -194,11 +194,11 @@ class RedisQueue():
         try:
             msg = jsonpickle.decode(message)
         except ValueError:
-            logger.error("corrupted item in list: %s " % (message))
+            logger.error(f"corrupted item in list: {message} ")
             logger.debug("Error information: ", exc_info=True)
             return None
         except TypeError:
-            logger.error("wrong type item in list: %s " % (message))
+            logger.error(f"wrong type item in list: {message} ")
             logger.debug("Error information: ", exc_info=True)
             return None
 
@@ -268,7 +268,7 @@ class RedisQueue():
             if not message: break
                 
             if self._is_expired(message):
-                logger.warn("message expired %s" % (message))
+                logger.warn(f"message expired {message}")
                 continue
 
             if 'ack_id' in message:
@@ -294,7 +294,7 @@ class RedisQueue():
 
         rename housekeeping to queue for next period.
         """
-        logger.info("%s on_housekeeping" % (self.name))
+        logger.info(f"{self.name} on_housekeeping")
 
         if float(self.redis.get(self.key_name_lasthk)) + self.o.housekeeping > sarracenia.nowflt():
             logger.info("Housekeeping ran less than %ds ago; not running " % (self.o.housekeeping))
@@ -303,17 +303,17 @@ class RedisQueue():
         # A shared/distributed locking system is required when using Redis
         #  because only a single instance of a config should ever run the Housekeeping tasks
         if self.redis_lock.locked():
-            logger.info("Another instance has lock on %s" % (self.key_name_hk))
+            logger.info(f"Another instance has lock on {self.key_name_hk}")
             while self.redis_lock.locked():
                 time.sleep(1)
             return
 
         self.redis_lock.acquire()
-        logger.info("got redis_lock %s" % (self.key_name_hk))
+        logger.info(f"got redis_lock {self.key_name_hk}")
 
         # finish retry before reshuffling all retries entries
         if self.redis.llen(self.key_name) > 0:
-            logger.info("have not finished retry list; resuming retries from %s" % (self.key_name))
+            logger.info(f"have not finished retry list; resuming retries from {self.key_name}")
             return
 
         self.now = sarracenia.nowflt()
@@ -395,4 +395,4 @@ class RedisQueue():
         logger.debug("released redis_lock")
 
         elapse = sarracenia.nowflt() - self.now
-        logger.info("on_housekeeping elapse %f" % (elapse))
+        logger.info(f"on_housekeeping elapse {elapse:f}")

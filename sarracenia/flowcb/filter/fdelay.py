@@ -69,7 +69,7 @@ class Fdelay(FlowCB):
             else:
                 f = '/' + m['relPath']
             if not os.path.exists(f):
-                logger.debug("did not find file {}".format(f))
+                logger.debug(f"did not find file {f}")
                 worklist.failed.append(m)
                 logger.debug('marked failed 2 (file not found)')
                 continue
