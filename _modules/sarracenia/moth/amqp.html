@@ -791,7 +791,8 @@
                 <span class="k">return</span> <span class="kc">False</span>
 
         <span class="c1"># Shallow copy: only top-level keys are deleted (_deleteOnPost), nested dicts are read-only</span>
-        <span class="n">body</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span><span class="n">message</span><span class="p">)</span>
+        <span class="c1"># copy.copy(message) produces a sarracenia.Message object</span>
+        <span class="n">body</span> <span class="o">=</span> <span class="n">copy</span><span class="o">.</span><span class="n">copy</span><span class="p">(</span><span class="n">message</span><span class="p">)</span>
 
         <span class="k">if</span> <span class="s1">&#39;format&#39;</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">o</span><span class="p">:</span>
             <span class="n">version</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">o</span><span class="p">[</span><span class="s1">&#39;format&#39;</span><span class="p">]</span>
