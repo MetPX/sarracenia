@@ -161,8 +161,7 @@ class Log(FlowCB):
         if set(['reject']) & self.o.logEvents:
             for msg in worklist.rejected:
                 if 'report' in msg:
-                    logger.info("rejected: %s (%d: %s)" % (
-                        self._messageAcceptStr(msg), msg['report']['code'], msg['report']['message']))
+                    logger.info( f"rejected: {self._messageAcceptStr(msg)} ({msg['report']['code']:d}: {msg['report']['message']})" )
                 else:
                     logger.info(f"rejected: {self._messageAcceptStr(msg)} ")
         
@@ -277,8 +276,7 @@ class Log(FlowCB):
              f"bytes: {naturalSize(self.fileBytes)} " +\
              f"rate: {naturalSize(self.fileBytes/how_long)}/sec" )
         if self.msgCount > 0:
-            logger.info("lag: average: %.2f, maximum: %.2f " %
-                        (self.lagTotal / self.msgCount, self.lagMax))
+            logger.info( f"lag: average: {self.lagTotal / self.msgCount:.2f}, maximum: {self.lagMax:.2f} " )
 
     def on_cleanup(self):
         logger.info("hello")
