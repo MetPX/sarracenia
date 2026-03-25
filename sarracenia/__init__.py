@@ -937,8 +937,7 @@ class Message(dict):
                 text = known_report_codes[code]
                 
         else:
-            logger.warning('unknown report code supplied: %d:%s' %
-                           (code, text))
+            logger.warning( f"unknown report code supplied: {code:d}:{text}" )
             if text is None:
                 text = 'unknown disposition'
 

@@ -329,8 +329,7 @@ class DiskQueue():
            * False otherwise.   
         """
         if self.in_cache(message):
-            logger.info("discarding duplicate message (in %s cache) %s" %
-                        (self.name, message))
+            logger.info( f"discarding duplicate message (in {self.name} cache) {message}" )
             return False
 
         # log is info... it is good to log a retry message that expires
@@ -463,7 +462,7 @@ class DiskQueue():
         # housekeeping file becomes new retry
 
         else:
-            logger.info("%s Number of messages in retry list %d" % (self.name, N))
+            logger.info( f"{self.name} Number of messages in retry list {N:d}" )
             try:
                 os.rename(self.housekeeping_path, self.queue_file)
             except Exception:

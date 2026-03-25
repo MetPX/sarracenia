@@ -686,7 +686,8 @@ class Flow:
                 if elapsed < current_sleep:
                     stime += current_sleep - elapsed
                     if stime > 60:  # if sleeping for a long time, debug output is good...
-                        logger.debug('sleeping for more than 60 seconds: %.2f seconds. Elapsed since wakeup: %.2f Sleep setting: %.2f ', stime, elapsed, self.o.sleep)
+                        logger.debug(
+                           f"sleeping for more than 60 seconds: {stime:.2f} seconds. Elapsed since wakeup: {elapsed:.2f} Sleep setting: {self.o.sleep:.2f} ")
                 else:
                     logger.debug('worked too long to sleep!')
                     last_time = now
@@ -1441,14 +1442,6 @@ class Flow:
                     % (len(data), msg['size']))
                 return False
 
-        #try:
-        #    for p in self.plugins['on_data']:
-        #        data = p(data)
-
-        #except Exception as ex:
-        #    logger.warning("plugin failed: %s" % (p, ex))
-        #    return False
-
         data_algo.update(data)
 
         #FIXME: If data is changed by plugins, need to update content header.
@@ -1471,7 +1464,7 @@ class Flow:
             self.set_local_file_attributes(path, msg)
 
         except Exception as ex:
-            logger.warning("failed writing and finalizing: %s" % (path, ex))
+            logger.warning( f"failed writing and finalizing: {path}:{ex}" )
             return False
 
         return True
@@ -1738,12 +1731,6 @@ class Flow:
             link='MALFORMED_LINK_MESSAGE'
 
         logger.debug('message is to link %s to %s', msg['new_file'], link)
-
-        # redundant, check is done in caller.
-        #if not 'link' in self.o.fileEvents:
-        #    logger.info("message to link %s to %s ignored (events setting)" %  \
-        #                                    ( msg['new_file'], msg['fileOp'][ 'link' ] ) )
-        #    return False
 
         if not os.path.isdir(msg['new_dir']):
             try:
@@ -2024,8 +2011,7 @@ class Flow:
                     new_inflight_path = new_file + self.o.inflight
             else:
                 #inflight is interval: minimum the age of the source file, as per message.
-                logger.error('interval inflight setting: %s, not appropriate for downloads.' %
-                             self.o.inflight)
+                logger.error( f"interval inflight setting: {self.o.inflight}, not appropriate for downloads." )
                 # FIXME... what to do?
                 self.reject(
                     msg, 503, f"invalid inflight {self.o.inflight} settings {new_path}")
@@ -2051,8 +2037,7 @@ class Flow:
                             f"inflight file is {how_old}s old. Removed previous attempt {msg['new_path']}" )
                     else:
                         logger.warning(
-                            'inflight file already exists. race condition, deferring transfer of %s'
-                            % msg['new_path'])
+                            f"inflight file already exists. race condition, deferring transfer of {msg['new_path']}" )
                     self.worklist.failed.append(msg)
                     continue
                 # overwriting existing file.
@@ -2078,8 +2063,7 @@ class Flow:
                     self.metrics['flow']['transferRxLast'] = msg['report']['timeCompleted']
                     continue
                 logger.warning(
-                    "failed to write inline content %s, falling through to download"
-                    % new_path)
+                    f"failed to write inline content {new_path}, falling through to download" )
 
             parsed_url = sarracenia.baseUrlParse(msg['baseUrl'])
             self.scheme = parsed_url.scheme
@@ -2089,7 +2073,7 @@ class Flow:
             while i <= self.o.attempts:
 
                 if i > 1:
-                    logger.warning("downloading again, attempt %d" % i)
+                    logger.warning( f"downloading again, attempt {i}" )
 
                 ok = self.download(msg, self.o)
                 if ok == 1:
@@ -2111,8 +2095,7 @@ class Flow:
                     self.worklist.rejected.append(msg)
                     break
                 else:
-                    logger.info("attempt %d failed to download %s/%s to %s" \
-                        % ( i, msg['baseUrl'], msg['relPath'], new_path) )
+                    logger.info( f"attempt {i} failed to download {msg['baseUrl']}/{msg['relPath']} to {new_path} ")
                 i = i + 1
 
             if not ok:
@@ -2293,7 +2276,7 @@ class Flow:
             #=================================
 
             #if not hasattr(proto,'seek') and ('blocks' in msg) and ( msg['blocks']['method'] == 'inplace' ):
-            #   logger.error("%s, inplace part file not supported" % self.scheme)
+            #   logger.error( f"{self.scheme}, inplace part file not supported" )
             #   return 0
 
             cwd = None
@@ -2370,8 +2353,7 @@ class Flow:
                         os.mkdir(options.inflight)
                         os.chmod(options.inflight, options.permDirDefault)
                 except:
-                    logger.error('unable to make inflight directory %s/%s' %
-                                 (msg['new_dir'], options.inflight))
+                    logger.error( f"unable to make inflight directory {msg['new_dir']}/{options.inflight}") 
                     logger.debug('Exception details: ', exc_info=True)
 
             logger.debug('hasAccel=%s, thresh=%d, len=%d, remote_off=%d, local_off=%d inflight=%s', hasattr(self.proto[self.scheme], 'getAccelerated'), self.o.accelThreshold, block_length, remote_offset, msg['local_offset'], new_inflight_path)
@@ -3117,7 +3099,7 @@ class Flow:
             i = 1
             while i <= self.o.attempts:
                 if i != 1:
-                    logger.warning("sending again, attempt %d" % i)
+                    logger.warning( f"sending again, attempt {i}" )
 
                 retval = self.send(msg, self.o)
                 if retval > 0:
