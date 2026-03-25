@@ -201,8 +201,8 @@ class File(FlowCB):
                         }
             else:
                 if self.o.inlineOnly:
-                    logger.error('skipping file %s too large (%d bytes > %d bytes max)) for inlining' % \
-                       ( path, fsiz, self.o.inlineByteMax )  )
+                    logger.error( f"skipping file {path} too large ({fsiz:d} bytes > "\
+                        f"{self.o.inlineByteMax:d} bytes max)) for inlining" )
                     return []
 
         return [msg]
@@ -669,8 +669,7 @@ class File(FlowCB):
         logger.info(
             "sr_watch priming walk done, but not yet active. Starting...")
         self.observer.start()
-        logger.info("sr_watch now active on %s posting to exchange: %s" %
-                    (sld, self.o.post_exchange))
+        logger.info( f"sr_watch now active on {sld} posting to exchange: {self.o.post_exchange}" )
 
         if self.o.post_on_start:
             return self.walk(sld)
