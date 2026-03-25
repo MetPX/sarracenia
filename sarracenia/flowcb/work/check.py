@@ -65,7 +65,7 @@ class Check(FlowCB):
             fsiz = lstat[stat.ST_SIZE]
     
             if fsiz != msg['size']:
-                logger.error( "filesize differ (corrupted ?)  lf %d  msg %d" % (fsiz, msg['size']) )
+                logger.error( f"filesize differ (corrupted ?)  lf {fsiz:d}  msg {msg['size']:d}" )
                 self.size_mismatches+=1
     
             self.o.post_baseUrl = msg['baseUrl']
@@ -75,8 +75,7 @@ class Check(FlowCB):
       
             if downloaded_msg['identity'] != msg['identity']:
                 logger.error(
-                    "checksum differ (corrupted ?)  lf %s  msg %s" %
-                    (downloaded_msg['identity'], msg['identity']))
+                    f"checksum differ (corrupted ?)  {downloaded_msg['identity']} vs. msg {msg['identity']}"  )
                 self.checksum_mismatches+=1
 
             if self.content_check(local_file):

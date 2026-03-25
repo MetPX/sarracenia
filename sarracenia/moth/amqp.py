@@ -95,16 +95,15 @@ class AMQP(Moth):
                 if not ('content_type' in raw_msg.properties):
                     logger.warning('message is missing content-type header')
                 if body:
-                    logger.info(f'body: type: {type(body)} ({len(body)} bytes) {body}')
+                    logger.info(f'body: type: {type(body)} ({len(body):d} bytes) {body}')
                 else:
                     logger.info('had no body')
                 if raw_msg.headers:
-                    logger.info('headers: type: %s (%d elements) %s' %
-                             (type(raw_msg.headers), len(raw_msg.headers), raw_msg.headers))
+                    logger.info( f"headers: type: {type(raw_msg.headers)} ({len(raw_msg.headers):d} elements) {raw_msg.headers}" )
                 else:
                     logger.info('had no headers')
                 if raw_msg.properties:
-                    logger.info('properties:' % raw_msg.properties)
+                    logger.info( f"properties: {raw_msg.properties}" )
                 else:
                     logger.info('had no properties')
                 if raw_msg.delivery_info: 
@@ -321,8 +320,7 @@ class AMQP(Moth):
 
                 #FIXME: convert expire, message_ttl to proper units.
                 if self.o['dry_run']:
-                    logger.info('queue declare (dry run) %s (as: %s) ' %
-                            (queue['name'], broker_str))
+                    logger.info( f"queue declare (dry run) {queue['name']} (as: {broker_str}) " )
                     msg_count=0
                 else:
                     qname, msg_count, consumer_count = self.management_channel.queue_declare(
@@ -416,14 +414,11 @@ class AMQP(Moth):
                     topic = '.'.join(prefix + subtopic)
 
                     if self.o['dry_run']:
-                        logger.info('binding (dry run) %s with %s to %s (as: %s)' % \
-                            ( queue['name'], topic, exchange, broker_str ) )
+                        logger.info( f"binding (dry run) {queue['name']} with {topic} to {exchange} (as: {broker_str}) "  )
                     else:
-                        logger.info('binding %s with %s to %s (as: %s)' % \
-                            ( queue['name'], topic, exchange, broker_str ) )
+                        logger.info( f"binding {queue['name']} with {topic} to {exchange} (as: {broker_str})" )
                         if exchange:
-                            self.management_channel.queue_bind(queue['name'], exchange,
-                                            topic)
+                            self.management_channel.queue_bind(queue['name'], exchange, topic)
 
             # Setup Successfully Complete!
             self.metricsConnect()
@@ -479,8 +474,7 @@ class AMQP(Moth):
                     self.o['exchange'] = [self.o['exchange']]
                 for x in self.o['exchange']:
                     if self.o['dry_run']:
-                        logger.info('exchange declare (dry run): %s (as: %s)' %
-                                (x, broker_str))
+                        logger.info( f"exchange declare (dry run): {x} (as: {broker_str})" )
                     else:
                         self.channel.exchange_declare(
                             x,
@@ -743,9 +737,8 @@ class AMQP(Moth):
             topic = topic.encode("utf8")[0:mxlen].decode("utf8")
 
         if self.o['messageDebugDump']:
-            logger.info('raw message body: version: %s type: %s %s' %
-                             (version, type(raw_body),  raw_body))
-            logger.info(f'raw message headers: type: {type(headers)} value: {headers}')
+            logger.info( f"raw message body: version: {version} type: {type(raw_body)} {raw_body} " )
+            logger.info(f"raw message headers: type: {type(headers)} value: {headers}")
 
         if not 'posts' in message: 
             message['posts'] = []

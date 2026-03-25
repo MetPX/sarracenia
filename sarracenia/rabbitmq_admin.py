@@ -68,10 +68,10 @@ def exec_rabbitmqadmin(url, options, simulate=False):
     except:
         if sys.version_info.major < 3 or (sys.version_info.major == 3
                                           and sys.version_info.minor < 5):
-            if logger: logger.error("trying run command %s %s" % command)
+            if logger: logger.error( f"trying run command {command}" )
         else:
             if logger:
-                logger.error("trying run command %s %s" % ' '.join(cmdlst))
+                logger.error( f"trying run command {' '.join(cmdlst)}" )
         if logger: logger.debug('Exception details:', exc_info=True)
 
     return 0, None
@@ -96,8 +96,7 @@ def add_user(url, role, user, passwd, simulate):
         c = "configure=.*"
         w = "write=.*"
         r = "read=.*"
-        logger.info("permission user \'%s\' role %s  %s %s %s " %
-                    (user + '@' + url.hostname, 'feeder', c, w, r))
+        logger.info( f"permission user \'{user+'@'+url.hostname}\' role feeder  {c} {w} {r} " )
         declare = f"declare permission vhost=/ user={user} {c} {w} {r}"
         dummy = run_rabbitmqadmin(url, declare, simulate)
         return
@@ -108,8 +107,7 @@ def add_user(url, role, user, passwd, simulate):
         c = f"configure=^q_{user}.*|^xs_{user}.*"
         w = f"write=^q_{user}.*|^xs_{user}.*"
         r = f"read=^q_{user}.*|^x[lrs]_{user}.*|^x.*public$"
-        logger.info("permission user '%s' role %s  %s %s %s " %
-                    (user + '@' + url.hostname, 'source', c, w, r))
+        logger.info( f"permission user '{user+'@'+url.hostname}' role source {c} {w} {r} " )
         declare = f"declare permission vhost=/ user={user} {c} {w} {r}"
         dummy = run_rabbitmqadmin(url, declare, simulate)
         return
@@ -120,8 +118,7 @@ def add_user(url, role, user, passwd, simulate):
         c = f"configure=^q_{user}.*"
         w = f"write=^q_{user}.*|^xs_{user}$"
         r = f"read=^q_{user}.*|^x[lrs]_{user}.*|^x.*public$"
-        logger.info("permission user '%s' role %s  %s %s %s " %
-                    (user + '@' + url.hostname, 'source', c, w, r))
+        logger.info( f"permission user \'{user+'@'+url.hostname}\' role subscriber {c} {w} {r} " )
         declare = f"declare permission vhost=/ user={user} {c} {w} {r}"
         dummy = run_rabbitmqadmin(url, declare, simulate)
 

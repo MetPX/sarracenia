@@ -240,7 +240,7 @@ class Https(Transfer):
         p = subprocess.Popen(cmd)
         p.wait()
         if p.returncode != 0:
-            logger.warning("binary accelerator %s returned: %d" % ( cmd, p.returncode ) )
+            logger.warning( f"binary accelerator {cmd} returned: {p.returncode}" )
             return -1
         # FIXME: length is not validated.
         return length

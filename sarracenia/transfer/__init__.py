@@ -390,7 +390,7 @@ class Transfer():
 
         # FIXME: 2020/09 - commented out for now... unsure about this.
         #if (not self.o.on_data_list) and length != 0 and rw_length != length :
-        #   logger.error("util/readlocal mismatched file length reading %s. Message announced it as %d bytes, but read %d bytes " % (local_file,length,rw_length))
+        #   logger.error( f"util/readlocal mismatched file length reading {local_file}. Message announced it as {length} bytes, but read {rw_length} bytes" )
 
         # 2022/12/02 - pas attempting to get files that get shorter addressed.
         if ((length==0) or (rw_length < length)) and hasattr(dst,'truncate') and not self.o.nofsetstat:
