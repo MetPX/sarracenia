@@ -78,8 +78,7 @@ class Disk(NoDupe):
         new_count = self.count
 
         if new_count > 0:
-            logger.info( "was %d, but since %5.2f sec, increased up to %d, now saved %d entries"
-                 % (self.last_count, self.now - self.last_time, count, new_count))
+            logger.info( f"was {self.last_count:d}, but since {(self.now-self.last_time):5.2f} sec, increased up to {count:d}, now saved {new_count:d} entries" )
 
         self.last_time = self.now
         self.last_count = new_count
