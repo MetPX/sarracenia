@@ -185,7 +185,7 @@ class Https(Transfer):
             return True
 
         except:
-            logger.error("sr_http/credentials: unable to get credentials for %s" % self.sendTo)
+            logger.error(f"sr_http/credentials: unable to get credentials for {self.sendTo}")
             logger.debug('Exception details: ', exc_info=True)
 
         return False
@@ -236,11 +236,11 @@ class Https(Transfer):
         else:
             cmd = [cmd[0]] + cmd[1:]
 
-        logger.info("accel_wget: %s" % ' '.join(cmd))
+        logger.info(f"accel_wget: {' '.join(cmd)}")
         p = subprocess.Popen(cmd)
         p.wait()
         if p.returncode != 0:
-            logger.warning("binary accelerator %s returned: %d" % ( cmd, p.returncode ) )
+            logger.warning( f"binary accelerator {cmd} returned: {p.returncode}" )
             return -1
         # FIXME: length is not validated.
         return length
@@ -304,7 +304,7 @@ class Https(Transfer):
             #        return self.entries
 
         except:
-            logger.warning("sr_http/ls: unable to open %s" % self.urlstr)
+            logger.warning(f"sr_http/ls: unable to open {self.urlstr}")
             logger.debug('Exception details: ', exc_info=True)
 
         return dbuf
@@ -348,8 +348,8 @@ class Https(Transfer):
         alarm_set(self.o.timeout)
 
         try:
-            headers = {'user-agent': 'Sarracenia ' + sarracenia.__version__}
-            
+            headers = {'user-agent': self.o.httpUserAgent}
+
             # Bearer token credential is passed as a header
             if self.bearer_token:
                 logger.debug('bearer_token: %s', self.bearer_token)
@@ -406,7 +406,7 @@ class Https(Transfer):
             raise
         except urllib.error.URLError as e:
             logger.error(f'failed 5 {self.__url_redir_str()}')
-            logger.error('Failed to reach server. Reason: %s' % e.reason)
+            logger.error(f'Failed to reach server. Reason: {e.reason}')
             self.connected = False
             raise
         except:

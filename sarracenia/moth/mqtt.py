@@ -149,7 +149,7 @@ class MQTT(Moth):
                 queue['qos'] = int(self.o['qos'])
 
 
-        me = "%s.%s" % (__class__.__module__, __class__.__name__)
+        me = f"{__class__.__module__}.{__class__.__name__}"
 
         if ('settings' in self.o) and (me in self.o['settings']):
             for s in self.o['settings'][me]:

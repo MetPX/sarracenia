@@ -78,8 +78,7 @@ class Disk(NoDupe):
         new_count = self.count
 
         if new_count > 0:
-            logger.info( "was %d, but since %5.2f sec, increased up to %d, now saved %d entries"
-                 % (self.last_count, self.now - self.last_time, count, new_count))
+            logger.info( f"was {self.last_count:d}, but since {(self.now-self.last_time):5.2f} sec, increased up to {count:d}, now saved {new_count:d} entries" )
 
         self.last_time = self.now
         self.last_count = new_count
@@ -98,7 +97,7 @@ class Disk(NoDupe):
             kdict = {}
             kdict[relpath] = self.now
             self.cache_dict[key] = kdict
-            self.fp.write("%s %f %s\n" % (key, self.now, qpath))
+            self.fp.write(f"{key} {self.now:f} {qpath}\n")
             self.count += 1
             return True
 
@@ -111,7 +110,7 @@ class Disk(NoDupe):
         kdict[relpath] = self.now
 
         # differ or newer, write to file
-        self.fp.write("%s %f %s\n" % (key, self.now, qpath))
+        self.fp.write(f"{key} {self.now:f} {qpath}\n")
         self.count += 1
 
         if present:
@@ -231,7 +230,7 @@ class Disk(NoDupe):
                 self.count += 1
 
                 if persist:
-                    self.fp.write("%s %f %s\n" % (key, t, qpath))
+                    self.fp.write(f"{key} {t:f} {qpath}\n")
 
             if len(ndict) > 0: new_dict[key] = ndict
 
@@ -244,8 +243,7 @@ class Disk(NoDupe):
             self.fp.flush()
             self.fp.close()
         except Exception as err:
-            logger.warning('did not close: cache_file={}, err={}'.format(
-                self.cache_file, err))
+            logger.warning(f'did not close: cache_file={self.cache_file}, err={err}')
             logger.debug('Exception details:', exc_info=True)
         self.fp = None
 
@@ -278,8 +276,7 @@ class Disk(NoDupe):
         try:
             os.unlink(self.cache_file)
         except Exception as err:
-            logger.warning("did not unlink: cache_file={}, err={}".format(
-                self.cache_file, err))
+            logger.warning(f"did not unlink: cache_file={self.cache_file}, err={err}")
             logger.debug('Exception details:', exc_info=True)
         self.fp = open(self.cache_file, 'w')
 
@@ -355,14 +352,12 @@ class Disk(NoDupe):
         try:
             os.unlink(self.cache_file)
         except Exception as err:
-            logger.warning("did not unlink: cache_file={}, err={}".format(
-                self.cache_file, err))
+            logger.warning(f"did not unlink: cache_file={self.cache_file}, err={err}")
             logger.debug('Exception details:', exc_info=True)
         # new empty file, write unexpired entries
         try:
             self.fp = open(self.cache_file, 'w')
             self.clean(persist=True)
         except Exception as err:
-            logger.warning("did not clean: cache_file={}, err={}".format(
-                self.cache_file, err))
+            logger.warning(f"did not clean: cache_file={self.cache_file}, err={err}")
             logger.debug('Exception details:', exc_info=True)

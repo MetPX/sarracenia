@@ -53,13 +53,13 @@ class Rootchown(FlowCB):
                 l2 = l.strip()
                 parts = l2.split()
                 if len(parts) != 2:
-                    logger.error("wrong mapping line %s" % l)
+                    logger.error(f"wrong mapping line {l}")
                     continue
                 self.mapping[parts[0]] = parts[1]
             f.close()
-            logger.info("ROOT_CHOWN mapping_file loaded  %s" % mf_path)
+            logger.info(f"ROOT_CHOWN mapping_file loaded  {mf_path}")
         except:
-            logger.error("ROOT_CHOWN problem when parsing %s" % mf_path)
+            logger.error(f"ROOT_CHOWN problem when parsing {mf_path}")
 
     def after_accept(self, worklist):
         logger.debug("ROOT_CHOWN after_accept")
@@ -92,7 +92,7 @@ class Rootchown(FlowCB):
                 username = pwd.getpwuid(s.st_uid).pw_name
                 group = grp.getgrgid(s.st_gid).gr_name
 
-                ug = "%s:%s" % (username, group)
+                ug = f"{username}:{group}"
 
                 # check for mapping switch
                 if ug in self.mapping:
@@ -103,8 +103,7 @@ class Rootchown(FlowCB):
                 logger.debug('ROOT_CHOWN set ownership field %s', message['ownership'])
 
             except:
-                logger.error("ROOT_CHOWN could not set ownership  %s" %
-                             local_file)
+                logger.error(f"ROOT_CHOWN could not set ownership  {local_file}")
                 #FIXME should we do worklist.reject here?
 
     def after_work(self, worklist):
@@ -138,10 +137,8 @@ class Rootchown(FlowCB):
                 gid = grp.getgrnam(group).pw_gid
 
                 os.chown(local_file, uid, gid)
-                logger.info("ROOT_CHOWN set ownership %s to %s" %
-                            (ug, local_file))
+                logger.info(f"ROOT_CHOWN set ownership {ug} to {local_file}")
                 #FIXME not sure if we add to worklist.ok here
 
             except:
-                logger.error("ROOT_CHOWN could not set %s to %s" %
-                             (ug, local_file))
+                logger.error(f"ROOT_CHOWN could not set {ug} to {local_file}")

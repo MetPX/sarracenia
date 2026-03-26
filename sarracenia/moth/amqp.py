@@ -95,17 +95,15 @@ class AMQP(Moth):
                 if not ('content_type' in raw_msg.properties):
                     logger.warning('message is missing content-type header')
                 if body:
-                    logger.info('body: type: %s (%d bytes) %s' %
-                             (type(body), len(body), body))
+                    logger.info(f'body: type: {type(body)} ({len(body):d} bytes) {body}')
                 else:
                     logger.info('had no body')
                 if raw_msg.headers:
-                    logger.info('headers: type: %s (%d elements) %s' %
-                             (type(raw_msg.headers), len(raw_msg.headers), raw_msg.headers))
+                    logger.info( f"headers: type: {type(raw_msg.headers)} ({len(raw_msg.headers):d} elements) {raw_msg.headers}" )
                 else:
                     logger.info('had no headers')
                 if raw_msg.properties:
-                    logger.info('properties:' % raw_msg.properties)
+                    logger.info( f"properties: {raw_msg.properties}" )
                 else:
                     logger.info('had no properties')
                 if raw_msg.delivery_info: 
@@ -121,7 +119,7 @@ class AMQP(Moth):
                     body = raw_msg.body.decode("utf8")
                 except Exception as ex:
                     logger.error(
-                        'ignoring message. UTF8 encoding expected. raw message received: %s' % ex)
+                        f'ignoring message. UTF8 encoding expected. raw message received: {ex}')
                     logger.debug('Exception details: ', exc_info=True)
                     self.channel.basic_ack( raw_msg.delivery_info['delivery_tag'])
                     return None
@@ -155,7 +153,7 @@ class AMQP(Moth):
             if not msg.validate():
                 if hasattr(self,'channel'):
                     self.channel.basic_ack(msg['ack_id']['delivery_tag'])
-                logger.error('message acknowledged and discarded: %s' % msg)
+                logger.error(f'message acknowledged and discarded: {msg}')
                 msg = None
         else:
             msg = None
@@ -190,7 +188,7 @@ class AMQP(Moth):
         self.first_setup = True
         self._stop_requested = False
 
-        me = "%s.%s" % (__class__.__module__, __class__.__name__)
+        me = f"{__class__.__module__}.{__class__.__name__}"
 
         if ('settings' in self.o) and (me in self.o['settings']):
             for s in self.o['settings'][me]:
@@ -220,7 +218,7 @@ class AMQP(Moth):
                 else:
                     host += ':5672'
             else:
-                host += ':{}'.format(broker.url.port)
+                host += f':{broker.url.port}'
         else:
             logger.critical( f"invalid broker specification: {broker} " )
             return False
@@ -322,8 +320,7 @@ class AMQP(Moth):
 
                 #FIXME: convert expire, message_ttl to proper units.
                 if self.o['dry_run']:
-                    logger.info('queue declare (dry run) %s (as: %s) ' %
-                            (queue['name'], broker_str))
+                    logger.info( f"queue declare (dry run) {queue['name']} (as: {broker_str}) " )
                     msg_count=0
                 else:
                     qname, msg_count, consumer_count = self.management_channel.queue_declare(
@@ -421,14 +418,11 @@ class AMQP(Moth):
                     topic = b['topic']
 
                     if self.o['dry_run']:
-                        logger.info('binding (dry run) %s with %s to %s (as: %s)' % \
-                            ( queue['name'], topic, exchange, broker_str ) )
+                        logger.info( f"binding (dry run) {queue['name']} with {topic} to {exchange} (as: {broker_str}) "  )
                     else:
-                        logger.info('binding %s with %s to %s (as: %s)' % \
-                            ( queue['name'], topic, exchange, broker_str ) )
+                        logger.info( f"binding {queue['name']} with {topic} to {exchange} (as: {broker_str})" )
                         if exchange:
-                            self.management_channel.queue_bind(queue['name'], exchange,
-                                            topic)
+                            self.management_channel.queue_bind(queue['name'], exchange, topic)
 
             # Setup Successfully Complete!
             self.metricsConnect()
@@ -479,23 +473,19 @@ class AMQP(Moth):
             logger.debug('putSetup ... 1. connected to %s', broker_str)
 
             if self.o['exchangeDeclare']:
-                logger.debug('putSetup ... 1. declaring {}'.format(
-                    self.o['exchange']))
-                    
+                logger.debug(f"putSetup ... 1. declaring {self.o['exchange']}")
                 if type(self.o['exchange']) is not list:
                     self.o['exchange'] = [self.o['exchange']]
                 for x in self.o['exchange']:
                     if self.o['dry_run']:
-                        logger.info('exchange declare (dry run): %s (as: %s)' %
-                                (x, broker_str))
+                        logger.info( f"exchange declare (dry run): {x} (as: {broker_str})" )
                     else:
                         self.channel.exchange_declare(
                             x,
                             'topic',
                             auto_delete=self.o['auto_delete'],
                             durable=self.o['durable'])
-                        logger.info('exchange declared: %s (as: %s)' %
-                                (x, broker_str))
+                        logger.info(f'exchange declared: {x} (as: {broker_str})')
 
             # Setup Successfully Complete!
             self.metricsConnect()
@@ -518,14 +508,14 @@ class AMQP(Moth):
             for x in self.o['exchange']:
                 try:
                     if self.o['dry_run']:
-                        logger.info("deleted exchange (dry run): %s (if unused)" % x)
+                        logger.info(f"deleted exchange (dry run): {x} (if unused)")
                     else:
                         if hasattr(self,'channel'):
                             self.channel.exchange_delete(x, if_unused=True)
-                        logger.info("deleted exchange: %s" % x)
+                        logger.info(f"deleted exchange: {x}")
                 except amqp.exceptions.PreconditionFailed as err:
                     err_msg = str(err).replace("Exchange.delete: (406) PRECONDITION_FAILED - exchange ", "")
-                    logger.warning("failed to delete exchange: %s" % err_msg)
+                    logger.warning(f"failed to delete exchange: {err_msg}")
         except Exception as err:
             logger.error( f"failed on {str(self.o['broker'])} with {err}" ) 
             logger.debug('Exception details: ', exc_info=True)
@@ -539,9 +529,9 @@ class AMQP(Moth):
         q=s['queue']
         try:
             if self.o['dry_run']:
-                logger.info("deleting queue (dry run) %s" % q['name'] )
+                logger.info(f"deleting queue (dry run) {q['name']}" )
             else:
-                logger.info("deleting queue %s" % q['name'] )
+                logger.info(f"deleting queue {q['name']}" )
                 if hasattr(self,'channel'):
                     self.channel.queue_delete(q['name'])
         except Exception as err:
@@ -594,7 +584,7 @@ class AMQP(Moth):
                     msg['subscription_index'] = self.o['subscription_index']
                     msg['_deleteOnPost'] |= set( ['subscription_index'] )
                 except Exception as err:
-                    logger.error("message decode failed. raw message: %s" % raw_msg.body )
+                    logger.error(f"message decode failed. raw message: {raw_msg.body}" )
                     logger.debug('Exception details: ', exc_info=True)
                     msg = None
                 if msg is None:
@@ -610,7 +600,7 @@ class AMQP(Moth):
                 logger.debug('new msg: %s', msg)
                 return msg
         except Exception as err:
-            logger.warning("failed %s: %s" % (queue['name'], err))
+            logger.warning(f"failed {queue['name']}: {err}")
             logger.debug('Exception details: ', exc_info=True)
 
         if not self.o['message_strategy']['stubborn']:
@@ -659,7 +649,7 @@ class AMQP(Moth):
                 m['_deleteOnPost'].remove('ack_id')
             
         except Exception as err:
-            logger.warning("failed for tag: %s: %s" % (m['ack_id'], err))
+            logger.warning(f"failed for tag: {m['ack_id']}: {err}")
             logger.debug('Exception details: ', exc_info=True)
             # No point in trying to ack again if the connection is broken
             del m['ack_id']
@@ -752,9 +742,8 @@ class AMQP(Moth):
             topic = topic.encode("utf8")[0:mxlen].decode("utf8")
 
         if self.o['messageDebugDump']:
-            logger.info('raw message body: version: %s type: %s %s' %
-                             (version, type(raw_body),  raw_body))
-            logger.info('raw message headers: type: %s value: %s' % (type(headers),  headers))
+            logger.info( f"raw message body: version: {version} type: {type(raw_body)} {raw_body} " )
+            logger.info(f"raw message headers: type: {type(headers)} value: {headers}")
 
         if not 'posts' in message: 
             message['posts'] = []
@@ -766,7 +755,7 @@ class AMQP(Moth):
             for k in headers:
                 if (type(headers[k]) is str) and (len(headers[k]) >=
                                                       amqp_ss_maxlen):
-                    logger.error("message header %s too long, dropping" % k)
+                    logger.error(f"message header {k} too long, dropping")
                     return False
 
         AMQP_Message = amqp.Message(raw_body,
@@ -802,7 +791,7 @@ class AMQP(Moth):
             return True  # no failure == success :-)
 
         except Exception as err:
-            logger.warning("failed %s: %s" % (exchange, err))
+            logger.warning(f"failed {exchange}: {err}")
             logger.debug('Exception details: ', exc_info=True)
 
             self.metrics['txBadCount'] += 1
@@ -822,7 +811,7 @@ class AMQP(Moth):
                 self.connection.close()
 
         except Exception as err:
-            logger.error("sr_amqp/close 2: {}".format(err))
+            logger.error(f"sr_amqp/close 2: {err}")
             logger.debug("sr_amqp/close 2 Exception details:", exc_info=True)
         # FIXME toclose not useful as we don't close channels anymore
         self.metricsDisconnect()

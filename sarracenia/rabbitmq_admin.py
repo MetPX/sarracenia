@@ -45,7 +45,7 @@ def exec_rabbitmqadmin(url, options, simulate=False):
             if logger: logger.debug("using subprocess.getstatusoutput")
 
             if simulate:
-                print("dry_run: %s" % ' '.join(command))
+                print(f"dry_run: {' '.join(command)}")
                 return 0, None
 
             return subprocess.getstatusoutput(command)
@@ -56,7 +56,7 @@ def exec_rabbitmqadmin(url, options, simulate=False):
                 logger.debug('using subprocess.run cmdlst=%s', ' '.join(cmdlst))
 
             if simulate:
-                print("dry_run: %s" % cmdlin)
+                print(f"dry_run: {cmdlin}")
                 return 0, None
 
             rclass = subprocess.run(cmdlst, stdout=subprocess.PIPE)
@@ -68,10 +68,10 @@ def exec_rabbitmqadmin(url, options, simulate=False):
     except:
         if sys.version_info.major < 3 or (sys.version_info.major == 3
                                           and sys.version_info.minor < 5):
-            if logger: logger.error("trying run command %s %s" % command)
+            if logger: logger.error( f"trying run command {command}" )
         else:
             if logger:
-                logger.error("trying run command %s %s" % ' '.join(cmdlst))
+                logger.error( f"trying run command {' '.join(cmdlst)}" )
         if logger: logger.debug('Exception details:', exc_info=True)
 
     return 0, None
@@ -82,9 +82,9 @@ def add_user(url, role, user, passwd, simulate):
        add the given user with the given credentials.
     """
 
-    declare = "declare user name='%s' password=" % user
+    declare = f"declare user name='{user}' password="
 
-    if passwd != None: declare += "\'%s\'" % urllib.parse.unquote(passwd)
+    if passwd != None: declare += f"'{urllib.parse.unquote(passwd)}'"
     if role == 'admin': declare += " tags=administrator "
     else: declare += ' tags="" '
 
@@ -96,33 +96,30 @@ def add_user(url, role, user, passwd, simulate):
         c = "configure=.*"
         w = "write=.*"
         r = "read=.*"
-        logger.info("permission user \'%s\' role %s  %s %s %s " %
-                    (user + '@' + url.hostname, 'feeder', c, w, r))
-        declare = "declare permission vhost=/ user=%s %s %s %s" % (user, c, w, r)
+        logger.info( f"permission user \'{user+'@'+url.hostname}\' role feeder  {c} {w} {r} " )
+        declare = f"declare permission vhost=/ user={user} {c} {w} {r}"
         dummy = run_rabbitmqadmin(url, declare, simulate)
         return
 
     # source
 
     if role in ['source']:
-        c = "configure=^q_%s.*|^xs_%s.*" % (user, user)
-        w = "write=^q_%s.*|^xs_%s.*" % (user, user)
-        r = "read=^q_%s.*|^x[lrs]_%s.*|^x.*public$" % (user, user)
-        logger.info("permission user '%s' role %s  %s %s %s " %
-                    (user + '@' + url.hostname, 'source', c, w, r))
-        declare = "declare permission vhost=/ user=%s %s %s %s" % (user, c, w, r)
+        c = f"configure=^q_{user}.*|^xs_{user}.*"
+        w = f"write=^q_{user}.*|^xs_{user}.*"
+        r = f"read=^q_{user}.*|^x[lrs]_{user}.*|^x.*public$"
+        logger.info( f"permission user '{user+'@'+url.hostname}' role source {c} {w} {r} " )
+        declare = f"declare permission vhost=/ user={user} {c} {w} {r}"
         dummy = run_rabbitmqadmin(url, declare, simulate)
         return
 
     # subscribe
 
     if role in ['subscribe', 'subscriber']:
-        c = "configure=^q_%s.*" % user
-        w = "write=^q_%s.*|^xs_%s$" % (user, user)
-        r = "read=^q_%s.*|^x[lrs]_%s.*|^x.*public$" % (user, user)
-        logger.info("permission user '%s' role %s  %s %s %s " %
-                    (user + '@' + url.hostname, 'source', c, w, r))
-        declare = "declare permission vhost=/ user=%s %s %s %s" % (user, c, w, r)
+        c = f"configure=^q_{user}.*"
+        w = f"write=^q_{user}.*|^xs_{user}$"
+        r = f"read=^q_{user}.*|^x[lrs]_{user}.*|^x.*public$"
+        logger.info( f"permission user \'{user+'@'+url.hostname}\' role subscriber {c} {w} {r} " )
+        declare = f"declare permission vhost=/ user={user} {c} {w} {r}"
         dummy = run_rabbitmqadmin(url, declare, simulate)
 
 
@@ -130,8 +127,8 @@ def del_user(url, user, simulate):
     """
         delete user from the given broker.
     """
-    logger.info("deleting user %s" % user)
-    delete = "delete user name='%s'" % user
+    logger.info(f"deleting user {user}")
+    delete = f"delete user name='{user}'"
     dummy = run_rabbitmqadmin(url, delete, simulate)
 
 
@@ -190,7 +187,7 @@ def broker_get_exchanges(url, ssl_key_file=None, ssl_cert_file=None):
     try:
         conn.request(method, path, "", headers)
     except socket.error as e:
-        print("Could not connect: {0}".format(e))
+        print(f"Could not connect: {e}")
 
     resp = conn.getresponse()
     answer = resp.read()
@@ -302,7 +299,7 @@ if __name__ == "__main__":
     lex = list(
         map(lambda x: x['name'],
             json.loads(exec_rabbitmqadmin(url, "list exchanges name")[1])))
-    print("exchanges: %s\n\n" % lex)
+    print(f"exchanges: {lex}\n\n")
 
     u = 'tsource'
     up = rabbitmq_user_access(url, u)
@@ -339,7 +336,6 @@ def run_rabbitmqadmin(url, options, simulate=False):
         return lst
 
     except:
-        logger.error("sr_rabbit/run_rabbitmqadmin failed with option '%s'" %
-                     options)
+        logger.error(f"sr_rabbit/run_rabbitmqadmin failed with option '{options}'")
         logger.debug('Exception details: ', exc_info=True)
     return []

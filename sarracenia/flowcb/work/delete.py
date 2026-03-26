@@ -65,14 +65,14 @@ class Delete(FlowCB):
             if self.o.delete_destination:
                 self.dirsOfDeletion |= set(message['new_dir'])
                 files_to_delete.append(
-                    "%s/%s" % (message['new_dir'], message['new_file']))
+                    f"{message['new_dir']}/{message['new_file']}")
 
             for f in files_to_delete:
-                logger.info("deleting %s" % f)
+                logger.info(f"deleting {f}")
                 try:
                     os.unlink(f)
                 except OSError as err:
-                    logger.error("could not unlink {}: {}".format(f, err))
+                    logger.error(f"could not unlink {f}: {err}")
                     logger.debug("Exception details:", exc_info=True)
 
     def on_housekeeping(self):
@@ -97,7 +97,7 @@ class Delete(FlowCB):
                             self.dirsofDeltion.add(dirname(d))
                             logger.info( f"deleted {d}")
                         except Exception as err:
-                            logger.error("could not unlink {}: {}".format(f, err))
+                            logger.error(f"could not unlink {f}: {err}")
                             logger.debug("Exception details:", exc_info=True)
                     else:
                         logger.info( f"but not for long enough yet.")

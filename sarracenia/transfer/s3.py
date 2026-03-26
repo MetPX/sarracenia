@@ -114,7 +114,7 @@ class S3(Transfer):
             return True
 
         except:
-            logger.error("sr_s3/credentials: unable to get credentials for %s" % self.sendTo)
+            logger.error(f"sr_s3/credentials: unable to get credentials for {self.sendTo}")
             logger.debug('Exception details: ', exc_info=True)
 
         return False

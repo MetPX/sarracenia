@@ -161,10 +161,9 @@ class Log(FlowCB):
         if set(['reject']) & self.o.logEvents:
             for msg in worklist.rejected:
                 if 'report' in msg:
-                    logger.info("rejected: %s (%d: %s)" % (
-                        self._messageAcceptStr(msg), msg['report']['code'], msg['report']['message']))
+                    logger.info( f"rejected: {self._messageAcceptStr(msg)} ({msg['report']['code']:d}: {msg['report']['message']})" )
                 else:
-                    logger.info("rejected: %s " % self._messageAcceptStr(msg))
+                    logger.info(f"rejected: {self._messageAcceptStr(msg)} ")
         
         elif 'nodupe' in self.o.logEvents:
             for msg in worklist.rejected:
@@ -186,17 +185,17 @@ class Log(FlowCB):
     def after_gather(self, worklist):
         if set(['after_gather']) & self.o.logEvents:
             for msg in worklist.incoming:
-                logger.info("gathered: %s" % self._messagePostStr(msg))
+                logger.info(f"gathered: {self._messagePostStr(msg)}")
             for msg in worklist.rejected:
-                logger.info("rejected: %s" % self._messagePostStr(msg))
+                logger.info(f"rejected: {self._messagePostStr(msg)}")
 
 
     def after_post(self, worklist):
         if set(['after_post']) & self.o.logEvents:
             for msg in worklist.ok:
-                logger.info("posted %s" % self._messagePostStr(msg))
+                logger.info(f"posted {self._messagePostStr(msg)}")
             for msg in worklist.failed:
-                logger.info("failed to post, queued to retry %s" % self._messagePostStr(msg))
+                logger.info(f"failed to post, queued to retry {self._messagePostStr(msg)}")
 
     def after_work(self, worklist):
         self.rejectCount += len(worklist.rejected)
@@ -208,7 +207,7 @@ class Log(FlowCB):
                         "rejected: %d %s " %
                         (msg['report']['code'], msg['report']['message']))
                 else:
-                    logger.info("rejected: %s " % self._messageStr(msg))
+                    logger.info(f"rejected: {self._messageStr(msg)} ")
 
         elif 'nodupe' in self.o.logEvents:
             for msg in worklist.rejected:
@@ -254,7 +253,7 @@ class Log(FlowCB):
 
 
                 if self.o.logMessageDump:
-                    logger.info('message: %s' % msg.dumps())
+                    logger.info(f'message: {msg.dumps()}')
 
     def stats(self):
         tot = self.msgCount + self.rejectCount
@@ -277,8 +276,7 @@ class Log(FlowCB):
              f"bytes: {naturalSize(self.fileBytes)} " +\
              f"rate: {naturalSize(self.fileBytes/how_long)}/sec" )
         if self.msgCount > 0:
-            logger.info("lag: average: %.2f, maximum: %.2f " %
-                        (self.lagTotal / self.msgCount, self.lagMax))
+            logger.info( f"lag: average: {self.lagTotal / self.msgCount:.2f}, maximum: {self.lagMax:.2f} " )
 
     def on_cleanup(self):
         logger.info("hello")

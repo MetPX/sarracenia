@@ -311,7 +311,7 @@ class Poll(FlowCB):
             self.dest.cd(path)
             return True
         except:
-            logger.warning("sr_poll/cd: could not cd to directory %s" % path)
+            logger.warning(f"sr_poll/cd: could not cd to directory {path}")
         return False
 
     def filedate(self, line):
@@ -484,7 +484,7 @@ class Poll(FlowCB):
                             if 'Identity' in msg:
                                  del ok['Identity']
                         except:
-                            logger.error("cannot read link %s message dropped" % path)
+                            logger.error(f"cannot read link {path} message dropped")
                             logger.debug('Exception details: ', exc_info=True)
                             ok=None
                 return ok
@@ -521,7 +521,7 @@ class Poll(FlowCB):
                 try: 
                     msg['fileOp'] = { 'link': self.dest.readlink(path) }
                 except:
-                    logger.error("cannot read link %s message dropped" % post_relPath)
+                    logger.error(f"cannot read link {post_relPath} message dropped")
                     logger.debug('Exception details: ', exc_info=True)
                     return None
 
@@ -568,8 +568,7 @@ class Poll(FlowCB):
             self.dest.connect()
         except:
             # connection did not work
-            logger.error("sr_poll/post_new_url: unable to connect to %s" %
-                         self.o.pollUrl)
+            logger.error(f"sr_poll/post_new_url: unable to connect to {self.o.pollUrl}")
             logger.debug('Exception details: ', exc_info=True)
             nap=15
             logger.error("Sleeping {nap} secs and retry")
