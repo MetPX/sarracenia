@@ -40,21 +40,6 @@ class Subscription(dict):
 
         self['broker'] = options.broker
 
-<<<<<<< HEAD
-        if topicOverride:
-            if self['broker'].url.scheme.lower().startswith('amqp'):
-                self['bindings'] = [ { 'exchange': exchange, 'topic': subtopic } ]
-            elif exchange:
-                self['bindings'] = [ { 'topic': [exchange] + subtopic } ]
-            else:
-                self['bindings'] = [ { 'topic': subtopic } ]
-        elif not exchange:
-            self['bindings'] = [ { 'prefix': options.topicPrefix, 'sub': subtopic } ]
-        elif self['broker'].url.scheme.lower().startswith('amqp'):
-            self['bindings'] = [ { 'exchange': exchange, 'prefix': options.topicPrefix, 'sub': subtopic } ]
-        else:
-            self['bindings'] = [ { 'prefix': [exchange] + options.topicPrefix, 'sub': subtopic } ]
-=======
         if options.topicPrefix:
             prefix=options.topicPrefix
         else:
@@ -84,7 +69,6 @@ class Subscription(dict):
             else:
                 self['bindings'] = [ { 'topic':  topic_separator.join(prefix + subtopic) } ]
 
->>>>>>> issue1572_pas1
 
         self['queue']={ 'name': queueName, 'template': queueName_template, 'cleanup_needed': None }
         for a in [ 'queueBind', 'queueDeclare' , 'queueType' ]:

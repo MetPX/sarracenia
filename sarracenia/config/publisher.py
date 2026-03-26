@@ -27,14 +27,6 @@ class Publisher(dict):
 
         self['broker'] = copy.deepcopy(options.post_broker)
 
-<<<<<<< HEAD
-        exchange_root = None
-        if hasattr(options,'post_exchange'):
-            if  options.post_exchange != 'default':
-                exchange_root = options.post_exchange
-            else:
-                exchange_root = 'xs_%s' % options.post_broker.url.username
-=======
         exchange_root = getattr(options,'post_exchange', 'default' if self['broker'].url.scheme.lower().startswith('amqp') else None )
 
         if exchange_root == "default":
@@ -42,7 +34,6 @@ class Publisher(dict):
                 exchange_root = 'xpublic'
             else:
                 exchange_root = f'xs_{self["broker"].url.username}'
->>>>>>> issue1572_pas1
 
         already_a_list = hasattr(options,'post_exchange') and type(options.post_exchange) == list
         #logger.debug( f" {exchange_root=}  {already_a_list=} " )
@@ -52,11 +43,7 @@ class Publisher(dict):
                 self['exchange'] = options.post_exchange
             else:
                if hasattr(options, 'post_exchangeSuffix'):
-<<<<<<< HEAD
-                   exchange_root += '_%s' % options.post_exchangeSuffix
-=======
                    exchange_root += f'_{options.post_exchangeSuffix}'
->>>>>>> issue1572_pas1
 
                if hasattr(options, 'post_exchangeSplit') and options.post_exchangeSplit > 1:
                    l = []
