@@ -297,7 +297,7 @@ class RedisQueue():
         logger.info(f"{self.name} on_housekeeping")
 
         if float(self.redis.get(self.key_name_lasthk)) + self.o.housekeeping > sarracenia.nowflt():
-            logger.info( f"Housekeeping ran less than {self.o.housekeeping:d}s ago; not running " )
+            logger.info( f"Housekeeping ran less than {self.o.housekeeping}s ago; not running " )
             return
 
         # A shared/distributed locking system is required when using Redis
