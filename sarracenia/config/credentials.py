@@ -139,9 +139,9 @@ class Credential:
             elif scheme.startswith('https'):
                 alist = [ 'prot_p', 'bearer_token', 'login_method', 's3_endpoint', 'implicit_ftps']
                 if self.s3_session_token: 
-                    s += " %s" % 's3_session_token=Yes' 
+                    s += f" s3_session_token=Yes" 
                 if self.azure_credentials: 
-                    s += " %s" % 'azure_credentials=Yes' 
+                    s += f" azure_credentials=Yes" 
 
         for a in alist:
             if getattr(self, a):
@@ -231,7 +231,7 @@ class CredentialDB:
         if ( 'amqp' in url.scheme ) and \
            ( (url.username == None) or (url.username == '') ):
             urlstr = urllib.parse.urlunparse( ( url.scheme, \
-                'anonymous:anonymous@%s' % url.netloc, url.path, None, None, url.port ) )
+                f'anonymous:anonymous@{url.netloc}', url.path, None, None, url.port ) )
             url = urllib.parse.urlparse(urlstr)
             if self.isValid(url):
                 self.add(urlstr)
@@ -356,7 +356,7 @@ class CredentialDB:
             # no option
             if len(parts) == 1:
                 if not self.isValid(url, details):
-                    logger.error("bad credential 1 (%s)" % line)
+                    logger.error(f"bad credential 1 ({line})")
                     return
                 self.add(urlstr, details)
                 return
@@ -404,11 +404,11 @@ class CredentialDB:
                     details.implicit_ftps = True
                     details.tls = True
                 else:
-                    logger.warning("bad credential option (%s)" % keyword)
+                    logger.warning(f"bad credential option ({keyword})")
 
             # need to check validity
             if not self.isValid(url, details):
-                logger.error("bad credential 2 (%s)" % line)
+                logger.error(f"bad credential 2 ({line})")
                 return
 
             # seting options to protocol
@@ -416,7 +416,7 @@ class CredentialDB:
             self.add(urlstr, details)
 
         except:
-            logger.error("credentials/parse %s" % line)
+            logger.error(f"credentials/parse {line}")
             logger.debug('Exception details: ', exc_info=True)
 
     def read(self, path):
@@ -437,7 +437,7 @@ class CredentialDB:
                 for line in lines:
                     self._parse(line)
         except:
-            logger.error("credentials/read path = %s" % path)
+            logger.error(f"credentials/read path = {path}")
             logger.debug('Exception details: ', exc_info=True)
         #logger.debug("Credentials = %s\n" % self.credentials)
 
@@ -506,7 +506,7 @@ class CredentialDB:
         # check url and add credentials if needed from credential file
         ok, cred_details = self.get(urlstr)
         if cred_details is None:
-            logging.critical("bad credential %s" % urlstr)
+            logging.critical(f"bad credential {urlstr}")
             # Callers expect that a Credential object will be returned
             cred_details = Credential()
             cred_details.url = urllib.parse.urlparse(urlstr)

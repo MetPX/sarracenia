@@ -67,7 +67,7 @@ class Wis(PostFormat):
             try:
                 GeoJSONBody=json.loads(body)
             except Exception as ex:
-                logger.warning('expected geojson, decode error: %s' % ex)
+                logger.warning(f'expected geojson, decode error: {ex}')
                 logger.debug('Exception details: ', exc_info=True)
                 return None
 

@@ -147,7 +147,7 @@ class Eumetsat(sarracenia.flowcb.FlowCB):
         for cid in self._encoded_collectionIds:
             for i in range(0, n_hours):
                 req_url = url_head.replace(self._cid_placeholder, cid) + t_str[i] + url_tail
-                logger.info("polling URL {}".format(req_url))
+                logger.info(f"polling URL {req_url}")
                 resp = requests.get(req_url)
                 if not resp or "products" not in resp.json().keys():
                     logger.warning(f"Something went wrong: no products found at {req_url}")

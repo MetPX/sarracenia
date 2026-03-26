@@ -20,26 +20,27 @@ class Subscription(dict):
             if not hasattr(options.broker.url,'username') or ( options.broker.url.username == 'anonymous' ):
                 exchange = 'xpublic'
             else:
-                exchange = 'xs_%s' % options.broker.url.username
+                exchange = f'xs_{options.broker.url.username}'
 
             if options.component in [ 'poll', 'post', 'watch' ]:
                 if hasattr(options,'post_exchange') and options.post_exchange:
                     exchange = options.post_exchange
 
                 if hasattr(options,'post_exchangeSuffix') and options.post_exchangeSuffix:
-                    exchange += '_%s' % options.post_exchangeSuffix
+                    exchange += f'_{options.post_exchangeSuffix}'
 
                 if hasattr(options, 'post_exchangeSplit') and hasattr( options, 'no') and (options.no > 0):
                     exchange += "%02d" % (options.no % options.post_exchangeSplit)
             else:
                 if hasattr(options, 'exchangeSuffix'):
-                    exchange += '_%s' % options.exchangeSuffix
+                    exchange += f'_{options.exchangeSuffix}'
 
                 if hasattr(options, 'exchangeSplit') and hasattr( options, 'no') and (options.no > 0):
                     exchange += "%02d" % (options.no % options.exchangeSplit)
 
         self['broker'] = options.broker
 
+<<<<<<< HEAD
         if topicOverride:
             if self['broker'].url.scheme.lower().startswith('amqp'):
                 self['bindings'] = [ { 'exchange': exchange, 'topic': subtopic } ]
@@ -53,6 +54,37 @@ class Subscription(dict):
             self['bindings'] = [ { 'exchange': exchange, 'prefix': options.topicPrefix, 'sub': subtopic } ]
         else:
             self['bindings'] = [ { 'prefix': [exchange] + options.topicPrefix, 'sub': subtopic } ]
+=======
+        if options.topicPrefix:
+            prefix=options.topicPrefix
+        else:
+            prefix=[]
+        if exchange and not self['broker'].url.scheme.lower().startswith('amqp'):
+            prefix= [ exchange ] + prefix
+
+        # For MQTTv5 usage with >1 instance, you need MQTT shared subscriptions. 
+        #  
+        if  'mqtt' in self['broker'].url.scheme.lower():
+           prefix= [ '$share', queueName ] + prefix
+           topic_separator='/'
+        else:
+           topic_separator='.'
+
+
+        if topicOverride:
+            if self['broker'].url.scheme.lower().startswith('amqp'):
+                self['bindings'] = [ { 'exchange': exchange, 'topic': topic_separator.join(subtopic) } ]
+            elif exchange:
+                self['bindings'] = [ { 'topic': topic_separator.join([exchange] + subtopic) } ]
+            else:
+                self['bindings'] = [ { 'topic': topic_separator.join(subtopic) } ]
+        else:
+            if self['broker'].url.scheme.lower().startswith('amqp'):
+                self['bindings'] = [ { 'exchange': exchange, 'topic': topic_separator.join(prefix + subtopic) } ]
+            else:
+                self['bindings'] = [ { 'topic':  topic_separator.join(prefix + subtopic) } ]
+
+>>>>>>> issue1572_pas1
 
         self['queue']={ 'name': queueName, 'template': queueName_template, 'cleanup_needed': None }
         for a in [ 'queueBind', 'queueDeclare' , 'queueType' ]:
@@ -95,16 +127,44 @@ class Subscriptions(list):
 
         try:
             with open(fn,'r') as f:
-                #self=json.loads(f.readlines())
-                self=copy.deepcopy(json.load(f))
+                data = json.load(f)
+                self[:] = copy.deepcopy(data)
 
             for s in self:
                 if type(s['broker']) is str:
                     ok, broker = options.credentials.validate_urlstr(s['broker'])
                     if ok:
                         s['broker'] = broker
-            if 'auto_delete' not in self:
-                s['auto_delete'] = options.auto_delete
+
+                # old subscriptions (pre 3.02) that have "sub" fields in them need conversion.
+                if 'mqtt' in s['broker'].url.scheme.lower(): 
+                    proto='mqtt'
+                    sep = '/' 
+                else:
+                    proto= 'amqp'
+                    sep = '.'
+
+                # subscription format change, recover for version before 3.02
+
+                for b in s['bindings']:
+                    if 'sub' in b:
+                         if proto in ['mqtt']:
+                             b['topic'] =  sep.join( [ '$share', s['queue']['name'] ] + b.get('prefix',[]) + b['sub'])
+                         else:
+                             b['topic'] =  sep.join(b.get('prefix',[]) + b['sub'])
+
+                    if 'sub' in b:
+                        del b['sub']
+                    if 'prefix' in b:
+                        del b['prefix']
+
+                if 'queue' in s:
+                    if not 'tlsRigour' in s['queue']:
+                         s['queue']['tlsRigour'] = options.tlsRigour
+
+                if 'auto_delete' not in s:
+                    s['auto_delete'] = options.auto_delete
+     
             return self
 
         except Exception as Ex:

@@ -53,7 +53,7 @@ class PClean(FlowCB):
         """
         results = {}
         for fxx_dir in fxx_dirs:
-            results["{}{}".format(fxx_dir, ext)] = relpath.replace(
+            results[f"{fxx_dir}{ext}"] = relpath.replace(
                 self.all_fxx_dirs[1], fxx_dir)
         return results
 

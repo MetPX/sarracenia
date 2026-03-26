@@ -149,7 +149,7 @@ class MQTT(Moth):
                 queue['qos'] = int(self.o['qos'])
 
 
-        me = "%s.%s" % (__class__.__module__, __class__.__name__)
+        me = f"{__class__.__module__}.{__class__.__name__}"
 
         if ('settings' in self.o) and (me in self.o['settings']):
             for s in self.o['settings'][me]:
@@ -236,20 +236,9 @@ class MQTT(Moth):
         broker=s['broker']
 
         for binding_dict in s['bindings']:
-
-            if 'topic' in binding_dict:
-                subj='/'.join(binding_dict['topic'])
-            else:
-                prefix = binding_dict["prefix"]
-                subtopic = binding_dict["sub"]
-                logger.info( f"tuple: {prefix} {subtopic}")
-
-                subj = '/'.join(['$share', queue['name'] ] +
-                                prefix + subtopic)
-
-            (res, mid) = client.subscribe(subj, qos=queue['qos'])
+            (res, mid) = client.subscribe(binding_dict['topic'], qos=queue['qos'])
             userdata.subscribe_in_progress += 1
-            logger.info( f"request to subscribe to: {subj}, mid={mid} "
+            logger.info( f"request to subscribe to: {binding_dict['topic']}, mid={mid} "
                     f"qos={queue['qos']} sent: {paho.mqtt.client.error_string(res)}" )
         userdata.subscribe_mutex.release()
         userdata.metricsConnect()
@@ -749,7 +738,8 @@ class MQTT(Moth):
                 return False
 
         # Shallow copy: only top-level keys are deleted (_deleteOnPost), nested dicts are read-only
-        body = dict(message)
+        # copy.copy(message) produces a sarracenia.Message object
+        body = copy.copy(message)
 
         if 'format' in self.o:
             postFormat=self.o['format']

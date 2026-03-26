@@ -96,10 +96,10 @@ if features['humanize']['present']:
 else:
   
     def naturalSize( num ):
-       return "%g" % num
+       return f"{num:g}"
 
     def naturalTime( dur ):
-       return "%g" % dur
+       return f"{dur:g}"
 
     def naturalDelta(value, months=True, minimum_unit='seconds'):
         return "%d" % value
@@ -121,13 +121,13 @@ else:
     import pathlib
 
     def site_config_dir( app, author ):
-        return '/etc/xdg/xdg-ubuntu-xorg/%s' % app
+        return f'/etc/xdg/xdg-ubuntu-xorg/{app}'
 
     def user_config_dir( app, author ):
-        return str(pathlib.Path.home()) + '/.config/%s' % app
+        return str(pathlib.Path.home()) + f'/.config/{app}'
  
     def user_cache_dir( app, author ):
-        return str(pathlib.Path.home()) + '/.cache/%s' % app
+        return str(pathlib.Path.home()) + f'/.cache/{app}'
 
 """
  end of extra feature scan. 
@@ -307,8 +307,8 @@ def timeflt2str(f=None):
         always UTC timezone.    
     """
 
-    nsec = "{:.9g}".format(f % 1)[1:]
-    return "{}{}".format(time.strftime("%Y%m%dT%H%M%S", time.gmtime(f)), nsec)
+    nsec = f"{f % 1:.9g}"[1:]
+    return f"{time.strftime('%Y%m%dT%H%M%S', time.gmtime(f))}{nsec}"
 
 
 def timeValidate(s) -> bool:
@@ -703,13 +703,13 @@ class Message(dict):
                 if k != 'properties':
                     v = "{ "
                 for kk in sorted(msg[k].keys()):
-                    v += " '%s':'%s'," % (kk, msg[k][kk])
+                    v += f" '{kk}':'{msg[k][kk]}',"
                 v = v[:-1] 
                 if k != 'properties':
                    v += " }"
             else:
                 try:
-                    v = "%s" % msg[k]
+                    v = f"{msg[k]}"
                 except:
                     v = "unprintable"
 
@@ -861,7 +861,7 @@ class Message(dict):
         if lstat is None: return msg
 
         if (lstat.st_mode is not None) :
-            msg['mode'] = "%o" % (lstat.st_mode & 0o7777)
+            msg['mode'] = f"{lstat.st_mode & 4095:o}"
             if not o.permCopy:
                 msg['_deleteOnPost'] |= set(['mode'])
             
@@ -937,8 +937,7 @@ class Message(dict):
                 text = known_report_codes[code]
                 
         else:
-            logger.warning('unknown report code supplied: %d:%s' %
-                           (code, text))
+            logger.warning( f"unknown report code supplied: {code:d}:{text}" )
             if text is None:
                 text = 'unknown disposition'
 
@@ -1042,7 +1041,7 @@ class Message(dict):
 
         for i in ['relPath', 'subtopic', 'baseUrl']:
             if not i in msg:
-                msg[i] = msg['new_%s' % i]
+                msg[i] = msg[f'new_{i}']
 
         if sys.platform == 'win32':
             if 'new_dir' not in msg:

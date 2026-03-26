@@ -71,8 +71,7 @@ class Sftp(Transfer):
                 self.ssh_config.parse(fp)
                 fp.close()
         except:
-            logger.error("sr_sftp/__init__: unable to load ssh config %s" %
-                         ssh_config)
+            logger.error(f"sr_sftp/__init__: unable to load ssh config {ssh_config}")
             logger.debug('Exception details: ', exc_info=True)
 
     def registered_as():
@@ -168,7 +167,7 @@ class Sftp(Transfer):
     # chmod
     def chmod(self, perm, path):
         if not self.o.nofsetstat: 
-            logger.debug('sr_sftp chmod %s %s', '{0:o}'.format(perm), path)
+            logger.debug('sr_sftp chmod %s %s', f'{perm:o}', path)
             alarm_set(self.o.timeout)
             try:
                 self.sftp.chmod(path, perm)
@@ -243,8 +242,7 @@ class Sftp(Transfer):
             return True
 
         except:
-            logger.error("sr_sftp/connect: unable to connect to %s (user:%s)" %
-                         (self.host, self.user))
+            logger.error( f"sr_sftp/connect: unable to connect to {self.host} (user:{self.user})" )
             logger.debug('Exception details: ', exc_info=True)
 
         finally:
@@ -298,8 +296,7 @@ class Sftp(Transfer):
 
         except:
             logger.error(
-                "sr_sftp/credentials: unable to get credentials for %s" %
-                self.sendTo)
+                f"sr_sftp/credentials: unable to get credentials for {self.sendTo}")
             logger.debug('Exception details: ', exc_info=True)
 
         return False
@@ -394,7 +391,7 @@ class Sftp(Transfer):
 
         cmd = self.o.accelScpCommand.replace('%s', arg1)
         cmd = cmd.replace('%d', arg2).split()
-        logger.info("accel_sftp:  %s" % ' '.join(cmd))
+        logger.info(f"accel_sftp:  {' '.join(cmd)}")
         p = subprocess.Popen(cmd)
         p.wait()
         if p.returncode != 0:
@@ -535,7 +532,7 @@ class Sftp(Transfer):
         cmd = self.o.accelScpCommand.replace('%s', arg1)
         cmd = cmd.replace('%d', arg2).split()
 
-        logger.info("accel_sftp:  %s" % ' '.join(cmd))
+        logger.info(f"accel_sftp:  {' '.join(cmd)}")
         p = subprocess.Popen(cmd)
         p.wait()
         if p.returncode != 0:

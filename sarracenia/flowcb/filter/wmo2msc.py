@@ -314,7 +314,7 @@ class Wmo2msc(FlowCB):
             message.computeIdentity(output_file, self.o, offset=0, data=self.bintxt)
             message['size'] = len(self.bintxt)
 
-            logger.info('%s -> %s (%s)' % (input_file, output_file, fmt))
+            logger.info(f'{input_file} -> {output_file} ({fmt})')
 
             # set how the file will be announced
             if self.o.post_baseDir:

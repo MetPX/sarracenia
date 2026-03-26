@@ -95,11 +95,11 @@ class PostFormat:
             if exchange:
                 topic_prefix = [exchange] + p['topicPrefix']
             else:
-                topic_prefix = p['topicPrefix']
+                topic_prefix = list(p['topicPrefix'])
 
             topic_separator='/'
         else:
-            topic_prefix = p['topicPrefix']
+            topic_prefix = list(p['topicPrefix'])
             topic_separator='.'
 
         if 'topic' in msg:
@@ -114,7 +114,9 @@ class PostFormat:
             if 'relPath' in msg: 
                 topic += msg['relPath'].split('/')[0:-1]
             elif 'subtopic' in msg:
-                topic += msg['subtopic']  
+                topic = topic_prefix + msg['subtopic']  
+            else:
+                topic = topic_prefix
 
         return topic
 
@@ -126,7 +128,7 @@ import sarracenia.postformat.wis
 # not including NAV CANADA in public code yet
 try:
     import sarracenia.postformat.navcanada
-except:
+except Exception:
     pass
 import sarracenia.postformat.swim
 import sarracenia.postformat.v03
