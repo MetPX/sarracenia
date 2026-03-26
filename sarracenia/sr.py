@@ -1471,6 +1471,7 @@ class sr_GlobalState:
                 logger.info(f"did not find anything to copy for: {l}. creating an empty one.")
                 if cfg[-5:] not in [ '.inc', '.conf' ]:
                     cfg = cfg + '.conf'
+                os.makedirs(destdir, exist_ok=True)
                 with open( destdir + os.sep + cfg, 'w' ) as f:
                     f.write('')
 
