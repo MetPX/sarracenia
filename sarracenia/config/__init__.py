@@ -1871,7 +1871,7 @@ class Config:
 
         if not self.old_subscriptions:
             self.subscriptionsPath=self._getSubscriptionsFileName(self.component,self.config)
-            self.old_subscriptions=self.subscriptions.read(self, self.subscriptionsPath)
+            self.old_subscriptions.read(self, self.subscriptionsPath)
 
         # look for template in old subscriptions.
         if self.old_subscriptions:
@@ -2884,7 +2884,7 @@ def one_config(component, config, action, isPost=False, hostDir=None):
 
     #FIXME parse old subscriptions here.
     cfg.subscriptionsPath=cfg._getSubscriptionsFileName(cfg.component,cfg.config)
-    cfg.old_subscriptions=cfg.subscriptions.read(cfg, cfg.subscriptionsPath)
+    cfg.old_subscriptions.read(cfg, cfg.subscriptionsPath)
 
     if os.path.exists(fname):
          cfg.parse_file(fname,component)
