@@ -12,6 +12,7 @@ class TestCallbackDispatch(unittest.TestCase):
         flow = MagicMock()
         flow.o = MagicMock()
         flow.o.logLevel.lower.return_value = 'info'
+        flow._logLevel_debug = False
         flow.worklist = MagicMock()
         flow.plugins = {
             'after_accept': [MagicMock()],
