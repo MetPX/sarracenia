@@ -1048,9 +1048,9 @@ class Flow:
                     continue
 
             if 'fileOp' in m and 'rename' in m['fileOp']:
-                url = self.o.variableExpansion(m['baseUrl'],
-                                             m) + os.sep + m['fileOp']['rename']
-                if 'sundew_extension' in m and url.count(":") < 1:
+                url = self.o.variableExpansion(m['baseUrl'], m) + os.sep + m['fileOp']['rename']
+                # append sundew_extension when present in msg and not already added to the url
+                if 'sundew_extension' in m and m['sundew_extension'] not in url:
                     urlToMatch = url + ':' + m['sundew_extension']
                 else:
                     urlToMatch = url
@@ -1079,7 +1079,8 @@ class Flow:
             else:
                 url += '/' + m['relPath']
 
-            if 'sundew_extension' in m and url.count(":") < 1:
+            # append sundew_extension when present in msg and not already added to the url
+            if 'sundew_extension' in m and m['sundew_extension'] not in url:
                 urlToMatch = url + ':' + m['sundew_extension']
             else:
                 urlToMatch = url
