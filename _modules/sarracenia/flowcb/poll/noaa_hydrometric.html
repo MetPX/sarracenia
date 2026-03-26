@@ -160,10 +160,10 @@
                     <span class="k">for</span> <span class="n">line</span> <span class="ow">in</span> <span class="n">f</span><span class="p">:</span>
                         <span class="n">items</span> <span class="o">=</span> <span class="n">line</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;|&#39;</span><span class="p">)</span>
                         <span class="n">sitecodes</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">items</span><span class="p">[</span><span class="mi">2</span><span class="p">])</span>
-                <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;poll_noaa used stn_file </span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="n">stn_file</span><span class="p">)</span>
+                <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;poll_noaa used stn_file </span><span class="si">{</span><span class="n">stn_file</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
 
             <span class="k">except</span> <span class="ne">IOError</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
-                <span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="s2">&quot;poll_noaa couldn&#39;t open stn file: </span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="n">stn_file</span><span class="p">)</span>
+                <span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;poll_noaa couldn&#39;t open stn file: </span><span class="si">{</span><span class="n">stn_file</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
 
         <span class="k">else</span><span class="p">:</span>
             <span class="c1"># Grab station site codes from https://opendap.co-ops.nos.noaa.gov/stations/stationsXML.jsp</span>

@@ -125,7 +125,7 @@
 
       <span class="k">def</span> <span class="nf">destfn</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">msg</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
 
-          <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s1">&#39;before: m=</span><span class="si">%s</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="n">msg</span> <span class="p">)</span>
+          <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;before: m=</span><span class="si">{</span><span class="n">msg</span><span class="si">}</span><span class="s1">&#39;</span> <span class="p">)</span>
           <span class="n">relPath</span> <span class="o">=</span> <span class="n">msg</span><span class="p">[</span><span class="s2">&quot;relPath&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;/&#39;</span><span class="p">)</span>
           <span class="n">msg</span><span class="p">[</span><span class="s1">&#39;destfn_added_prefix&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;renamed_&#39;</span>
           <span class="k">return</span> <span class="s1">&#39;renamed_&#39;</span> <span class="o">+</span> <span class="n">relPath</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span></div>

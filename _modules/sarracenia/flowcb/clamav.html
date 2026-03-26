@@ -164,13 +164,11 @@
 
         <span class="k">if</span> <span class="n">virus_found</span><span class="p">:</span>
             <span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span>
-                <span class="s2">&quot;part_clamav_scan took </span><span class="si">%g</span><span class="s2"> not forwarding, virus detected in </span><span class="si">%s</span><span class="s2">&quot;</span>
-                <span class="o">%</span> <span class="p">(</span><span class="n">end</span> <span class="o">-</span> <span class="n">start</span><span class="p">,</span> <span class="n">scanfn</span><span class="p">))</span>
+                <span class="sa">f</span><span class="s2">&quot;part_clamav_scan took </span><span class="si">{</span><span class="n">end</span><span class="o">-</span><span class="n">start</span><span class="si">:</span><span class="s2">g</span><span class="si">}</span><span class="s2"> not forwarding, virus detected in </span><span class="si">{</span><span class="n">scanfn</span><span class="si">}</span><span class="s2">&quot;</span> <span class="p">)</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">metric_hits</span> <span class="o">+=</span> <span class="mi">1</span>
             <span class="k">return</span> <span class="kc">False</span>
 
-        <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;part_clamav_scan took </span><span class="si">%g</span><span class="s2"> seconds, no viruses in </span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span>
-                    <span class="p">(</span><span class="n">end</span> <span class="o">-</span> <span class="n">start</span><span class="p">,</span> <span class="n">scanfn</span><span class="p">))</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span> <span class="sa">f</span><span class="s2">&quot;part_clamav_scan took </span><span class="si">{</span><span class="n">end</span><span class="o">-</span><span class="n">start</span><span class="si">:</span><span class="s2">g</span><span class="si">}</span><span class="s2"> seconds, no viruses in </span><span class="si">{</span><span class="n">scanfn</span><span class="si">}</span><span class="s2">&quot;</span> <span class="p">)</span>
         <span class="k">return</span> <span class="kc">True</span>
 
     <span class="k">def</span> <span class="nf">after_accept</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">worklist</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
