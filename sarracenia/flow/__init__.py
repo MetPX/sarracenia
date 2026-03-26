@@ -159,6 +159,8 @@ class Flow:
         logging.basicConfig(format=self.o.logFormat,
                             level=getattr(logging, self.o.logLevel.upper()))
 
+        self._logLevel_debug = self.o.logLevel.lower() == 'debug'
+
         self.plugins = {}
         for entry_point in sarracenia.flowcb.entry_points:
             self.plugins[entry_point] = []
@@ -285,7 +287,7 @@ class Flow:
 
     def _runCallbacksWorklist(self, entry_point):
 
-        debug = self.o.logLevel.lower() == 'debug'
+        debug = self._logLevel_debug
 
         fn = getattr(self, entry_point, None)
         if fn is not None:
@@ -311,7 +313,7 @@ class Flow:
 
     def runCallbacksTime(self, entry_point):
 
-        debug = self.o.logLevel.lower() == 'debug'
+        debug = self._logLevel_debug
 
         fn = getattr(self, entry_point, None)
         if fn is not None:
@@ -342,7 +344,7 @@ class Flow:
         """
         
         if hasattr(self, "metricsReport"):
-            if self.o.logLevel.lower() == 'debug' :
+            if self._logLevel_debug :
                 self.metricsReport()
             else:
                 try:
@@ -358,7 +360,7 @@ class Flow:
 
         for p in self.plugins["metricsReport"]:
             module_name = str(p.__module__).replace('sarracenia.flowcb.', '' )
-            if self.o.logLevel.lower() == 'debug' :
+            if self._logLevel_debug :
                 self.metrics[module_name] = p()
             else:
                 try:
@@ -372,7 +374,7 @@ class Flow:
                 fn = getattr(self.proto[scheme], 'metricsReport', None)
                 if fn is not None and callable(fn):
                     module_name = str(fn.__module__).replace('sarracenia.transfer.', '' )
-                    if self.o.logLevel.lower() == 'debug' :
+                    if self._logLevel_debug :
                         self.metrics[module_name] = fn()
                     else:
                         try:
@@ -385,7 +387,7 @@ class Flow:
 
     def _runCallbackPoll(self):
         if hasattr(self, "Poll"):
-            if self.o.logLevel.lower() == 'debug' :
+            if self._logLevel_debug :
                 self.Poll()
             else:
                 try:
@@ -395,7 +397,7 @@ class Flow:
                     logger.debug( "details:", exc_info=True )
 
         for plugin in self.plugins['poll']:
-            if self.o.logLevel.lower() == 'debug' :
+            if self._logLevel_debug :
                 new_incoming = plugin()
                 if len(new_incoming) > 0:
                     self.worklist.incoming.extend(new_incoming)
@@ -418,7 +420,7 @@ class Flow:
         """
         logger.info(f'on_housekeeping pid: {os.getpid()} {self.o.component}/{self.o.config} instance: {self.o.no}')
         if hasattr(self, "on_housekeeping"):
-            if self.o.logLevel.lower() == 'debug' :
+            if self._logLevel_debug :
                 self.on_housekeeping()
             else:
                 try:
@@ -499,7 +501,7 @@ class Flow:
     def ack(self, mlist) -> None:
         if "ack" in self.plugins:
             for p in self.plugins["ack"]:
-                if self.o.logLevel.lower() == 'debug' :
+                if self._logLevel_debug :
                     p(mlist)
                 else:
                     try:
