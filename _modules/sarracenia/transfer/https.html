@@ -445,8 +445,8 @@
         <span class="n">alarm_set</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">o</span><span class="o">.</span><span class="n">timeout</span><span class="p">)</span>
 
         <span class="k">try</span><span class="p">:</span>
-            <span class="n">headers</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;user-agent&#39;</span><span class="p">:</span> <span class="s1">&#39;Sarracenia &#39;</span> <span class="o">+</span> <span class="n">sarracenia</span><span class="o">.</span><span class="n">__version__</span><span class="p">}</span>
-            
+            <span class="n">headers</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;user-agent&#39;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">o</span><span class="o">.</span><span class="n">httpUserAgent</span><span class="p">}</span>
+
             <span class="c1"># Bearer token credential is passed as a header</span>
             <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">bearer_token</span><span class="p">:</span>
                 <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s1">&#39;bearer_token: </span><span class="si">%s</span><span class="s1">&#39;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">bearer_token</span><span class="p">)</span>
