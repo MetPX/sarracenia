@@ -374,11 +374,16 @@ code use flow subclasses. Those cases are configured using the flowMain option.<
 <ul>
 <li><p>Users configure a <em>broker</em>, instead of a pump.</p></li>
 <li><p>By convention, the default vhost ‘/’ is always used (did not feel the need to use other vhosts yet)</p></li>
-<li><p>Users explicitly can pick their <em>queue</em> names (this ia a client-id in MQTT.)</p></li>
+<li><p>Users explicitly can pick their <em>queue</em> names (this is a client-id in MQTT.)</p></li>
 <li><p>Users set <em>subtopic</em>,</p></li>
 <li><p>Topics with dot separator are minimally transformed, rather than encoded.</p></li>
 <li><p>Queue is set to <em>durable</em> so that notification messages are not lost across broker restarts.</p></li>
-<li><p>We use <em>message headers</em> (AMQP-speak for key-value pairs) rather than encoding in JSON or some other payload format.</p></li>
+<li><dl class="simple">
+<dt>in v02 format messages, We use <em>message headers</em> (AMQP-speak for key-value pairs) rather than</dt><dd><p>encoding in JSON or some other payload format.</p>
+</dd>
+</dl>
+</li>
+<li><p>in v03 format messages, we switched to JSON encoding the messages to get around length limit (255) for AMQP headers.</p></li>
 <li><p><em>expire</em> how long to keep an idle queue or exchange around.</p></li>
 </ul>
 </li>
@@ -415,6 +420,7 @@ code use flow subclasses. Those cases are configured using the flowMain option.<
 <ul>
 <li><p>AMQP: A queue named <em>queuename</em> is bound to an exchange xpublic with key: v03.observations …</p></li>
 <li><p>MQTT subscription: topic $shared/<em>queuename</em>/xpublic/v03/observations …</p></li>
+<li><p>This mapping can be turned off and overridden with a setting: <em>Exchange None</em> in which case, exchange will not be used.</p></li>
 </ul>
 </li>
 <li><p>Connections are clean_sesssion=0 normally, to recover notification messages when a connection is broken.</p></li>

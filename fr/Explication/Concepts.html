@@ -469,7 +469,9 @@ Si quelqu’un connaît l’AMQP, il comprend. Si ce n’est pas le cas, ils peu
 <li><p>les utilisateurs définissent <em>subtopic</em>,</p></li>
 <li><p>les sujets avec séparateur de points sont transformés au minimum, plutôt qu’encodés.</p></li>
 <li><p>La fil d’attente est définie sur <em>durable</em> afin que les messages ne soient pas perdus lors des redémarrages du broker.</p></li>
-<li><p>nous utilisons des <em>en-têtes de message</em> (langage AMQP pour les paires clé-valeur) plutôt que d’encoder en JSON ou dans un autre format de charge utile.</p></li>
+<li><p>Dans les messages au format v02, nous utilisons des <em>en-têtes de message</em> (le terme AMQP pour désigner les paires clé-valeur) plutôt que
+l’encodage en JSON ou dans un autre format de charge utile.</p></li>
+<li><p>Dans les messages au format v03, nous sommes passés à l’encodage JSON afin de contourner la limite de longueur (255) des en-têtes AMQP.</p></li>
 <li><p><em>expire</em> combien de temps pour conserver une fil d’attente inactive ou un échange.</p></li>
 </ul>
 </div></blockquote>
@@ -508,6 +510,7 @@ ne sont qu’un parmi une variété de choix pour les méthodes de routage dans 
 <ul>
 <li><p>AMQP: Une fil d’attente nommée <em>queuename</em> est liée à un échange xpublic avec clé: v03.observations …</p></li>
 <li><p>Abonnement MQTT: thème $shared/<em>queuename</em>/xpublic/v03/observations …</p></li>
+<li><p>cette traduction de conceptes/hierarchies de thèmes peut être désactivé avec <em>exchange None</em></p></li>
 </ul>
 </li>
 <li><p>Les connexions sont normalement clean_sesssion = 0, pour récupérer les messages lorsqu’une connexion est rompue.</p></li>

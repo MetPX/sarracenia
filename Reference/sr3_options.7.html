@@ -828,15 +828,45 @@ This allows subscribers to perform an actual rename, and avoid triggering a down
 <p>FIXME: rename algorithm improved in v3 to avoid use of double post… just</p>
 </div>
 </section>
-<section id="exchange-name-default-xpublic-and-exchangesuffix">
-<h4>exchange &lt;name&gt; (default: xpublic) and exchangeSuffix<a class="headerlink" href="#exchange-name-default-xpublic-and-exchangesuffix" title="Link to this heading"></a></h4>
-<p>The convention on data pumps is to use the <em>xpublic</em> exchange. Users can establish
-private data flow for their own processing. Users can declare their own exchanges
-that always begin with <em>xs_&lt;username&gt;</em>, so to save having to specify that each
-time, one can just set <em>exchangeSuffix kk</em> which will result in the exchange
-being set to <em>xs_&lt;username&gt;_kk</em> (overriding the <em>xpublic</em> default).
+<section id="exchange-name-default-default-and-exchangesuffix">
+<h4>exchange &lt;name&gt; (default: default) and exchangeSuffix<a class="headerlink" href="#exchange-name-default-default-and-exchangesuffix" title="Link to this heading"></a></h4>
+<p>This setting determines the <em>exchange</em> that will be used in subscriptions.  In AMQP 0.9,
+the exchange is a required element of a subscription, separate from the topic hierarchy.
+In other protocols, it can be used as an organizing mechanism in the topic hierarchy.
 These settings must appear in the configuration file before the corresponding
 <em>topicPrefix</em> and <em>subtopic</em> settings.</p>
+<ul class="simple">
+<li><p>exchange default</p></li>
+</ul>
+<p>When the setting is at it’s <em>default</em> setting, then conventions apply:
+The convention on data pumps is to use the <em>xpublic</em> exchange. Users can establish
+private data flow for their own processing.</p>
+<ul class="simple">
+<li><p>exchange xs_username_hoho</p></li>
+<li><p>exchangeSuffix hoho</p></li>
+</ul>
+<p>On sr3 dedicated brokers, users can declare their own exchanges that always begin
+with <em>xs_&lt;username&gt;</em>, so to save having to specify that each time, one can just
+set <em>exchangeSuffix kk</em> which will result in the exchange being set
+to <em>xs_&lt;username&gt;_kk</em> (overriding the <em>xpublic</em> default).
+So the two above settings are equivalent alternatives.</p>
+<p>The <em>exchange</em> setting explicitly sets the exchange name for subscription bindings.
+sr3 brokers apply the naming convention, but external brokers may not,
+so any name is allowed here.</p>
+<p>on protocols that do not have <em>exchange</em> as a concept (every one other than AMQP 0.9),
+specifying the <em>exchange</em> results in a topic hierarchy like so:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">exchange</span> <span class="n">xs_username_hoho</span>
+<span class="n">topicPrefix</span> <span class="n">v02</span>
+
+<span class="n">xs_username_hoho</span><span class="o">/</span><span class="n">v03</span><span class="o">/</span><span class="n">post</span><span class="o">/</span><span class="n">relative</span><span class="o">/</span><span class="n">path</span><span class="o">/</span><span class="n">of</span><span class="o">/</span><span class="n">posting</span><span class="o">...</span>
+</pre></div>
+</div>
+<ul class="simple">
+<li><p>exchange None</p></li>
+</ul>
+<p>Setting exchange to None will cause errors and failure to connect in AMQP 0.9.
+For other protocols, it will suppress the prepending of the exchange before
+the <em>topicPrefix</em> in subscriptions.</p>
 </section>
 <section id="exchangedeclare-flag">
 <h4>exchangeDeclare &lt;flag&gt;<a class="headerlink" href="#exchangedeclare-flag" title="Link to this heading"></a></h4>
@@ -1492,6 +1522,8 @@ choice for post_exchange is ‘xpublic’.</p>
 <p>When publishing a product, a user can trigger a script, using
 flow callback entry_points such as <strong>after_accept</strong>, and <strong>after_work</strong>
 to modify messages generated about files prior to posting.</p>
+<p>Setting post_exchange to None will suppress it’s inclusion in a posted
+message’s topic hierarchy in non amqp 0.9 protocols.</p>
 </section>
 <section id="post-exchangesplit-count-default-0">
 <h4>post_exchangeSplit &lt;count&gt; (default: 0)<a class="headerlink" href="#post-exchangesplit-count-default-0" title="Link to this heading"></a></h4>
@@ -1548,7 +1580,10 @@ value for topics for both posting and binding.</p>
 <p>Prepended to the sub-topic to form a complete topic hierarchy.
 This option applies to publishing.  Denotes the version of messages published
 in the sub-topics. (v03 refers to <a class="reference external" href="sr3_post.7.html">sr3_post.7.html</a>) defaults to whatever
-was received.</p>
+was received. Suppress using:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">post_topicPrefix</span> <span class="kc">None</span>
+</pre></div>
+</div>
 </section>
 <section id="prefetch-n-default-1">
 <h4>prefetch &lt;N&gt; (default: 1)<a class="headerlink" href="#prefetch-n-default-1" title="Link to this heading"></a></h4>
@@ -2114,10 +2149,38 @@ the connection should succeed regardless.</p>
 </section>
 <section id="topic-string">
 <h4>topic &lt;string&gt;<a class="headerlink" href="#topic-string" title="Link to this heading"></a></h4>
-<p>Explicitly set a subscribing topic string, overriding the value usually
+<p>Please use <em>subtopic</em>, this is for exceptional use only. <em>topic</em> is used to
+explicitly override a subscribing topic string, overriding the value usually
 derived from a group of settings. For sarracenia data pumps, this should never be needed,
 as the use of <em>exchange</em>, <em>topicPrefix</em>, and <em>subtopic</em> normally builds the right
 value.</p>
+<p>sample configuration:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">broker</span> <span class="n">mqtt</span><span class="p">:</span><span class="o">//</span><span class="n">user</span><span class="nd">@broker</span>
+<span class="n">queueName</span> <span class="n">q_user_Doreen</span>
+<span class="n">subtopic</span> <span class="c1">#</span>
+</pre></div>
+</div>
+<p>resulting subscription topic:   $share/q_user_Doreen/xpublic/v03/#</p>
+<p>The result is visible in the bindings field of the <em>sr3 show</em> command.</p>
+<p>The resulting subscription topic is built from:</p>
+<ul class="simple">
+<li><p>the subscription sharing prefix used for all MQTT subscriptions (required for multiple
+instances to share a single subscription)</p></li>
+<li><p>the queueName is used to identify the subscription sharing group.</p></li>
+<li><p>the default exchange (xpublic),</p></li>
+<li><p>the default topicPrefix (v03)</p></li>
+<li><p>finally the given subtopic.</p></li>
+</ul>
+<p>all catenated together.</p>
+<dl>
+<dt>vs::</dt><dd><p>broker mqtt://user&#64;broker
+queueName q_user_Doreen
+topic #</p>
+<p>resulting subscrption topic:   #</p>
+</dd>
+</dl>
+<p>Then specifying topic, all other settings are ignored and the provided setting
+taken literally.</p>
 </section>
 <section id="topicprefix-default-v03">
 <h4>topicPrefix (default: v03)<a class="headerlink" href="#topicprefix-default-v03" title="Link to this heading"></a></h4>
@@ -2130,6 +2193,10 @@ subscribe to.</p>
 <p>For example, Sr3 expects v03 messages by default, but there are
 plenty of sources that offer the old version (requiring a topicPrefix of <em>v02.post</em>)
 to specify the old version of messages.</p>
+<p>to disable:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">topicPrefix</span> <span class="kc">None</span>
+</pre></div>
+</div>
 </section>
 <section id="users-flag-default-false">
 <h4>users &lt;flag&gt; (default: false)<a class="headerlink" href="#users-flag-default-false" title="Link to this heading"></a></h4>

@@ -264,8 +264,7 @@
         <span class="k">if</span> <span class="n">os_stat</span><span class="o">.</span><span class="n">S_ISDIR</span><span class="p">(</span><span class="n">lstat</span><span class="o">.</span><span class="n">st_mode</span><span class="p">):</span>
             <span class="k">return</span> <span class="p">[</span><span class="n">msg</span><span class="p">]</span>
 
-        <span class="c1"># complete message</span>
-        <span class="k">if</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">o</span><span class="o">.</span><span class="n">post_topicPrefix</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="s1">&#39;v03&#39;</span><span class="p">)</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">o</span><span class="o">.</span><span class="n">inline</span><span class="p">:</span>
+        <span class="k">if</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">o</span><span class="o">.</span><span class="n">post_format</span> <span class="o">==</span> <span class="s1">&#39;v03&#39;</span><span class="p">)</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">o</span><span class="o">.</span><span class="n">inline</span><span class="p">:</span>
             <span class="k">if</span> <span class="n">fsiz</span> <span class="o">&lt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">o</span><span class="o">.</span><span class="n">inlineByteMax</span><span class="p">:</span>
 
                 <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">o</span><span class="o">.</span><span class="n">inlineEncoding</span> <span class="o">==</span> <span class="s1">&#39;guess&#39;</span><span class="p">:</span>

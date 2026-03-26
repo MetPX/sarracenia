@@ -840,14 +840,43 @@ Cela permet aux abonnés d’effectuer un renommage réel et d’éviter de déc
 </div>
 <p>FIXME : algorithme de renommage amélioré en v3 pour éviter l’utilisation de double post…</p>
 </section>
-<section id="exchange-nom-defaut-xpublic-et-exchangesuffix">
-<h4>exchange &lt;nom&gt; (défaut: xpublic) et exchangeSuffix<a class="headerlink" href="#exchange-nom-defaut-xpublic-et-exchangesuffix" title="Link to this heading"></a></h4>
-<p>La norme pour les pompes de données est d’utiliser l’échange <em>xpublic</em>. Les utilisateurs peuvent établir un
-flux de données privées pour leur propre traitement. Les utilisateurs peuvent déclarer leurs propres échanges
-qui commencent toujours par <em>xs_&lt;nom-d’utilisatueur&gt;</em>. Pour éviter d’avoir à le spécifier à chaque
-fois, on peut simplement régler <em>exchangeSuffix kk</em> qui entraînera l’échange
-à être défini a <em>xs_&lt;nom-d’utilisatueur&gt;_kk</em> (en remplaçant le défaut <em>xpublic</em>).
-Ces paramètres doivent apparaître dans le fichier de configuration avant les paramètres <em>topicPrefix</em> et <em>subtopic</em>.</p>
+<section id="exchange-nom-par-defaut-default-et-exchange-suffix">
+<h4>exchange &lt;nom&gt; (par défaut : default) et exchange_suffix<a class="headerlink" href="#exchange-nom-par-defaut-default-et-exchange-suffix" title="Link to this heading"></a></h4>
+<p>Ce paramètre détermine l’<em>échange</em> utilisé dans les abonnements. Dans AMQP 0.9,
+l’échange est un élément obligatoire d’un abonnement, distinct de la hiérarchie des sujets.
+Dans d’autres protocoles, il peut servir de mécanisme d’organisation au dans l’hiérarchie des sujets.</p>
+<p>Ces paramètres doivent figurer dans le fichier de configuration avant les paramètres <em>topicPrefix</em> et <em>subtopic</em> correspondants.</p>
+<ul class="simple">
+<li><p>exchange default</p></li>
+</ul>
+<p>Lorsque ce paramètre est à sa valeur par défaut, les conventions suivantes s’appliquent :
+La convention pour les pompes de données est d’utiliser l’échange <em>xpublic</em>. Les utilisateurs peuvent établir
+un flux de données privé pour leur propre traitement.</p>
+<ul class="simple">
+<li><p>exchange xs_username_hoho</p></li>
+<li><p>exchangeSuffix hoho</p></li>
+</ul>
+<p>Sur les courtiers dédiés SR3, les utilisateurs peuvent déclarer leurs propres échanges commençant toujours
+par <em>xs_&lt;nom_utilisateur&gt;</em>. Pour éviter de le spécifier à chaque fois, il suffit de
+définir <em>exchangeSuffix kk</em>, ce qui aura pour effet de définir l’échange
+sur <em>xs_&lt;nom_utilisateur&gt;_kk</em> (remplaçant ainsi la valeur par défaut de <em>xpublic</em>).</p>
+<p>Les deux paramètres ci-dessus sont donc équivalents.
+Le paramètre <em>exchange</em> définit explicitement le nom de l’échange pour les liaisons d’abonnement.
+Les courtiers SR3 appliquent cette convention de nommage, mais ce n’est pas forcément le cas des courtiers externes.
+Par conséquent, tout nom est autorisé. Pour les protocoles qui n’ont pas le concept d’<em>exchange</em> (tous sauf AMQP 0.9),
+la spécification de l’<em>exchange</em> génère une hiérarchie de sujets comme suit:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">exchange</span> <span class="n">xs_username_hoho</span>
+<span class="n">topicPrefix</span> <span class="n">v02</span>
+
+<span class="n">résultat</span><span class="p">:</span>   <span class="n">xs_username_hoho</span><span class="o">/</span><span class="n">v03</span><span class="o">/</span><span class="n">post</span><span class="o">/</span><span class="n">relative</span><span class="o">/</span><span class="n">path</span><span class="o">/</span><span class="n">of</span><span class="o">/</span><span class="n">posting</span><span class="o">...</span>
+</pre></div>
+</div>
+<ul class="simple">
+<li><p>exchange None</p></li>
+</ul>
+<p>Définir l’échange sur None entraînera des erreurs et l’impossibilité de se connecter sous AMQP 0.9.
+Pour les autres protocoles, cela empêchera l’ajout de l’échange avant le <em>topicPrefix</em> dans les
+abonnements.</p>
 </section>
 <section id="exchangedeclare-flag">
 <h4>exchangeDeclare &lt;flag&gt;<a class="headerlink" href="#exchangedeclare-flag" title="Link to this heading"></a></h4>
@@ -2089,8 +2118,38 @@ permettre la connexion de réussir.</p>
 </section>
 <section id="topic-chaine">
 <h4>topic &lt;chaine&gt;<a class="headerlink" href="#topic-chaine" title="Link to this heading"></a></h4>
-<p>Définissez explicitement une chaîne de sujet d’abonnement ou de publication, en remplaçant la valeur
-dériver à partir de l’habituel groupe de paramètres. Pour les pompes de données Sarracenia, cela ne
+<p>Veuillez plutôt utiliser <em>subtopic</em>. <em>topic</em> sert à remplir explicitement la chaîne de
+<em>topic</em> d’abonnement, en remplaçant la valeur généralement dérivée d’un ensemble
+de paramètres. Pour les pompes de données Sarracenia, cela devrait être très rarement
+nécessaire, car l’utilisation de <em>exchange</em>, <em>topicPrefix</em> et <em>subtopic</em> génère
+normalement une valeur appropriée.</p>
+<p>Exemple de configuration:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">broker</span> <span class="n">mqtt</span><span class="p">:</span><span class="o">//</span><span class="n">user</span><span class="nd">@broker</span>
+<span class="n">queueName</span> <span class="n">q_user_Doreen</span>
+<span class="n">subtopic</span> <span class="c1">#</span>
+</pre></div>
+</div>
+<p>Sujet d’abonnement résultant : $share/q_user_Doreen/xpublic/v03/#</p>
+<p>Le résultat est visible dans le champ <em>bindings</em> de la commande <em>sr3 show</em>.</p>
+<p>Le sujet d’abonnement résultant est construit à partir des éléments suivants:</p>
+<ul class="simple">
+<li><p>l’identifiant de partage d’abonnement utilisé pour tous les abonnements MQTT (requis pour que plusieurs instances partagent un même abonnement)</p></li>
+<li><p>le queueName (utilisateur comme identifiant de groupe de partage.)</p></li>
+<li><p>l’échange par défaut (xpublic)</p></li>
+<li><p>le <em>topicPrefix</em> par défaut (v03)</p></li>
+<li><p>enfin, le <em>subtopics</em> spécifié.</p></li>
+</ul>
+<p>Tous ces éléments sont concaténés.</p>
+<p>vs:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">broker</span> <span class="n">mqtt</span><span class="p">:</span><span class="o">//</span><span class="n">user</span><span class="nd">@broker</span>
+<span class="n">queueName</span> <span class="n">q_user_Doreen</span>
+<span class="n">topic</span> <span class="c1">#</span>
+</pre></div>
+</div>
+<p>Sujet d’abonnement résultant : #</p>
+<p>Lorsque vous spécifiez un sujet, tous les autres paramètres sont ignorés et le paramètre fourni est pris au pied de la lettre.
+Définissez explicitement une chaîne de sujet d’abonnement ou de publication, en remplaçant la valeur
+dérivé à partir de l’habituel groupe de paramètres. Pour les pompes de données Sarracenia, cela ne
 devrait jamais être nécessaire, car l’utilisation de l’<em>exchange</em>, <em>topicPrefix</em> et <em>subtopic</em>
 construit normalement le bon valeur.</p>
 </section>
