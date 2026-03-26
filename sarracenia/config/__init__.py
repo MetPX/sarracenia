@@ -191,7 +191,7 @@ str_options = [
     'accelCpCommand', 'accelWgetCommand', 'accelScpCommand',
     'action', 'admin', 'baseDir', 'broker', 'cluster', 'directory', 'exchange',
     'exchangeSuffix', 'feeder', 'filename', 'flatten', 'flowMain', 'header', 
-    'hostname', 'httpsSafeQuote', 'identity', 'inlineEncoding', 'logFormat', 'logLevel',
+    'hostname', 'httpsSafeQuote', 'httpUserAgent', 'identity', 'inlineEncoding', 'logFormat', 'logLevel',
     'pollUrl', 'post_baseUrl', 'post_baseDir', 'post_broker', 'post_exchange',
     'post_exchangeSuffix', 'post_format', 'post_topic', 'queueName', 'queueShare', 'queueType', 'sendTo', 'rename',
     'report_exchange', 'source', 'strip', 'timezone', 'nodupe_ttl', 'nodupe_driver', 
@@ -916,6 +916,7 @@ class Config:
         self.log_flowcb_needed = False
         self.sleep = 0.1
         self.housekeeping = 300
+        self.httpUserAgent = 'Sarracenia ' + sarracenia.__version__
         self.inline = False
         self.inlineByteMax = 4096
         self.inlineEncoding = 'guess'

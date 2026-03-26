@@ -348,8 +348,8 @@ class Https(Transfer):
         alarm_set(self.o.timeout)
 
         try:
-            headers = {'user-agent': 'Sarracenia ' + sarracenia.__version__}
-            
+            headers = {'user-agent': self.o.httpUserAgent}
+
             # Bearer token credential is passed as a header
             if self.bearer_token:
                 logger.debug('bearer_token: %s', self.bearer_token)
