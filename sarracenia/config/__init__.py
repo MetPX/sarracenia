@@ -113,7 +113,7 @@ default_options = {
     'post_documentRoot': None,
     'post_baseDir': None,
     'post_baseUrl': None,
-    'post_format': 'v03',
+    'post_format': None,
     'realpathPost': False,
     'recursive' : True,
     'runStateThreshold_reject': 80,
