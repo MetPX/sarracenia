@@ -427,8 +427,23 @@ class AMQP(Moth):
                         logger.info('binding %s with %s to %s (as: %s)' % \
                             ( queue['name'], topic, exchange, broker_str ) )
                         if exchange:
-                            self.management_channel.queue_bind(queue['name'], exchange,
-                                            topic)
+                            self.management_channel.queue_bind(queue['name'], exchange, topic)
+                for b in subscription['bindings_to_remove']:
+                    if 'exchange' in b:
+                        exchange = b['exchange'] 
+                    else:
+                        logger.critical( f" cannot bind! AMQP v0.9 requires an exchange setting " )
+                    prefix= b['prefix'] if 'prefix' in b else None
+                    topic = b['topic']
+                    if self.o['dry_run']:
+                        logger.info('unbinding (dry run) %s with %s from %s (as: %s)' % \
+                            ( queue['name'], topic, exchange, broker_str ) )
+                    else:
+                        logger.info('unbinding %s with %s from %s (as: %s)' % \
+                            ( queue['name'], topic, exchange, broker_str ) )
+                        if exchange:
+                            self.management_channel.queue_unbind(queue['name'], exchange, topic)
+
 
             # Setup Successfully Complete!
             self.metricsConnect()
