@@ -138,5 +138,5 @@ echo
 # Configure users
 sr3 --users declare
 echo "dir: +${PWD}+"
-git clone https://github.com/MetPX/sr_insects
+git clone -b fix/test-reliability https://github.com/MetPX/sr_insects
 
