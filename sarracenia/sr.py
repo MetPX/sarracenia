@@ -828,7 +828,8 @@ class sr_GlobalState:
                         host = self._init_broker_host(s['broker'].url.netloc)
                         xl=[]
                         for b in s['bindings']:
-                            xl.append(b['exchange'])
+                            if 'exchange' in b:
+                                xl.append(b['exchange'])
                         #logger.critical( f" {xl=}  ")
                         q = s['queue']['name']
 
@@ -846,10 +847,11 @@ class sr_GlobalState:
                 if hasattr(o,'publishers') and len(o.publishers):
                     for p in o.publishers:
                         host = self._init_broker_host(p['broker'].url.netloc)
-                        if 'exchange' in self.brokers[host]:
-                            self.brokers[host]['exchange'].extend(p['exchange'])
-                        else:
-                            self.brokers[host]['exchange'] = p['exchange']
+                        if 'exchange' in p:
+                            if 'exchange' in self.brokers[host]:
+                                self.brokers[host]['exchange'].extend(p['exchange'])
+                            else:
+                                self.brokers[host]['exchange'] = p['exchange']
 
         self.exchange_summary = {}
         for h in self.brokers:
@@ -1891,7 +1893,7 @@ class sr_GlobalState:
                                     {
                                         'broker': p['broker'],
                                         'declare': False,
-                                        'exchange': p['exchange'],
+                                        'exchange': p['exchange'] if 'exchange' in p else None,
                                         'dry_run': self.options.dry_run,
                                         'broker': self.brokers[h]['admin'],
                                         'message_strategy': { 'stubborn':True },

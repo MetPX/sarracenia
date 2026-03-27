@@ -54,7 +54,7 @@ default_options = {
     'auto_delete': False,
     'batch': 25,
     'durable': True,
-    'exchange': None,
+    'exchange': 'default',
     'exchangeDeclare': True,
     'expire': None,
     'logLevel': 'info',
@@ -408,10 +408,14 @@ class AMQP(Moth):
             if queue['bind'] and queue['name']:
                 for b in subscription['bindings']:
                     #exchange, prefix, subtopic = tup
-                    exchange = b['exchange']
-                    prefix= b['prefix']
-                    subtopic = b['sub']
-                    topic = '.'.join(prefix + subtopic)
+                    if 'exchange' in b:
+                        exchange = b['exchange'] 
+                    else:
+                        logger.critical( f" cannot bind! AMQP v0.9 requires an exchange setting " )
+                        exchange=None
+
+                    prefix= b['prefix'] if 'prefix' in b else None
+                    topic = b['topic']
 
                     if self.o['dry_run']:
                         logger.info( f"binding (dry run) {queue['name']} with {topic} to {exchange} (as: {broker_str}) "  )

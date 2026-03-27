@@ -236,21 +236,9 @@ class MQTT(Moth):
         broker=s['broker']
 
         for binding_dict in s['bindings']:
-
-            if 'topic' in queue:
-                subj=queue['topic']
-            else:
-                exchange = binding_dict["exchange"]
-                prefix = binding_dict["prefix"]
-                subtopic = binding_dict["sub"]
-                logger.info( f"tuple: {exchange} {prefix} {subtopic}")
-
-                subj = '/'.join(['$share', queue['name'], exchange] +
-                                prefix + subtopic)
-
-            (res, mid) = client.subscribe(subj, qos=queue['qos'])
+            (res, mid) = client.subscribe(binding_dict['topic'], qos=queue['qos'])
             userdata.subscribe_in_progress += 1
-            logger.info( f"request to subscribe to: {subj}, mid={mid} "
+            logger.info( f"request to subscribe to: {binding_dict['topic']}, mid={mid} "
                     f"qos={queue['qos']} sent: {paho.mqtt.client.error_string(res)}" )
         userdata.subscribe_mutex.release()
         userdata.metricsConnect()
@@ -633,7 +621,10 @@ class MQTT(Moth):
             self.metrics['rxBadCount'] += 1
             return None
 
-        message['exchange'] = mqttMessage.topic.split('/')[0]
+        if self.o['exchange']:
+            message['exchange'] = mqttMessage.topic.split('/')[0]
+            message['_deleteOnPost'] |= set( ['exchange' ])
+
         message.deriveSource( self.o )
         message.deriveTopics( self.o, topic=mqttMessage.topic, separator='/' )
 
@@ -643,7 +634,7 @@ class MQTT(Moth):
 
         message['qos'] = mqttMessage.qos
         message['local_offset'] = 0
-        message['_deleteOnPost'] |= set( ['exchange', 'local_offset', 'ack_id', 'qos' ])
+        message['_deleteOnPost'] |= set( [ 'local_offset', 'ack_id', 'qos' ])
 
         self.metrics['rxLast'] = sarracenia.nowstr()
         if message.validate():
@@ -765,7 +756,7 @@ class MQTT(Moth):
                     del body[k]
             del body['_deleteOnPost']
 
-        if not exchange:
+        if not exchange and self.o['exchange']:
             if (type(self.o['exchange']) is list):
                 if (len(self.o['exchange']) > 1):
                     if 'post_exchangeSplit' in self.o:
@@ -795,7 +786,7 @@ class MQTT(Moth):
             if not 'posts' in message:
                 message['posts'] = []
 
-            message['posts'].append({ 'broker':str(self.o['broker']), 'topic': topic, 'exchange':exchange } )
+            message['posts'].append({ 'broker':str(self.o['broker']), 'topic': topic  } )
 
             del headers['topic']
 
