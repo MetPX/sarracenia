@@ -290,6 +290,11 @@ class AMQP(Moth):
         queue=subscription['queue']
         broker = subscription['broker']
 
+        if 'mismatch' in queue and queue['mismatch']:
+           logger.critical( f"configuration invalid. Cannot change {queue['mismatch']} queue properties without a cleanup.")
+           logger.critical( f" used to have: {self.o['old_subscriptions']} " )
+           return -2
+
         try:
             # from sr_consumer.build_connection...
             if not self.connection or not self.connection.connected:
