@@ -133,15 +133,15 @@ class Subscriptions(list):
 
                 for b in s['bindings']:
                     if 'sub' in b:
+                         pfx=b.get('prefix',[])
+                         sub=b['sub']
+                         if not type(pfx) == list:
+                             pfx=list(pfx)
+                         if not type(sub) == list:
+                             sub=list(sub)
                          if proto in ['mqtt']:
-                             b['topic'] =  sep.join( [ '$share', s['queue']['name'] ] + b.get('prefix',[]) + b['sub'])
+                             b['topic'] =  sep.join( [ '$share', s['queue']['name'] ] + pfx + sub )
                          else:
-                             pfx=b.get('prefix',[])
-                             sub=b['sub']
-                             if not type(pfx) == list:
-                                 pfx=list(pfx)
-                             if not type(sub) == list:
-                                 sub=list(sub)
                              b['topic'] =  sep.join(pfx+sub)
 
                     if 'sub' in b:
