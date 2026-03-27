@@ -76,6 +76,7 @@ class Subscription(dict):
             if hasattr(options, a):
                 self['queue'][aa] = getattr(options,a)
 
+        self['bindings_to_remove'] = []
         for a in [ 'auto_delete', 'clean_session', 'durable', 'expire', 'max_inflight_messages', \
                 'max_queued_messages',  'prefetch', 'qos', 'receiveMaximum', 'tlsRigour', 'topic' ]:
             if hasattr(options, a):
