@@ -1462,7 +1462,6 @@ class sr_GlobalState:
             found = False
             for candidate in suggestions:
                 if os.path.exists(candidate):
-                    pathlib.Path(destdir).mkdir(parents=True, exist_ok=True)
                     logger.info(f"copying: {candidate} to {destdir + os.sep + cfg} ")
                     shutil.copyfile(candidate, destdir + os.sep + cfg)
                     found = True
@@ -1471,8 +1470,14 @@ class sr_GlobalState:
                 logger.info(f"did not find anything to copy for: {l}. creating an empty one.")
                 if cfg[-5:] not in [ '.inc', '.conf' ]:
                     cfg = cfg + '.conf'
-                with open( destdir + os.sep + cfg, 'w' ) as f:
-                    f.write('')
+                try:
+                    with open(destdir + os.sep + cfg, 'w') as f:
+                        f.write('')
+                except FileNotFoundError:
+                    logger.error(
+                        f"Invalid configuration path: {destdir}. "
+                        f"Component '{component}' may not exist or the path is incorrect."
+                    )
 
     def declare(self):
         '''
