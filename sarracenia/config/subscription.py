@@ -231,6 +231,8 @@ class Subscriptions(list):
                      continue 
                 q_bad=[]
                 for x in [ 'auto_delete', 'durable', 'expire', 'prefetch' ]:
+                    if x not in s['queue'] or x not in os['queue']:
+                        continue
                     if s['queue'][x] != os['queue'][x]:
                        logger.critical( f"INVARIANT queue parameter {x} changed, lossy message queue cleanup required to implement" )
                        q_bad.append(x)
