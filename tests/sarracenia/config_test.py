@@ -368,7 +368,7 @@ def test_broker_finalize():
      assert( options.broker.url.username == 'bunnypeer' )
      assert( options.broker.url.password == 'passthepoi' )
 
-     assert( options.exchange == None )
+     assert( options.exchange == 'default' )
      assert( not hasattr(options,'post_exchange') )
      assert( not hasattr(options,'retry_ttl') )
 
@@ -469,8 +469,7 @@ def test_multi():
                  'topicPrefix': ['v02', 'post']} )
 
      assert( options.subscriptions[0]['bindings']  == [{'exchange': 'xpublic', \
-                                  'prefix': ['v02', 'post'],
-                                  'sub': ['*.WXO-DD.bulletins.alphanumeric.#']}] )
+                                  'topic': 'v02.post.*.WXO-DD.bulletins.alphanumeric.#'}] )
 
      default_options = sarracenia.config.default_config()
 
@@ -488,22 +487,16 @@ def test_multi():
 
      assert( options.subscriptions[0]['queue']  == subscriber_queue )
 
-     assert( options.subscriptions[0]['bindings']  == [{'exchange': 'xpublic',
-                                  'prefix': ['v02', 'post'],
-                                  'sub': ['*.WXO-DD.bulletins.alphanumeric.#']}] )
+     assert( options.subscriptions[0]['bindings']  == [{'exchange': 'xpublic', 'topic': 'v02.post.*.WXO-DD.bulletins.alphanumeric.#'}] )
 
 
      """
 
                     {'baseDir': None, 
-                    'bindings': [{'exchange': 'xpublic',
-                                  'prefix': ['v02', 'post'],
-                                  'sub': ['*.WXO-DD.bulletins.alphanumeric.#']}],
+                    'bindings': [{'exchange': 'xpublic', 'topic': 'v02.post.*.WXO-DD.bulletins.alphanumeric.#'}],
                     'broker': 'amqps://anonymous@dd.weather.gc.ca/',
                    {'baseDir': None,
-                    'bindings': [{'exchange': 'xpublic',
-                                  'prefix': ['v02', 'post'],
-                                  'sub': ['*.WXO-DD.bulletins.alphanumeric.#']}],
+                    'bindings': [{'exchange': 'xpublic', 'topic': 'v02.post.*.WXO-DD.bulletins.alphanumeric.#'}],
                     'broker': 'amqps://anonymous@hpfx.collab.science.gc.ca/',
                     'queue': {'auto_delete': False,
                               'bind': True,
@@ -511,6 +504,7 @@ def test_multi():
                               'declare': True,
                               'durable': True,
                               'expire': 25200.0,
+                              'mismatch':[],
                               'name': 'q_anonymous.subscribe.multi1',
                               'prefetch': 25,
                               'template': 'q_${BROKER_USER}.${COMPONENT}.${CONFIG}',
