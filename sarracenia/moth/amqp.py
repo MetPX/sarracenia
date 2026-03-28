@@ -709,8 +709,7 @@ class AMQP(Moth):
                         exchange = self.o['exchange'][self.splitPick(message)]
                     else:
                         logger.error(
-                            'do not know which exchange to publish to: %s' %
-                            self.o['exchange'])
+                            f"do not know which exchange to publish to: {self.o['exchange']}")
                         return False
                 else:
                     exchange = self.o['exchange'][0]
@@ -785,8 +784,7 @@ class AMQP(Moth):
             self.channel.basic_publish(AMQP_Message, exchange, topic, timeout=pub_timeout)
             # Issue #732: tx_commit can get stuck forever
             self.channel.tx_commit()
-            logger.debug("published body: {} headers: {} to {} under: {} ".format(
-                          body, headers, exchange, topic))
+            logger.debug(f"published body: {body} headers: {headers} to {exchange} under: {topic} ")
             self.metrics['txGoodCount'] += 1
             return True  # no failure == success :-)
 

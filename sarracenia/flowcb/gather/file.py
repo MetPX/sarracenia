@@ -539,8 +539,7 @@ class File(FlowCB):
                   not sure if it should be an error message or not.
                   
                 """
-                logger.debug("skipping event that could not be processed: ({}): {}".format(
-                    event, err))
+                logger.debug(f"skipping event that could not be processed: ({event}): {err}")
                 logger.debug("Exception details:", exc_info=True)
                 event_done=True
             if event_done:
@@ -621,8 +620,7 @@ class File(FlowCB):
                 self.obs_watched.append(ow)
                 self.inl[dir_dev_id] = (ow, d)
                 logger.info(
-                    "sr_watch priming watch (instance=%d) scheduled for: %s " %
-                    (len(self.obs_watched), d))
+                    f"sr_watch priming watch (instance={len(self.obs_watched)}) scheduled for: {d} ")
             except:
                 logger.warning(f"sr_watch priming watch: {d} failed, deferred.")
                 logger.debug('Exception details:', exc_info=True)
