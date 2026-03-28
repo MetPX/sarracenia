@@ -11,6 +11,13 @@ import sarracenia.flowcb.filter.geometry
 from sarracenia import Message as SR3Message
 import sarracenia.config
 
+from sarracenia.featuredetection import features
+
+
+print( f" {features['geometry']=} " )
+hoho = not features['geometry']['present']
+
+
 # poly2 intersects poly1 (poly2 is *inside* poly1)
 # poly3 doesn't intersect ploy1 or poly2
 # pointA is inside poly1 and poly2, but outside poly3
@@ -44,6 +51,7 @@ def make_message(feature):
 
     return m
 
+@pytest.mark.skipif( hoho, reason="missing python geometry prerequisites" )
 def test___init__():
     options = sarracenia.config.default_config()
     options.logLevel = 'DEBUG'
@@ -78,6 +86,7 @@ def test___init__():
         geojson = sarracenia.flowcb.filter.geometry.Geometry(options)
 
 
+@pytest.mark.skipif( hoho, reason="missing python geometry prerequisites" )
 def test_after_accept():
     options = sarracenia.config.default_config()
     options.logLevel = 'DEBUG'
