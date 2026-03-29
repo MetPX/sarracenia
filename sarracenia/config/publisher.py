@@ -71,6 +71,9 @@ class Publisher(dict):
         else:
             self['format'] = 'v03'
 
+        # exportAny and exportMine expect 'post_format' in the options dict
+        self['post_format'] = self['format']
+
         if hasattr(options,'post_topicPrefix') and options.post_topicPrefix:
             self['topicPrefix'] = options.post_topicPrefix
         elif hasattr(options, 'topicPrefix') and options.topicPrefix:

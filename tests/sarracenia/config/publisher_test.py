@@ -34,6 +34,7 @@ def test_format_defaults_to_v03():
     del opts.post_format
     pub = Publisher(opts)
     assert pub['format'] == 'v03'
+    assert pub['post_format'] == 'v03'
 
 
 def test_format_derived_from_v02_topicprefix():
@@ -45,6 +46,7 @@ def test_format_derived_from_v02_topicprefix():
     opts = make_options(post_topicPrefix=['v02', 'post'])
     pub = Publisher(opts)
     assert pub['format'] == 'v02'
+    assert pub['post_format'] == 'v02'
 
 
 def test_format_derived_from_v03_topicprefix():
@@ -52,6 +54,7 @@ def test_format_derived_from_v03_topicprefix():
     opts = make_options(post_topicPrefix=['v03', 'post'])
     pub = Publisher(opts)
     assert pub['format'] == 'v03'
+    assert pub['post_format'] == 'v03'
 
 
 def test_explicit_post_format_overrides_topicprefix():
@@ -62,6 +65,7 @@ def test_explicit_post_format_overrides_topicprefix():
     )
     pub = Publisher(opts)
     assert pub['format'] == 'v03'
+    assert pub['post_format'] == 'v03'
 
 
 def test_explicit_v02_post_format():
@@ -69,3 +73,4 @@ def test_explicit_v02_post_format():
     opts = make_options(post_format='v02')
     pub = Publisher(opts)
     assert pub['format'] == 'v02'
+    assert pub['post_format'] == 'v02'
