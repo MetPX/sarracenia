@@ -290,6 +290,11 @@ class AMQP(Moth):
         queue=subscription['queue']
         broker = subscription['broker']
 
+        if 'mismatch' in queue and queue['mismatch']:
+           logger.critical( f"configuration invalid. Cannot change {queue['mismatch']} queue properties without a cleanup.")
+           logger.critical( f" used to have: {self.o['old_subscriptions']} " )
+           return -2
+
         try:
             # from sr_consumer.build_connection...
             if not self.connection or not self.connection.connected:
@@ -423,6 +428,21 @@ class AMQP(Moth):
                         logger.info( f"binding {queue['name']} with {topic} to {exchange} (as: {broker_str})" )
                         if exchange:
                             self.management_channel.queue_bind(queue['name'], exchange, topic)
+
+                for b in subscription['bindings_to_remove']:
+                    if 'exchange' in b:
+                        exchange = b['exchange'] 
+                    else:
+                        logger.critical( f" cannot bind! AMQP v0.9 requires an exchange setting " )
+                    prefix= b['prefix'] if 'prefix' in b else None
+                    topic = b['topic']
+                    if self.o['dry_run']:
+                        logger.info( f"unbinding (dry run) {queue['name']} with {topic} from {exchange} (as: {broker_str}) "  )
+                    else:
+                        logger.info( f"unbinding {queue['name']} with {topic} from {exchange} (as: {broker_str})" )
+                        if exchange:
+                            self.management_channel.queue_unbind(queue['name'], exchange, topic)
+
 
             # Setup Successfully Complete!
             self.metricsConnect()
