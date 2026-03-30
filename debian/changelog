@@ -1,4 +1,23 @@
-metpx-sr3 (3.02.00rc3) UNRELEASED; urgency=medium
+metpx-sr3 (3.03.00rc1) UNRELEASED; urgency=medium
+
+  * increment version number
+  * lots of changes, changelog to be completed. old bindings get removed now.
+  * ai tools applied, many bugs found & fixed. (perf) means no behaviour change
+    only improved performance.
+  * many fixes to tests: unit, flow, etc...
+  * fix #38, #1637 Stateful queue binding: editing subtopics works properly.
+  * fix #38 Stateful queue binding: queue parameter changes flagged.
+  * fix #1627 log when putNewMessage crashes (message publish failure.)
+  * fix #1622 MQTT client thread leak 
+  * perf #1618 cache logLevel check in callback dispatch.
+  * fix #1617 diskqueue fd hygiene. 
+  * perf #1604,#1611,#1630 replace deepcopy with shallow copy in message publishes.
+  * perf #1609 replace eval with getattr() for callback dispatch
+  * perf #1628,#1626,#1623,#1613 string formatting optimization fstrings everywhere except loggging.debug
+
+ -- Reid Sunderland <reid.sunderland@ssc-spc.gc.ca>  Mon, 30 Mar 2026 17:27:18 +0000
+
+metpx-sr3 (3.02.00rc3) unstable; urgency=medium
 
   * Fix metricsReport plugin list leak in flow algorithm #1603
   * Fix sleep duration in flow algorithm #1602
@@ -7,7 +26,7 @@ metpx-sr3 (3.02.00rc3) UNRELEASED; urgency=medium
 
  -- Andre LeBlanc <andre.leblanc@ssc-spc.gc.ca>  Tue, 24 Mar 2026 13:33:23 +0000
 
-metpx-sr3 (3.02.00rc2) UNRELEASED; urgency=medium
+metpx-sr3 (3.02.00rc2) unstable; urgency=medium
 
   * Remove per component acceptUnmatched overrides in #1566
   * Guard for mtime being missing in message in #1567

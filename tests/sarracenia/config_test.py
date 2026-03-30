@@ -517,3 +517,79 @@ def test_guess_type():
      assert type(sarracenia.config.guess_type('abc')) == str
      assert type(sarracenia.config.guess_type('3.14')) == float
      assert type(sarracenia.config.guess_type('')) == str
+
+def test_filename_option():
+    """ tests filename option parsing only
+    """
+    options = copy.deepcopy(sarracenia.config.default_config())
+    options.component = 'subscribe'
+    options.config = 'multi1'
+    options.action = 'start'
+
+    options.parse_line("subscribe", "multi1", "subscribe/multi1", 1, "directory /testdir/")
+    options.parse_line("subscribe", "multi1", "subscribe/multi1", 1, "accept .*this_is_default_filename_option.*")
+    options.parse_line("subscribe", "multi1", "subscribe/multi1", 1, "filename NONE")
+    options.parse_line("subscribe", "multi1", "subscribe/multi1", 1, "accept .*this_is_filename_NONE.*")
+    options.parse_line("subscribe", "multi1", "subscribe/multi1", 1, "filename WHATFN")
+    options.parse_line("subscribe", "multi1", "subscribe/multi1", 1, "accept .*this_is_filename_WHATFN.*")
+    options.parse_line("subscribe", "multi1", "subscribe/multi1", 1, "filename HEADFN")
+    options.parse_line("subscribe", "multi1", "subscribe/multi1", 1, "accept .*this_is_filename_HEADFN.*")
+    options.parse_line("subscribe", "multi1", "subscribe/multi1", 1, "filename SENDER")
+    options.parse_line("subscribe", "multi1", "subscribe/multi1", 1, "accept .*this_is_filename_SENDER.*")
+    options.parse_line("subscribe", "multi1", "subscribe/multi1", 1, "filename NONESENDER")
+    options.parse_line("subscribe", "multi1", "subscribe/multi1", 1, "accept .*this_is_filename_NONESENDER.*")
+    options.parse_line("subscribe", "multi1", "subscribe/multi1", 1, "filename TIME")
+    options.parse_line("subscribe", "multi1", "subscribe/multi1", 1, "accept .*this_is_filename_TIME.*")
+    options.parse_line("subscribe", "multi1", "subscribe/multi1", 1, "filename DESTFN=my_string")
+    options.parse_line("subscribe", "multi1", "subscribe/multi1", 1, "accept .*this_is_filename_DESTFN_my_string.*")
+    options.parse_line("subscribe", "multi1", "subscribe/multi1", 1, "filename SATNET=1")
+    options.parse_line("subscribe", "multi1", "subscribe/multi1", 1, "accept .*this_is_filename_SATNET1.*")
+    options.parse_line("subscribe", "multi1", "subscribe/multi1", 1, "filename DESTFNSCRIPT=hi")
+    options.parse_line("subscribe", "multi1", "subscribe/multi1", 1, "accept .*this_is_filename_DESTFNSCRIPT.*")
+    options.parse_line("subscribe", "multi1", "subscribe/multi1", 1, "filename None")
+    options.parse_line("subscribe", "multi1", "subscribe/multi1", 1, "accept .*this_is_filename_None.*")
+
+    # default
+    assert(options.masks[0][2] is None)
+
+    assert(options.masks[1][2] == "NONE")
+    assert(options.masks[2][2] == "WHATFN")
+    assert(options.masks[3][2] == "HEADFN")
+    assert(options.masks[4][2] == "SENDER")
+    assert(options.masks[5][2] == "NONESENDER")
+    assert(options.masks[6][2] == "TIME")
+    assert(options.masks[7][2] == "DESTFN=my_string")
+    assert(options.masks[8][2] == "SATNET=1")
+    assert(options.masks[9][2] == "DESTFNSCRIPT=hi")
+    assert(options.masks[10][2] is None)
+
+def test_nodupe_ttl_parsing():
+    options = copy.deepcopy(sarracenia.config.default_config())
+    options.component = 'subscribe'
+    options.config = 'nodupettl'
+    options.action = 'start'
+
+    # default
+    assert(options.nodupe_ttl == 0)
+
+    # any true value should set it to 5 mins
+    options.parse_line("subscribe", "nodupettl", "subscribe/nodupettl", 1, "nodupe_ttl on")
+    options.finalize()
+    assert(options.nodupe_ttl == 300)
+
+    options.nodupe_ttl = None
+    options.parse_line("subscribe", "nodupettl", "subscribe/nodupettl", 1, "nodupe_ttl 10m")
+    options.finalize()
+    assert(options.nodupe_ttl == 600)
+    options.nodupe_ttl = None
+    options.parse_line("subscribe", "nodupettl", "subscribe/nodupettl", 1, "nodupe_ttl 50")
+    options.finalize()
+    assert(options.nodupe_ttl == 50)
+    options.nodupe_ttl = None
+    options.parse_line("subscribe", "nodupettl", "subscribe/nodupettl", 1, "nodupe_ttl off")
+    options.finalize()
+    assert(options.nodupe_ttl == 0)
+    options.nodupe_ttl = None
+    options.parse_line("subscribe", "nodupettl", "subscribe/nodupettl", 1, "nodupe_ttl 100")
+    options.finalize()
+    assert(options.nodupe_ttl == 100)
