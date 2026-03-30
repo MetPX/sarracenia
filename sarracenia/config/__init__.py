@@ -1788,7 +1788,10 @@ class Config:
                 logger.info( f"{','.join(self.files)}:{lineno} if download is false, directory has no effect" )
 
             v = ' '.join(line[1:])
-            if v.lower() in [ 'none', 'off', 'false' ]:
+            # filename NONE and None are different
+            if k == 'filename' and v == 'None':
+                v=None
+            elif k != 'filename' and v.lower() in [ 'none', 'off', 'false' ]:
                 v=None
             setattr(self, k, v)
         else:
