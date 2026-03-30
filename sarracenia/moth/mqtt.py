@@ -834,17 +834,24 @@ class MQTT(Moth):
                 time.sleep(0.1)
 
             if hasattr(self, 'pending_publishes'):
-                ebo=0.1
-                while  len(self.pending_publishes) >0:
-                    logger.info( f'waiting {ebo} seconds for last {len(self.pending_publishes)} messages to publish')
+                ebo = 0.1
+                total_wait = 0
+                max_wait = self.o['timeout'] if self.o.get('timeout') else 300
+                while len(self.pending_publishes) > 0:
+                    if total_wait >= max_wait:
+                        logger.warning(f'gave up waiting for {len(self.pending_publishes)} pending publishes after {total_wait:.0f}s')
+                        break
+                    logger.info(f'waiting {ebo} seconds for last {len(self.pending_publishes)} messages to publish')
                     if len(self.unexpected_publishes) < 10:
-                        logger.info( f'messages acknowledged before publish?: {self.unexpected_publishes}')
+                        logger.info(f'messages acknowledged before publish?: {self.unexpected_publishes}')
                     if len(self.pending_publishes) < 10:
-                        logger.info( f'messages awaiting publish: {self.pending_publishes}')
+                        logger.info(f'messages awaiting publish: {self.pending_publishes}')
                     time.sleep(ebo)
+                    total_wait += ebo
                     if ebo < 64:
                         ebo *= 2
-                logger.info('no more pending messages')
+                else:
+                    logger.info('no more pending messages')
             self.client.disconnect()
             self.client.loop_stop()
         self.connected=False
