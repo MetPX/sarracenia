@@ -432,9 +432,11 @@ class AMQP(Moth):
                     prefix= b['prefix'] if 'prefix' in b else None
                     topic = b['topic']
                     if self.o['dry_run']:
-                        logger.info( f"unbinding (dry run) {queue['name']} with {topic} from {exchange} (as: {broker_str}) "  )
+                        logger.info('unbinding (dry run) %s with %s from %s (as: %s)' % \
+                            ( queue['name'], topic, exchange, broker_str ) )
                     else:
-                        logger.info( f"unbinding {queue['name']} with {topic} from {exchange} (as: {broker_str})" )
+                        logger.info('unbinding %s with %s from %s (as: %s)' % \
+                            ( queue['name'], topic, exchange, broker_str ) )
                         if exchange:
                             self.management_channel.queue_unbind(queue['name'], exchange, topic)
 
