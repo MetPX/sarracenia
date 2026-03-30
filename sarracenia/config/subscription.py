@@ -160,19 +160,10 @@ class Subscriptions(list):
     def write(self,fn):
 
         jl=[]
-        badness=False
         for s in self:
             jd=copy.deepcopy(s)
             jd['broker']=str(s['broker'])
-            if 'mismatch' in jd['queue'] and jd['queue']['mismatch']:
-                badness=True
-                logger.critical( f"cannot persist configuration with inconsistent queue" \
-                    f" {jd['queue']['name']} state: {jd['queue']['mismatch']} ")
-
             jl.append(jd)
-            
-        if badness:
-           return
 
         try:
             with open(fn,'w') as f:
@@ -229,13 +220,6 @@ class Subscriptions(list):
                      continue
                 if s['queue']['name'] != os['queue']['name']:
                      continue 
-                q_bad=[]
-                for x in [ 'auto_delete', 'durable', 'expire', 'prefetch' ]:
-                    if s['queue'][x] != os['queue'][x]:
-                       logger.critical( f"INVARIANT queue parameter {x} changed, lossy message queue cleanup required to implement" )
-                       q_bad.append(x)
-                s['queue']['mismatch'] = q_bad
-
                 for b in s['bindings']:
                     for ob in os['bindings']:
                         if ( 'exchange' in b and not 'exchange' in ob ) or ( 'exchange' not in b and 'exchange' in ob ) :
