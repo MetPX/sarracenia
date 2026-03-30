@@ -2045,8 +2045,7 @@ class sr_GlobalState:
 
         if hasattr(self, 'leftovers') and (len(self.leftovers) > 0):
             if self.leftovers[0] in ['examples', 'eg', 'ie']:
-                print('Sample Configurations: (from: %s )' %
-                      (self.package_lib_dir + os.sep + 'examples'))
+                print(f"Sample Configurations: (from: {self.package_lib_dir + os.sep + 'examples'} )")
                 for c in sarracenia.config.Config.components:
                     self.print_configdir2(
                         f" of {c} ",
@@ -2574,8 +2573,7 @@ class sr_GlobalState:
 
             if self.configs[c][cfg]['status'] in self.status_active:
                 for i in self.states[c][cfg]['instance_pids']:
-                    print("failed to kill: %s/%s instance: %s, pid: %s )" %
-                          (c, cfg, i, self.states[c][cfg]['instance_pids'][i]))
+                    print(f"failed to kill: {c}/{cfg} instance: {i}, pid: {self.states[c][cfg]['instance_pids'][i]} )")
 
             self._tag_progress( c, cfg, 'shutdown', ending=True )
 
@@ -2670,8 +2668,7 @@ class sr_GlobalState:
         for indexSelfBroker,h in enumerate(self.brokers):
             if 'admin' in self.brokers[h]:
                 admin_url = self.brokers[h]['admin'].url
-                admin_urlstr = "%s://%s@%s" % ( admin_url.scheme, \
-                   admin_url.username, admin_url.hostname)
+                admin_urlstr = f"{admin_url.scheme}://{admin_url.username}@{admin_url.hostname}"
                 if admin_url.port:
                     admin_urlstr += ":" + str(admin_url.port)
                 a = f'admin: {admin_urlstr}'
@@ -3163,13 +3160,9 @@ class sr_GlobalState:
                 status[self.configs[c][cfg]['status']].append(cfg + sfx)
 
             if (len(status['partial']) + len(status['running'])) < 1:
-                print('%-10s %-10s %-6s %3d %s' %
-                      (c, 'stopped', 'OK', len(status['stopped']), ', '.join(
-                          status['stopped'])))
+                print(f"{c:10} {'stopped':10} {'OK':6} {len(status['stopped']):3} {', '.join(status['stopped'])}")
             elif len(status['running']) == len(self.configs[c]):
-                print('%-10s %-10s %-6s %3d %s' %
-                      (c, 'running', 'OK', len(self.configs[c]), ', '.join(
-                          status['running'])))
+                print(f"{c:10} {'running':10} {'OK':6} {len(self.configs[c]):3} {', '.join(status['running'])}")
             elif len(status['running']) == (len(self.configs[c]) -
                                             len(status['disabled'])):
                 print('%-10s %-10s %-6s %-3d %s' % (c, 'most', 'OKd', \

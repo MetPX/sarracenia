@@ -303,8 +303,7 @@ if __name__ == "__main__":
 
     u = 'tsource'
     up = rabbitmq_user_access(url, u)
-    print("permissions for %s: \nqueues: %s\nexchanges: %s\nbindings %s" %
-          (u, up['queues'], up['exchanges'], up['bindings']))
+    print(f"permissions for {u}: \nqueues: {up['queues']}\nexchanges: {up['exchanges']}\nbindings {up['bindings']}")
     #print( "\n\nbindings: %s" % json.loads(exec_rabbitmqadmin(url,"list bindings")[1]) )
 
 
