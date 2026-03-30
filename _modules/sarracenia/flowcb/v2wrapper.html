@@ -383,8 +383,7 @@
                             <span class="n">script</span><span class="p">,</span> <span class="s1">&#39;exec&#39;</span><span class="p">))</span>
         <span class="k">except</span><span class="p">:</span>
             <span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span>
-                <span class="s2">&quot;sr_config/execfile 2 failed for option &#39;</span><span class="si">%s</span><span class="s2">&#39; and plugin &#39;</span><span class="si">%s</span><span class="s2">&#39;&quot;</span> <span class="o">%</span>
-                <span class="p">(</span><span class="n">opname</span><span class="p">,</span> <span class="n">path</span><span class="p">))</span>
+                <span class="sa">f</span><span class="s2">&quot;sr_config/execfile 2 failed for option &#39;</span><span class="si">{</span><span class="n">opname</span><span class="si">}</span><span class="s2">&#39; and plugin &#39;</span><span class="si">{</span><span class="n">path</span><span class="si">}</span><span class="s2">&#39;&quot;</span><span class="p">)</span>
             <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s1">&#39;Exception details: &#39;</span><span class="p">,</span> <span class="n">exc_info</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
             <span class="k">return</span> <span class="kc">False</span>
 
