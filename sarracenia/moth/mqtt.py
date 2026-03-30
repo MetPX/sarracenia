@@ -22,7 +22,6 @@
 #
 
 import collections
-import copy
 import json
 import logging
 
