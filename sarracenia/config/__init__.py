@@ -2105,7 +2105,6 @@ class Config:
 
             self.subscriptions.write(self.subscriptionsPath)
             self._writeQueueFile(self.subscriptions[0]['queue']['name'])
-        self.subscriptions.finalize(self.old_subscriptions)
 
         if hasattr(self, 'documentRoot') and (self.documentRoot is not None):
             path = os.path.expanduser(os.path.abspath(self.documentRoot))

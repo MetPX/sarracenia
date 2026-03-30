@@ -190,7 +190,7 @@ class Subscriptions(list):
             self.append(new_subscription)
 
             
-    def finalize(self,old_subscriptions):
+    def deltAnalyze(self, other):
         """
            NOT IMPLEMENTED!
 
@@ -208,28 +208,7 @@ class Subscriptions(list):
                * auto-delete mismatch
                * exclusive mismatch
         """
-        if self == old_subscriptions:
+        if self == other:
             return None
 
-        bindings_in_both=[]
-        for os in old_subscriptions:        
-            for s in self:
-                bindings_to_remove=[]
-                if s['broker'] != os['broker']:
-                     continue
-                if s['queue']['name'] != os['queue']['name']:
-                     continue 
-                for b in s['bindings']:
-                    for ob in os['bindings']:
-                        if ( 'exchange' in b and not 'exchange' in ob ) or ( 'exchange' not in b and 'exchange' in ob ) :
-                             continue
-                        if 'exchange' in b and b['exchange'] != ob['exchange']:
-                             continue                     
-                        if b['topic'] != ob['topic']:
-                             continue                     
-                        bindings_in_both.append(b)
-                bindings_to_remove=[]
-                for ob in os['bindings']:
-                    if not ob in bindings_in_both:
-                        bindings_to_remove.append(ob)
-                s['bindings_to_remove']  = bindings_to_remove
+        different_subscriptons=[]
