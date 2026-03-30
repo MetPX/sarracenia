@@ -49,7 +49,7 @@ TEST_CONTAINER_FILES = {
 def build_client():
     with AzuriteContainer(account_name=TEST_ACCOUNT_NAME, account_key=TEST_ACCOUNT_KEY) as azurite_container:
         connection_string = azurite_container.get_connection_string()
-        blobClient = BlobServiceClient.from_connection_string(connection_string, api_version="2019-12-12")
+        blobClient = BlobServiceClient.from_connection_string(connection_string)
         yield blobClient
         
 def build_container(blobClient, containerName):
@@ -185,7 +185,7 @@ def test_connect(mocker):
     assert transfer.sendTo == "sendTo"
 
     mocker.patch('sarracenia.transfer.azure.Azure._Azure__credentials', return_value=True)
-    with AzuriteContainer(account_name=TEST_ACCOUNT_NAME, account_key=TEST_ACCOUNT_KEY) as azurite_container:
+    with AzuriteContainer(image="mcr.microsoft.com/azure-storage/azurite:latest", account_name=TEST_ACCOUNT_NAME, account_key=TEST_ACCOUNT_KEY) as azurite_container:
         transfer.container_url = f"http://localhost:{azurite_container.get_exposed_port(azurite_container.blob_service_port)}/{TEST_ACCOUNT_NAME}/{TEST_CONTAINER_NAME}"
         transfer.container = TEST_CONTAINER_NAME
         transfer.o.sendTo = f'azure://localhost:{azurite_container.get_exposed_port(azurite_container.blob_service_port)}/{TEST_ACCOUNT_NAME}/{TEST_CONTAINER_NAME}'
