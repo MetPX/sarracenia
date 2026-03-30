@@ -1973,13 +1973,14 @@ class Config:
         if self.action not in self.actions:
             logger.error( f"invalid action: {self.action} must be one of: {','.join(self.actions)}" )
 
-        if hasattr(self, 'nodupe_ttl'):
+        # nodupe_ttl is a combined duration and flag option for legacy reasons
+        # defaults to 0 (nodupe disabled)
+        if hasattr(self, 'nodupe_ttl') and self.nodupe_ttl is not None:
             if (type(self.nodupe_ttl) is str):
                 if isTrue(self.nodupe_ttl):
                     self.nodupe_ttl = 300
                 else:
-                    self.nodupe_ttl = durationToSeconds(
-                        self.nodupe_ttl, default=300)
+                    self.nodupe_ttl = durationToSeconds(self.nodupe_ttl, default=300)
         else:
             self.nodupe_ttl = 0
 

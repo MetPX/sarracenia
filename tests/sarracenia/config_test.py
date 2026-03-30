@@ -562,3 +562,34 @@ def test_filename_option():
     assert(options.masks[8][2] == "SATNET=1")
     assert(options.masks[9][2] == "DESTFNSCRIPT=hi")
     assert(options.masks[10][2] is None)
+
+def test_nodupe_ttl_parsing():
+    options = copy.deepcopy(sarracenia.config.default_config())
+    options.component = 'subscribe'
+    options.config = 'nodupettl'
+    options.action = 'start'
+
+    # default
+    assert(options.nodupe_ttl == 0)
+
+    # any true value should set it to 5 mins
+    options.parse_line("subscribe", "nodupettl", "subscribe/nodupettl", 1, "nodupe_ttl on")
+    options.finalize()
+    assert(options.nodupe_ttl == 300)
+
+    options.nodupe_ttl = None
+    options.parse_line("subscribe", "nodupettl", "subscribe/nodupettl", 1, "nodupe_ttl 10m")
+    options.finalize()
+    assert(options.nodupe_ttl == 600)
+    options.nodupe_ttl = None
+    options.parse_line("subscribe", "nodupettl", "subscribe/nodupettl", 1, "nodupe_ttl 50")
+    options.finalize()
+    assert(options.nodupe_ttl == 50)
+    options.nodupe_ttl = None
+    options.parse_line("subscribe", "nodupettl", "subscribe/nodupettl", 1, "nodupe_ttl off")
+    options.finalize()
+    assert(options.nodupe_ttl == 0)
+    options.nodupe_ttl = None
+    options.parse_line("subscribe", "nodupettl", "subscribe/nodupettl", 1, "nodupe_ttl 100")
+    options.finalize()
+    assert(options.nodupe_ttl == 100)
