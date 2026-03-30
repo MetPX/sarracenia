@@ -136,13 +136,7 @@ class Subscriptions(list):
                          if proto in ['mqtt']:
                              b['topic'] =  sep.join( [ '$share', s['queue']['name'] ] + b.get('prefix',[]) + b['sub'])
                          else:
-                             pfx=b.get('prefix',[])
-                             sub=b['sub']
-                             if not type(pfx) == list:
-                                 pfx=list(pfx)
-                             if not type(sub) == list:
-                                 sub=list(sub)
-                             b['topic'] =  sep.join(pfx+sub)
+                             b['topic'] =  sep.join(b.get('prefix',[]) + b['sub'])
 
                     if 'sub' in b:
                         del b['sub']
