@@ -742,12 +742,19 @@ class MQTT(Moth):
 
     def ack(self, m: sarracenia.Message ) -> bool:
 
-        if 'ack_id' in m:
-            logger.info( f"mid={m['ack_id']}")
-            if m['ack_id']['broker'] == self.broker:
-                self.client.ack( m['ack_id']['delivery_tag'], m['qos'] )
-                del m['ack_id']
-                m['_deleteOnPost'].remove('ack_id')
+        if 'ack_id' not in m:
+            return True
+
+        logger.info(f"mid={m['ack_id']}")
+        if m['ack_id']['broker'] != self.broker:
+            logger.warning(f"ack failed for {m['ack_id']}: broker mismatch (current: {self.broker})")
+            del m['ack_id']
+            m['_deleteOnPost'].remove('ack_id')
+            return False
+
+        self.client.ack(m['ack_id']['delivery_tag'], m['qos'])
+        del m['ack_id']
+        m['_deleteOnPost'].remove('ack_id')
         return True
 
     def putNewMessage(self,
