@@ -252,6 +252,31 @@ class Test_Message():
         except:
             pass
 
+    def test_computeIdentity_without_mtime(self, tmp_path):
+        """
+        Regression test for https://github.com/MetPX/sarracenia/issues/1567
+
+        computeIdentity() crashed with KeyError: 'mtime' when the message
+        did not have an mtime field, even though mtime is documented as optional.
+
+        The fix adds 'mtime' in msg to the xattr check condition so that the code
+        safely falls through to recalculating the identity instead of crashing.
+        """
+        path = str(tmp_path) + os.sep + "file_no_mtime.txt"
+        open(path, 'a').close()
+        options = sarracenia.config.default_config()
+
+        msg = sarracenia.Message()
+        # Deliberately do NOT set msg['mtime'] — this is the bug scenario
+        msg['size'] = 0
+
+        # Should not raise KeyError: 'mtime'
+        msg.computeIdentity(path, options)
+
+        # Identity should still be computed normally
+        assert 'identity' in msg
+        assert msg['identity']['method'] == options.identity_method
+
 
     @pytest.mark.depends(on=['test_fromFileInfo'])
     def test_fromFileData(self, tmp_path):
