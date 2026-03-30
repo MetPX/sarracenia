@@ -2,6 +2,18 @@ metpx-sr3 (3.03.00rc1) UNRELEASED; urgency=medium
 
   * increment version number
   * lots of changes, changelog to be completed. old bindings get removed now.
+  * ai tools applied, many bugs found & fixed. (perf) means no behaviour change
+    only improved performance.
+  * many fixes to tests: unit, flow, etc...
+  * fix #38, #1637 Stateful queue binding: editing subtopics works properly.
+  * fix #38 Stateful queue binding: queue parameter changes flagged.
+  * fix #1627 log when putNewMessage crashes (message publish failure.)
+  * fix #1622 MQTT client thread leak 
+  * perf #1618 cache logLevel check in callback dispatch.
+  * fix #1617 diskqueue fd hygiene. 
+  * perf #1604,#1611,#1630 replace deepcopy with shallow copy in message publishes.
+  * perf #1609 replace eval with getattr() for callback dispatch
+  * perf #1628,#1626,#1623,#1613 string formatting optimization fstrings everywhere except loggging.debug
 
  -- Reid Sunderland <reid.sunderland@ssc-spc.gc.ca>  Mon, 30 Mar 2026 17:27:18 +0000
 
