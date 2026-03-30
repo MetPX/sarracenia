@@ -70,7 +70,7 @@ class Subscription(dict):
                 self['bindings'] = [ { 'topic':  topic_separator.join(prefix + subtopic) } ]
 
 
-        self['queue']={ 'name': queueName, 'template': queueName_template, 'cleanup_needed': None }
+        self['queue']={ 'name': queueName, 'template': queueName_template, 'cleanup_needed': None, 'mismatch':[] }
         for a in [ 'queueBind', 'queueDeclare' , 'queueType' ]:
             aa = a.replace('queue','').lower()
             if hasattr(options, a):
