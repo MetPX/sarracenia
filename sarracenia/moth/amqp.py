@@ -249,6 +249,14 @@ class AMQP(Moth):
         else:
             sslarg=False
         
+        if self.connection:
+            try:
+                self.connection.collect()
+                self.connection.close()
+            except Exception:
+                logger.debug('failed to close old connection before reconnect', exc_info=True)
+            self.connection = None
+
         self.connection = amqp.Connection(host=host,
                                           userid=broker.url.username,
                                           password=unquote(
@@ -382,9 +390,9 @@ class AMQP(Moth):
             # from sr_consumer.build_connection...
             if not self.__connect(broker):
                 self.setEbo(start)
-                self.connection = None
+                self.close()
                 return
-            
+
             if self.o['prefetch'] != 0:
                 # using global False because RabbitMQ Quorum Queues don't support Global QoS, issue #1233
                 self.channel.basic_qos(0, queue['prefetch'], False)
@@ -437,7 +445,7 @@ class AMQP(Moth):
             logger.error( f"failed connection to {str(broker)}: {err}" )
             logger.debug('Exception details: ', exc_info=True)
             self.setEbo(start)
-            self.connection = None
+            self.close()
 
 
     def putSetup(self) -> None:
@@ -462,7 +470,7 @@ class AMQP(Moth):
 
             if not self.__connect(self.o['broker']):
                 self.setEbo(start)
-                self.connection = None
+                self.close()
                 return
 
             # transaction mode... confirms would be better...
@@ -499,7 +507,6 @@ class AMQP(Moth):
                         self.o['broker'].url.hostname, err))
             logger.debug('Exception details: ', exc_info=True)
             self.setEbo(start)
-            self.connection=None
             self.close()
 
     def putCleanUp(self) -> None:
