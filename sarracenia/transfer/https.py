@@ -400,8 +400,7 @@ class Https(Transfer):
         except urllib.error.HTTPError as e:
             logger.error(f'failed 4 {self.__url_redir_str()}')
             logger.error(
-                'Server couldn\'t fulfill the request. Error code: %s, %s' %
-                (e.code, e.reason))
+                f'Server couldn\'t fulfill the request. Error code: {e.code}, {e.reason}')
             self.connected = False
             raise
         except urllib.error.URLError as e:
