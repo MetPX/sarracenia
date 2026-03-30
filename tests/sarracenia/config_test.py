@@ -479,6 +479,7 @@ def test_multi():
                               'declare': True,
                               'durable': True,
                               'expire': default_options.expire,
+                              'mismatch': [],
                               'name': 'q_anonymous.subscribe.multi1',
                               'prefetch': 25,
                               'template': 'q_${BROKER_USER}.${COMPONENT}.${CONFIG}',
