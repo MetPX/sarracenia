@@ -541,18 +541,14 @@ class MQTT(Moth):
     def __sub_on_message(client, userdata, msg):
         """
           callback to append messages received to new queue.
-
-          FIXME: locking here is expensive... would like to group them ... 1st draft.
-             could do a rotating set of batch size lists, and that way just change counters.
-             and not lock individual messages  list[1], list[2], ... consumer consumes old lists...
-             no locking needed, except to increment list index.... later.
         """
 
         if userdata.o['messageDebugDump']:
             logger.info( f"Message received: id:{msg.mid}, topic:{msg.topic} payload:{msg.payload}" )
 
         m = userdata._msgDecode(msg)
-        userdata.rx_msg[userdata.rx_msg_iFromBroker].append(m)
+        with userdata.rx_msg_mutex:
+            userdata.rx_msg[userdata.rx_msg_iFromBroker].append(m)
 
     def putCleanUp(self):
         self.client.disconnect()
@@ -648,31 +644,24 @@ class MQTT(Moth):
 
     def _rotateInputBuffers(self) -> None:
         """
-           to reduce locking granularity allocate one queue to accepting messages, and a second
-           one to read from. and just swap between them from time to time (kind of double buffering.)
-
+           Double-buffer rotation: the callback thread writes to rx_msg[iFromBroker],
+           the app thread reads from rx_msg[iToApp]. When the app buffer is drained,
+           swap indices under the mutex so the callback starts writing to a fresh buffer
+           and the app picks up the one that was being filled.
         """
         if len(self.rx_msg[self.rx_msg_iToApp]) == 0:
-            self.rx_msg_mutex.acquire()
-            self.rx_msg_iToApp = self.rx_msg_iFromBroker
-
-            if self.rx_msg_iFromBroker >= self.rx_msg_iMax:
-                self.rx_msg_iFromBroker=0
-            else:
-                self.rx_msg_iFromBroker+=1
-            time.sleep(0.1)
-            self.rx_msg_mutex.release()
+            with self.rx_msg_mutex:
+                self.rx_msg_iToApp = self.rx_msg_iFromBroker
+                if self.rx_msg_iFromBroker >= self.rx_msg_iMax:
+                    self.rx_msg_iFromBroker = 0
+                else:
+                    self.rx_msg_iFromBroker += 1
 
     def newMessages(self) -> list:
         """
            return new messages.
-
-           FIXME: hate the locking... too fine grained, especially in on_message... just a 1st shot.
-
         """
 
-        #logger.debug( f"rx_msg queue before: indices: {self.rx_msg_iToApp} {self.rx_msg_iFromBroker} " )
-        #logger.debug( f"rx_msg queue before: {len(self.rx_msg[self.rx_msg_iToApp])} indices: {self.rx_msg_iToApp} {self.rx_msg_iFromBroker} " )
         if not self.connected:
             self.getSetup()
 
@@ -685,8 +674,6 @@ class MQTT(Moth):
         else:
             mqttml = []
 
-        #logger.debug( f"picked up {len(mqttml)} rx_msg queue after: {len(self.rx_msg[self.rx_msg_iToApp])} ")
-
         self._rotateInputBuffers()
 
         return mqttml
@@ -696,14 +683,14 @@ class MQTT(Moth):
         if not self.connected:
             self.getSetup()
 
-        if len(self.rx_msg) > 0:
+        if len(self.rx_msg[self.rx_msg_iToApp]) > 0:
             m = self.rx_msg[self.rx_msg_iToApp][0]
             self.rx_msg[self.rx_msg_iToApp] = self.rx_msg[self.rx_msg_iToApp][1:]
             m['subscription_index'] = self.o['subscription_index']
             m['_deleteOnPost'] |= set( ['subscription_index'] )
-
         else:
             m = None
+
         self._rotateInputBuffers()
 
         if m:
