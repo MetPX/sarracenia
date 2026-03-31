@@ -56,7 +56,6 @@ class Message(FlowCB):
                         logger.warning(f"putNewMessage crashed {e}")
                         logger.debug("Exception details:", exc_info=True)
                         failures.append(i)
-                        logger.critical("Exception details:", exc_info=True)
             else:
                 for p in self.posters:
                     if hasattr(p,'putNewMessage'):
