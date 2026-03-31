@@ -291,8 +291,7 @@ class V2Wrapper(FlowCB):
                             script, 'exec'))
         except:
             logger.error(
-                "sr_config/execfile 2 failed for option '%s' and plugin '%s'" %
-                (opname, path))
+                f"sr_config/execfile 2 failed for option '{opname}' and plugin '{path}'")
             logger.debug('Exception details: ', exc_info=True)
             return False
 
