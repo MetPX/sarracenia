@@ -9,6 +9,8 @@ on:
       - v2_dev
       - stable
       - v2_stable
+      - fix/**
+      - feature/**
 
     paths-ignore:
       - '.github/**'
