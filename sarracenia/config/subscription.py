@@ -70,12 +70,13 @@ class Subscription(dict):
                 self['bindings'] = [ { 'topic':  topic_separator.join(prefix + subtopic) } ]
 
 
-        self['queue']={ 'name': queueName, 'template': queueName_template, 'cleanup_needed': None }
+        self['queue']={ 'name': queueName, 'template': queueName_template, 'cleanup_needed': None, 'mismatch':[] }
         for a in [ 'queueBind', 'queueDeclare' , 'queueType' ]:
             aa = a.replace('queue','').lower()
             if hasattr(options, a):
                 self['queue'][aa] = getattr(options,a)
 
+        self['bindings_to_remove'] = []
         for a in [ 'auto_delete', 'clean_session', 'durable', 'expire', 'max_inflight_messages', \
                 'max_queued_messages',  'prefetch', 'qos', 'receiveMaximum', 'tlsRigour', 'topic' ]:
             if hasattr(options, a):
@@ -132,10 +133,16 @@ class Subscriptions(list):
 
                 for b in s['bindings']:
                     if 'sub' in b:
+                         pfx=b.get('prefix',[])
+                         sub=b['sub']
+                         if not type(pfx) == list:
+                             pfx=list(pfx)
+                         if not type(sub) == list:
+                             sub=list(sub)
                          if proto in ['mqtt']:
-                             b['topic'] =  sep.join( [ '$share', s['queue']['name'] ] + b.get('prefix',[]) + b['sub'])
+                             b['topic'] =  sep.join( [ '$share', s['queue']['name'] ] + pfx + sub )
                          else:
-                             b['topic'] =  sep.join(b.get('prefix',[]) + b['sub'])
+                             b['topic'] =  sep.join(pfx+sub)
 
                     if 'sub' in b:
                         del b['sub']
@@ -159,10 +166,19 @@ class Subscriptions(list):
     def write(self,fn):
 
         jl=[]
+        badness=False
         for s in self:
             jd=copy.deepcopy(s)
             jd['broker']=str(s['broker'])
+            if 'mismatch' in jd['queue'] and jd['queue']['mismatch']:
+                badness=True
+                logger.critical( f"cannot persist configuration with inconsistent queue" \
+                    f" {jd['queue']['name']} state: {jd['queue']['mismatch']} ")
+
             jl.append(jd)
+            
+        if badness:
+           return
 
         try:
             with open(fn,'w') as f:
@@ -190,7 +206,7 @@ class Subscriptions(list):
             self.append(new_subscription)
 
             
-    def deltAnalyze(self, other):
+    def finalize(self,old_subscriptions):
         """
            NOT IMPLEMENTED!
 
@@ -208,7 +224,37 @@ class Subscriptions(list):
                * auto-delete mismatch
                * exclusive mismatch
         """
-        if self == other:
+        if self == old_subscriptions:
             return None
 
-        different_subscriptons=[]
+        bindings_in_both=[]
+        for os in old_subscriptions:        
+            for s in self:
+                bindings_to_remove=[]
+                if s['broker'] != os['broker']:
+                     continue
+                if s['queue']['name'] != os['queue']['name']:
+                     continue 
+                q_bad=[]
+                for x in [ 'auto_delete', 'durable', 'expire', 'prefetch' ]:
+                    if x not in s['queue'] or x not in os['queue']:
+                        continue
+                    if s['queue'][x] != os['queue'][x]:
+                       logger.critical( f"INVARIANT queue parameter {x} changed, lossy message queue cleanup required to implement" )
+                       q_bad.append(x)
+                s['queue']['mismatch'] = q_bad
+
+                for b in s['bindings']:
+                    for ob in os['bindings']:
+                        if ( 'exchange' in b and not 'exchange' in ob ) or ( 'exchange' not in b and 'exchange' in ob ) :
+                             continue
+                        if 'exchange' in b and b['exchange'] != ob['exchange']:
+                             continue                     
+                        if b['topic'] != ob['topic']:
+                             continue                     
+                        bindings_in_both.append(b)
+                bindings_to_remove=[]
+                for ob in os['bindings']:
+                    if not ob in bindings_in_both:
+                        bindings_to_remove.append(ob)
+                s['bindings_to_remove']  = bindings_to_remove

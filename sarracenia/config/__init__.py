@@ -1792,7 +1792,10 @@ class Config:
                 logger.info( f"{','.join(self.files)}:{lineno} if download is false, directory has no effect" )
 
             v = ' '.join(line[1:])
-            if v.lower() in [ 'none', 'off', 'false' ]:
+            # filename NONE and None are different
+            if k == 'filename' and v == 'None':
+                v=None
+            elif k != 'filename' and v.lower() in [ 'none', 'off', 'false' ]:
                 v=None
             setattr(self, k, v)
         else:
@@ -1974,13 +1977,14 @@ class Config:
         if self.action not in self.actions:
             logger.error( f"invalid action: {self.action} must be one of: {','.join(self.actions)}" )
 
-        if hasattr(self, 'nodupe_ttl'):
+        # nodupe_ttl is a combined duration and flag option for legacy reasons
+        # defaults to 0 (nodupe disabled)
+        if hasattr(self, 'nodupe_ttl') and self.nodupe_ttl is not None:
             if (type(self.nodupe_ttl) is str):
                 if isTrue(self.nodupe_ttl):
                     self.nodupe_ttl = 300
                 else:
-                    self.nodupe_ttl = durationToSeconds(
-                        self.nodupe_ttl, default=300)
+                    self.nodupe_ttl = durationToSeconds(self.nodupe_ttl, default=300)
         else:
             self.nodupe_ttl = 0
 
@@ -2103,10 +2107,10 @@ class Config:
             if ((len(self.subscriptions) == 0) and hasattr(self, 'exchange')):
                 self.subscriptions.append(Subscription(self, self.queueName, resolved_queueName, [ '#' ]))
 
+        self.subscriptions.finalize(self.old_subscriptions)
         if self.action in [ 'start', 'foreground', 'declare' ] and \
                 (not hasattr(self,'no') or self.no < 2) and  \
                 len(self.subscriptions) > 0:
-
             self.subscriptions.write(self.subscriptionsPath)
             self._writeQueueFile(self.subscriptions[0]['queue']['name'])
 

@@ -107,8 +107,7 @@ class Send_egc_les(FlowCB):
 
         if egc == None:
             logger.error(
-                "file_send_egc_les EGC code not defined for %s %s, file not sent."
-                % (HDR, CCCC))
+                f"file_send_egc_les EGC code not defined for {HDR} {CCCC}, file not sent.")
         return egc
 
     def after_work(self, worklist):
@@ -196,8 +195,7 @@ class Send_egc_les(FlowCB):
                     new_ok.append(msg)
                 else:
                     logger.error(
-                        "file_send_egc_les: error with return info from file: %s" %
-                        filepath)
+                        f"file_send_egc_les: error with return info from file: {filepath}")
                     worklist.rejected.append(msg)
             except:
                 logger.error(
