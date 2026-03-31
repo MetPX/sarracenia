@@ -596,14 +596,10 @@ class AMQ1(Moth):
         addresses = []
         for binding_dict in bindings:
             if 'topic' in binding_dict:
-                address = self.o['topicSeparator'].join(binding_dict['topic'])
-            elif 'prefix' in binding_dict and 'sub' in binding_dict:
-                address = self.o['topicSeparator'].join(binding_dict['prefix'] + binding_dict['sub'])
+                addresses.append(binding_dict['topic'])
             else:
                 logger.error(f"invalid binding: {binding_dict}")
                 continue
-
-            addresses.append(address)
 
         logger.debug(f"source addresses: {addresses}")
 
