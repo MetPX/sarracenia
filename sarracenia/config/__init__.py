@@ -927,7 +927,6 @@ class Config:
         self.messageAgeMax = 0
         self.post_exchanges = []
         self.post_messageAgeMax = 0
-	    #self.post_topicPrefix = None
         self.pstrip = False
         self.queueShare = "${USER}_${HOSTNAME}_${RAND8}"
         self.queueName = "q_${BROKER_USER}.${COMPONENT}.${CONFIG}.${QUEUESHARE}"
@@ -1370,7 +1369,7 @@ class Config:
             for k in oth.__dict__.keys():
                 self._override_field(k, self._varsub(getattr(oth, k)))
 
-    def _parse_binding(self, subtopic_string):
+    def _parse_binding(self, subtopic_string, topicOverride=False):
         """
          FIXME: see original parse, with substitions for url encoding.
                 also should sqwawk about error if no exchange or topicPrefix defined.
@@ -1383,13 +1382,13 @@ class Config:
         resolved_queueName = self._resolveQueueName(self.component,self.config)
 
         if type(subtopic_string) is str:
-            if self.broker.url.scheme == 'amq' :
+            if 'amqp' in self.broker.url.scheme.lower() :
                 subtopic = subtopic_string.split('.')
             else:
                 subtopic = subtopic_string.split('/')
             
         if hasattr(self, 'exchange') and hasattr(self, 'topicPrefix'):
-            self.subscriptions.add(Subscription(self, self.queueName, resolved_queueName, subtopic))
+            self.subscriptions.add(Subscription(self, self.queueName, resolved_queueName, subtopic, topicOverride))
 
     def _parse_v2plugin(self, entryPoint, value):
         """
@@ -1666,17 +1665,21 @@ class Config:
             except Exception as ex:
                 logger.error( f"{','.join(self.files)}:{self.lineno} file {v} failed to parse:  {ex}" )
                 logger.debug('Exception details: ', exc_info=True)
-        elif k in ['subtopic']:
+        elif k in ['subtopic', 'topic']:
             self.subtopic_seen=True
-            self._parse_binding(v)
+            self._parse_binding(v, k in ['topic'] )
         elif k in ['topicPrefix']:
-            if '/' in v :
+            if v.lower() in [ 'none', 'off', 'false' ]:
+                self.topicPrefix = []
+            elif '/' in v :
                 self.topicPrefix = v.split('/')
             else:
                 self.topicPrefix = v.split('.')
         elif k in ['post_topicPrefix']:
             #if (not self.post_broker.url) or self.post_broker.url.scheme[0:3] == 'amq':
-            if '/' in v :
+            if v.lower() in [ 'none', 'off', 'false' ]:
+                self.post_topicPrefix = []
+            elif '/' in v :
                 self.post_topicPrefix = v.split('/')
             else:
                 self.post_topicPrefix = v.split('.')
@@ -1785,7 +1788,10 @@ class Config:
                 logger.info( f"{','.join(self.files)}:{lineno} if download is false, directory has no effect" )
 
             v = ' '.join(line[1:])
-            if v == 'None':
+            # filename NONE and None are different
+            if k == 'filename' and v == 'None':
+                v=None
+            elif k != 'filename' and v.lower() in [ 'none', 'off', 'false' ]:
                 v=None
             setattr(self, k, v)
         else:
@@ -1866,7 +1872,7 @@ class Config:
 
         if not self.old_subscriptions:
             self.subscriptionsPath=self._getSubscriptionsFileName(self.component,self.config)
-            self.old_subscriptions=self.subscriptions.read(self, self.subscriptionsPath)
+            self.old_subscriptions.read(self, self.subscriptionsPath)
 
         # look for template in old subscriptions.
         if self.old_subscriptions:
@@ -1967,13 +1973,14 @@ class Config:
         if self.action not in self.actions:
             logger.error( f"invalid action: {self.action} must be one of: {','.join(self.actions)}" )
 
-        if hasattr(self, 'nodupe_ttl'):
+        # nodupe_ttl is a combined duration and flag option for legacy reasons
+        # defaults to 0 (nodupe disabled)
+        if hasattr(self, 'nodupe_ttl') and self.nodupe_ttl is not None:
             if (type(self.nodupe_ttl) is str):
                 if isTrue(self.nodupe_ttl):
                     self.nodupe_ttl = 300
                 else:
-                    self.nodupe_ttl = durationToSeconds(
-                        self.nodupe_ttl, default=300)
+                    self.nodupe_ttl = durationToSeconds(self.nodupe_ttl, default=300)
         else:
             self.nodupe_ttl = 0
 
@@ -2055,7 +2062,7 @@ class Config:
                                             component, cfg)
 
         if self.post_broker is not None and self.post_broker.url is not None:
-            if not hasattr(self, 'post_exchange') or self.post_exchange is None:
+            if not hasattr(self, 'post_exchange'): 
                 self.post_exchange = f'xs_{self.post_broker.url.username}'
 
             post_broker_isList = hasattr(self,'post_exchange') and type(self.post_exchange) is list
@@ -2096,10 +2103,10 @@ class Config:
             if ((len(self.subscriptions) == 0) and hasattr(self, 'exchange')):
                 self.subscriptions.append(Subscription(self, self.queueName, resolved_queueName, [ '#' ]))
 
+        self.subscriptions.finalize(self.old_subscriptions)
         if self.action in [ 'start', 'foreground', 'declare' ] and \
                 (not hasattr(self,'no') or self.no < 2) and  \
                 len(self.subscriptions) > 0:
-
             self.subscriptions.write(self.subscriptionsPath)
             self._writeQueueFile(self.subscriptions[0]['queue']['name'])
 
@@ -2535,10 +2542,14 @@ class Config:
                 return
 
             if type(namespace.topicPrefix) is str:
-               if namespace.broker.scheme[0:3] == 'amq':
+               if namespace.topicPrefix.lower() in [ 'none', 'off', 'false' ]:
+                   topicPrefix=[]
+               elif 'amqp' in namespace.broker.scheme.lower():
                    topicPrefix = namespace.topicPrefix.split('.')
                else:
                    topicPrefix = namespace.topicPrefix.split('/')
+
+               namespace.topicPrefix = topicPrefix
 
             namespace.subscriptions.add(Subscription(namespace, namespace.queueName, resolved_qn, values))
 
@@ -2875,7 +2886,7 @@ def one_config(component, config, action, isPost=False, hostDir=None):
 
     #FIXME parse old subscriptions here.
     cfg.subscriptionsPath=cfg._getSubscriptionsFileName(cfg.component,cfg.config)
-    cfg.old_subscriptions=cfg.subscriptions.read(cfg, cfg.subscriptionsPath)
+    cfg.old_subscriptions.read(cfg, cfg.subscriptionsPath)
 
     if os.path.exists(fname):
          cfg.parse_file(fname,component)

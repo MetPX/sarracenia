@@ -134,7 +134,7 @@ class Redis(NoDupe):
         new_count = len(self._redis.keys(self._rkey_base + ":*"))
         self.now = nowflt()
         
-        logger.info( f"cache size was {self.last_count:d} items " \
+        logger.info( f"cache size was {self._last_count:d} items " \
               f"{self.now - self._last_time:5.2f} sec ago, now saved {new_count:d} entries" )
 
         self._last_time = self.now

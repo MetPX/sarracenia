@@ -99,8 +99,7 @@ while count < 10:
                 elif name == 'air_temp':
                     air_temp = i.get('value')
 
-            print('station: %s, tc_id: %s, lat: %s, long: %s, air_temp: %s' %
-                  (stn_name, tc_id, lat, lon, air_temp))
+            print(f'station: {stn_name}, tc_id: {tc_id}, lat: {lat}, long: {lon}, air_temp: {air_temp}')
         h.ack(m)
         count += 1
         if count > 10:

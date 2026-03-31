@@ -88,9 +88,7 @@ class PClean_F90(PClean):
                 self.ext_count += 1
                 # pick one test identified by file extension
                 src = '/' + msg['relPath']  # src file is in f30 dir
-                dest = "{}{}".format(
-                    src, test_extension
-                )  # format input file for extension test (next f90)
+                dest = f"{src}{test_extension}"  # format input file for extension test (next f90)
 
                 try:
                     if test_extension == '.slink':
