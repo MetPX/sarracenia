@@ -21,3 +21,4 @@ amqp>=5.2.0
 testcontainers>=4.4.1
 turfpy>=0.0.7
 geojson>=3.1.0
+python-qpid-proton
