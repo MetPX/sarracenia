@@ -1,8 +1,6 @@
 import pytest
 from tests.conftest import *
 
-import urllib.parse
-
 import sarracenia.config
 import sarracenia.flow
 import copy
