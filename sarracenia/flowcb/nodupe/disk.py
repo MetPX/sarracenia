@@ -251,8 +251,7 @@ class Disk(NoDupe):
             try:
                 os.unlink(self.cache_file)
             except Exception as err:
-                logger.warning("did not unlink: cache_file={}: err={}".format(
-                    self.cache_file, err))
+                logger.warning(f"did not unlink: cache_file={self.cache_file}: err={err}")
                 logger.debug('Exception details:', exc_info=True)
         self.cache_dict = {}
         self.count = 0
