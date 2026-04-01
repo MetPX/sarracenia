@@ -1382,10 +1382,14 @@ class Config:
         resolved_queueName = self._resolveQueueName(self.component,self.config)
 
         if type(subtopic_string) is str:
-            if 'amqp' in self.broker.url.scheme.lower() :
+            bsl = self.broker.url.scheme.lower()
+            if bsl == 'amqp' :
                 subtopic = subtopic_string.split('.')
-            else:
+            elif bsl == 'mqtt':
                 subtopic = subtopic_string.split('/')
+            # for other protocols, e.g. AMQP1.0, leave the subtopic alone.
+            else:
+                subtopic = [subtopic_string]
             
         if hasattr(self, 'exchange') and hasattr(self, 'topicPrefix'):
             self.subscriptions.add(Subscription(self, self.queueName, resolved_queueName, subtopic, topicOverride))
@@ -2544,10 +2548,15 @@ class Config:
             if type(namespace.topicPrefix) is str:
                if namespace.topicPrefix.lower() in [ 'none', 'off', 'false' ]:
                    topicPrefix=[]
-               elif 'amqp' in namespace.broker.scheme.lower():
+               elif namespace.broker.scheme[0:4].lower() == 'amqp':
                    topicPrefix = namespace.topicPrefix.split('.')
-               else:
+               elif namespace.broker.scheme[0:4].lower() == 'mqtt':
                    topicPrefix = namespace.topicPrefix.split('/')
+               # for other protocols, e.g. AMQP1.0, leave the topicPrefix alone.
+               else:
+                   topicPrefix = [namespace.topicPrefix]
+
+               namespace.topicPrefix = topicPrefix
 
                namespace.topicPrefix = topicPrefix
 
