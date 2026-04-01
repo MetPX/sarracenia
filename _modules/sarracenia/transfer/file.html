@@ -219,14 +219,15 @@
         <span class="n">src</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">local_read_open</span><span class="p">(</span><span class="n">remote_path</span><span class="p">,</span> <span class="n">remote_offset</span><span class="p">)</span>
         <span class="n">dst</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">local_write_open</span><span class="p">(</span><span class="n">local_file</span><span class="p">,</span> <span class="n">local_offset</span><span class="p">)</span>
 
-        <span class="c1"># initialize sumalgo</span>
-        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">sumalgo</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">sumalgo</span><span class="o">.</span><span class="n">set_path</span><span class="p">(</span><span class="n">remote_file</span><span class="p">)</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="c1"># initialize sumalgo</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">sumalgo</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">sumalgo</span><span class="o">.</span><span class="n">set_path</span><span class="p">(</span><span class="n">remote_file</span><span class="p">)</span>
 
-        <span class="c1"># download</span>
-        <span class="n">rw_length</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">read_write</span><span class="p">(</span><span class="n">src</span><span class="p">,</span> <span class="n">dst</span><span class="p">,</span> <span class="n">length</span><span class="p">)</span>
-
-        <span class="c1"># close</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">local_write_close</span><span class="p">(</span><span class="n">dst</span><span class="p">)</span>
+            <span class="c1"># download</span>
+            <span class="n">rw_length</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">read_write</span><span class="p">(</span><span class="n">src</span><span class="p">,</span> <span class="n">dst</span><span class="p">,</span> <span class="n">length</span><span class="p">)</span>
+        <span class="k">finally</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">local_read_close</span><span class="p">(</span><span class="n">src</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">local_write_close</span><span class="p">(</span><span class="n">dst</span><span class="p">)</span>
 
         <span class="k">return</span> <span class="n">rw_length</span>
 
