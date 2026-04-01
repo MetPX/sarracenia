@@ -219,6 +219,10 @@ class DiskQueue():
             logger.debug("Error information: ", exc_info=True)
             return None
 
+        if type(msg) is not sarracenia.Message:
+            logger.error(f"invalid line in retry file (not decoded as sarracenia.Message): {line}")
+            return None
+
         return msg
 
     def msgToJSON(self, message):
