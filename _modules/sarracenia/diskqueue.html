@@ -465,20 +465,20 @@
             <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s1">&#39;DEBUG </span><span class="si">%s</span><span class="s1"> open read&#39;</span><span class="p">,</span> <span class="n">path</span><span class="p">)</span>
             <span class="n">fp</span> <span class="o">=</span> <span class="nb">open</span><span class="p">(</span><span class="n">path</span><span class="p">,</span> <span class="s1">&#39;r&#39;</span><span class="p">)</span>
 
-        <span class="n">line</span> <span class="o">=</span> <span class="n">fp</span><span class="o">.</span><span class="n">readline</span><span class="p">()</span>
-        <span class="k">if</span> <span class="ow">not</span> <span class="n">line</span><span class="p">:</span>
-            <span class="k">try</span><span class="p">:</span>
-                <span class="n">fp</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
-            <span class="k">except</span> <span class="ne">Exception</span><span class="p">:</span>
-                <span class="k">pass</span>
-            <span class="k">return</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span>
+        <span class="k">while</span> <span class="kc">True</span><span class="p">:</span>
+            <span class="n">line</span> <span class="o">=</span> <span class="n">fp</span><span class="o">.</span><span class="n">readline</span><span class="p">()</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">line</span><span class="p">:</span>
+                <span class="k">try</span><span class="p">:</span>
+                    <span class="n">fp</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+                <span class="k">except</span> <span class="ne">Exception</span><span class="p">:</span>
+                    <span class="k">pass</span>
+                <span class="k">return</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span>
 
-        <span class="n">msg</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">msgFromJSON</span><span class="p">(</span><span class="n">line</span><span class="p">)</span>
-        <span class="c1"># a corrupted line : go to the next</span>
-        <span class="k">if</span> <span class="n">msg</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span> <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">msg_get_from_file</span><span class="p">(</span><span class="n">fp</span><span class="p">,</span> <span class="n">path</span><span class="p">)</span>
+            <span class="n">msg</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">msgFromJSON</span><span class="p">(</span><span class="n">line</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">msg</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="k">return</span> <span class="n">fp</span><span class="p">,</span> <span class="n">msg</span></div>
 
-        <span class="k">return</span> <span class="n">fp</span><span class="p">,</span> <span class="n">msg</span></div>
-
+            <span class="c1"># corrupted line, skip to next</span>
 
 <div class="viewcode-block" id="DiskQueue.on_housekeeping">
 <a class="viewcode-back" href="../../Reference/code.html#sarracenia.diskqueue.DiskQueue.on_housekeeping">[docs]</a>
