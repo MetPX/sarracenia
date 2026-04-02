@@ -40,7 +40,7 @@ class V03(PostFormat):
         try:
             msg.copyDict(json.loads(body))
         except Exception as ex:
-            logger.warning('expected json, decode error: %s' % ex)
+            logger.warning(f'expected json, decode error: {ex}')
             logger.warning( f'body: {body}' )
             logger.debug('Exception details: ', exc_info=True)
             return None

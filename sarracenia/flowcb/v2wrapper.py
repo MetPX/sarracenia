@@ -40,7 +40,7 @@ def sumstrFromMessage( msg ) -> str:
         if msg['identity']['method'] in sum_algo_v3tov2:
            sa = sum_algo_v3tov2[msg["identity"]["method"]]
         else: # FIXME ... 1st md5name case... default when unknown...
-           logger.error('identity method unknown to v2: %s, replacing with md5name' % msg['identity']['method'] )
+           logger.error(f"identity method unknown to v2: {msg['identity']['method']}, replacing with md5name" )
            sa = 'n'
            sv = md5(bytes(os.path.basename(msg['relPath']),'utf-8')).hexdigest()
 
@@ -56,7 +56,7 @@ def sumstrFromMessage( msg ) -> str:
         sumstr = sa + ',' + sv
     else:
         # FIXME ... 2nd md5name case.
-        sumstr = 'n,%s' % md5(bytes(os.path.basename(msg['relPath']),'utf-8')).hexdigest()
+        sumstr = f"n,{md5(bytes(os.path.basename(msg['relPath']), 'utf-8')).hexdigest()}"
 
     if 'fileOp' in msg:
         if 'rename' in msg['fileOp']:
@@ -65,21 +65,21 @@ def sumstrFromMessage( msg ) -> str:
         if 'link' in msg['fileOp']:
             hash = sha512()
             hash.update( bytes( msg['fileOp']['link'], encoding='utf-8' ) )
-            sumstr = 'L,%s' % hash.hexdigest()
+            sumstr = f'L,{hash.hexdigest()}'
         elif 'remove' in msg['fileOp']:
             hash   = sha512()
             hash.update(bytes(os.path.basename(msg['relPath']), encoding='utf-8'))
-            sumstr = 'R,%s' % hash.hexdigest()
+            sumstr = f'R,{hash.hexdigest()}'
         elif 'directory' in msg['fileOp']:
             hash   = sha512()
             hash.update(bytes(os.path.basename(msg['relPath']), encoding='utf-8'))
 
             if 'remove' in msg['fileOp']:
-                sumstr = 'r,%s' % hash.hexdigest()
+                sumstr = f'r,{hash.hexdigest()}'
             else:
-                sumstr = 'm,%s' % hash.hexdigest()
+                sumstr = f'm,{hash.hexdigest()}'
         else:
-            logger.error('unknown fileOp: %s' % msg['fileOp'] )
+            logger.error(f"unknown fileOp: {msg['fileOp']}" )
     return sumstr
 
 class Message:
@@ -233,8 +233,7 @@ class V2Wrapper(FlowCB):
             for v in o.v2plugins[e]:
                 if e in unsupported_v2_events:
                     logger.error(
-                        'v2 plugin conversion required, %s too different in v3'
-                        % e)
+                        f'v2 plugin conversion required, {e} too different in v3')
                     continue
                 self.add(e, v)
 
@@ -252,13 +251,13 @@ class V2Wrapper(FlowCB):
         #logger.info('v2wrapper init done')
 
     def declare_option(self, option):
-        logger.info('v2plugin option: %s declared' % option)
+        logger.info(f'v2plugin option: {option} declared')
 
         self.state_vars.append(option)
 
         self.o.add_option(option)
         if not hasattr(self.o, option):
-            logger.info('value of %s not set' % option)
+            logger.info(f'value of {option} not set')
             return
 
         if type(getattr(self.o, option)) is not list:
@@ -269,7 +268,7 @@ class V2Wrapper(FlowCB):
         setattr(self, opname, None)
 
         if path == 'None' or path == 'none' or path == 'off':
-            logger.info("Reset plugin %s to None" % opname)
+            logger.info(f"Reset plugin {opname} to None")
             exec('self.' + opname + '_list = [ ]')
             return True
 
@@ -278,8 +277,7 @@ class V2Wrapper(FlowCB):
                                                    mandatory=True,
                                                    ctype='py')
         if not ok:
-            logger.error("installing %s %s failed: not found " %
-                         (opname, path))
+            logger.error(f"installing {opname} {path} failed: not found ")
             return False
 
         #logger.info('installing: %s %s' % ( opname, path ) )
@@ -293,15 +291,13 @@ class V2Wrapper(FlowCB):
                             script, 'exec'))
         except:
             logger.error(
-                "sr_config/execfile 2 failed for option '%s' and plugin '%s'" %
-                (opname, path))
+                f"sr_config/execfile 2 failed for option '{opname}' and plugin '{path}'")
             logger.debug('Exception details: ', exc_info=True)
             return False
 
         if opname == 'plugin':
             if getattr(self, 'v2plugin') is None:
-                logger.error("%s plugin %s incorrect: does not set self.%s" %
-                             ('v2plugin', path, 'v2plugin'))
+                logger.error( f"v2plugin {path} incorrect: does not set self.v2plugin"  )
                 return False
 
             # pci plugin-class-instance... parent is self (a v2wrapper)
@@ -324,8 +320,7 @@ class V2Wrapper(FlowCB):
                          when + ')')
         else:
             if getattr(self, opname) is None:
-                logger.error("%s plugin %s incorrect: does not set self.%s" %
-                             (opname, path, opname))
+                logger.error( f"{opname} plugin {path} incorrect: does not set self.{opname}" )
                 return False
 
             #eval( 'self.' + opname + '_list.append(self.' + opname + ')' )
@@ -386,7 +381,7 @@ class V2Wrapper(FlowCB):
         """
            run plugins for a given entry point.
         """
-        logger.info('v2 run %s' % time)
+        logger.info(f'v2 run {time}')
         for plugin in self.v2plugins[time]:
             plugin(self.o)
 

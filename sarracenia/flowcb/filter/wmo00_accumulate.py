@@ -233,7 +233,7 @@ class Wmo00_accumulate(FlowCB):
             logger.info( f"accumulated file {self.accumulated_file} written {msg['size']} bytes, {record_no-1} records" )
             worklist.incoming.append(msg)
         else:
-            logger.debug( f"empty accumulated file {self.accumulated_file} being removed and reused." )
+            logger.debug('empty accumulated file %s being removed and reused.', self.accumulated_file)
             os.unlink( self.accumulated_file )
             #re-use the sequence number.
             if self.sequence > 0:

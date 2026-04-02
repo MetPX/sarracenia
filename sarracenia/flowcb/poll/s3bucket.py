@@ -77,7 +77,7 @@ class S3bucket(FlowCB):
         i = 0
         gathered_messages = []
         while i < len(keys):
-            logger.info("found {}".format(keys[i]))
+            logger.info(f"found {keys[i]}")
 
             fakestat = paramiko.SFTPAttributes()
             fakestat.st_size = keysizes[i]

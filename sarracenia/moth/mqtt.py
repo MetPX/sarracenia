@@ -94,6 +94,9 @@ class MQTT(Moth):
            do it every 20 seconds.  So in a case where you have, say 5 minutes of queueing, each message will be 
            sent 300/20 -> 15 times...  an unhelpful packet storm.
 
+           note: callback routine signatures differ between v3 and v5 so source code modifications are 
+           needed to deal with v3.  This code assumes v5 always and has incorrect routines for v3.
+
 
       There is additionally a vulnerability/inefficiency resulting from async message reception:
            when a new message arrive the loop thread started by the paho library will append
@@ -150,7 +153,7 @@ class MQTT(Moth):
                 queue['qos'] = int(self.o['qos'])
 
 
-        me = "%s.%s" % (__class__.__module__, __class__.__name__)
+        me = f"{__class__.__module__}.{__class__.__name__}"
 
         if ('settings' in self.o) and (me in self.o['settings']):
             for s in self.o['settings'][me]:
@@ -224,9 +227,7 @@ class MQTT(Moth):
             return
 
         if not flags.session_present:
-            logger.debug(
-                f"no existing session, no recovery of inflight messages from previous connection"
-            )
+            logger.debug('no existing session, no recovery of inflight messages from previous connection')
         logger.info( f"connection succeeded" )
 
         # else reason_code == 0 ... success.
@@ -239,22 +240,17 @@ class MQTT(Moth):
         broker=s['broker']
 
         for binding_dict in s['bindings']:
-
-            if 'topic' in queue:
-                subj=queue['topic']
-            else:
-                exchange = binding_dict["exchange"]
-                prefix = binding_dict["prefix"]
-                subtopic = binding_dict["sub"]
-                logger.info( f"tuple: {exchange} {prefix} {subtopic}")
-
-                subj = '/'.join(['$share', queue['name'], exchange] +
-                                prefix + subtopic)
-
-            (res, mid) = client.subscribe(subj, qos=queue['qos'])
+            (res, mid) = client.subscribe(binding_dict['topic'], queue['qos'])
             userdata.subscribe_in_progress += 1
-            logger.info( f"request to subscribe to: {subj}, mid={mid} "
+            logger.info( f"request to subscribe to: {binding_dict['topic']}, mid={mid} "
                     f"qos={queue['qos']} sent: {paho.mqtt.client.error_string(res)}" )
+
+        for binding_dict in s['bindings_to_remove']:
+            (res, mid) = client.unsubscribe(binding_dict['topic'])
+            userdata.subscribe_in_progress += 1
+            logger.info( f"request to unsubscribe from: {binding_dict['topic']}, mid={mid} " \
+                    f"sent: {paho.mqtt.client.error_string(res)}" )
+
         userdata.subscribe_mutex.release()
         userdata.metricsConnect()
 
@@ -262,11 +258,12 @@ class MQTT(Moth):
     def __sub_on_subscribe(client, userdata, mid, reason_codes, properties=None):
 
         for sub_result in reason_codes:
+            # whatever the response, no reason to wait any longer. request is answered.
+            userdata.subscribe_in_progress -= 1
             if sub_result == 1:
                 userdata.subscribe_mutex.acquire()
                 logger.info( f"client: {client._client_id} subscribe "
                       f"completed mid={mid} reason_codes={reason_codes}" )
-                userdata.subscribe_in_progress -= 1
                 userdata.subscribe_mutex.release()
             elif sub_result >= 128:
                 logger.error(  f"client: {client._client_id} subscribe "
@@ -274,6 +271,22 @@ class MQTT(Moth):
             else:
                 logger.warning(  f"client: {client._client_id} subscribe "
                          f"unsure mid={mid} reason_codes={reason_codes}" )
+
+    def __sub_on_unsubscribe(client, userdata, mid, reason_codes, properties):
+        for sub_result in reason_codes:
+            userdata.subscribe_in_progress -= 1
+            if sub_result == 1:
+                userdata.subscribe_mutex.acquire()
+                logger.info( f"client: {client._client_id} unsubscribe "
+                      f"completed mid={mid} reason_codes={reason_codes}" )
+                userdata.subscribe_mutex.release()
+            elif sub_result >= 128:
+                logger.error(  f"client: {client._client_id} unsubscribe "
+                         f"failed mid={mid} reason_codes={reason_codes}" )
+            else:
+                logger.warning(  f"client: {client._client_id} unsubscribe "
+                         f"unsure mid={mid} reason_codes={reason_codes}" )
+
 
     def __pub_on_disconnect(client, userdata, mid, reason_code, properties=None):
         userdata.metricsDisconnect()
@@ -378,6 +391,7 @@ class MQTT(Moth):
         client.on_disconnect = MQTT.__sub_on_disconnect
         client.on_message = MQTT.__sub_on_message
         client.on_subscribe = MQTT.__sub_on_subscribe
+        client.on_unsubscribe = MQTT.__sub_on_unsubscribe
         # defaults to 20... kind of a mix of "batch" and prefetch...
         if 'max_inflight_messages' in queue:
             client.max_inflight_messages_set(queue['max_inflight_messages'])
@@ -427,6 +441,12 @@ class MQTT(Moth):
 
             logger.info( f"is no around? {self.o['no']} " )
             if ('no' in self.o) and self.o['no'] > 0: # instances 'started'
+                if hasattr(self, 'client') and self.client is not None:
+                    try:
+                        self.client.loop_stop()
+                        self.client.disconnect()
+                    except Exception:
+                        pass
                 self.client = self.__clientSetup(cid)
                 self.client.connect( broker.url.hostname, port=self.__sslClientSetup(), \
                        clean_start=False, properties=props )
@@ -490,17 +510,24 @@ class MQTT(Moth):
             return
 
         try:
+            if hasattr(self, 'client') and self.client is not None:
+                try:
+                    self.client.loop_stop()
+                    self.client.disconnect()
+                except Exception:
+                    pass
+
             self.pending_publishes = collections.deque()
             self.unexpected_publishes = collections.deque()
- 
+
             props = Properties(PacketTypes.CONNECT)
             if self.o['messageAgeMax'] > 0:
                 props.MessageExpiryInterval = int(self.o['messageAgeMax'])
- 
+
             self.transport = 'websockets' if (self.o['broker'].url.scheme[-2:] == 'ws' ) or  \
                (self.o['broker'].url.scheme[-1] == 'w' ) else 'tcp'
- 
-            self.client = paho.mqtt.client.Client( 
+
+            self.client = paho.mqtt.client.Client(
                     callback_api_version = paho.mqtt.client.CallbackAPIVersion.VERSION2, \
                     userdata=self, transport=self.transport, protocol=self.proto_version )
  
@@ -623,7 +650,10 @@ class MQTT(Moth):
             self.metrics['rxBadCount'] += 1
             return None
 
-        message['exchange'] = mqttMessage.topic.split('/')[0]
+        if self.o['exchange']:
+            message['exchange'] = mqttMessage.topic.split('/')[0]
+            message['_deleteOnPost'] |= set( ['exchange' ])
+
         message.deriveSource( self.o )
         message.deriveTopics( self.o, topic=mqttMessage.topic, separator='/' )
 
@@ -633,7 +663,7 @@ class MQTT(Moth):
 
         message['qos'] = mqttMessage.qos
         message['local_offset'] = 0
-        message['_deleteOnPost'] |= set( ['exchange', 'local_offset', 'ack_id', 'qos' ])
+        message['_deleteOnPost'] |= set( [ 'local_offset', 'ack_id', 'qos' ])
 
         self.metrics['rxLast'] = sarracenia.nowstr()
         if message.validate():
@@ -712,12 +742,19 @@ class MQTT(Moth):
 
     def ack(self, m: sarracenia.Message ) -> bool:
 
-        if 'ack_id' in m:
-            logger.info( f"mid={m['ack_id']}")
-            if m['ack_id']['broker'] == self.broker:
-                self.client.ack( m['ack_id']['delivery_tag'], m['qos'] )
-                del m['ack_id']
-                m['_deleteOnPost'].remove('ack_id')
+        if 'ack_id' not in m:
+            return True
+
+        logger.info(f"mid={m['ack_id']}")
+        if m['ack_id']['broker'] != self.broker:
+            logger.warning(f"ack failed for {m['ack_id']}: broker mismatch (current: {self.broker})")
+            del m['ack_id']
+            m['_deleteOnPost'].remove('ack_id')
+            return False
+
+        self.client.ack(m['ack_id']['delivery_tag'], m['qos'])
+        del m['ack_id']
+        m['_deleteOnPost'].remove('ack_id')
         return True
 
     def putNewMessage(self,
@@ -736,8 +773,9 @@ class MQTT(Moth):
             if not self.connected:
                 return False
 
-        # The caller probably doesn't expect the message to get modified by this method, so use a copy of the message
-        body = copy.deepcopy(message)
+        # Shallow copy: only top-level keys are deleted (_deleteOnPost), nested dicts are read-only
+        # copy.copy(message) produces a sarracenia.Message object
+        body = copy.copy(message)
 
         if 'format' in self.o:
             postFormat=self.o['format']
@@ -754,7 +792,7 @@ class MQTT(Moth):
                     del body[k]
             del body['_deleteOnPost']
 
-        if not exchange:
+        if not exchange and self.o['exchange']:
             if (type(self.o['exchange']) is list):
                 if (len(self.o['exchange']) > 1):
                     if 'post_exchangeSplit' in self.o:
@@ -784,7 +822,7 @@ class MQTT(Moth):
             if not 'posts' in message:
                 message['posts'] = []
 
-            message['posts'].append({ 'broker':str(self.o['broker']), 'topic': topic, 'exchange':exchange } )
+            message['posts'].append({ 'broker':str(self.o['broker']), 'topic': topic  } )
 
             del headers['topic']
 
@@ -844,4 +882,5 @@ class MQTT(Moth):
                         ebo *= 2
                 logger.info('no more pending messages')
             self.client.disconnect()
+            self.client.loop_stop()
         self.connected=False

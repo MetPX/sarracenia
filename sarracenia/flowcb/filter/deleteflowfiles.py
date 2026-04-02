@@ -16,14 +16,14 @@ class DeleteFlowFiles(FlowCB):
 
         for m in worklist.incoming:
 
-            f = "%s%s%s" % (m['new_dir'], os.sep, m['new_file'])
+            f = f"{m['new_dir']}{os.sep}{m['new_file']}"
             try:
                 os.unlink(f)
                 os.unlink(f.replace('/cfr/', '/cfile/'))
                 worklist.ok.append(m)
-                logger.info("msg_delete: %s" % f)
+                logger.info(f"msg_delete: {f}")
             except OSError as err:
-                logger.error("could not unlink {}: {}".format(f, err))
+                logger.error(f"could not unlink {f}: {err}")
                 logger.debug("Exception details:", exc_info=True)
                 worklist.failed.append(m)
         worklist.incoming = []

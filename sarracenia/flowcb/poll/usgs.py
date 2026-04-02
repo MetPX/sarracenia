@@ -64,7 +64,7 @@ class Usgs(FlowCB):
             for s in self.o.poll_usgs_station:
                 items = s.split('|')
                 self.sitecodes.append(items[2])
-            logger.info('%d stations declared' % len(self.sitecodes))
+            logger.info(f'{len(self.sitecodes)} stations declared')
         else:
             df = pd.read_excel(
                 'https://water.usgs.gov/osw/hcdn-2009/HCDN-2009_Station_Info.xlsx'
@@ -89,18 +89,17 @@ class Usgs(FlowCB):
             ]:
                 stns = ','.join([s for s in sites])
                 file_cnt += 1
-                logger.debug('getting: %s' % self.o.pollUrl.format(stns))
+                logger.debug('getting: %s', self.o.pollUrl.format(stns))
 
                 status_code = urllib.request.urlopen(
                     self.o.pollUrl.format(stns)).getcode()
                 if status_code == 200:
-                    logger.info("poll_usgs file updated %s" %
-                                self.o.pollUrl.format(stns))
+                    logger.info(f"poll_usgs file updated {self.o.pollUrl.format(stns)}")
 
                     self.o.msg.new_baseurl = self.o.pollUrl.format(stns)
 
                     m = sarracenia.Message.fromFileInfo(
-                        'usgs_{0}_sites{1}.xml'.format(run_time, file_cnt),
+                        f'usgs_{run_time}_sites{file_cnt}.xml',
                         self.o)
                     gathered_messages.append(m)
                 elif status_code == 403:
@@ -109,19 +108,17 @@ class Usgs(FlowCB):
 							blocked your IP. Use the contact form on their site to be \
 							unblocked.''')
                 else:
-                    logger.debug("poll_usgs file not found: %s" %
-                                 self.o.pollUrl.format(stns))
+                    logger.debug('poll_usgs file not found: %s', self.o.pollUrl.format(stns))
         else:  # Get stations one at a time
             for site in self.sitecodes:
-                logger.debug('getting: %s' % self.o.pollUrl.format(site))
+                logger.debug('getting: %s', self.o.pollUrl.format(site))
                 status_code = urllib.request.urlopen(
                     self.o.pollUrl.format(site)).getcode()
                 if status_code == 200:
-                    logger.info("poll_usgs file updated %s" %
-                                self.o.pollUrl.format(site))
+                    logger.info(f"poll_usgs file updated {self.o.pollUrl.format(site)}")
                     self.o.msg.new_baseurl = self.o.pollUrl.format(site)
                     m = sarracenia.Message.fromFileInfo(
-                        'usgs_{0}_{1}.xml'.format(run_time, site), self.o)
+                        f'usgs_{run_time}_{site}.xml', self.o)
                     gathered_messages.append(m)
                 elif status_code == 403:
                     logger.error(
@@ -129,6 +126,5 @@ class Usgs(FlowCB):
 							blocked your IP. Use the contact form on their site to be \
 							unblocked.''')
                 else:
-                    logger.debug("poll_usgs file not found: %s" %
-                                 self.o.pollUrl.format(site))
+                    logger.debug('poll_usgs file not found: %s', self.o.pollUrl.format(site))
         return gathered_messages

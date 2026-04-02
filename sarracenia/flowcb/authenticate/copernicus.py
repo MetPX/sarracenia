@@ -131,7 +131,7 @@ class Copernicus(BearerToken):
                 logger.error(f"Access token creation failed. {e}")
                 logger.debug("Details:", exc_info=True)
                 if r:
-                    logger.debug(f"response: {r.json()}")
+                    logger.debug('response: %s', r.json())
                 self._token = None
                 self._token_expires = now
                 self._refresh = None

@@ -135,14 +135,12 @@ class Report(FlowCB):
         tot = self.reportCount
         how_long = sarracenia.nowflt() - self.last_housekeeping
         if tot > 0:
-            apc = 100 * self.reportCount / tot
             rate = self.reportCount / how_long
         else:
-            apc = 0
             rate = 0
 
         self.reportRate = rate
-        logger.info( "reports %d, rate %3.1f reports/s" % (self.reportCount , rate))
+        logger.info( f"reports {tot}, rate {rate:3.1f} reports/s" )
 
 
     def on_declare(self):

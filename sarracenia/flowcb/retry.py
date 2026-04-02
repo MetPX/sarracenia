@@ -64,7 +64,7 @@ class Retry(FlowCB):
 
         #queuedriver = os.getenv('SR3_QUEUEDRIVER', 'disk')
 
-        logger.debug('logLevel=%s' % self.o.logLevel)
+        logger.debug('logLevel=%s', self.o.logLevel)
 
 
     def gather(self, qty) -> None:
@@ -135,7 +135,7 @@ class Retry(FlowCB):
             return
 
         if len(worklist.failed) != 0:
-            logger.debug( f"putting {len(worklist.failed)} messages into {self.download_retry_name}"  )
+            logger.debug('putting %s messages into %s', len(worklist.failed), self.download_retry_name)
             self.download_retry.put(worklist.failed)
             worklist.failed = []
 
@@ -156,7 +156,7 @@ class Retry(FlowCB):
 
         mlist = self.post_retry.get(qty)
 
-        logger.debug( f"loading from {self.post_retry_name}: qty={qty} ... got: {len(mlist)}" )
+        logger.debug('loading from %s: qty=%s ... got: %s', self.post_retry_name, qty, len(mlist))
         if len(mlist) > 0:
             worklist.ok.extend(mlist)
 

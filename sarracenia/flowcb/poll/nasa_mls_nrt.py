@@ -19,9 +19,9 @@ class Nasa_mls_nrt(Poll):
         st.filename = data
 
         if 'MLS-Aura' in data:
-            logger.debug("data %s" % data)
+            logger.debug('data %s', data)
             self.entries[data] = st
 
-            logger.info("(%s) = %s" % (self.myfname, st))
+            logger.info(f"({self.myfname}) = {st}")
         if self.myfname == None: return
         if self.myfname == data: return

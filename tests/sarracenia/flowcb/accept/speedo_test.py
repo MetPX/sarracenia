@@ -75,7 +75,9 @@ def test_after_accept(mocker, caplog):
     speedo.after_accept(worklist)
     assert len(worklist.incoming) == 1
     assert len(caplog.messages) == 1
-    assert 'speedo:   1 messages received: 0.0033 msg/s, 3.33 bytes/s, lag:   10 s' in caplog.messages
+    # format changed in #1628
+    #assert 'speedo:   1 messages received: 0.0033 msg/s, 3.33 bytes/s, lag:   10 s' in caplog.messages
+    assert 'speedo: 1 messages received: 0.00 msg/s, 3.33 bytes/s, lag:   10s' in caplog.messages
 
     caplog.clear()
     worklist.incoming = [make_message(nowtime_flt - 300)]
@@ -83,7 +85,9 @@ def test_after_accept(mocker, caplog):
     speedo.after_accept(worklist)
     assert len(worklist.incoming) == 1
     assert len(caplog.messages) == 2
-    assert 'speedo:   1 messages received: 0.0033 msg/s, 3.33 bytes/s, lag:  300 s' in caplog.messages
+    # format changed in #1628
+    #assert 'speedo:   1 messages received: 0.0033 msg/s, 3.33 bytes/s, lag:   10 s' in caplog.messages
+    assert 'speedo: 1 messages received: 0.00 msg/s, 3.33 bytes/s, lag:  300s' in caplog.messages
     assert 'speedo: Excessive lag! Messages posted  300 s ago' in caplog.messages
 
     caplog.clear()

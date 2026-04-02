@@ -81,7 +81,7 @@ class Ftp(Transfer):
 
     # cd
     def cd(self, path):
-        logger.debug("sr_ftp cd %s" % path)
+        logger.debug('sr_ftp cd %s', path)
 
         alarm_set(self.o.timeout)
         try:
@@ -92,7 +92,7 @@ class Ftp(Transfer):
             alarm_cancel()
 
     def cd_forced(self, path):
-        logger.debug("sr_ftp cd_forced %o %s" % (self.o.permDirDefault, path))
+        logger.debug('sr_ftp cd_forced %o %s', self.o.permDirDefault, path)
 
         # try to go directly to path
 
@@ -133,7 +133,7 @@ class Ftp(Transfer):
             # chmod
             alarm_set(self.o.timeout)
             try:
-                self.ftp.voidcmd('SITE CHMOD ' + "{0:o}".format(self.o.permDirDefault) + ' ' + d)
+                self.ftp.voidcmd('SITE CHMOD ' + f"{self.o.permDirDefault:o}" + ' ' + d)
             finally:
                 alarm_cancel()
 
@@ -172,10 +172,10 @@ class Ftp(Transfer):
 
     # chmod
     def chmod(self, perm, path):
-        logger.debug("sr_ftp chmod %s %s" % (str(perm), path))
+        logger.debug('sr_ftp chmod %s %s', str(perm), path)
         alarm_set(self.o.timeout)
         try:
-            self.ftp.voidcmd('SITE CHMOD ' + "{0:o}".format(perm) + ' ' + path)
+            self.ftp.voidcmd('SITE CHMOD ' + f"{perm:o}" + ' ' + path)
         finally:
             alarm_cancel()
 
@@ -204,7 +204,7 @@ class Ftp(Transfer):
 
     # connect...
     def connect(self):
-        logger.debug("sr_ftp connect %s" % self.o.sendTo)
+        logger.debug('sr_ftp connect %s', self.o.sendTo)
 
         self.connected = False
         self.sendTo = self.o.sendTo
@@ -264,8 +264,7 @@ class Ftp(Transfer):
             self.ftp = ftp
 
         except:
-            logger.error("Unable to connect to %s (user:%s)" %
-                         (self.host, self.user))
+            logger.error(f"Unable to connect to {self.host} (user:{self.user})")
             logger.debug('Exception details: ', exc_info=True)
 
         alarm_cancel()
@@ -273,7 +272,7 @@ class Ftp(Transfer):
 
     # credentials...
     def credentials(self):
-        logger.debug("sr_ftp credentials %s" % self.sendTo)
+        logger.debug('sr_ftp credentials %s', self.sendTo)
 
         try:
             ok, details = self.o.credentials.get(self.sendTo)
@@ -294,15 +293,14 @@ class Ftp(Transfer):
 
         except:
             logger.error(
-                "sr_ftp/credentials: unable to get credentials for %s" %
-                self.sendTo)
+                f"sr_ftp/credentials: unable to get credentials for {self.sendTo}")
             logger.debug('Exception details: ', exc_info=True)
 
         return False
 
     # delete
     def delete(self, path):
-        logger.debug("sr_ftp rm %s" % path)
+        logger.debug('sr_ftp rm %s', path)
         alarm_set(self.o.timeout)
         # if delete does not work (file not found) run pwd to see if connection is ok
         try:
@@ -320,8 +318,7 @@ class Ftp(Transfer):
             remote_offset=0,
             local_offset=0,
             length=0, exactLength=False):
-        logger.debug("sr_ftp get %s %s %d" %
-                     (remote_file, local_file, local_offset))
+        logger.debug('sr_ftp get %s %s %d', remote_file, local_file, local_offset)
 
         # open local file
         dst = self.local_write_open(local_file, local_offset)
@@ -360,7 +357,7 @@ class Ftp(Transfer):
         cmd = self.o.accelFtpgetCommand.replace('%s', arg1)
         cmd = cmd.replace('%d', arg2).split()
 
-        logger.info("accel_ftp:  %s" % ' '.join(cmd))
+        logger.info(f"accel_ftp:  {' '.join(cmd)}")
         p = subprocess.Popen(cmd)
         p.wait()
         if p.returncode != 0:
@@ -388,7 +385,7 @@ class Ftp(Transfer):
         finally:
             alarm_cancel()
 
-        logger.debug("sr_ftp ls = (size: %d) %s ..." % (len(self.entries), str(self.entries)[0:255]))
+        logger.debug('sr_ftp ls = (size: %d) %s ...', len(self.entries), str(self.entries)[0:255])
         return self.entries
 
     # line_callback: entries[filename] = 'stripped_file_description'
@@ -425,7 +422,7 @@ class Ftp(Transfer):
 
     # mkdir
     def mkdir(self, remote_dir):
-        logger.debug("sr_ftp mkdir %s" % remote_dir)
+        logger.debug('sr_ftp mkdir %s', remote_dir)
         alarm_set(self.o.timeout)
         try:
             self.ftp.mkd(remote_dir)
@@ -435,7 +432,7 @@ class Ftp(Transfer):
         alarm_set(self.o.timeout)
         try:
             self.ftp.voidcmd('SITE CHMOD ' +
-                         "{0:o}".format(self.o.permDirDefault) + ' ' +
+                         f"{self.o.permDirDefault:o}" + ' ' +
                          remote_dir)
         finally:
             alarm_cancel()
@@ -448,7 +445,7 @@ class Ftp(Transfer):
             local_offset=0,
             remote_offset=0,
             length=0):
-        logger.debug("sr_ftp put %s %s" % (local_file, remote_file))
+        logger.debug('sr_ftp put %s %s', local_file, remote_file)
 
         # open
         src = self.local_read_open(local_file, local_offset)
@@ -483,7 +480,7 @@ class Ftp(Transfer):
         cmd = self.o.accelFtpputCommand.replace('%s', arg1)
         cmd = cmd.replace('%d', arg2).split()
 
-        logger.info("accel_ftp:  %s" % ' '.join(cmd))
+        logger.info(f"accel_ftp:  {' '.join(cmd)}")
         p = subprocess.Popen(cmd)
         p.wait()
         if p.returncode != 0:
@@ -494,7 +491,7 @@ class Ftp(Transfer):
 
     # rename
     def rename(self, remote_old, remote_new):
-        logger.debug("sr_ftp rename %s %s" % (remote_old, remote_new))
+        logger.debug('sr_ftp rename %s %s', remote_old, remote_new)
         alarm_set(self.o.timeout)
         try:
             self.ftp.rename(remote_old, remote_new)
@@ -503,7 +500,7 @@ class Ftp(Transfer):
 
     # rmdir
     def rmdir(self, path):
-        logger.debug("sr_ftp rmdir %s" % path)
+        logger.debug('sr_ftp rmdir %s', path)
         alarm_set(self.o.timeout)
         try:
             self.ftp.rmd(path)

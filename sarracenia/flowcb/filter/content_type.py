@@ -81,19 +81,19 @@ class Content_type(FlowCB):
         if msg['baseUrl'].startswith('file:'):
             pu = urllib.parse.urlparse(msg['baseUrl'])
             path = pu.path + msg['relPath']
-            logger.debug(f"path from file: URL: {path}")
+            logger.debug('path from file: URL: %s', path)
         elif hasattr(self.o, 'baseDir') and self.o.baseDir:
             path = os.path.join(self.o.baseDir, msg['relPath'])
-            logger.debug(f"path from baseDir + relPath: {path}")
+            logger.debug('path from baseDir + relPath: %s', path)
         
         if not os.path.exists(path):
-            logger.debug(f"can't set contentType, local file {path} does not exist ({msg.getIDStr()})")
+            logger.debug("can't set contentType, local file %s does not exist (%s)", path, msg.getIDStr())
             return False
         
         # theoretically we have a path we can read
         try:
             msg['contentType'] = magic.from_file(path, mime=True)
-            logger.debug(f"successfully set contentType from local file {path} ({msg.getIDStr()})")
+            logger.debug('successfully set contentType from local file %s (%s)', path, msg.getIDStr())
             return True
         except Exception as e:
             logger.error(f"failed to set contentType from local file {path} ({msg.getIDStr()})")
@@ -113,15 +113,15 @@ class Content_type(FlowCB):
             if 'contentType' not in msg:
                 if not self.set_content_type(msg):
                     if self.o.filterContentType_rejectUnknown:
-                        logger.debug(f"{msg.getIDStr()} has unknown contentType, rejecting")
+                        logger.debug('%s has unknown contentType, rejecting', msg.getIDStr())
                         msg.setReport(415, "contentType unknown")
                         worklist.rejected.append(msg)
                     else:
-                        logger.debug(f"{msg.getIDStr()} has unknown contentType, accepting")
+                        logger.debug('%s has unknown contentType, accepting', msg.getIDStr())
                         accepting.append(msg)
                     continue
             
-            logger.debug(f"{msg.getIDStr()} has contentType {msg['contentType']}")
+            logger.debug('%s has contentType %s', msg.getIDStr(), msg['contentType'])
 
             # Now we know the message has the contentType field
             if msg['contentType'] in self.o.filterContentType_acceptType:
