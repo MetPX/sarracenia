@@ -1,23 +1,13 @@
-metpx-sr3 (3.02.00rc3) UNRELEASED; urgency=medium
+metpx-sr3 (3.02.00) unstable; urgency=medium
 
   * Fix metricsReport plugin list leak in flow algorithm #1603
   * Fix sleep duration in flow algorithm #1602
   * Fix pid file race condition during sr3 restart #1595
   * Propogate tlsRigour to avoid declare and cleanup failures #1593
-
- -- Andre LeBlanc <andre.leblanc@ssc-spc.gc.ca>  Tue, 24 Mar 2026 13:33:23 +0000
-
-metpx-sr3 (3.02.00rc2) UNRELEASED; urgency=medium
-
   * Remove per component acceptUnmatched overrides in #1566
   * Guard for mtime being missing in message in #1567
   * Calculate onfly checksum if identity missing in #1563
   * debian/changelog
-
- -- Andre LeBlanc <andre.leblanc@ssc-spc.gc.ca>  Mon, 09 Mar 2026 17:19:23 +0000
-
-metpx-sr3 (3.02.00rc1) unstable; urgency=medium
-
   * Add support for inlining content in messages from all sarracenia
     components in #1478
   * Updates to DD examples
@@ -36,7 +26,7 @@ metpx-sr3 (3.02.00rc1) unstable; urgency=medium
   * Fix #1525: implement tlsRigour for AMQP broker connection
   * Second try at fixing #1439: Add new statefile for OOM restarting use case
 
- -- Andre LeBlanc <andre.leblanc@ssc-spc.gc.ca>  Wed, 18 Feb 2026 16:23:27 +0000
+ -- Andre LeBlanc <andre.leblanc@ssc-spc.gc.ca>  Thu, 02 Apr 2026 13:29:27 +0000
 
 metpx-sr3 (3.01.00) unstable; urgency=medium
 
@@ -236,7 +226,7 @@ metpx-sr3 (3.00.54) unstable; urgency=medium
   * many other plugin improvements. (#1085, #1082, #1091 )
   * search function restored on web-site documentation. ( #1062, #1072)
 
- -- SSC-5CD2310S60 <andre.leblanc@ssc-spc.gc.ca>  Fri, 12 August 2024 12:29:22 -0400
+ -- SSC-5CD2310S60 <andre.leblanc@ssc-spc.gc.ca>  Fri, 12 Aug 2024 12:29:22 -0400
 
 metpx-sr3 (3.00.53) unstable; urgency=medium
 
