@@ -251,6 +251,11 @@ class Https(Transfer):
 
         logger.debug("sr_http init")
         self.connected = False
+        if hasattr(self, 'http') and self.http is not None:
+            try:
+                self.http.close()
+            except Exception:
+                pass
         self.http = None
         self.details = None
         self.seek = True
@@ -331,6 +336,11 @@ class Https(Transfer):
         """
         logger.debug( f"{path} " + (method if method else ''))
 
+        if self.http is not None:
+            try:
+                self.http.close()
+            except Exception:
+                logger.debug('failed to close previous http response', exc_info=True)
         self.http = None
         self.req = None
         self.urlstr = path
