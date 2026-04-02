@@ -118,7 +118,7 @@
 
 <span class="kn">import</span> <span class="nn">logging</span>
 
-<span class="kn">import</span> <span class="nn">os</span><span class="o">,</span> <span class="nn">socket</span><span class="o">,</span> <span class="nn">time</span><span class="o">,</span> <span class="nn">random</span>
+<span class="kn">import</span> <span class="nn">os</span><span class="o">,</span> <span class="nn">resource</span><span class="o">,</span> <span class="nn">socket</span><span class="o">,</span> <span class="nn">time</span><span class="o">,</span> <span class="nn">random</span>
 <span class="kn">from</span> <span class="nn">sarracenia.flowcb</span> <span class="kn">import</span> <span class="n">FlowCB</span>
 <span class="kn">from</span> <span class="nn">sarracenia</span> <span class="kn">import</span> <span class="n">naturalSize</span><span class="p">,</span> <span class="n">naturalTime</span><span class="p">,</span> <span class="n">user_cache_dir</span><span class="p">,</span> <span class="n">nowstr</span>
 <span class="kn">from</span> <span class="nn">sarracenia.featuredetection</span> <span class="kn">import</span> <span class="n">features</span>
@@ -221,6 +221,21 @@
                 <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;State file already exists : </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">state_file</span><span class="si">}</span><span class="s2">. Waiting </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">randomSleep</span><span class="si">}</span><span class="s2"> seconds.&quot;</span><span class="p">)</span>
                 <span class="n">time</span><span class="o">.</span><span class="n">sleep</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">randomSleep</span><span class="p">)</span>
 
+
+        <span class="c1"># Flush buffered output before exec replaces the process.</span>
+        <span class="n">sys</span><span class="o">.</span><span class="n">stdout</span><span class="o">.</span><span class="n">flush</span><span class="p">()</span>
+        <span class="n">sys</span><span class="o">.</span><span class="n">stderr</span><span class="o">.</span><span class="n">flush</span><span class="p">()</span>
+
+        <span class="c1"># Close inherited file descriptors (sockets, pipes, open files) that</span>
+        <span class="c1"># os.execl would otherwise leak into the new process image.</span>
+        <span class="c1"># Keep stdin/stdout/stderr (0-2) open.</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">max_fd</span> <span class="o">=</span> <span class="n">resource</span><span class="o">.</span><span class="n">getrlimit</span><span class="p">(</span><span class="n">resource</span><span class="o">.</span><span class="n">RLIMIT_NOFILE</span><span class="p">)[</span><span class="mi">1</span><span class="p">]</span>
+            <span class="k">if</span> <span class="n">max_fd</span> <span class="o">==</span> <span class="n">resource</span><span class="o">.</span><span class="n">RLIM_INFINITY</span><span class="p">:</span>
+                <span class="n">max_fd</span> <span class="o">=</span> <span class="mi">1024</span>
+            <span class="n">os</span><span class="o">.</span><span class="n">closerange</span><span class="p">(</span><span class="mi">3</span><span class="p">,</span> <span class="n">max_fd</span><span class="p">)</span>
+        <span class="k">except</span> <span class="ne">Exception</span><span class="p">:</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s1">&#39;fd cleanup before execl failed&#39;</span><span class="p">,</span> <span class="n">exc_info</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 
         <span class="k">if</span> <span class="n">sys</span><span class="o">.</span><span class="n">platform</span><span class="o">.</span><span class="n">startswith</span><span class="p">((</span><span class="s1">&#39;linux&#39;</span><span class="p">,</span> <span class="s1">&#39;cygwin&#39;</span><span class="p">,</span> <span class="s1">&#39;darwin&#39;</span><span class="p">,</span> <span class="s1">&#39;aix&#39;</span><span class="p">)):</span>
             <span class="c1"># Unix* (Linux / Windows/Cygwin / MacOS / AIX) Specific restart</span>
