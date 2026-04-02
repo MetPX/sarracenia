@@ -38,6 +38,15 @@ Instructions d’installation
 git
 ---
 
+3.03.00
+-------
+
+*CHANGEMENT*: En raison d'un bogue (# 1573), le filtrage des messages à l'aide de l'en-tête « sundew_extension » ne
+fonctionnait pas correctement dans la version 3. Cette version corrige ce bogue, mais peut modifier le comportement
+des instructions « accept » ou « reject » existantes (si les messages reçus contiennent « sundew_extension »). Il
+est recommandé de vérifier les configurations existantes afin de s'assurer que cette mise à jour n'entraînera
+aucun changement inattendu.
+
 3.02.00
 -------
 

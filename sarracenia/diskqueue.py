@@ -219,6 +219,10 @@ class DiskQueue():
             logger.debug("Error information: ", exc_info=True)
             return None
 
+        if type(msg) is not sarracenia.Message:
+            logger.error(f"invalid line in retry file (not decoded as sarracenia.Message): {line}")
+            return None
+
         return msg
 
     def msgToJSON(self, message):
@@ -348,19 +352,19 @@ class DiskQueue():
             logger.debug('DEBUG %s open read', path)
             fp = open(path, 'r')
 
-        line = fp.readline()
-        if not line:
-            try:
-                fp.close()
-            except Exception:
-                pass
-            return None, None
+        while True:
+            line = fp.readline()
+            if not line:
+                try:
+                    fp.close()
+                except Exception:
+                    pass
+                return None, None
 
-        msg = self.msgFromJSON(line)
-        # a corrupted line : go to the next
-        if msg is None: return self.msg_get_from_file(fp, path)
-
-        return fp, msg
+            msg = self.msgFromJSON(line)
+            if msg is not None:
+                return fp, msg
+            # corrupted line, skip to next
 
     def on_housekeeping(self):
         """
