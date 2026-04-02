@@ -39,6 +39,14 @@ Installation Instructions
 git
 ---
 
+3.03.00
+-------
+
+*CHANGE*: due to a bug (#1573), filtering messages using the ``sundew_extension`` header did not work correctly
+in sr3. This version fixes the bug, but may cause existing ``accept`` or ``reject`` statements to behave
+differently (if received messages contain ``sundew_extension``). Existing configurations should be audited to
+verify that this will not cause any unexpected changes.
+
 3.02.00
 -------
 

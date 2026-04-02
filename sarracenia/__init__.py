@@ -1138,7 +1138,7 @@ class Message(dict):
             return
 
         try:
-            content = msg.getContent()
+            content = msg.getContent(options)
             sz = len(content)
 
             # We want to update the message size with the recently fetched content.
