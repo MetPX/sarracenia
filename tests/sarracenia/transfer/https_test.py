@@ -228,7 +228,7 @@ def test_open_normalises_double_slash_http():
     t.head_opener.open = MagicMock(return_value=fake_response)
 
     t.__open__('http://example.com//data//file.dat')
-    assert '//' not in t.urlstr[7:]  # no double-slash after scheme
+    assert '//' not in t.urlstr[7:]  # no double-slash after 'http://' (7 chars)
 
 
 def test_open_normalises_double_slash_https():
@@ -238,7 +238,7 @@ def test_open_normalises_double_slash_https():
     t.head_opener.open = MagicMock(return_value=fake_response)
 
     t.__open__('https://example.com//path//to//file.dat')
-    assert '//' not in t.urlstr[8:]
+    assert '//' not in t.urlstr[8:]  # no double-slash after 'https://' (8 chars)
 
 
 # ---------------------------------------------------------------------------
