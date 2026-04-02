@@ -153,7 +153,7 @@ class Message:
        
         self.headers = h
         self.hdrstr = str(h)
-        self.isRetry = False
+        self.isRetry = bool(h.isRetry())
 
         # from sr_message/sr_new ...
         self.local_offset = 0

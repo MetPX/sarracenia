@@ -432,6 +432,43 @@ Si la vérification du serveur en amont échoue, ou si la récupération elle-m�
 alors la ressource est placée dans la file d'attente de nouvelles tentatives pour des tentatives ultérieures.
 
 
+amqp_queue_args <liste> (défaut: non défini)
+--------------------------------------------
+
+*S'applique uniquement aux abonnements aux serveurs AMQP.*
+
+Cette option permet de définir des arguments de file d'attente optionnels. Les arguments
+disponibles dépendent du logiciel et de la version du serveur AMQP utilisé. Par exemple,
+`RabbitMQ <https://www.rabbitmq.com/docs/queues#optional-arguments>`_.
+
+Les valeurs lisibles par l'utilisateur (par exemple, ``1m`` pour 1 minute) ne sont
+**pas prises en charge**. Vous devez utiliser l'unité attendue par le serveur.
+
+Remarque : tout argument de file d'attente déjà défini par d'autres options sr3 et
+également défini dans ``amqp_queue_args`` sera **remplaçant** la valeur de
+``amqp_queue_args``. Ceci s'applique à :
+
+=================== ===============================
+Option sr3          Argument de file d'attente AMQP
+=================== ===============================
+``expire``           ``x-expires``
+``messageAgeMax``    ``x-message-ttl``
+``queueType``        ``x-queue-type``
+=================== ===============================
+
+Avertissement : aucune validation n'est effectuée sur ces arguments. sr3 ne connaît pas les
+arguments pris en charge par le broker et ne peut donc pas vérifier si vous avez spécifié
+une option non prise en charge.
+
+Par exemple : ::
+
+  # x-consumer-timeout : si aucun accusé de réception n'est reçu dans ce délai, le broker
+  # considérera que le message a été perdu. (3600000 ms = 1 heure)
+  amqp_queue_args x-consumer-timeout=3600000
+
+  expire 5m
+  # Ceci remplace l'expiration de 5 minutes par 3600000 ms
+  amqp_queue_args x-expires=3600000
 
 attempts <count> (défaut: 3)
 -----------------------------
@@ -1213,9 +1250,9 @@ Ceci est normalement utilisé pour le débogage uniquement.
 messageRateMax <float> (défaut: 0)
 ----------------------------------
 
-Si **messageRateMax** est supérieur à zéro, le flux essaye de respecter cette vitesse de livraison en termes de
-messages d´annonce par seconde. Notez que la limitation est sur les messages d´annonce obtenus ou générés par seconde, avant le
-filtrage accept/reject. Le flux va dormir pour limiter le taux de traitement.
+Si **messageRateMax** est supérieur à zéro, le flux essaie de respecter cette vitesse de livraison en termes de
+messages annoncés par seconde. Notez que la limitation est sur le taux de messages après le
+filtrage accepter/rejeter. Le flux va dormir pour limiter le taux de traitement.
 
 
 messageRateMin <float> (défaut: 0)
@@ -1374,6 +1411,19 @@ et si un doublon est ensuite reçu, il sera probablement choisi par une autre in
 Utiliser une **première couche d’abonnés (shovels)** avec la suppression de doublons éteinte et
 utiliser *post_exchangeSplit* pour la sortie. Cela achemine les publications du même chemin
 une **deuxième couche d’abonnés (winnow) dont les caches de suppression des doublons sont actives.**
+
+
+nofsetstat on|off (défaut: faux)
+--------------------------------
+
+Certains serveurs limitent le permissions aux répertoires::
+
+   [ERROR] sarracenia.flow send could not send /source/filename to inflight=None sftp://user@example.com/ /destination/filename: FSETSTAT unsupported
+
+Les autorisations restreintes sur le serveur signifient des fonctionnalités limitées. Impossible de corriger les 
+heures de modification ou de tronquer les fichiers (lorsque le nouveau fichier est plus court que la version 
+précédente), impossible de définir les bits de mode/autorisation. On allume cette option pour supprimer
+des avertissements pour vous informer de tels difficultés.
 
 
 outlet post|json|url (défaut: post)
@@ -1860,9 +1910,11 @@ Dans un flux qui transfère des données, la dernière activité sera basée sur
 Dans un flux dont aucun des cas ci-haut s'appliquent, la dernière activité est alors basée sur le dernier 
 message reçu.
 
-Ce n'est pas un problème en soi, sauf si l'on s'attend à un flux continu. Si un flux continu
-d'un certain débit est attendu, définissez le *runStateThreshold_slow* pour le flux afin que 
-les indicateurs *sr3 status* que c'est un problème (en affichant *slow* )
+Ce n'est pas un problème en soi, sauf si l'on s'attend à recevoir des données à intervalles réguliers
+(par exemple, au moins un fichier toutes les 15 minutes).
+ 
+Si un flux continu d'un certain débit de données (octets par seconde) est attendu, définissez
+*runStateThreshold_slow* pour le flux afin que *sr3 status* le signale comme un problème (trop lent).
 
 runStateThreshold_lag <intervalle> (défaut: 30s)
 ------------------------------------------------

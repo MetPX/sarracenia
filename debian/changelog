@@ -1,3 +1,43 @@
+metpx-sr3 (3.02.00rc3) UNRELEASED; urgency=medium
+
+  * Fix metricsReport plugin list leak in flow algorithm #1603
+  * Fix sleep duration in flow algorithm #1602
+  * Fix pid file race condition during sr3 restart #1595
+  * Propogate tlsRigour to avoid declare and cleanup failures #1593
+
+ -- Andre LeBlanc <andre.leblanc@ssc-spc.gc.ca>  Tue, 24 Mar 2026 13:33:23 +0000
+
+metpx-sr3 (3.02.00rc2) UNRELEASED; urgency=medium
+
+  * Remove per component acceptUnmatched overrides in #1566
+  * Guard for mtime being missing in message in #1567
+  * Calculate onfly checksum if identity missing in #1563
+  * debian/changelog
+
+ -- Andre LeBlanc <andre.leblanc@ssc-spc.gc.ca>  Mon, 09 Mar 2026 17:19:23 +0000
+
+metpx-sr3 (3.02.00rc1) unstable; urgency=medium
+
+  * Add support for inlining content in messages from all sarracenia
+    components in #1478
+  * Updates to DD examples
+  * Various FlowCB plugin work: #1497, #1512, #1518
+  * Add better logging messages: #1488, #1534
+  * Add a new "clean-restart" command line option that combines a "stop,
+    cleanup and start": #1540
+  * Have "messageRate" options be measured post filtering: #1530
+  * Add configurability to AMQP queue arguments: #1548
+  * Improve documentation on v2 to v3 porting: #1500
+  * Fix #1504: honor post_exchange in posting components (bug was introduced
+    in "v3.01.00"
+  * Fix #1495: use better checksum assigning on download
+  * Fix #1480: check metrics when an instance is hung
+  * Fix #1538: ensure sr3 works properly without humanize
+  * Fix #1525: implement tlsRigour for AMQP broker connection
+  * Second try at fixing #1439: Add new statefile for OOM restarting use case
+
+ -- Andre LeBlanc <andre.leblanc@ssc-spc.gc.ca>  Wed, 18 Feb 2026 16:23:27 +0000
+
 metpx-sr3 (3.01.00) unstable; urgency=medium
 
   * This release is the first of sr3 v3.01 because of a significant new

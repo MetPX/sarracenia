@@ -34,7 +34,7 @@ if __name__ == '__main__':
     flow.o.scheduled_interval= 5
     flow.o.pollUrl = "https://dd.weather.gc.ca/bulletins/alphanumeric/"
     if sys.platform.startswith( "win" ):
-        flow.o.directory = "C:\\temp\poll"
+        flow.o.directory = "C:\\temp\\poll"
     else:
         flow.o.directory = "/tmp/scheduled_poll/${%Y%m%d}"
     logging.basicConfig(level=logging.DEBUG)

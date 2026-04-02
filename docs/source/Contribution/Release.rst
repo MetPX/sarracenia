@@ -34,15 +34,15 @@ To publish a pre-release one needs to:
 - validate that the correct version of C stack will be running when running flow tests.
   on each server::
 
-      sr3_cpost -h | head -3
+      sr3_cpost -h |& head -3
 
   Is that the version wanted?
   Consult C installation/release info to make sure you have the version you want
   for the flow tests that follow.
 
-  * https://github.com/MetPX/sarrac/tree/_branch_/Build.rst
+  * https://github.com/MetPX/sarrac/blob/_branch_/Build.rst
 
-  * https://github.com/MetPX/sarrac/tree/_branch_/Release.rst
+  * https://github.com/MetPX/sarrac/blob/_branch_/Release.rst
 
 - run QA process on all operating systems looking for regressions on older 3.6-based ones.
 
@@ -50,7 +50,9 @@ To publish a pre-release one needs to:
   - github runs unit tests (only work on newer python versions.), review those results.
   - find ubuntu 18.04 server. build local package, run flow tests::
 
+         git pull
          git checkout development_py36
+         git pull
          python3 setup.py bdist_wheel
          pip3 install dist/metpx_sr3-${VERSION}-py3-none-any.whl
 
@@ -60,6 +62,11 @@ To publish a pre-release one needs to:
          # run flow tests:
 
           cd ~/sr_insects;
+          git pull
+          # Verify the branch you are working on is the correct one
+          git branch
+          # Make sure no other sr3 instances are running during the flow tests
+          sr3 status
           for flow_test in static_flow flakey_broker restart_server dynamic_flow; do
 
              cd $flow_test
@@ -70,12 +77,19 @@ To publish a pre-release one needs to:
 
   - find ubuntu 20.04 server. build local package, run flow tests::
 
+         git pull
          git checkout development
+         git pull
          pip3 install -e .
          
          # run flow tests:
 
           cd ~/sr_insects;
+          git pull
+          # Verify the branch you are working on is the correct one
+          git branch
+          # Make sure no other sr3 instances are running during the flow tests
+          sr3 status
           for flow_test in static_flow flakey_broker restart_server dynamic_flow; do
 
              cd $flow_test
@@ -86,6 +100,7 @@ To publish a pre-release one needs to:
 
   - find redhat 8 server.  build package::
    
+         git pull
          git checkout development_py36
          git pull
          python3 setup.py bdist_rpm
@@ -95,6 +110,19 @@ To publish a pre-release one needs to:
          sr3 --version
 
          # run flow tests
+         cd ~/sr_insects;
+         git pull
+         # Verify the branch you are working on is the correct one
+         git branch
+         # Make sure no other sr3 instances are running during the flow tests
+         sr3 status
+         for flow_test in static_flow flakey_broker restart_server dynamic_flow; do
+
+             cd $flow_test
+             ./flow_setup.sh && ./flow_limit.sh && ./flow_check.sh
+             # study results.
+             ./flow_cleanup.sh
+             cd ..
 
   - find redhat 9 server,  build package::
 
@@ -107,6 +135,19 @@ To publish a pre-release one needs to:
          sr3 --version
 
          # run flow tests
+         cd ~/sr_insects;
+         git pull
+         # Verify the branch you are working on is the correct one
+         git branch
+         # Make sure no other sr3 instances are running during the flow tests
+         sr3 status
+         for flow_test in static_flow flakey_broker restart_server dynamic_flow; do
+
+            cd $flow_test
+            ./flow_setup.sh && ./flow_limit.sh && ./flow_check.sh
+            # study results.
+            ./flow_cleanup.sh
+            cd ..
 
 - Set the pre-release tags::
 
@@ -140,6 +181,10 @@ To publish a pre-release one needs to:
     * git pull
     * python3 setup.py bdist_wheel
 
+  - verify the wheel file doesn't have any errors.
+
+    * twine check dist/the_wheel_produced_above.whl 
+
   - upload the pre-release so that installation with pip succeeds.
 
     * twine upload dist/the_wheel_produced_above.whl 
@@ -150,7 +195,7 @@ To publish a pre-release one needs to:
   * ensure the two branches are ready on github.
 
       * pre-release branch ready.
-      * pre-release_py36 branch ready.
+      * pre_release_py36 branch ready.
 
   * update git repository (Import now): https://code.launchpad.net/~ssc-hpc-chp-spc/metpx-sarracenia/+git/trunk
 
@@ -168,7 +213,7 @@ To publish a pre-release one needs to:
 
   - find redhat 8 server. build package:: 
 
-        git checkout pre-release_py36
+        git checkout pre_release_py36
         git pull
         python3 setup.py bdist_rpm 
 
@@ -176,7 +221,7 @@ To publish a pre-release one needs to:
     
   - find redhat 9 server, build package::
 
-        git checkout pre-release_py36
+        git checkout pre_release_py36
         git pull
         python3 setup.py bdist_rpm 
 
@@ -184,7 +229,7 @@ To publish a pre-release one needs to:
 
 - build Windows installer:
 
-  - from an Ubuntu system::
+  - from an Ubuntu system (needs to have > python 3.10 installed)::
     
       # if not already installed:
       sudo apt install nsis
@@ -368,7 +413,32 @@ Once the above are done, the pre-release process can proceed.
 Versioning Scheme
 ~~~~~~~~~~~~~~~~~
 
-Each release will be versioned as ``<version>.<YY>.<MM> <segment>``
+After Sr3 v3.01, the MetPX project has adopted semantic versioning (based on ideas like
+https://packaging.python.org/en/latest/specifications/version-specifiers/ )
+Versions are described there as having major.minor.micro components.
+Where future release should increment the minor number (indicating maintenance or 
+incrementally improving features), and when incompatibilities arise, the major number 
+is incremented as well. The micro release number would be used for releases that
+contain bugfixes exclusively. An example series of versions would be:
+
+ * 3.01
+ * 3.02 (initial feature release after 3.01), 
+ * 3.02.01 (oops, just a quick bug-fix)
+ * 3.02.02 (second bug-fix release.)
+ * 3.03  (next stable feature release.)
+
+Note that the tags in the git repo should include a *v* prefix.
+During pre-stable sr3 development, 3.00.iircj convention was used,
+where:
+
+  * ii -- incremental number of pre-releases of 3.00
+
+  * j -- beta increment.
+
+In stable releases, the micro release number is likely going to be used more
+often than beta increments.
+
+For Sundew, and Sarracenia v2.x, releases are versioned as ``<version>.<YY>.<MM> <segment>``
 
 It is difficult to reconcile debian and python versioning conventions. 
 We use rcX for pre-releases which work in both contexts.
@@ -384,13 +454,6 @@ Where:
   X.Y     # Final release
   X.ypN   #ack! patched release.
 
-Currently, 3.00 is still stabilizing, so the year/month convention is not being applied.
-Releases are currently  3.00.iircj
-where:
-
-  * ii -- incremental number of pre-releases of 3.00
-
-  * j -- beta increment.
 
 The first alpha release of v2 from January 2016 would be versioned 
 as ``metpx-sarracenia-2.16.01a01``. A sample v3 is v3.00.52rc2. At some point 3.00 
@@ -412,6 +475,9 @@ Stable should receive bug-fixes if necessary from time to time.
       Changing the default requires the removal and recreation of the resource.
       This has a major impact on processes...
 
+.. Note:: More Info: https://github.com/MetPX/sarracenia/issues/1544
+
+—
 
 Set the Version
 ~~~~~~~~~~~~~~~

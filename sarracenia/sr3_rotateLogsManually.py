@@ -20,7 +20,7 @@ if len(sys.argv) > 1:
 timesuffix=str(datetime.datetime.now()).replace(' ','_').replace(':','_')[0:19]
 logdir=sarracenia.config.user_cache_dir('sr3','MetPX') + os.sep + 'log'
 print( f"log directory is: {logdir}")
-current_log_pattern=re.compile(".*\.log$")
+current_log_pattern=re.compile(".*\\.log$")
 current_logs=[]
 old_to_delete=[]
 old_logs=[]

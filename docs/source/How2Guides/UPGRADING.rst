@@ -39,15 +39,21 @@ Installation Instructions
 git
 ---
 
+3.02.00
+-------
+
+*CHANGE*: ``messageRateMax`` now applies *after* accept/reject filtering. In previous versions, it limited the message
+rate *before* filtering.
+
 3.01.00
 -------
 
 *NOTICE*: can now subscribe to multiple brokers, and publish to multiple post_brokers with a single configuration.
 
 *CHANGE*: python API *bindings* being replaced by *subscriptions.* API is quite different, see examples.
-*Subscriptions* enables multi-queue and multi-broker support for subscribing. 
+*Subscriptions* enables multi-queue and multi-broker support for subscribing.
 
-*CHANGE*: python API post_ settings being replaced by *publishers.* need to build 
+*CHANGE*: python API ``post_`` settings being replaced by *publishers.* need to build
 sarracenia.config.publisher.Publisher structure now to publish messages.  It enables publishing
 to multiple destinations.
 
@@ -499,6 +505,18 @@ V2 to Sr3
 **CHANGE**: v2: *mirror* defaults to False on all components except sarra.
           sr3: *mirror* defaults to True on all components except subscribe.
 
+**CHANGE**: *strip* acts differently when posting in sr3. 
+
+          For subscribers, both versions act similarly, but the effect of post in sr3 is different.
+
+          v2: *strip* posts a complete Relpath value (not stripped) in the RelPath of the notification message.
+          the *rename* header contains the stripped path.
+
+          sr3: *strip* posts the stripped value in the RelPath, and the strip result in a *rename* field.
+
+          Full discussion: https://github.com/MetPX/sarracenia/issues/1506
+
+
 *NOTICE*: The most common v2 plugins are on_message, and on_file 
           (as per *plugin* and *on\_* directives in v2 configuration files) which can 
           be honoured via the `v2wrapper sr3 plugin class <../Reference/flowcb.html#module-sarracenia.flowcb.v2wrapper>`_
@@ -618,11 +636,11 @@ V2 to Sr3
           can mostly be implemented as plugins.
           
 **CHANGE**: the v2 do_poll plugins must be replaced by subclassing for `poll <../Reference/flowcb.html#module-sarracenia.flowcb.poll>`_
-          Example in `plugin porting <v2ToSr3.html>`_ 
+          Example in `plugin porting <Plugins_v2ToSr3.html>`_ 
 
 **CHANGE**: The v2 on_html_page plugins are also replaced by subclassing `poll <../Reference/flowcb.html#module-sarracenia.flowcb.poll>`_
 
-**CHANGE**: v2 do_send replaced by send entrypoint in a Flowcb plugin `plugin porting <v2ToSr3.html>`_
+**CHANGE**: v2 do_send replaced by send entrypoint in a Flowcb plugin `plugin porting <Plugins_v2ToSr3.html>`_
 
 *NOTICE*: the v2 accellerator plugins are replaced by built-in accelleration.
           accel_wget_command, accel_scp_command, accel_ftpget_command, accel_ftpput_command,
@@ -630,11 +648,11 @@ V2 to Sr3
           `Transfer <../Reference/flowcb.html#module-sarracenia.transfer>`_ class.
           Adding new transfer protocols is done by sub-classing Transfer.
           
-*SHOULD*: v2 on_message -> after_accept should be re-written `plugin porting <v2ToSr3.html>`_
+*SHOULD*: v2 on_message -> after_accept should be re-written `plugin porting <Plugins_v2ToSr3.html>`_
 
-*SHOULD*: v2 on_file -> after_work should be re-written `plugin porting <v2ToSr3.html>`_
+*SHOULD*: v2 on_file -> after_work should be re-written `plugin porting <Plugins_v2ToSr3.html>`_
 
-*SHOULD*: v2 plugins should to be re-written.  `plugin porting <v2ToSr3.html>`_
+*SHOULD*: v2 plugins should to be re-written.  `plugin porting <Plugins_v2ToSr3.html>`_
           there are many built-in plugins that are ported and automatically
           converted, but external ones must be re-written.
 

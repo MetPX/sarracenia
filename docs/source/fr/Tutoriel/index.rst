@@ -13,5 +13,6 @@ Tutoriel
    Installer
    Mettre_en_place_un_subscriber_distant
    Mettre_en_place_un_subscriber_local
+   Migrer_v2_vers_sr3
    Windows
 

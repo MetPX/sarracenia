@@ -172,6 +172,11 @@ class instance:
 
             metricsfilename = sarracenia.config.get_metrics_filename( hostdir, component, config, cfg_preparse.no)
 
+            # If OOM restart is invoked, remove state file now.
+            oom_state_file = cfg_preparse.cfg_run_dir + os.sep + 'resources_restart'
+            if os.path.isfile(oom_state_file):
+                os.unlink(oom_state_file)
+
             dir_not_there = not os.path.exists(os.path.dirname(metricsfilename))
             while dir_not_there:
                 try:

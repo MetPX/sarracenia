@@ -84,4 +84,4 @@ html_logo = '_static/sarra_horror_culture_w200.png'
 
 html_favicon = '_static/sarra_horror_culture_favicon.png'
 
-html_theme_options = { 'sidebar_span': 6 }
+#html_theme_options = { 'sidebar_span': 6 }

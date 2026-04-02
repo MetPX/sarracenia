@@ -28,7 +28,6 @@ from ._version import __version__
 from base64 import b64decode, b64encode
 import calendar
 import datetime
-import humanize
 import importlib.util
 import io
 import logging
@@ -85,6 +84,15 @@ if features['humanize']['present']:
     def naturalTime( dur ):
         return humanize.naturaltime(dur)
 
+    def naturalDelta(value, months=True, minimum_unit='seconds'):
+        # older versions of humanize don't support minimum_unit
+        try:
+            return humanize.naturaldelta(value, months=months, minimum_unit=minimum_unit)
+        except TypeError:
+            return humanize.naturaldelta(value, months=months)
+        except:
+            return "%d" % value
+
 else:
   
     def naturalSize( num ):
@@ -92,6 +100,9 @@ else:
 
     def naturalTime( dur ):
        return "%g" % dur
+
+    def naturalDelta(value, months=True, minimum_unit='seconds'):
+        return "%d" % value
 
 
 if features['appdirs']['present']:
@@ -334,14 +345,14 @@ days_in_a_month=30.7
 
 def durationToString(d) -> str:
     """
-      given a numbner of seconds, return a short, human readable string.
+      given a number of seconds, return a short, human readable string.
 
       naturaldelta does not do weeks...
     """
     if (d < 60):
         return f"{d:7.2f}s"
 
-    hnd =  humanize.naturaldelta(d).replace("minute","m").replace("second","T").replace("hour","h").replace("day","d").replace("month","M").replace("year","y").replace(" ","").replace("s","").replace("T","s").replace("an", "1").replace("a","1")
+    hnd = naturalDelta(d).replace("minute","m").replace("second","T").replace("hour","h").replace("day","d").replace("month","M").replace("year","y").replace(" ","").replace("s","").replace("T","s").replace("an", "1").replace("a","1")
     
     if ',' in hnd:
         ( first_part, second_part ) = hnd.split(',')
@@ -501,7 +512,6 @@ class Message(dict):
         self['_format'] = 'v03'
         self['_deleteOnPost'] = set(['_format'])
 
-
     def computeIdentity(msg, path, o, offset=0, data=None) -> None:
         """
            check extended attributes for a cached identity sum calculation.
@@ -528,7 +538,7 @@ class Message(dict):
                     'random', 'md5', 'md5name', 'sha512', 'cod,md5', 'cod,sha512'
                 ]
                 calc_method = random.choice(methods)
-            elif 'identity' in xattr.x and 'mtime' in xattr.x:
+            elif 'identity' in xattr.x and 'mtime' in xattr.x and 'mtime' in msg:
                 if xattr.get('mtime') >= msg['mtime']:
                     logger.debug("mtime remembered by xattr")
                     fxainteg = xattr.get('identity')
@@ -554,7 +564,10 @@ class Message(dict):
         logger.debug( f"mtime persisted, calc_method: {calc_method}" )
 
         if calc_method[:4] == 'cod,' and len(calc_method) > 2:
-            sumstr = calc_method
+            sumstr = {
+                    'method' : 'cod',
+                    'value': calc_method[4:]
+                    }
         elif calc_method in [ 'md5name', 'invalid' ]:
             xattr.persist()  # persist the mtime, at least...
             return  # no checksum needed for md5name. 
@@ -566,6 +579,9 @@ class Message(dict):
         else: # a "normal" calculation method, liks sha512, or md5
             sumalgo = sarracenia.identity.Identity.factory(calc_method)
             sumalgo.set_path(path)
+
+            if 'size' not in msg:
+                msg.setSize(path)
 
             # compute checksum
             if calc_method in ['md5', 'sha512']:
@@ -933,6 +949,13 @@ class Message(dict):
         msg['report'] = {'code': code, 'timeCompleted': nowstr(), 'message': text}
         msg['_deleteOnPost'] |= set(['report'])
 
+    def setSize(msg, path) -> None:
+        """ Attempt to set the size field in the message, from the provided file path. (File must exist on disk).
+            Can be used to fix an incorrect size in the message (any existing msg['size'] is ignored and replaced).
+        """
+        if os.path.exists(path):
+            msg['size'] = os.path.getsize(path)
+
     def updatePaths(msg, options, new_dir=None, new_file=None, publisher_index=0):
         """
         set the new_* fields in the message based on changed file placement.
@@ -1102,6 +1125,57 @@ class Message(dict):
         with urllib.request.urlopen(retUrl) as response:
             return response.read()
 
+
+    def putContentInline(msg,options=None):
+        """
+        Embed file data inside a sarracenia message. Leverages the
+        getContent method to acquire the file data, then inserts it
+        in the sarracenia message when possible.
+
+        Does not return any value.
+        """
+
+        # Don't try to add data inline if it's already present.
+        if 'content' in msg:
+            return
+
+        try:
+            content = msg.getContent()
+            sz = len(content)
+
+            # We want to update the message size with the recently fetched content.
+            if 'size' not in msg:
+                logger.debug(f"Size in incoming message not found. Including new size: {sz}")
+                msg['size'] = sz
+            elif sz != msg['size']:
+                logger.warning(f"Size from getContent doesn't match previously assigned size. Reassigning size to {sz}")
+                msg['size'] = sz
+
+            if msg['size'] >= options.inlineByteMax:
+                logger.warning(f"Not placing file contents in message due to file size being too big. File size {msg['size']}, inlineByteMax: {options.inlineByteMax}")
+                return
+
+        except Exception as e:
+            logger.error(f"Couldn't fetch file contents with getContent. Error: {e}")
+            logger.debug("Exception details:", exc_info=True)
+            return
+
+        msg['content'] = {'value' : '' , 'encoding' : ''}
+
+        try:
+            msg['content']['value'] = content.decode('utf-8')
+            msg['content']['encoding'] = 'utf-8'
+        except UnicodeDecodeError:
+            # Assuming file is binary if can't decode in utf-8.
+            msg['content']['value'] = b64encode(content).decode('utf-8')
+            msg['content']['encoding'] = 'base64'
+        except Exception as e:
+            # The exception gives a nice explanation already
+            logger.error(f"Unable to add file content to message. Error: {e}")
+            logger.debug("Exception details:", exc_info=True)
+            del msg['content']
+
+
     def new_pathWrite(msg,options,data):
         """
            expects: msg['new_dir'] and msg['new_file'] to be set.
@@ -1124,8 +1198,8 @@ class Message(dict):
         opath=msg['new_dir'] + os.sep + msg['new_file']
 
         if not os.path.isdir(msg['new_dir']):
-            if self.o.permDirDefault != 0:
-                os.makedirs(msg['new_dir'],mode=self.o.permDirDefault, exist_ok=True)
+            if options.permDirDefault != 0:
+                os.makedirs(msg['new_dir'],mode=options.permDirDefault, exist_ok=True)
             else:
                 os.makedirs(msg['new_dir'], exist_ok=True)
 
@@ -1146,9 +1220,24 @@ class Message(dict):
         try:
             with open(opath, 'wb') as f:
                sz=f.write(data)
-            if self.o.permDefault != 0:
-                os.chmod(opath,mode=self.o.permDefault)
+            if options.permDefault != 0:
+                os.chmod(opath,mode=options.permDefault)
             msg['size'] = sz
-            msg.computeIdentity(opath,self.o,data=data)
+            msg.computeIdentity(opath,options,data=data)
         except Exception as ex:
             logger.error( f"problem with {opath}: {ex}" )
+
+    def isRetry(msg):
+        return '_isRetry' in msg and msg['_isRetry']
+
+    def retryCount(msg):
+        """ return the number of times the message has been retried.
+            0 if the message has never been retried.
+        """
+        rcount = 0
+        if '_isRetry' in msg:
+            if type(msg['_isRetry']) == int:
+                rcount = msg['_isRetry']
+            else:
+                rcount = 1 if msg['_isRetry'] else 0
+        return rcount

@@ -90,6 +90,7 @@ class ToLocalFile(FlowCB):
 
             message['saved_baseUrl'] = message['baseUrl']
             message['saved_relPath'] = message['relPath']
+            message['_deleteOnPost'] |= set(['saved_baseUrl', 'saved_relPath'])
             message['baseUrl'] = 'file:'
 
             if self.o.baseDir and not message['relPath'].startswith(self.o.baseDir):

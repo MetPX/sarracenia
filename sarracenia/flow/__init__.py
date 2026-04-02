@@ -186,6 +186,9 @@ class Flow:
                 self.plugins['load'].append('sarracenia.flowcb.nodupe.redis.Redis')
             else:
                 self.plugins['load'].append('sarracenia.flowcb.nodupe.disk.Disk')
+
+        if hasattr(self.o, 'inline') and self.o.inline:
+            self.plugins['load'].append('sarracenia.flowcb.work.add_inline.Add_inline')
             
 
         if (( hasattr(self.o, 'delete_source') and self.o.delete_source ) or \
@@ -346,26 +349,30 @@ class Flow:
             self.metrics['flow']['transferConnectTime'] += now - self.metrics['flow']['transferConnectStart']
             self.metrics['flow']['transferConnectStart']=now
 
-        modules=self.plugins["metricsReport"]
-
-        if hasattr(self,'proto'): # gets re-spawned every batch, so not a permanent thing...
-            for scheme in self.proto:
-                if hasattr(self.proto[scheme], 'metricsReport'):
-                    fn = getattr(self.proto[scheme], 'metricsReport')
-                    if callable(fn):
-                       modules.append( fn )
-
-        for p in modules:
+        for p in self.plugins["metricsReport"]:
+            module_name = str(p.__module__).replace('sarracenia.flowcb.', '' )
             if self.o.logLevel.lower() == 'debug' :
-                module_name = str(p.__module__).replace('sarracenia.flowcb.', '' )
                 self.metrics[module_name] = p()
             else:
                 try:
-                    module_name = str(p.__module__).replace('sarracenia.flowcb.', '' )
                     self.metrics[module_name] = p()
                 except Exception as ex:
                     logger.error( f'flowCallback plugin {p}/metricsReport crashed: {ex}' )
                     logger.debug( "details:", exc_info=True )
+
+        if hasattr(self,'proto'):
+            for scheme in self.proto:
+                fn = getattr(self.proto[scheme], 'metricsReport', None)
+                if fn is not None and callable(fn):
+                    module_name = str(fn.__module__).replace('sarracenia.transfer.', '' )
+                    if self.o.logLevel.lower() == 'debug' :
+                        self.metrics[module_name] = fn()
+                    else:
+                        try:
+                            self.metrics[module_name] = fn()
+                        except Exception as ex:
+                            logger.error( f'transfer protocol {scheme}/metricsReport crashed: {ex}' )
+                            logger.debug( "details:", exc_info=True )
         ost = os.times()
         self.metrics['flow']['cpuTime'] = ost.user+ost.system-self.metrics['flow']['last_housekeeping_cpuTime']
 
@@ -559,6 +566,7 @@ class Flow:
 
         spamming = True
         last_gather_len = 0
+        after_filter_len = 0
         stopping = False
 
         while True:
@@ -597,6 +605,7 @@ class Flow:
                     spamming = False
 
                 self.filter()
+                after_filter_len=len(self.worklist.incoming)+len(self.worklist.ok)
 
                 self.work()
 
@@ -611,13 +620,13 @@ class Flow:
                 #               worklist.ok by retry.py, even when last_poll_gather_len is 0
                 elif self.o.component == 'poll':
                     # get rid of non-retry messages from worklist.ok, we only want to post retries
-                    new_ok = [ msg for msg in self.worklist.ok if ('_isRetry' in msg and msg['_isRetry']) ]
+                    new_ok = [ msg for msg in self.worklist.ok if msg.isRetry() ]
                     self.worklist.ok = new_ok
                     self.post(now)
 
             now = nowflt()
             run_time = now - start_time
-            total_messages += last_gather_len
+            total_messages += after_filter_len
 
             # trigger shutdown when messageCountMax is reached
             if (self.o.messageCountMax > 0) and (total_messages > self.o.messageCountMax):
@@ -697,7 +706,7 @@ class Flow:
                     if now_for_hk > next_housekeeping:
                         next_housekeeping = self._runHousekeeping(now_for_hk)
 
-                last_time = now
+                last_time = nowflt()
 
 
     def sundew_getDestInfos(self, msg, currentFileOption, filename):
@@ -885,7 +894,7 @@ class Flow:
         #   a) messages that are not retries when retry_refilter is disabled
         #   b) all messages, when retry_refilter is enabled
         retry_refilter = hasattr(self.o, 'retry_refilter') and self.o.retry_refilter
-        msg_is_not_retry = retry_refilter or ('_isRetry' not in msg or ('_isRetry' in msg and not msg['_isRetry']))
+        msg_is_not_retry = retry_refilter or not msg.isRetry()
 
         if 'fileOp' in msg and msg_is_not_retry:
             msg['post_fileOp'] = copy.deepcopy(msg['fileOp'])
@@ -1400,6 +1409,8 @@ class Flow:
 
         if self.o.identity_method.startswith('cod,'):
             algo_method = self.o.identity_method[4:]
+        elif 'identity' not in msg:
+            algo_method = self.o.identity_method
         elif msg['identity']['method'] == 'cod':
             algo_method = msg['identity']['value']
         else:
@@ -1818,13 +1829,17 @@ class Flow:
                         self.metrics['flow']['transferRxLast'] = msg['report']['timeCompleted']
                         # When it's a broken symlink, the upstream doesn't exist and we can't compare. The download
                         # will always fail. So return True and *don't fall through* to download for symlinks.
-                        return ('link' in msg['fileOp'])
+                        # Likewise, we can't "download" a directory. Once the directory has been renamed, fileOp
+                        # processing is complete. Return True and *don't fall through* to download
+                        # for directory rename fileOps (same as mkdir or rmdir).
+                        return ('link' in msg['fileOp'] or 'directory' in msg['fileOp'])
 
                     # if rename of *file* fails, fall through to download
-                    elif 'link' not in msg['fileOp'] and 'hlink' not in msg['fileOp']:
+                    elif ('link' not in msg['fileOp'] and 'hlink' not in msg['fileOp']
+                          and 'directory' not in msg['fileOp']):
                         return False # fall through to download
 
-                    # else: rename of link fails, retry until it succeeds (or expires from retry)
+                    # else: rename of link or directory fails, retry until it succeeds (or expires from retry)
 
             ## REMOVE DIRECTORY
             elif ('directory' in msg['fileOp']) and ('remove' in msg['fileOp'] ):
@@ -1934,6 +1949,7 @@ class Flow:
 
         for msg in self.worklist.incoming:
 
+            start_time=time.perf_counter()
             if 'newname' in msg:
                 """
                   revamped rename algorithm requires only 1 message, ignore newname.
@@ -1946,8 +1962,12 @@ class Flow:
                 continue
 
             if not 'new_file' in msg or not msg['new_file']:
-                self.reject(msg, 422, f"new_file message field missing, do not know name of file to write. skipping." )
-                continue
+                # issue #1503 move a little to the right to deal with when directory path ends in /
+                if len(msg['new_dir']) < 2 or ('fileOp' not in msg and 'directory' in msg['fileOp']): 
+                    self.reject(msg, 422, f"new_file message field missing, do not know name of file to write. skipping." )
+                    continue
+                msg['new_file'] = os.path.basename(msg['new_dir'])
+                msg['new_dir'] = os.path.dirname(msg['new_dir'])
 
             new_path = msg['new_dir'] + os.path.sep + msg['new_file']
             new_file = msg['new_file']
@@ -2059,7 +2079,10 @@ class Flow:
             # download content
             if 'content' in msg.keys():
                 if self.write_inline_file(msg):
+                    end_time=time.perf_counter()
+                    rate=msg['size']/(end_time-start_time)
                     msg.setReport(201, "Download successful (inline content)")
+                    msg['report']['rate']=rate
                     self.worklist.ok.append(msg)
                     self.metrics['flow']['transferRxLast'] = msg['report']['timeCompleted']
                     continue
@@ -2080,7 +2103,11 @@ class Flow:
                 ok = self.download(msg, self.o)
                 if ok == 1:
                     logger.debug("downloaded ok: %s" % new_path)
+                    end_time=time.perf_counter()
                     msg.setReport(201, "Download successful" )
+                    if 'size' in msg:
+                        rate=msg['size']/(end_time-start_time)
+                        msg['report']['rate']=rate
                     # if content is present, but downloaded anyways, then it is no good, and should not be forwarded.
                     if 'content' in msg:
                         del msg['content']
@@ -2204,6 +2231,24 @@ class Flow:
                     logger.debug( "details:", exc_info=True )
 
                 if not ok: return 0
+
+            # try to fill in missing info in msg if they are not set by the plugin
+            # if they are already set, don't override, assume the plugin set them correctly
+            local_file = os.path.join(new_dir, new_file)
+            if 'identity' not in msg:
+                try:
+                    msg.computeIdentity(local_file, options)
+                except Exception as e:
+                    logger.warning(f"failed to set msg['identity']: {e}")
+                    logger.debug("Exception details:", exc_info=True)
+            if 'size' not in msg:
+                try:
+                    msg.setSize(local_file)
+                except Exception as e:
+                    logger.warning(f"failed to set msg['size']: {e}")
+                    logger.debug("Exception details:", exc_info=True)
+
+            # if we get here, download was successful
             return 1
 
         if self.o.dry_run:
@@ -2306,13 +2351,19 @@ class Flow:
             # FIXME  locking for i parts in temporary file ... should stay lock
             # and file_reassemble... take into account the locking
 
-            if self.o.identity_method.startswith('cod,'):
-                download_algo = self.o.identity_method[4:]
-            elif 'identity' in msg:
+            # First try to fetch identity from the incoming message
+            if 'identity' in msg:
                 if msg['identity']['method'] == 'cod':
                     download_algo = msg['identity']['value']
+                elif msg['identity']['method'].startswith('cod,'):
+                    download_algo = msg['identity']['method'][4:]
+                # Algo not cod, get value from method field.
                 else:
+                    # We want to re-calculate the checksum to compare with the value that was advertised from the message.
                     download_algo = msg['identity']['method']
+            # Assign whatever is set in the configuration if identity isn't found in the incoming message.
+            elif self.o.identity_method != None:
+                download_algo = self.o.identity_method
             else:
                 download_algo = None
 
@@ -2434,8 +2485,17 @@ class Flow:
                 msg['onfly_checksum'] = self.proto[self.scheme].get_sumstr()
                 msg['data_checksum'] = self.proto[self.scheme].data_checksum
 
-                if self.o.identity_method.startswith('cod,') and not accelerated:
+                if ('identity' in msg and msg['identity']['method'].startswith('cod') or ('identity' not in msg and 'cod' not in self.o.identity_method)) and not accelerated:
+                    # if 'identity' in msg and msg['identity']['value'] != msg['onfly_checksum']['value']:
+                    #     logger.warning("Onfly checksum differs from checksum found in sarracenia message. Will overwrite message with onfly_checksum value.")
+                    #     logger.debug(f"Onfly checksum: {msg['onfly_checksum']} ; Checksum from incoming sarracenia message {msg['identity']}")
                     msg['identity'] = msg['onfly_checksum']
+                # If no incoming checksum in message and have cod in options, add cod checksum to message.
+                elif 'identity' not in msg and 'cod' in self.o.identity_method:
+                    msg['identity'] = {
+                            'method' : 'cod',
+                            'value': download_algo[4:]
+                            }
 
                 msg['_deleteOnPost'] |= set(['onfly_checksum'])
                 msg['_deleteOnPost'] |= set(['data_checksum'])
@@ -2499,10 +2559,11 @@ class Flow:
 
         self.o = options
         sendTo=self.o.sendTo 
+        start_time=time.perf_counter()
         logger.debug( f"{self.scheme}_transport sendTo: {sendTo}" )
         logger.debug("%s_transport send %s %s" %
                      (self.scheme, msg['new_dir'], msg['new_file']))
-
+ 
         if len(self.plugins['send']) > 0:
             ok = False
             for plugin in self.plugins['send']:
@@ -2896,10 +2957,16 @@ class Flow:
             if not self.o.dry_run:
                 self.set_remote_file_attributes(self.proto[self.scheme], new_file,
                                             msg)
+            end_time=time.perf_counter()
+            rate=msg['size']/(end_time-start_time)
+            msg['report']['rate']=rate
 
-            logger.info('Sent: %s %s into %s/%s %d-%d' %
-                        (local_path, str_range, new_dir, new_file, offset,
-                         offset + msg['size'] - 1))
+            if str_range:
+                offset_str=f"slice: {sarracenia.naturalSize(msg['size'])} {offset}-{offset+msg['size']-1}"
+                logger.info( f"block Sent: {local_path} {str_range} into {new_dir}/{new_file} {offset_str} rate: {sarracenia.naturalSize(rate)}/s ({rate:.2f})" )
+            else:
+                offset_str=f"size: {sarracenia.naturalSize(msg['size'])} ({msg['size']})"
+                logger.info( f"whole Sent: {local_path} into {new_dir}/{new_file} {offset_str} rate: {sarracenia.naturalSize(rate)}/s ({rate:.2f} B/s)" )
 
             return 1
 

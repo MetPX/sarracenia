@@ -36,9 +36,7 @@ class TestRetry(FlowCB):
             # retry message : recover it
             # update: this is set somewhere as true in /diskqueue.py, should think about initializing first so we
             # dont have to test for existence
-            # 2022-06-10: isRetry was removed. Maybe can check if the message has msg_baseUrl_bad?
-            #             see issues #466 and #527.
-            if 'isRetry' in message and message['isRetry']:
+            if message.isRetry():
                 self.o.sendTo = self.sendTo
                 ok, self.o.details = self.o.credentials.get(self.sendTo)
 

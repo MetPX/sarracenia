@@ -60,6 +60,7 @@ Les actions restantes gèrent les ressources (échanges, files d’attente) util
 le courtier ou pour gérer les configurations.
 
  - cleanup:       supprime les ressources du composant sur le serveur
+ - clean-restart: arrêter, nettoyer (cleanup) puis démarrer la configuration.
  - declare:       crée les ressources du composant sur le serveur.
  - add:           copie une configuration à la liste des configurations disponibles.
  - list:          Énumérer toutes les configurations disponibles.
