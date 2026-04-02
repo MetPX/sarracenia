@@ -132,8 +132,10 @@ class Credential:
                 alist = [ 'passive', 'binary', 'tls', 'prot_p', 'login_method', 'implicit_ftps' ]
             elif scheme.startswith('sftp'):
                 alist = [ 'ssh_keyfile' ]
-            elif scheme.startswith('amqp') or  scheme.startswith('mqtt'):
+            elif scheme.startswith('amqp') or scheme.startswith('mqtt'):
                 alist = [ 'login_method' ]
+            elif scheme.startswith('amq1'):
+                alist = [ 'login_method' ] # TODO: will probably need to add certificate stuff here
             elif scheme.startswith('https'):
                 alist = [ 'prot_p', 'bearer_token', 'login_method', 's3_endpoint', 'implicit_ftps']
                 if self.s3_session_token: 

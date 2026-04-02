@@ -57,6 +57,8 @@ eboIntervalMaximum = 60 + random.random()*60
 def ProtocolPresent(p) -> bool:
     if ( p[0:4] in ['amqp'] ) and sarracenia.features['amqp']['present']:
        return True
+    if ( p[0:4] in ['amq1', 'amqp1'] ) and sarracenia.features['amqp1']['present']:
+        return True
     if ( p[0:4] in ['mqtt'] ) and sarracenia.features['mqtt']['present']:
        return True
     if p in sarracenia.features:
@@ -504,3 +506,6 @@ if features['amqp']['present']:
 
 if features['mqtt']['present']:
     import sarracenia.moth.mqtt
+
+if features['amqp1']['present']:
+    import sarracenia.moth.amq1
