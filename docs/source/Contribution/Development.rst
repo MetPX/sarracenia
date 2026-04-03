@@ -17,9 +17,6 @@ To hack on the Sarracenia source, you need:
   setup using ubuntu is automated, but adjustment for other distros is possible.
   command-line comfort a must.
 
-- python3. The application is developed in and depends on python versions >= 3.5.
-
-- style: PEP8 except max line length is 119, enforced via `pycodestyle <https://pycodestyle.pycqa.org/en/latest/intro.html#disclaimer>`_ for VSCode, yapf3 or other similar tool.
 
 - an account on github.com will help in submitting patches for consideration.
 
@@ -44,6 +41,46 @@ after you have cloned the source code::
     cd sr3
 
 The rest of the Guide takes the above for granted.
+
+Coding Style
+------------
+
+- Python3. The application is developed in and depends on python versions >= 3.6.
+  Note that this means you need to make sure any contributions work on python 3.6, as we have
+  deployments on ubuntu 18.04 and redhat 8 that use that version.
+
+  * e.g. do not use = in f-strings, as they only arrive in python 3.8 ( i.e. f" {foo=} " 
+
+
+- style: Generally PEP8.
+
+   * except max line length is 119, enforced via `pycodestyle <https://pycodestyle.pycqa.org/en/latest/intro.html#disclaimer>`_ for VSCode, yapf3 or other similar tool.
+
+   * we also use camelCase for user visible options/settings, where PEP would require all caps for constants/settings.
+
+   * post_  for settings that apply to posting (default assumed is for consuming.)
+
+- String formatting:
+
+   * generally prefer python 3.6 f-string methods, as they are considered most legible.
+       * NOT:   print( "%s" % hi )
+       * USE THIS INSTEAD: print( f" {hi} " )
+
+   * exception: logger.debug() calls should use lazy % formatting, with arguments as parameters, as this avoids
+     evaluation of the string completely if not in debug mode.  
+
+     * NOT:   logger.debug( f"{hi}" )  
+     * USE THIS INSTEAD:   logger.debug( "%s", hi )
+
+     The choice of when to apply the exception depends on how often the string will be evaluated 
+     without printing the message, so for higher priority messages, this exception does not
+     apply, and one should follow the normal string convention.
+
+
+
+
+
+
 
 Documentation
 -------------

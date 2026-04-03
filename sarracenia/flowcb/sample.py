@@ -14,4 +14,4 @@ class Sample(sarracenia.flowcb.FlowCB):
 
     def on_start(self):
 
-        logger.info('announce_list: %s' % self.o.announce_list)
+        logger.info(f'announce_list: {self.o.announce_list}')

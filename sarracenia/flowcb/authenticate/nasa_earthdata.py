@@ -114,8 +114,7 @@ class Nasa_earthdata(BearerToken):
                 self._token = None
                 self._token_expires = None
             elif self._token_expires:
-                logger.debug(f"token is not expired. today = {today.strftime('%Y-%m-%d')}, " + 
-                            f"token expires on {self._token_expiry_str()}")
+                logger.debug('token is not expired. today = %s, token expires on %s', today.strftime('%Y-%m-%d'), self._token_expiry_str())
             else:
                 logger.debug("no token yet")
         except Exception as e:

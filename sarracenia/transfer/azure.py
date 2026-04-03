@@ -128,8 +128,7 @@ class Azure(Transfer):
 
             if details and hasattr(details, 'azure_credentials') and details.azure_credentials is not None:
                 self.credentials = details.azure_credentials
-                logger.debug("azure_credentials= is set, it will override any "+
-                             "username/password (account name/key) in the URL")
+                logger.debug('azure_credentials= is set, it will override any username/password (account name/key) in the URL')
                 return True
             elif self.account and self.key:
                 self.credentials = { "account_name": self.account,
@@ -139,7 +138,7 @@ class Azure(Transfer):
             else:
                 # assuming this is ok, for anonymous access
                 self.credentials = None
-                logger.debug(f"no credential for {self.sendTo}")
+                logger.debug('no credential for %s', self.sendTo)
                 return True
 
         except Exception as e:
@@ -152,14 +151,14 @@ class Azure(Transfer):
     ##  ---------------------- PUBLIC METHODS ---------------------
     #region Public
     def cd(self, path):
-        logger.debug(f"changing into {path}")
+        logger.debug('changing into %s', path)
         self.cwd = os.path.dirname(path)
         self.path = path.strip('/') + "/"
         self.path = self.path.lstrip('/')
 
 
     def cd_forced(self, path):
-        logger.debug(f"forcing into  {path}")
+        logger.debug('forcing into  %s', path)
         self.cd(path)
 
     def check_is_connected(self) -> bool:
@@ -175,7 +174,7 @@ class Azure(Transfer):
         return True
 
     def chmod(self, perms):
-        logger.debug(f"would change perms to {perms} if it was implemented")
+        logger.debug('would change perms to %s if it was implemented', perms)
         return
         
     def close(self):
@@ -206,7 +205,7 @@ class Azure(Transfer):
                                                              )
             info = self.client.get_account_information()
             self.connected = True
-            logger.debug(f"Connected to {self.container_url}; sku:{info['sku_name']}, kind:{info['account_kind']}")
+            logger.debug('Connected to %s; sku:%s, kind:%s', self.container_url, info['sku_name'], info['account_kind'])
             return True
 
         except azure.core.exceptions.ClientAuthenticationError as e:
@@ -217,7 +216,7 @@ class Azure(Transfer):
         return False
 
     def delete(self, path):
-        logger.debug(f"deleting {path}")
+        logger.debug('deleting %s', path)
         self.client.delete_blob(path.lstrip('/'))
 
     def get(self,
@@ -228,10 +227,10 @@ class Azure(Transfer):
             local_offset=0,
             length=0, exactLength=False) -> int:
         
-        logger.debug(f"downloading {remote_file} into {self.path}")
+        logger.debug('downloading %s into %s', remote_file, self.path)
 
         file_key = self.path + remote_file
-        logger.debug(f"get https://{self.container_url}/{file_key} to {local_file}")
+        logger.debug('get https://%s/%s to %s', self.container_url, file_key, local_file)
 
         blob = self.client.get_blob_client(file_key)
 
@@ -254,7 +253,7 @@ class Azure(Transfer):
             return None
 
     def ls(self):
-        logger.debug(f"ls-ing items at {self.container_url}/{self.path}")
+        logger.debug('ls-ing items at %s/%s', self.container_url, self.path)
 
         self.entries = {}
 
@@ -289,7 +288,7 @@ class Azure(Transfer):
 
             # folders
             else:
-                logger.debug(f"Found folder {b.name}")
+                logger.debug('Found folder %s', b.name)
 
                 filename = b.name.replace(self.path, '', 1).rstrip("/")
                 if filename == "":
@@ -300,11 +299,11 @@ class Azure(Transfer):
     
                 self.entries[filename] = entry
 
-        logger.debug(f"self.entries={self.entries}")
+        logger.debug('self.entries=%s', self.entries)
         return self.entries
     
     def mkdir(self, remote_dir):
-        logger.debug(f"would mkdir {remote_dir} inside {self.path}, if it was supported")
+        logger.debug('would mkdir %s inside %s, if it was supported', remote_dir, self.path)
         return
 
     def put(self,
@@ -317,7 +316,7 @@ class Azure(Transfer):
         # logger.debug(f"uploading {local_file} to {remote_file}")
 
         file_key = self.path + remote_file
-        logger.debug(f"{local_file} to {self.container_url}/{file_key}")
+        logger.debug('%s to %s/%s', local_file, self.container_url, file_key)
         # logger.debug(f"msg={msg}")
 
         md = {}
@@ -335,7 +334,7 @@ class Azure(Transfer):
             #self.client.upload_file( Filename=local_file, Bucket=self.bucket, Key=file_key, Config=self.s3_transfer_config, ExtraArgs=extra_args)
 
             write_size = new_file.get_blob_properties().size
-            logger.debug(f'uploaded {local_file} to {self.container_url}/{file_key}')
+            logger.debug('uploaded %s to %s/%s', local_file, self.container_url, file_key)
             return write_size
         except Exception as e:
             logger.error(f"Something went wrong with the upload: {e}", exc_info=True)
@@ -354,14 +353,14 @@ class Azure(Transfer):
 
         from_url = self.container_url + "/" + remote_old_wpath + "?" + self.credentials
 
-        logger.debug(f"remote_old={remote_old_wpath}; from_url={self.container_url}/{remote_old_wpath}; remote_new={remote_new_wpath}")
+        logger.debug('remote_old=%s; from_url=%s/%s; remote_new=%s', remote_old_wpath, self.container_url, remote_old_wpath, remote_new_wpath)
         b_new.start_copy_from_url(from_url)
         self.client.delete_blob(remote_old_wpath.lstrip('/'))
     
     def rmdir(self, path):
         blobList=[*self.client.list_blobs(name_starts_with=path)]
         
-        logger.debug(f"deleting {len(blobList)} blobs under {path}")
+        logger.debug('deleting %s blobs under %s', len(blobList), path)
         while len(blobList) > 0:
             first256 = blobList[0:255]
             self.client.delete_blobs(*first256, delete_snapshots='include')     # delete_blobs() is faster!

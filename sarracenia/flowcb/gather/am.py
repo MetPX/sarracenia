@@ -129,7 +129,7 @@ class Am(FlowCB):
             self.s.listen(1)
             # Set timeout higher so that exponential backoff isn't triggered on startup.
             self.s.settimeout(self.timeout*100)
-            logger.info("Socket listening on host %s and port %d.", self.host, self.port)
+            logger.info( f"Socket listening on host {self.host} and port {self.port:d}." )
             logger.info("Trying to accept connection.")
         except socket.error as e:
                 logger.error(f"Bind failed. Retrying. Error message: {e.args}")
@@ -149,7 +149,7 @@ class Am(FlowCB):
 
                         if self.o.AllowIPs:
                             if self.remoteHost[0] not in self.o.AllowIPs:
-                                logger.debug(f"Connection to IP {self.remoteHost[0]} rejected. Not a part of the Accepted IPs list.")
+                                logger.debug('Connection to IP %s rejected. Not a part of the Accepted IPs list.', self.remoteHost[0])
                                 conn.close()
                                 raise TimeoutError
 
@@ -284,7 +284,7 @@ class Am(FlowCB):
 
         # except socket.error:
             # (type, value, tb) = sys.exc_info()
-            # logger.warning("Type: %s, Value: %s, [socket.recv(%d)]" % (type, value, self.limit))
+            # logger.warning( f"Type: {type:d}, Value: {value}, [socket.recv({self.limit:d})]" )
             
             
     def checkNextMsgStatus(self):
@@ -477,7 +477,7 @@ class Am(FlowCB):
             running_instances.append( int(p['cmdline'][3]) )
     
     
-        logger.debug(f"List of PIDs to filter: {running_instances}")
+        logger.debug('List of PIDs to filter: %s', running_instances)
         running_instances.sort()
     
         # Get the first instance available that isn't found in the current running AM servers
@@ -510,7 +510,7 @@ class Am(FlowCB):
                 # Set buffer for next bulletin ingestion
                 self.inBuffer = self.inBuffer[longlen:]
 
-                logger.debug(f"Bulletin contents: {bulletin}")
+                logger.debug('Bulletin contents: %s', bulletin)
 
                 parse = self.header.split(b'\0',1)
                 

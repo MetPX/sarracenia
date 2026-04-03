@@ -46,7 +46,7 @@ class Wis(PostFormat):
     def mine(payload, headers, content_type, options) -> bool:
         """
           return true if the message is in this encoding.
-       """
+        """
         if content_type == Wis.content_type():
             return True
         return False
@@ -67,7 +67,7 @@ class Wis(PostFormat):
             try:
                 GeoJSONBody=json.loads(body)
             except Exception as ex:
-                logger.warning('expected geojson, decode error: %s' % ex)
+                logger.warning(f'expected geojson, decode error: {ex}')
                 logger.debug('Exception details: ', exc_info=True)
                 return None
 
