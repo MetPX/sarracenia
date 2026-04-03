@@ -338,6 +338,14 @@
         <span class="k">else</span><span class="p">:</span>
             <span class="n">sslarg</span><span class="o">=</span><span class="kc">False</span>
         
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">connection</span><span class="p">:</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">connection</span><span class="o">.</span><span class="n">collect</span><span class="p">()</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">connection</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+            <span class="k">except</span> <span class="ne">Exception</span><span class="p">:</span>
+                <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s1">&#39;failed to close old connection before reconnect&#39;</span><span class="p">,</span> <span class="n">exc_info</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">connection</span> <span class="o">=</span> <span class="kc">None</span>
+
         <span class="bp">self</span><span class="o">.</span><span class="n">connection</span> <span class="o">=</span> <span class="n">amqp</span><span class="o">.</span><span class="n">Connection</span><span class="p">(</span><span class="n">host</span><span class="o">=</span><span class="n">host</span><span class="p">,</span>
                                           <span class="n">userid</span><span class="o">=</span><span class="n">broker</span><span class="o">.</span><span class="n">url</span><span class="o">.</span><span class="n">username</span><span class="p">,</span>
                                           <span class="n">password</span><span class="o">=</span><span class="n">unquote</span><span class="p">(</span>
@@ -478,9 +486,9 @@
             <span class="c1"># from sr_consumer.build_connection...</span>
             <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">__connect</span><span class="p">(</span><span class="n">broker</span><span class="p">):</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">setEbo</span><span class="p">(</span><span class="n">start</span><span class="p">)</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">connection</span> <span class="o">=</span> <span class="kc">None</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
                 <span class="k">return</span>
-            
+
             <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">o</span><span class="p">[</span><span class="s1">&#39;prefetch&#39;</span><span class="p">]</span> <span class="o">!=</span> <span class="mi">0</span><span class="p">:</span>
                 <span class="c1"># using global False because RabbitMQ Quorum Queues don&#39;t support Global QoS, issue #1233</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">channel</span><span class="o">.</span><span class="n">basic_qos</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">queue</span><span class="p">[</span><span class="s1">&#39;prefetch&#39;</span><span class="p">],</span> <span class="kc">False</span><span class="p">)</span>
@@ -548,7 +556,7 @@
             <span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span> <span class="sa">f</span><span class="s2">&quot;failed connection to </span><span class="si">{</span><span class="nb">str</span><span class="p">(</span><span class="n">broker</span><span class="p">)</span><span class="si">}</span><span class="s2">: </span><span class="si">{</span><span class="n">err</span><span class="si">}</span><span class="s2">&quot;</span> <span class="p">)</span>
             <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s1">&#39;Exception details: &#39;</span><span class="p">,</span> <span class="n">exc_info</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">setEbo</span><span class="p">(</span><span class="n">start</span><span class="p">)</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">connection</span> <span class="o">=</span> <span class="kc">None</span></div>
+            <span class="bp">self</span><span class="o">.</span><span class="n">close</span><span class="p">()</span></div>
 
 
 
@@ -574,7 +582,7 @@
 
             <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">__connect</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">o</span><span class="p">[</span><span class="s1">&#39;broker&#39;</span><span class="p">]):</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">setEbo</span><span class="p">(</span><span class="n">start</span><span class="p">)</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">connection</span> <span class="o">=</span> <span class="kc">None</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
                 <span class="k">return</span>
 
             <span class="c1"># transaction mode... confirms would be better...</span>
@@ -611,7 +619,6 @@
                         <span class="bp">self</span><span class="o">.</span><span class="n">o</span><span class="p">[</span><span class="s1">&#39;broker&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">url</span><span class="o">.</span><span class="n">hostname</span><span class="p">,</span> <span class="n">err</span><span class="p">))</span>
             <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s1">&#39;Exception details: &#39;</span><span class="p">,</span> <span class="n">exc_info</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">setEbo</span><span class="p">(</span><span class="n">start</span><span class="p">)</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">connection</span><span class="o">=</span><span class="kc">None</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
 
     <span class="k">def</span> <span class="nf">putCleanUp</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
