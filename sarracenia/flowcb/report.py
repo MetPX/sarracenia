@@ -1,4 +1,5 @@
 
+import copy
 import logging
 import sarracenia
 from sarracenia.flowcb import FlowCB
@@ -125,7 +126,7 @@ class Report(FlowCB):
             self.reportPost(m)
 
         for m in worklist.failed:
-            mm = dict(m)  # shallow copy: reportPost only deletes top-level keys
+            mm = copy.copy(m)  # shallow copy: reportPost only deletes top-level keys
             self.reportPost(mm)
 
         for m in worklist.rejected:
