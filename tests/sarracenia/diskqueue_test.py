@@ -490,3 +490,47 @@ def test_get__keyboard_interrupt_propagates(tmp_path):
         with pytest.raises(KeyboardInterrupt):
             dq.get()
 
+
+def test_msg_get_from_file__corrupted_lines(tmp_path):
+    """Regression: msg_get_from_file used recursion to skip corrupted lines.
+    With >1000 consecutive bad lines, this hit Python's recursion limit
+    and crashed with RecursionError.  The fix uses a while loop instead.
+    """
+    BaseOptions = Options()
+    BaseOptions.pid_filename = str(tmp_path) + os.sep + "pidfilename.txt"
+    dq = DiskQueue(BaseOptions, 'test_corrupted_lines')
+
+    message = make_message()
+    valid_line = jsonpickle.encode(message) + '\n'
+
+    # write 2000 corrupted lines followed by one valid message
+    with open(dq.queue_file, 'w') as fp:
+        for i in range(2000):
+            fp.write('THIS IS NOT VALID JSON line %d\n' % i)
+        fp.write(valid_line)
+
+    fp_out, msg = dq.msg_get_from_file(None, dq.queue_file)
+
+    assert msg is not None, "valid message after 2000 corrupted lines was not found"
+    assert msg == message
+    assert fp_out is not None
+    fp_out.close()
+
+
+def test_msg_get_from_file__all_corrupted(tmp_path):
+    """If the entire file is corrupted, msg_get_from_file should return
+    None without crashing.
+    """
+    BaseOptions = Options()
+    BaseOptions.pid_filename = str(tmp_path) + os.sep + "pidfilename.txt"
+    dq = DiskQueue(BaseOptions, 'test_all_corrupted')
+
+    with open(dq.queue_file, 'w') as fp:
+        for i in range(500):
+            fp.write('GARBAGE LINE %d\n' % i)
+
+    fp_out, msg = dq.msg_get_from_file(None, dq.queue_file)
+
+    assert fp_out is None
+    assert msg is None
+

@@ -110,8 +110,9 @@ class PostFormat:
         elif 'topic' in p and p['topic'] and (type(p['topic']) is not list):
             topic = p['topic'].split(topic_separator)
         else:
+            topic = topic_prefix
             if 'relPath' in msg: 
-                topic = topic_prefix + msg['relPath'].split('/')[0:-1]
+                topic += msg['relPath'].split('/')[0:-1]
             elif 'subtopic' in msg:
                 topic = topic_prefix + msg['subtopic']  
             else:
@@ -121,8 +122,15 @@ class PostFormat:
 
    
 
-# test for v04 first, because v03 may claim all other JSON.
+# test for wis, navcanada and swim first, because v03 may claim all other JSON.
+# for navcanada and swim, the content type reflects the content type of the embedded data (not the message)
 import sarracenia.postformat.wis
+# not including NAV CANADA in public code yet
+try:
+    import sarracenia.postformat.navcanada
+except Exception:
+    pass
+import sarracenia.postformat.swim
 import sarracenia.postformat.v03
+# v02 will claim any messages where the body/payload is string and not JSON
 import sarracenia.postformat.v02
-

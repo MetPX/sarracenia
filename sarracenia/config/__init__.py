@@ -1382,10 +1382,14 @@ class Config:
         resolved_queueName = self._resolveQueueName(self.component,self.config)
 
         if type(subtopic_string) is str:
-            if 'amqp' in self.broker.url.scheme.lower() :
+            bsl = self.broker.url.scheme.lower()
+            if bsl == 'amqp' :
                 subtopic = subtopic_string.split('.')
-            else:
+            elif bsl == 'mqtt':
                 subtopic = subtopic_string.split('/')
+            # for other protocols, e.g. AMQP1.0, leave the subtopic alone.
+            else:
+                subtopic = [subtopic_string]
             
         if hasattr(self, 'exchange') and hasattr(self, 'topicPrefix'):
             self.subscriptions.add(Subscription(self, self.queueName, resolved_queueName, subtopic, topicOverride))
@@ -1788,7 +1792,10 @@ class Config:
                 logger.info( f"{','.join(self.files)}:{lineno} if download is false, directory has no effect" )
 
             v = ' '.join(line[1:])
-            if v.lower() in [ 'none', 'off', 'false' ]:
+            # filename NONE and None are different
+            if k == 'filename' and v == 'None':
+                v=None
+            elif k != 'filename' and v.lower() in [ 'none', 'off', 'false' ]:
                 v=None
             setattr(self, k, v)
         else:
@@ -1970,13 +1977,14 @@ class Config:
         if self.action not in self.actions:
             logger.error( f"invalid action: {self.action} must be one of: {','.join(self.actions)}" )
 
-        if hasattr(self, 'nodupe_ttl'):
+        # nodupe_ttl is a combined duration and flag option for legacy reasons
+        # defaults to 0 (nodupe disabled)
+        if hasattr(self, 'nodupe_ttl') and self.nodupe_ttl is not None:
             if (type(self.nodupe_ttl) is str):
                 if isTrue(self.nodupe_ttl):
                     self.nodupe_ttl = 300
                 else:
-                    self.nodupe_ttl = durationToSeconds(
-                        self.nodupe_ttl, default=300)
+                    self.nodupe_ttl = durationToSeconds(self.nodupe_ttl, default=300)
         else:
             self.nodupe_ttl = 0
 
@@ -2540,10 +2548,15 @@ class Config:
             if type(namespace.topicPrefix) is str:
                if namespace.topicPrefix.lower() in [ 'none', 'off', 'false' ]:
                    topicPrefix=[]
-               elif 'amqp' in namespace.broker.scheme.lower():
+               elif namespace.broker.scheme[0:4].lower() == 'amqp':
                    topicPrefix = namespace.topicPrefix.split('.')
-               else:
+               elif namespace.broker.scheme[0:4].lower() == 'mqtt':
                    topicPrefix = namespace.topicPrefix.split('/')
+               # for other protocols, e.g. AMQP1.0, leave the topicPrefix alone.
+               else:
+                   topicPrefix = [namespace.topicPrefix]
+
+               namespace.topicPrefix = topicPrefix
 
                namespace.topicPrefix = topicPrefix
 

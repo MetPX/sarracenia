@@ -673,14 +673,11 @@ class Flow:
 
             if (self.o.messageRateMax > 0) and (current_rate >=
                                                 self.o.messageRateMax):
-                # sleep exactly long enough to bring the average rate to the target:
-                # we want total_messages / (run_time + sleep) == messageRateMax
-                stime = (total_messages / self.o.messageRateMax) - run_time
-                if stime < 0:
-                    stime = 0
+                stime = 1 + 2 * ((current_rate - self.o.messageRateMax) /
+                                 self.o.messageRateMax)
                 logger.info(
-                    "current_rate (%.2f) above messageRateMax(%.2f): sleeping %.2fs"
-                    % (current_rate, self.o.messageRateMax, stime))
+                    "current_rate/2 (%.2f) above messageRateMax(%.2f): throttling"
+                    % (current_rate, self.o.messageRateMax))
             else:
                 logger.debug(' not throttling: limit: %s ', self.o.messageRateMax)
                 stime = 0
@@ -1051,9 +1048,10 @@ class Flow:
                     continue
 
             if 'fileOp' in m and 'rename' in m['fileOp']:
-                url = self.o.variableExpansion(m['baseUrl'],
-                                             m) + os.sep + m['fileOp']['rename']
-                if 'sundew_extension' in m and url.count(":") < 1:
+                url = self.o.variableExpansion(m['baseUrl'], m) + os.sep + m['fileOp']['rename']
+                # append sundew_extension when present in msg and there's no sundew extension already in the URL
+                # using < 3 colons to account for scheme:// and potential :port (extensions have 5 or 6 colons)
+                if 'sundew_extension' in m and url.count(':') < 3:
                     urlToMatch = url + ':' + m['sundew_extension']
                 else:
                     urlToMatch = url
@@ -1082,7 +1080,9 @@ class Flow:
             else:
                 url += '/' + m['relPath']
 
-            if 'sundew_extension' in m and url.count(":") < 1:
+            # append sundew_extension when present in msg and there's no sundew extension already in the URL
+            # using < 3 colons to account for scheme:// and potential :port (extensions have 5 or 6 colons)
+            if 'sundew_extension' in m and url.count(':') < 3:
                 urlToMatch = url + ':' + m['sundew_extension']
             else:
                 urlToMatch = url
