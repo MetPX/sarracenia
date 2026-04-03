@@ -558,15 +558,14 @@ class MQTT(Moth):
 
     def __sub_on_message(client, userdata, msg):
         """
-          callback to append messages received to queue.
-          queue.Queue is thread-safe, no manual locking needed.
+          callback to queue raw MQTT messages for decoding on the main thread.
+          Keeps on_message fast to avoid message drops under load.
         """
 
         if userdata.o['messageDebugDump']:
             logger.info( f"Message received: id:{msg.mid}, topic:{msg.topic} payload:{msg.payload}" )
 
-        m = userdata._msgDecode(msg)
-        userdata.rx_msg_q.put(m)
+        userdata.rx_msg_q.put(msg)
 
     def putCleanUp(self):
         self.client.disconnect()
@@ -663,6 +662,7 @@ class MQTT(Moth):
     def newMessages(self) -> list:
         """
            return up to batch new messages from the thread-safe queue.
+           Raw MQTT messages are decoded here on the main thread.
         """
 
         if not self.connected:
@@ -671,9 +671,10 @@ class MQTT(Moth):
         mqttml = []
         for _ in range(self.o['batch']):
             try:
-                m = self.rx_msg_q.get_nowait()
+                raw_msg = self.rx_msg_q.get_nowait()
             except queue.Empty:
                 break
+            m = self._msgDecode(raw_msg)
             if m is not None:
                 mqttml.append(m)
 
@@ -685,10 +686,11 @@ class MQTT(Moth):
             self.getSetup()
 
         try:
-            m = self.rx_msg_q.get_nowait()
+            raw_msg = self.rx_msg_q.get_nowait()
         except queue.Empty:
             return None
 
+        m = self._msgDecode(raw_msg)
         if m is None:
             return None
 
