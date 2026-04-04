@@ -258,6 +258,15 @@ class Poll(FlowCB):
 
         super().__init__(options,class_logger)
 
+        # when a subclass passes its own logger, the Poll parent logger
+        # doesn't get the logLevel from `set sarracenia.flowcb.poll.logLevel`.
+        # apply it here so debug messages from Poll code are visible. (#1542)
+        if class_logger != logger and hasattr(self.o, 'settings'):
+            for key in ['sarracenia.flowcb.poll.Poll', 'sarracenia.flowcb.poll']:
+                if key in self.o.settings and 'logLevel' in self.o.settings[key]:
+                    logger.setLevel(getattr(logging, self.o.settings[key]['logLevel'].upper()))
+                    break
+
         # check pollUrl
 
         self.details = None
