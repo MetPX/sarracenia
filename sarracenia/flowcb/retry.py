@@ -138,8 +138,11 @@ class Retry(FlowCB):
             return
 
         if len(worklist.failed) != 0:
-            logger.debug('putting %s messages into %s', len(worklist.failed), self.download_retry_name)
-            self.download_retry.put(worklist.failed)
+            for m in worklist.failed:
+                self.__set_isRetry(m)
+            to_retry = self.__filter_by_retry_count(worklist.failed)
+            logger.debug('putting %s messages into %s', len(to_retry), self.download_retry_name)
+            self.download_retry.put(to_retry)
             worklist.failed = []
 
         if len(self.post_retry) < 1:
