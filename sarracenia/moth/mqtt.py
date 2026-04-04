@@ -25,7 +25,7 @@ import collections
 import copy
 import json
 import logging
-import queue
+import queue as queue_mod
 
 from paho.mqtt.properties import Properties
 from paho.mqtt.packettypes import PacketTypes
@@ -191,7 +191,7 @@ class MQTT(Moth):
             self.subscribe_in_progress = 0
             self.subscribe_mutex.release()
 
-            self.rx_msg_q = queue.Queue()
+            self.rx_msg_q = queue_mod.Queue()
             self.broker = None
       
         logger.warning("note: mqtt support is newish, not very well tested")
@@ -672,7 +672,7 @@ class MQTT(Moth):
         for _ in range(self.o['batch']):
             try:
                 raw_msg = self.rx_msg_q.get_nowait()
-            except queue.Empty:
+            except queue_mod.Empty:
                 break
             m = self._msgDecode(raw_msg)
             if m is not None:
@@ -687,7 +687,7 @@ class MQTT(Moth):
 
         try:
             raw_msg = self.rx_msg_q.get_nowait()
-        except queue.Empty:
+        except queue_mod.Empty:
             return None
 
         m = self._msgDecode(raw_msg)
