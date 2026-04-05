@@ -92,7 +92,7 @@ def add_user(url, role, user, passwd, simulate):
 
     # admin and feeder gets the same permissions
 
-    if role in ['admin,', 'feeder', 'manager']:
+    if role in ['admin', 'feeder', 'manager']:
         c = "configure=.*"
         w = "write=.*"
         r = "read=.*"
