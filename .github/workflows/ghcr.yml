@@ -14,6 +14,8 @@ on:
       # stable versions are built from tags
       # does not include rc tags
       - 'v[0-9]+.[0-9]+.[0-9]+'
+      # exclude v2 tags
+      - '!v2.*'
 
 env:
   REGISTRY: ghcr.io
