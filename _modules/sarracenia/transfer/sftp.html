@@ -458,17 +458,18 @@
 
         <span class="c1"># read from rfp and write to local_file</span>
 
-        <span class="n">rw_length</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">read_writelocal</span><span class="p">(</span><span class="n">remote_file</span><span class="p">,</span> <span class="n">rfp</span><span class="p">,</span> <span class="n">local_file</span><span class="p">,</span>
-                                         <span class="n">local_offset</span><span class="p">,</span> <span class="n">length</span><span class="p">,</span> <span class="n">exactLength</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
-
-        
-        <span class="c1"># close</span>
-
-        <span class="n">alarm_set</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">o</span><span class="o">.</span><span class="n">timeout</span><span class="p">)</span>
         <span class="k">try</span><span class="p">:</span>
-            <span class="n">rfp</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+            <span class="n">rw_length</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">read_writelocal</span><span class="p">(</span><span class="n">remote_file</span><span class="p">,</span> <span class="n">rfp</span><span class="p">,</span> <span class="n">local_file</span><span class="p">,</span>
+                                             <span class="n">local_offset</span><span class="p">,</span> <span class="n">length</span><span class="p">,</span>
+                                             <span class="n">exactLength</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
         <span class="k">finally</span><span class="p">:</span>
-            <span class="n">alarm_cancel</span><span class="p">()</span>
+            <span class="c1"># close</span>
+
+            <span class="n">alarm_set</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">o</span><span class="o">.</span><span class="n">timeout</span><span class="p">)</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="n">rfp</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+            <span class="k">finally</span><span class="p">:</span>
+                <span class="n">alarm_cancel</span><span class="p">()</span>
 
         <span class="k">return</span> <span class="n">rw_length</span>
 
@@ -593,22 +594,25 @@
 
         <span class="c1"># read from local_file and write to rfp</span>
 
-        <span class="n">rw_length</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">readlocal_write</span><span class="p">(</span><span class="n">local_file</span><span class="p">,</span> <span class="n">local_offset</span><span class="p">,</span> <span class="n">length</span><span class="p">,</span> <span class="n">rfp</span><span class="p">)</span>
-
-        <span class="c1"># no sparse file... truncate where we are at</span>
-
-        <span class="n">alarm_set</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">o</span><span class="o">.</span><span class="n">timeout</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">fpos</span> <span class="o">=</span> <span class="n">remote_offset</span> <span class="o">+</span> <span class="n">rw_length</span>
-        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">o</span><span class="o">.</span><span class="n">nofsetstat</span> <span class="ow">and</span> <span class="n">length</span> <span class="o">!=</span> <span class="mi">0</span><span class="p">:</span> 
-            <span class="k">try</span><span class="p">:</span>
-                <span class="n">rfp</span><span class="o">.</span><span class="n">truncate</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">fpos</span><span class="p">)</span>
-            <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">ex</span><span class="p">:</span>
-                <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span> <span class="sa">f</span><span class="s2">&quot;truncate </span><span class="si">{</span><span class="n">remote_file</span><span class="si">}</span><span class="s2"> failed: </span><span class="si">{</span><span class="n">ex</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
-                <span class="n">logging</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;Exception details:&quot;</span><span class="p">,</span> <span class="n">exc_info</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
         <span class="k">try</span><span class="p">:</span>
-            <span class="n">rfp</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+            <span class="n">rw_length</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">readlocal_write</span><span class="p">(</span><span class="n">local_file</span><span class="p">,</span> <span class="n">local_offset</span><span class="p">,</span>
+                                             <span class="n">length</span><span class="p">,</span> <span class="n">rfp</span><span class="p">)</span>
+
+            <span class="c1"># no sparse file... truncate where we are at</span>
+
+            <span class="bp">self</span><span class="o">.</span><span class="n">fpos</span> <span class="o">=</span> <span class="n">remote_offset</span> <span class="o">+</span> <span class="n">rw_length</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">o</span><span class="o">.</span><span class="n">nofsetstat</span> <span class="ow">and</span> <span class="n">length</span> <span class="o">!=</span> <span class="mi">0</span><span class="p">:</span>
+                <span class="k">try</span><span class="p">:</span>
+                    <span class="n">rfp</span><span class="o">.</span><span class="n">truncate</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">fpos</span><span class="p">)</span>
+                <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">ex</span><span class="p">:</span>
+                    <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;truncate </span><span class="si">{</span><span class="n">remote_file</span><span class="si">}</span><span class="s2"> failed: </span><span class="si">{</span><span class="n">ex</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+                    <span class="n">logging</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;Exception details:&quot;</span><span class="p">,</span> <span class="n">exc_info</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
         <span class="k">finally</span><span class="p">:</span>
-            <span class="n">alarm_cancel</span><span class="p">()</span>
+            <span class="n">alarm_set</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">o</span><span class="o">.</span><span class="n">timeout</span><span class="p">)</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="n">rfp</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+            <span class="k">finally</span><span class="p">:</span>
+                <span class="n">alarm_cancel</span><span class="p">()</span>
 
         <span class="k">return</span> <span class="n">rw_length</span>
 
