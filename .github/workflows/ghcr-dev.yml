@@ -4,7 +4,7 @@
 # separate terms of service, privacy policy, and support
 # documentation.
 
-name: Build container image to GitHub Container Registry (development)
+name: "Build container image: sarracenia ${{ github.ref_name }}"
 
 on:
   push:
@@ -26,7 +26,7 @@ jobs:
 
     steps:
       - name: Checkout branch
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
 
       - name: Set up QEMU
         uses: docker/setup-qemu-action@v3
