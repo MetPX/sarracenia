@@ -55,6 +55,9 @@ jobs:
         uses: docker/metadata-action@v6
         with:
           images: ${{ env.REGISTRY }}/${{ github.repository_owner }}/${{ env.IMAGE_NAME }}
+          # don't auto tag 'latest', it causes duplicate latest tags when used with event=tag/pep440
+          flavor: |
+            latest=false
           # all images get tagged with 'latest'
           # images built from the development branch gets tagged 'development'
           # images built from tags will get tagged 'stable' and a tag matching the version (without the v prefix)
