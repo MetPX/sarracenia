@@ -9,8 +9,11 @@ name: "Build container image: sarracenia"
 on:
   push:
     branches:
-      - stable
       - development
+    tags:
+      # stable versions are built from tags
+      # does not include rc tags
+      - 'v[0-9]+.[0-9]+.[0-9]+'
 
 env:
   REGISTRY: ghcr.io
@@ -50,15 +53,14 @@ jobs:
         uses: docker/metadata-action@v6
         with:
           images: ${{ env.REGISTRY }}/${{ github.repository_owner }}/${{ env.IMAGE_NAME }}
-          # all images get tagged with latest
-          # images built from the stable branch get tagged stable
-          # images built from the stable branch also get tagged with their version number
-          # images built from the development branch gets tagged development
+          # all images get tagged with 'latest'
+          # images built from the development branch gets tagged 'development'
+          # images built from tags will get tagged 'stable' and a tag matching the version (without the v prefix)
           tags: |
             type=raw,value=latest
-            type=raw,value=stable,enable=${{ github.ref == 'refs/heads/stable' }}
-            type=semver,pattern={{version}},enable=${{ github.ref == 'refs/heads/stable' }}
             type=raw,value=development,enable=${{ github.ref == 'refs/heads/development' }}
+            type=raw,value=stable,enable=${{ startsWith(github.ref, 'refs/tags/') }}
+            type=semver,pattern={{version}}
 
       - name: Build and push
         uses: docker/build-push-action@v7
