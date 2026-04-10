@@ -1,44 +1,66 @@
-name: Build docs and publish to gh-pages branch and GitHub Pages
+---
+name: Build docs and publish to GitHub Pages
+
 on:
   push:
     branches:
       - development
-      - issue1047
     paths-ignore:
       - '.github/**'
-
   workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: github-pages
+  cancel-in-progress: true
 
 jobs:
   gh-pages:
-    name: Publish Github Pages
+    name: Publish GitHub Pages
     runs-on: ubuntu-latest
-    steps:
-    - name: Setup locale
-      run: |
-        sudo locale-gen en_US.UTF-8
-        sudo update-locale
-    - name: Install dependencies
-      run: |
-        sudo apt update -y
-        sudo apt install -y python3-appdirs python3-humanfriendly python3-humanize python3-jsonpickle python3-paramiko python3-psutil python3-watchdog
-        sudo apt install -y pandoc dia python3-paramiko 
-        sudo apt install -y python3-amqp
-    - name: Checkout
-      uses: actions/checkout@v6
-      with:
-        fetch-depth: 0
-    - name: install Sarracenia
-      run: |
-        pip3 install .
-    - name: Build and Commit
-      uses: sphinx-notes/pages@v3
-      with:
-        documentation_path: ./docs/source
-        requirements_path: ./requirements-dev.txt
-    - name: Push changes
-      uses: ad-m/github-push-action@master
-      with:
-        github_token: ${{ secrets.GITHUB_TOKEN }}
-        branch: gh-pages
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
 
+    steps:
+      - name: Setup locale
+        run: |
+          sudo locale-gen en_US.UTF-8
+          sudo update-locale
+
+      - name: Install system dependencies
+        run: |
+          sudo apt update -y
+          sudo apt install -y \
+            pandoc dia \
+            python3-appdirs python3-humanfriendly python3-humanize \
+            python3-jsonpickle python3-paramiko python3-psutil \
+            python3-watchdog python3-amqp
+
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Install Sarracenia
+        run: pip3 install --break-system-packages .
+
+      - name: Build docs
+        id: deployment
+        uses: sphinx-notes/pages@v3
+        with:
+          documentation_path: ./docs/source
+          requirements_path: ./requirements-dev.txt
+          publish: false
+
+      - name: Upload pages artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: ${{ steps.deployment.outputs.artifact }}
+
+      - name: Deploy to GitHub Pages
+        uses: actions/deploy-pages@v4
