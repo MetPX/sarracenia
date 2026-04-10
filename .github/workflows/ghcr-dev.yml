@@ -4,7 +4,7 @@
 # separate terms of service, privacy policy, and support
 # documentation.
 
-name: "Build container image: sarracenia ${{ github.ref_name }}"
+name: "Build container image: sarracenia"
 
 on:
   push:
