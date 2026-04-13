@@ -198,6 +198,7 @@ class MQTT(Moth):
 
     def __sub_on_disconnect(client, userdata, mid, reason_code, properties=None):
         userdata.metricsDisconnect()
+        userdata.connected = False
         logger.debug(reason_code)
         if hasattr(userdata, 'pending_publishes'):
             lost = len(userdata.pending_publishes)
@@ -677,6 +678,11 @@ class MQTT(Moth):
             m = self._msgDecode(raw_msg)
             if m is not None:
                 mqttml.append(m)
+            else:
+                self.client.ack(raw_msg.mid, raw_msg.qos)
+
+        if not mqttml:
+            time.sleep(0.1)
 
         return mqttml
 
@@ -688,10 +694,12 @@ class MQTT(Moth):
         try:
             raw_msg = self.rx_msg_q.get_nowait()
         except queue_mod.Empty:
+            time.sleep(0.1)
             return None
 
         m = self._msgDecode(raw_msg)
         if m is None:
+            self.client.ack(raw_msg.mid, raw_msg.qos)
             return None
 
         m['subscription_index'] = self.o['subscription_index']
