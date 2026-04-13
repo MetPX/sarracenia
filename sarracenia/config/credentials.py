@@ -42,14 +42,21 @@ import urllib, urllib.parse
 import sys
 
 
+_REDACT_RE = re.compile(r'(://[^:@/]+:)[^@]+(@)')
+
+
 class UrlParseResult(urllib.parse.ParseResult):
     """ParseResult subclass that auto-unquotes username and password.
 
-    urllib.parse.urlparse percent-encodes reserved characters in netloc
-    (e.g. %40 for @, %23 for #).  Consumers that use url.username or
-    url.password directly receive the raw percent-encoded form.  This
-    subclass transparently unquotes those two fields so callers never
-    need to call urllib.parse.unquote() themselves.
+    urllib.parse preserves percent-encoding in .username and .password
+    (e.g. 'pass%23word' stays 'pass%23word', not 'pass#word').  Consumers
+    that need the decoded value had to call urllib.parse.unquote() themselves.
+    This subclass does that transparently via the .username and .password
+    properties, so callers always receive the human-readable decoded form.
+
+    When reconstructing a URL string (e.g. for passing to an external library),
+    use .raw_username and .raw_password to get the percent-encoded forms, or
+    use .netloc / .geturl() directly so encoding is preserved correctly.
     """
 
     @property
@@ -62,10 +69,20 @@ class UrlParseResult(urllib.parse.ParseResult):
         raw = super().password
         return urllib.parse.unquote(raw) if raw else raw
 
+    @property
+    def raw_username(self) -> str:
+        """Username in percent-encoded form, suitable for URL reconstruction."""
+        return super().username
+
+    @property
+    def raw_password(self) -> str:
+        """Password in percent-encoded form, suitable for URL reconstruction."""
+        return super().password
+
 
 def _urlparse(urlstr: str) -> UrlParseResult:
     """Parse a URL string and return a UrlParseResult with auto-unquoted credentials."""
-    pr = urllib.parse.urlparse(urlstr)  # keep internal _urlparse use of stdlib
+    pr = urllib.parse.urlparse(urlstr)
     return UrlParseResult(pr.scheme, pr.netloc, pr.path, pr.params, pr.query, pr.fragment)
 
 
@@ -222,8 +239,8 @@ class CredentialDB:
         if details == None:
             details = Credential()
             details.url = _urlparse(urlstr)
-            if hasattr(details.url,'password'):
-                key = key.replace( f":{details.url.password}", "" )
+            if hasattr(details.url,'raw_password') and details.url.raw_password:
+                key = key.replace( f":{details.url.raw_password}", "" )
 
         self.credentials[key] = details
 
@@ -378,14 +395,16 @@ class CredentialDB:
 
             # Detect credentials broken by unencoded '#' in password/username.
             # urlparse treats '#' as a fragment delimiter, so 'user:pass#word@host'
-            # is parsed as netloc='user:pass' and fragment='word@host', leaving
-            # url.hostname empty. Use %23 in credentials.conf to encode '#'.
-            if url.fragment and '@' in url.fragment:
+            # is parsed as netloc='user:pass' and fragment='word@host/'.
+            # The '@' that separates userinfo from host ends up in the fragment
+            # instead of netloc -- that is the reliable symptom.
+            # Use %23 in credentials.conf to encode '#'.
+            if url.fragment and '@' in url.fragment and '@' not in url.netloc:
                 logger.error(
                     "credential URL appears malformed -- the password likely contains '#' "
                     "which is a URL fragment delimiter. Replace '#' with '%%23' in credentials.conf. "
                     "Other special characters: '@' -> '%%40', ':' -> '%%3a', '/' -> '%%2f'. "
-                    "Offending line: %s", urlstr)
+                    "Offending line: %s", _REDACT_RE.sub(r'\1<secret>\2', urlstr))
                 return
 
             # credential details
