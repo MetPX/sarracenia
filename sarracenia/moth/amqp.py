@@ -303,7 +303,7 @@ class AMQP(Moth):
                     return -2
 
             #FIXME: test self.first_setup and props['reset']... delete queue...
-            broker_str = broker.url.geturl().replace( ':' + broker.url.password + '@', '@')
+            broker_str = str(broker)
 
             if queue['declare'] and queue['name']:
 
@@ -401,7 +401,7 @@ class AMQP(Moth):
             #logger.info('getSetup connected to {}'.format(self.o['broker'].url.hostname) )
 
             #FIXME: test self.first_setup and props['reset']... delete queue...
-            broker_str = broker.url.geturl().replace( ':' + broker.url.password + '@', '@')
+            broker_str = str(broker)
 
             # from Queue declare
             msg_count = self._queueDeclare()
@@ -485,7 +485,7 @@ class AMQP(Moth):
 
             # transaction mode... confirms would be better...
             self.channel.tx_select()
-            broker_str = self.o['broker'].url.geturl().replace(
+            broker_str = str(self.o['broker'])
                 ':' + self.o['broker'].url.password + '@', '@')
 
             logger.debug('putSetup ... 1. connected to %s', broker_str)
