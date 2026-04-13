@@ -74,3 +74,32 @@ def test_explicit_v02_post_format():
     pub = Publisher(opts)
     assert pub['format'] == 'v02'
     assert pub['post_format'] == 'v02'
+
+
+def test_topicprefix_fallback_is_empty_list():
+    """When neither post_topicPrefix nor topicPrefix is set, fallback must
+    be [] (empty list), not None. Peter fixed this in bab4b9424 -- None
+    causes TypeError when downstream code iterates or concatenates."""
+    opts = make_options()
+    del opts.post_topicPrefix
+    del opts.topicPrefix
+    pub = Publisher(opts)
+    assert pub['topicPrefix'] == [], \
+        "topicPrefix fallback must be [] not None (see commit bab4b9424)"
+
+
+def test_basedir_missing_no_keyerror():
+    """Publisher must not raise KeyError when baseDir is absent from the
+    dict. The guard must use 'or' (short-circuit) not 'and'."""
+    opts = make_options(post_baseUrl='file:/data/incoming')
+    del opts.post_baseDir
+    # This must not raise KeyError
+    pub = Publisher(opts)
+    assert pub['baseDir'] == '/data/incoming'
+
+
+def test_basedir_empty_string_derives_from_url():
+    """When baseDir is set but empty, it should still derive from baseUrl."""
+    opts = make_options(post_baseDir='', post_baseUrl='file:/data/output')
+    pub = Publisher(opts)
+    assert pub['baseDir'] == '/data/output'
