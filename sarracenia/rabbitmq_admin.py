@@ -92,7 +92,7 @@ def add_user(url, role, user, passwd, simulate):
 
     # admin and feeder gets the same permissions
 
-    if role in ['admin,', 'feeder', 'manager']:
+    if role in ['admin', 'feeder', 'manager']:
         c = "configure=.*"
         w = "write=.*"
         r = "read=.*"
@@ -303,8 +303,7 @@ if __name__ == "__main__":
 
     u = 'tsource'
     up = rabbitmq_user_access(url, u)
-    print("permissions for %s: \nqueues: %s\nexchanges: %s\nbindings %s" %
-          (u, up['queues'], up['exchanges'], up['bindings']))
+    print(f"permissions for {u}: \nqueues: {up['queues']}\nexchanges: {up['exchanges']}\nbindings {up['bindings']}")
     #print( "\n\nbindings: %s" % json.loads(exec_rabbitmqadmin(url,"list bindings")[1]) )
 
 
