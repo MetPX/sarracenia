@@ -21,7 +21,7 @@ After=network.target
 
 [Service]
 Type=forking
-exitType=cgroup
+ExitType=cgroup
 
 ExecStart=/usr/bin/sr3 start
 

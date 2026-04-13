@@ -147,7 +147,7 @@ class Eumetsat(sarracenia.flowcb.FlowCB):
         for cid in self._encoded_collectionIds:
             for i in range(0, n_hours):
                 req_url = url_head.replace(self._cid_placeholder, cid) + t_str[i] + url_tail
-                logger.info("polling URL {}".format(req_url))
+                logger.info(f"polling URL {req_url}")
                 resp = requests.get(req_url)
                 if not resp or "products" not in resp.json().keys():
                     logger.warning(f"Something went wrong: no products found at {req_url}")
@@ -170,7 +170,7 @@ class Eumetsat(sarracenia.flowcb.FlowCB):
                 break
             details_page = requests.get(details_link)
             msgs = self.msgs_from_details_page(details_page.json())
-            logger.debug(f"created {len(msgs)} message(s) from 1 details_link {details_link}")
+            logger.debug('created %s message(s) from 1 details_link %s', len(msgs), details_link)
             gathered_messages += msgs
             
         return gathered_messages
@@ -179,7 +179,7 @@ class Eumetsat(sarracenia.flowcb.FlowCB):
         m = None
         try:
             parts = link_info['href'].split(self.o.post_baseUrl)
-            logger.debug(f"making a message for {parts[1]}" )
+            logger.debug('making a message for %s', parts[1])
             m = sarracenia.Message.fromFileInfo(parts[1], self.o)
             m['contentType'] = link_info['mediaType']
             # The download links in .../entry?name=FILENAME which would download files named entry?name=FILENAME
@@ -239,7 +239,7 @@ class Eumetsat(sarracenia.flowcb.FlowCB):
                         if result:
                             msgs.append(result)
                     else:
-                        logger.debug(f"Ignoring link_info {link_info} with mediaType not in {self.o.acceptMediaType}")
+                        logger.debug('Ignoring link_info %s with mediaType not in %s', link_info, self.o.acceptMediaType)
                         if len(self.o.acceptMediaType) <= 0:
                             logger.warning(f"acceptMediaType option not set. Ignoring {link_info}.")
         

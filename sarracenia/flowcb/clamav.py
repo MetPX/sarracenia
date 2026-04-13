@@ -75,13 +75,11 @@ class Clamav(FlowCB):
 
         if virus_found:
             logger.error(
-                "part_clamav_scan took %g not forwarding, virus detected in %s"
-                % (end - start, scanfn))
+                f"part_clamav_scan took {end-start:g} not forwarding, virus detected in {scanfn}" )
             self.metric_hits += 1
             return False
 
-        logger.info("part_clamav_scan took %g seconds, no viruses in %s" %
-                    (end - start, scanfn))
+        logger.info( f"part_clamav_scan took {end-start:g} seconds, no viruses in {scanfn}" )
         return True
 
     def after_accept(self, worklist) -> None:

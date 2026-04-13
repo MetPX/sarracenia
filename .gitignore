@@ -20,4 +20,7 @@ metpx-sr3-*-pyproject-ghost-distinfo
 metpx-sr3-*-pyproject-modules
 metpx-sr3-*-pyproject-record
 pyproject-wheeldir/
-
+.agents/
+GEMINI.md
+CLAUDE.md
+GEMINI.md

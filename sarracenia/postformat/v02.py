@@ -28,16 +28,16 @@ class V02(PostFormat):
     def mine(payload, headers, content_type, options) -> bool:
         """
           return true if the message is in this post format.
-       """
+        """
         if content_type == V02.content_type() :
             return True
 
         # all the other formats are JSON based. only v02 has plain-text body.
-        if not '{' in payload[0:5]:
+        if type(payload) == str and '{' not in payload[0:5]:
             return True
 
         # in the v02, we used topic to identify message format. (not reliable for other formats.)
-        if headers['topic'].startswith('v02.'):
+        if 'topic' in headers and headers['topic'].startswith('v02.'):
             return True
         
         return False

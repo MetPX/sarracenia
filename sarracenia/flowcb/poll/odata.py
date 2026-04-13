@@ -163,7 +163,7 @@ class Odata(sarracenia.flowcb.FlowCB):
         t_range_start = t_now_minus.strftime("%Y-%m-%dT%H:%M:%S.000Z")
         
         time_range = f"ContentDate/Start gt {t_range_start} and ContentDate/Start lt {t_range_end}"
-        logger.debug(f"Time range: {time_range} (timeNowMinus={self.o.timeNowMinus})")
+        logger.debug('Time range: %s (timeNowMinus=%s)', time_range, self.o.timeNowMinus)
 
         # Build the query
         query = f"{time_range}"
@@ -183,7 +183,7 @@ class Odata(sarracenia.flowcb.FlowCB):
             for qs in self.o.queryString:
                 query += f" {qs}"
         
-        logger.debug(f"Full Query: {query}")
+        logger.debug('Full Query: %s', query)
         
         ### DO THE POLL
         url = self.o.pollUrl + requests.utils.quote(query.strip())
@@ -252,7 +252,7 @@ class Odata(sarracenia.flowcb.FlowCB):
         if 'Name' in jdata and len(jdata['Name']) > 0:
             msg['retrievePath'] = msg['relPath']
             msg['relPath'] = jdata['Name']
-            logger.debug(f"baseUrl: {msg['baseUrl']}, relPath: {msg['relPath']}, retrievePath: {msg['retrievePath']}")
+            logger.debug('baseUrl: %s, relPath: %s, retrievePath: %s', msg['baseUrl'], msg['relPath'], msg['retrievePath'])
         
         if 'ContentLength' in jdata:
             msg['size'] = jdata['ContentLength']

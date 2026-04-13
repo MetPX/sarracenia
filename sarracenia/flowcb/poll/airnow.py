@@ -36,9 +36,9 @@ class Airnow(FlowCB):
                     hours=Hours)
                 Filename = 'HourlyData_%s.dat' % last_hour_date_time.strftime(
                     '%Y%m%d%H')
-                logger.debug("poll_airnow_http Filename: %s" % Filename)
+                logger.debug('poll_airnow_http Filename: %s', Filename)
                 URL = self.o.pollUrl + '/' + Filename
-                logger.info('INFO %s ' % URL)
+                logger.info(f'INFO {URL} ')
                 #resp = requests.get(self.o.pollUrl + '/' + Filename)
                 resp = requests.get(URL)
                 if resp.ok:
@@ -60,7 +60,7 @@ class Airnow(FlowCB):
                     m = sarracenia.Message.fromFileInfo(Filename, self.o, fakeStat)
                     gathered_messages.append(m)
 
-                    logger.info('mtime: %s  last_pollL %s' % (mtime, last_poll))
+                    logger.info(f'mtime: {mtime}  last_pollL {last_poll}')
         except Exception as e:
             logger.error(f"Poll failed: {e}")
             logger.debug("Exception details:", exc_info=True)

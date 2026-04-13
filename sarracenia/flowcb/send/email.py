@@ -108,7 +108,7 @@ class Email(FlowCB):
         self.email_server = self.o.sendTo.strip('/')
         if '//' in self.email_server:
             self.email_server = self.email_server[self.email_server.find('//') + 2 :]
-        logger.debug(f"Using email server: {self.email_server} (sendTo was: {self.o.sendTo})")
+        logger.debug('Using email server: %s (sendTo was: %s)', self.email_server, self.o.sendTo)
 
         # Add trailing space to email_subject_prepend
         if len(self.o.email_subject_prepend) > 0:
@@ -188,7 +188,7 @@ class Email(FlowCB):
 
             try:
                 logstr = f"file {ipath} to {recipient} with subject {emsg['Subject']}"
-                logger.debug(f'sending {logstr} from {self.o.email_from} using server {self.email_server}')
+                logger.debug('sending %s from %s using server %s', logstr, self.o.email_from, self.email_server)
 
                 if 'To' in emsg:
                     del emsg['To']
