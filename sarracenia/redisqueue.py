@@ -314,6 +314,7 @@ class RedisQueue():
         # finish retry before reshuffling all retries entries
         if self.redis.llen(self.key_name) > 0:
             logger.info(f"have not finished retry list; resuming retries from {self.key_name}")
+            self.redis_lock.release()
             return
 
         self.now = sarracenia.nowflt()
