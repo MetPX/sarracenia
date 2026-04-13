@@ -47,7 +47,7 @@ class Mail_ingest(FlowCB):
                         user            = setting.username
                         user = urllib.parse.unquote(user)
                         password        = setting.password
-                        password = urllib.parse.unquote(password)
+                        password = urllib.parse.password
                         server          = setting.hostname
                         protocol        = setting.scheme.lower() 
                         port            = setting.port

@@ -251,10 +251,8 @@ class AMQP(Moth):
         
         self.connection = amqp.Connection(host=host,
                                           userid=broker.url.username,
-                                          password=unquote(
-                                              broker.url.password),
-                                          login_method=broker.login_method,
-                                          virtual_host=vhost,
+                                          password=broker.url.password,
+                                          login_method=broker.login_method,                                          virtual_host=vhost,
                                           ssl=sslarg,
                                           client_properties={'product':'MetPX Sarracenia (sr3)',
                                                              'product_version':sarracenia.__version__,

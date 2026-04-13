@@ -114,7 +114,7 @@ class Azure(Transfer):
                 self.account = url.username if url.username != '' else None
 
                 if url.password is not None and url.password != '':
-                    self.key = urllib.parse.unquote_plus(url.password)
+                    self.key = url.password
                 else:
                     self.key = None
 
