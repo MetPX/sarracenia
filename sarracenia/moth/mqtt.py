@@ -396,7 +396,7 @@ class MQTT(Moth):
         if 'max_inflight_messages' in queue:
             client.max_inflight_messages_set(queue['max_inflight_messages'])
 
-        client.username_pw_set(broker.url.username, unquote(broker.url.password))
+        client.username_pw_set(broker.url.username, broker.url.password)
         return client
 
     def getSetup(self):
@@ -542,7 +542,7 @@ class MQTT(Moth):
                 self.client.max_queued_messages_set(self.o['max_queued_messages'])
  
             self.client.username_pw_set(self.o['broker'].url.username,
-                                        unquote(self.o['broker'].url.password))
+                                        self.o['broker'].url.password)
             self.connect_in_progress = True
             res = self.client.connect_async(self.o['broker'].url.hostname,
                                       port=self.__sslClientSetup(),
