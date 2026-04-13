@@ -26,6 +26,7 @@ def make_mqtt_instance():
     m._stop_requested = False
     m.rx_msg_q = queue.Queue()
     m.broker = MagicMock()
+    m.client = MagicMock()
     m.o = {
         'batch': 25,
         'messageDebugDump': False,
