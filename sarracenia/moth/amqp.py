@@ -486,7 +486,6 @@ class AMQP(Moth):
             # transaction mode... confirms would be better...
             self.channel.tx_select()
             broker_str = str(self.o['broker'])
-                ':' + self.o['broker'].url.password + '@', '@')
 
             logger.debug('putSetup ... 1. connected to %s', broker_str)
 
