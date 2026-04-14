@@ -1894,6 +1894,25 @@ L’option **retry_ttl** (nouvelle tentative de durée de vie) indique combien d
 un fichier avant qu’il ne soit  rejeté de la fil d’attente.  Le défaut est de deux jours.  Si un fichier n’a pas
 été transféré après deux jours de tentatives, il est jeté.
 
+retryCountMax <nombre> (défaut: 0)
+----------------------------------
+
+L’option **retryCountMax** définit une limite au nombre de fois qu’un message sera
+re-tenté après un échec. Lorsqu'un message ne parvient pas à être transféré (dans un abonné)
+ou publié (dans un post/expéditeur), il est ajouté à une file d'attente de re-tentative.
+Chaque fois qu'il est récupéré de la file d'attente pour une nouvelle tentative, son
+compteur de re-tentative est incrémenté.
+
+Si le nombre de tentatives dépasse **retryCountMax**, le message est rejeté
+et une ERREUR est enregistrée dans le journal.
+
+La valeur par défaut est 0, ce qui signifie qu'il n'y a pas de limite au nombre de re-tentatives
+(sous réserve de **retry_ttl**).
+
+Cette option fonctionne parallèlement à **retry_ttl**; le message sera rejeté
+selon la limite atteinte en premier.
+
+
 runStateThreshold_cpuSlow <count> (par défaut : 0)
 ---------------------------------------------------
 
