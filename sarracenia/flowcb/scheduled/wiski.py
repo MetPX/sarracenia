@@ -131,7 +131,7 @@ class Wiski(Scheduled):
         
         str_response_status = response.status_code
         str_response_text = response.text
-        logger.debug(f"Response: {response.text}")
+        logger.debug('Response: %s', response.text)
         
         # Process response
         token_array = str_response_text.split('"')
@@ -162,7 +162,7 @@ class Wiski(Scheduled):
                 "Content-Type" : "application/json"
             }
 
-            logger.debug(f"Headers: {headers}")
+            logger.debug('Headers: %s', headers)
         
             response = requests.get(authenticated_url,headers=headers)
         
@@ -195,8 +195,8 @@ class Wiski(Scheduled):
 
             timeseries = k.get_timeseries_list(station_id = station_id , return_fields=['ts_id', 'ts_name', 'parametertype_name'] )
             parameters = k.get_parameter_list(station_id = station_id)
-            logger.debug( f"looping over the timeseries: \n{timeseries}" )
-            logger.debug( f"Parameter options: \n{parameters}" )
+            logger.debug('looping over the timeseries: \n%s', timeseries)
+            logger.debug('Parameter options: \n%s', parameters)
 
             if not parameters['station_no'].empty :
                 station_no = parameters['station_no'][0]
@@ -209,9 +209,9 @@ class Wiski(Scheduled):
                 parameter_type = timeseries['parametertype_name'].values[i]
 
                 if self.o.wiski_reject_parameterTypeName != [] and parameter_type in self.o.wiski_reject_parameterTypeName:
-                    logger.debug(f"Parameter type rejected due to not being specified in reject list : {self.o.wiski_reject_parameterTypeName}. Skipping.")
+                    logger.debug('Parameter type rejected due to not being specified in reject list : %s. Skipping.', self.o.wiski_reject_parameterTypeName)
                 elif self.o.wiski_ts_name != [] and ts_name not in self.o.wiski_ts_name:
-                    logger.debug(f"Timeseries name rejected due to not being specified in list : {self.o.wiski_ts_name}. Skipping.")
+                    logger.debug('Timeseries name rejected due to not being specified in list : %s. Skipping.', self.o.wiski_ts_name)
                 else:
 
                     # Have '-' between variables in filename for easier identification of fields

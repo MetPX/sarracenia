@@ -85,17 +85,21 @@ class PostFormat:
  
         p = options['publishers'][options['publisher_index']]
 
-        if p['broker'].url.scheme.startswith('mqtt'):
-            if ( 'exchange' in p ) and ( 'topicPrefix' in p ):
+        if p['broker'].url.scheme.startswith('mqtt') and 'exchange' in p and p['exchange']: 
+            if ( 'topicPrefix' in p ):
                 if 'exchangeSplit' in p and p['exchangeSplit'] > 1:
                     idx = sum( bytearray(msg['identity']['value'], 'ascii')) % len(p['exchange'])
                     exchange = p['exchange'][idx]
                 else:
                     exchange = p['exchange'][0]
-            topic_prefix = [exchange] + p['topicPrefix']
+            if exchange:
+                topic_prefix = [exchange] + p['topicPrefix']
+            else:
+                topic_prefix = list(p['topicPrefix'])
+
             topic_separator='/'
         else:
-            topic_prefix = p['topicPrefix']
+            topic_prefix = list(p['topicPrefix'])
             topic_separator='.'
 
         if 'topic' in msg:
@@ -106,18 +110,27 @@ class PostFormat:
         elif 'topic' in p and p['topic'] and (type(p['topic']) is not list):
             topic = p['topic'].split(topic_separator)
         else:
+            topic = topic_prefix
             if 'relPath' in msg: 
-                topic = topic_prefix + msg['relPath'].split('/')[0:-1]
+                topic += msg['relPath'].split('/')[0:-1]
             elif 'subtopic' in msg:
                 topic = topic_prefix + msg['subtopic']  
             else:
                 topic = topic_prefix
+
         return topic
 
    
 
-# test for v04 first, because v03 may claim all other JSON.
+# test for wis, navcanada and swim first, because v03 may claim all other JSON.
+# for navcanada and swim, the content type reflects the content type of the embedded data (not the message)
 import sarracenia.postformat.wis
+# not including NAV CANADA in public code yet
+try:
+    import sarracenia.postformat.navcanada
+except Exception:
+    pass
+import sarracenia.postformat.swim
 import sarracenia.postformat.v03
+# v02 will claim any messages where the body/payload is string and not JSON
 import sarracenia.postformat.v02
-

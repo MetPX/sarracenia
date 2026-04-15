@@ -45,8 +45,7 @@ class Message(FlowCB):
 
         messages=[]
         found_consumer=False
-        i=0
-        for c in self.consumers:
+        for i, c in enumerate(self.consumers):
             if hasattr(c,'newMessages'):
                 found_consumer=True
                 messages.extend(c.newMessages())
@@ -55,8 +54,7 @@ class Message(FlowCB):
                 od = sarracenia.moth.default_options()
                 od.update(self.o.dictify())
                 od['subscription_index']=i
-                c = sarracenia.moth.Moth.subFactory(od)
-            i+=1
+                self.consumers[i] = sarracenia.moth.Moth.subFactory(od)
         return (True, messages)
 
     def ack(self, mlist) -> None:

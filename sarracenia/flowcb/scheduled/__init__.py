@@ -66,7 +66,7 @@ class Scheduled(FlowCB):
         if sched_hours == [] : sched_hours = list(range(0,24))
         self.hours = list(map( lambda x: int(x), sched_hours ))
         #self.hours.sort()
-        logger.debug( f"hours {self.hours}" )
+        logger.debug('hours %s', self.hours)
 
         sched_min = sum([ x.split(',') for x in self.o.scheduled_minute ],[])
         if sched_min == [] : sched_min = [0]
@@ -75,7 +75,7 @@ class Scheduled(FlowCB):
 
         self.default_wait=datetime.timedelta(seconds=300)
 
-        logger.debug( f'minutes: {self.minutes}')
+        logger.debug('minutes: %s', self.minutes)
 
         now=datetime.datetime.fromtimestamp(time.time(),datetime.timezone.utc)
         self.update_appointments(now)
@@ -137,7 +137,7 @@ class Scheduled(FlowCB):
         # Scheduled interval overrides other options
         if self.o.scheduled_interval and self.o.scheduled_interval > 0:
             self.next_gather_time = last_gather + datetime.timedelta(seconds=self.o.scheduled_interval)
-            logger.debug(f"next gather should be in {self.o.scheduled_interval}s, scheduled for {self.next_gather_time}")
+            logger.debug('next gather should be in %ss, scheduled for %s', self.o.scheduled_interval, self.next_gather_time)
         
         # No scheduled interval --> try to use configured schedule
         elif len(self.o.scheduled_hour) > 0 or len(self.o.scheduled_minute) > 0 or len(self.o.scheduled_time) > 0:
@@ -164,12 +164,12 @@ class Scheduled(FlowCB):
                 next_appointment=self.appointments[0]
 
             self.next_gather_time = next_appointment
-            logger.debug(f"next gather scheduled for {self.next_gather_time} from appointments {self.appointments_to_string()}")
+            logger.debug('next gather scheduled for %s from appointments %s', self.next_gather_time, self.appointments_to_string())
 
         # No scheduled interval and no scheduled hour/minutes/time
         else:
             self.next_gather_time = last_gather + self.default_wait
-            logger.debug(f"next gather should be in {self.default_wait.seconds}s, scheduled for {self.next_gather_time} (default_wait")
+            logger.debug('next gather should be in %ss, scheduled for %s (default_wait', self.default_wait.seconds, self.next_gather_time)
 
     def ready_to_gather(self):
         current_time = datetime.datetime.now(datetime.timezone.utc )
@@ -182,7 +182,7 @@ class Scheduled(FlowCB):
             self.last_gather_time = current_time
             return True
         else:
-            logger.debug(f"--> no, next gather scheduled for {self.next_gather_time}")
+            logger.debug('--> no, next gather scheduled for %s', self.next_gather_time)
 
     def gather(self, messageCountMax):
         if self.ready_to_gather():
@@ -194,7 +194,7 @@ class Scheduled(FlowCB):
                 gathered_messages.append(m)
             return (True, gathered_messages)
         else:
-            logger.debug(f"nothing to do")
+            logger.debug('nothing to do')
             return (False, [])
 
     def on_housekeeping(self):
@@ -202,7 +202,7 @@ class Scheduled(FlowCB):
         n_appointments = len(self.appointments)
         if n_appointments > 0:
             logger.info(f"{n_appointments} appointments remaining for today")
-            logger.debug(f"remaining appointments: {self.appointments_to_string()}")
+            logger.debug('remaining appointments: %s', self.appointments_to_string())
         self.housekeeping_needed = False
 
 if __name__ == '__main__':

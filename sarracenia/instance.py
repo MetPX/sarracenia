@@ -65,7 +65,7 @@ class instance:
                 for filename, lineno, name, line in traceback.extract_stack(stack):
                     code.append('File: "%s", line %d, in %s' % (filename, lineno, name))
                     if line:
-                        code.append("  %s" % (line.strip()))
+                        code.append(f"  {line.strip()}")
             logging.debug('\n'.join(code))
         self.running_instance.stop_request()
 
@@ -185,7 +185,7 @@ class instance:
                 except FileExistsError:
                     dir_not_there = False
                 except Exception as ex:
-                    logging.error( "makedirs {} failed err={}".format(os.path.dirname(metricsfilename),ex))
+                    logging.error( f"makedirs {os.path.dirname(metricsfilename)} failed err={ex}")
                     logging.debug("Exception details:", exc_info=True)
 
             cfg_preparse.metricsFilename = metricsfilename
@@ -201,7 +201,7 @@ class instance:
                     except FileExistsError:
                         dir_not_there = False
                     except Exception as ex:
-                        logging.error( "makedirs {} failed err={}".format(os.path.dirname(logfilename),ex))
+                        logging.error( f"makedirs {os.path.dirname(logfilename)} failed err={ex}")
                         logging.debug("Exception details:", exc_info=True)
                         time.sleep(0.1)
 

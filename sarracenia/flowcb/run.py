@@ -65,7 +65,7 @@ class Run(FlowCB):
         try:
             subprocess.run(script, check=True)
         except Exception as err:
-            logger.error("subprocess.run failed err={}".format(err))
+            logger.error(f"subprocess.run failed err={err}")
             logger.debug("Exception details:", exc_info=True)
 
     def gather(self, messageCountMax):

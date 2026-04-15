@@ -24,8 +24,7 @@ class ShiftDir2baseUrl(FlowCB):
 
     def after_work(self, worklist):
         for m in worklist.ok:
-            logger.debug("before: base_url=%s, subtopic=%s relPath=%s" %
-                         (m['baseUrl'], m['subtopic'], m['relPath']))
+            logger.debug('before: base_url=%s, subtopic=%s relPath=%s', m['baseUrl'], m['subtopic'], m['relPath'])
 
             dirs2shift = '/'.join(m['subtopic'][0:self.o.shiftDir2baseUrl])
             m['subtopic'] = m['subtopic'][self.o.shiftDir2baseUrl:]

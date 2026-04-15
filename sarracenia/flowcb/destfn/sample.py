@@ -39,7 +39,7 @@ class Sample(FlowCB):
 
       def destfn(self,msg) -> str:
 
-          logger.info('before: m=%s' % msg )
+          logger.info(f'before: m={msg}' )
           relPath = msg["relPath"].split('/')
           msg['destfn_added_prefix'] = 'renamed_'
           return 'renamed_' + relPath[-1]
