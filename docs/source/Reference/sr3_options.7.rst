@@ -1899,6 +1899,24 @@ The AMQP protocol defines other queue options which are not exposed
 via sarracenia, because sarracenia itself picks appropriate values.
 
 
+retryCountMax <count> (default: 0)
+----------------------------------
+
+The **retryCountMax** option sets a limit on the number of times a message will be
+retried after a failure.  When a message fails to be transferred (in a subscriber)
+or published (in a post/sender), it is added to a retry queue. Each time it is
+retrieved from the queue for another attempt, its retry counter is incremented.
+
+If the number of attempts exceeds **retryCountMax**, the message is discarded
+and an ERROR is logged.
+
+The default value is 0, which means there is no limit on the number of retries
+(subject to **retry_ttl**).
+
+This option works alongside **retry_ttl**; the message will be discarded
+whichever limit is reached first.
+
+
 retryEmptyBeforeExit: <boolean> (default: False)
 ------------------------------------------------
 
@@ -1924,23 +1942,6 @@ retry_ttl <duration> (default: same as expire)
 The **retry_ttl** (retry time to live) option indicates how long to keep trying to send
 a file before it is aged out of a the queue.  Default is two days.  If a file has not
 been transferred after two days of attempts, it is discarded.
-
-retryCountMax <count> (default: 0)
-----------------------------------
-
-The **retryCountMax** option sets a limit on the number of times a message will be
-retried after a failure.  When a message fails to be transferred (in a subscriber)
-or published (in a post/sender), it is added to a retry queue. Each time it is
-retrieved from the queue for another attempt, its retry counter is incremented.
-
-If the number of attempts exceeds **retryCountMax**, the message is discarded
-and an ERROR is logged.
-
-The default value is 0, which means there is no limit on the number of retries
-(subject to **retry_ttl**).
-
-This option works alongside **retry_ttl**; the message will be discarded
-whichever limit is reached first.
 
 
 runStateThreshold_cpuSlow <count> (default: 0)
