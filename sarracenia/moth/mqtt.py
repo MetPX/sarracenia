@@ -25,6 +25,7 @@ import collections
 import copy
 import json
 import logging
+import queue as queue_mod
 
 from paho.mqtt.properties import Properties
 from paho.mqtt.packettypes import PacketTypes
@@ -98,12 +99,11 @@ class MQTT(Moth):
            needed to deal with v3.  This code assumes v5 always and has incorrect routines for v3.
 
 
-      There is additionally a vulnerability/inefficiency resulting from async message reception:
-           when a new message arrive the loop thread started by the paho library will append
-           it to the rx_msg data structure (protected by a mutex.)
-           if the application crashes, the rx_msg have not been ack'd to the sender... so it is
-           likely that you will just get them later... could use for a shelf for rx_msg,
-           and sync it once in while... probably not worth it.
+      There is additionally a vulnerability resulting from async message reception:
+           when a new message arrives the loop thread started by the paho library will put
+           it on a thread-safe queue.Queue (same pattern as amqpconsumer and amq1.)
+           if the application crashes, queued messages have not been ack'd to the sender...
+           so it is likely that you will just get them later.
  
       Other:
            missing dry_run support.
@@ -191,24 +191,14 @@ class MQTT(Moth):
             self.subscribe_in_progress = 0
             self.subscribe_mutex.release()
 
-            self.rx_msg_mutex = threading.Lock()
-            self.rx_msg_mutex.acquire()
-            self.rx_msg_iToApp=0
-            self.rx_msg_iFromBroker=1
-            self.rx_msg_iMax=4
-            self.rx_msg={}
-            self.rx_msg[0]=[]
-            self.rx_msg[1]=[]
-            self.rx_msg[2]=[]
-            self.rx_msg[3]=[]
-            self.rx_msg[4]=[]
-            self.rx_msg_mutex.release()
+            self.rx_msg_q = queue_mod.Queue()
             self.broker = None
       
         logger.warning("note: mqtt support is newish, not very well tested")
 
     def __sub_on_disconnect(client, userdata, mid, reason_code, properties=None):
         userdata.metricsDisconnect()
+        userdata.connected = False
         logger.debug(reason_code)
         if hasattr(userdata, 'pending_publishes'):
             lost = len(userdata.pending_publishes)
@@ -569,19 +559,14 @@ class MQTT(Moth):
 
     def __sub_on_message(client, userdata, msg):
         """
-          callback to append messages received to new queue.
-
-          FIXME: locking here is expensive... would like to group them ... 1st draft.
-             could do a rotating set of batch size lists, and that way just change counters.
-             and not lock individual messages  list[1], list[2], ... consumer consumes old lists...
-             no locking needed, except to increment list index.... later.
+          callback to queue raw MQTT messages for decoding on the main thread.
+          Keeps on_message fast to avoid message drops under load.
         """
 
         if userdata.o['messageDebugDump']:
             logger.info( f"Message received: id:{msg.mid}, topic:{msg.topic} payload:{msg.payload}" )
 
-        m = userdata._msgDecode(msg)
-        userdata.rx_msg[userdata.rx_msg_iFromBroker].append(m)
+        userdata.rx_msg_q.put(msg)
 
     def putCleanUp(self):
         self.client.disconnect()
@@ -675,48 +660,29 @@ class MQTT(Moth):
            logger.error( f"message acknowledged and discarded: {message}" )
            return None
 
-    def _rotateInputBuffers(self) -> None:
-        """
-           to reduce locking granularity allocate one queue to accepting messages, and a second
-           one to read from. and just swap between them from time to time (kind of double buffering.)
-
-        """
-        if len(self.rx_msg[self.rx_msg_iToApp]) == 0:
-            self.rx_msg_mutex.acquire()
-            self.rx_msg_iToApp = self.rx_msg_iFromBroker
-
-            if self.rx_msg_iFromBroker >= self.rx_msg_iMax:
-                self.rx_msg_iFromBroker=0
-            else:
-                self.rx_msg_iFromBroker+=1
-            time.sleep(0.1)
-            self.rx_msg_mutex.release()
-
     def newMessages(self) -> list:
         """
-           return new messages.
-
-           FIXME: hate the locking... too fine grained, especially in on_message... just a 1st shot.
-
+           return up to batch new messages from the thread-safe queue.
+           Raw MQTT messages are decoded here on the main thread.
         """
 
-        #logger.debug( f"rx_msg queue before: indices: {self.rx_msg_iToApp} {self.rx_msg_iFromBroker} " )
-        #logger.debug( f"rx_msg queue before: {len(self.rx_msg[self.rx_msg_iToApp])} indices: {self.rx_msg_iToApp} {self.rx_msg_iFromBroker} " )
         if not self.connected:
             self.getSetup()
 
-        if len(self.rx_msg[self.rx_msg_iToApp]) > self.o['batch']:
-            mqttml = self.rx_msg[self.rx_msg_iToApp][0:self.o['batch']]
-            self.rx_msg[self.rx_msg_iToApp] = self.rx_msg[self.rx_msg_iToApp][self.o['batch']:]
-        elif len(self.rx_msg[self.rx_msg_iToApp]) > 0:
-            mqttml = self.rx_msg[self.rx_msg_iToApp]
-            self.rx_msg[self.rx_msg_iToApp] = []
-        else:
-            mqttml = []
+        mqttml = []
+        for _ in range(self.o['batch']):
+            try:
+                raw_msg = self.rx_msg_q.get_nowait()
+            except queue_mod.Empty:
+                break
+            m = self._msgDecode(raw_msg)
+            if m is not None:
+                mqttml.append(m)
+            else:
+                self.client.ack(raw_msg.mid, raw_msg.qos)
 
-        #logger.debug( f"picked up {len(mqttml)} rx_msg queue after: {len(self.rx_msg[self.rx_msg_iToApp])} ")
-
-        self._rotateInputBuffers()
+        if not mqttml:
+            time.sleep(0.1)
 
         return mqttml
 
@@ -725,20 +691,21 @@ class MQTT(Moth):
         if not self.connected:
             self.getSetup()
 
-        if len(self.rx_msg) > 0:
-            m = self.rx_msg[self.rx_msg_iToApp][0]
-            self.rx_msg[self.rx_msg_iToApp] = self.rx_msg[self.rx_msg_iToApp][1:]
-            m['subscription_index'] = self.o['subscription_index']
-            m['_deleteOnPost'] |= set( ['subscription_index'] )
-
-        else:
-            m = None
-        self._rotateInputBuffers()
-
-        if m:
-            return m
-        else:
+        try:
+            raw_msg = self.rx_msg_q.get_nowait()
+        except queue_mod.Empty:
+            time.sleep(0.1)
             return None
+
+        m = self._msgDecode(raw_msg)
+        if m is None:
+            self.client.ack(raw_msg.mid, raw_msg.qos)
+            return None
+
+        m['subscription_index'] = self.o['subscription_index']
+        m['_deleteOnPost'] |= set( ['subscription_index'] )
+
+        return m
 
     def ack(self, m: sarracenia.Message ) -> bool:
 
