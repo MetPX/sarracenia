@@ -244,6 +244,12 @@ class Sftp(Transfer):
         except:
             logger.error( f"sr_sftp/connect: unable to connect to {self.host} (user:{self.user})" )
             logger.debug('Exception details: ', exc_info=True)
+            try:
+                if self.ssh is not None:
+                    self.ssh.close()
+                    self.ssh = None
+            except Exception:
+                pass
 
         finally:
             alarm_cancel()
