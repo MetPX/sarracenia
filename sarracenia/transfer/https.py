@@ -180,7 +180,7 @@ class Https(Transfer):
              # username and password credentials
             if self.user != None:
                 # continue with authentication
-                self.password_mgr.add_password(None, self.sendTo, self.user, unquote(self.password))
+                self.password_mgr.add_password(None, self.sendTo, self.user, self.password)
 
             return True
 
