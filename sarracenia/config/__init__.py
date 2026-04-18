@@ -84,6 +84,7 @@ default_options = {
     'amqp_consumer': False,
     'attempts': 3,
     'batch' : 100,
+    'retryCountMax': 0,
     'baseDir': None,
     'baseUrl_relPath': False,
     'delete': False,
@@ -137,8 +138,8 @@ default_options = {
 }
 
 count_options = [
-    'batch', 'count', 'exchangeSplit', 'instances', 'logRotateCount', 'no', 
-    'post_exchangeSplit', 'prefetch', 'messageCountMax', 'runStateThreshold_cpuSlow', 
+    'batch', 'count', 'exchangeSplit', 'instances', 'logRotateCount', 'no',
+    'post_exchangeSplit', 'prefetch', 'messageCountMax', 'retryCountMax', 'runStateThreshold_cpuSlow',
     'runStateThreshold_disconnected', 
     'runStateThreshold_reject', 'runStateThreshold_retry', 'runStateThreshold_slow', 
 ]

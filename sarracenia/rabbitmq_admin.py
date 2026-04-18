@@ -33,7 +33,7 @@ def exec_rabbitmqadmin(url, options, simulate=False):
         command = rabbitmqadmin
         command += ' --host \'' + url.hostname
         command += '\' --user \'' + url.username
-        command += '\' -p \'' + urllib.parse.unquote(url.password)
+        command += '\' -p \'' + url.password
         command += '\' --format raw_json '
         if url.scheme == 'amqps':
             command += ' --ssl --port=15671 '
@@ -84,7 +84,7 @@ def add_user(url, role, user, passwd, simulate):
 
     declare = f"declare user name='{user}' password="
 
-    if passwd != None: declare += f"'{urllib.parse.unquote(passwd)}'"
+    if passwd != None: declare += f"'{passwd}'"
     if role == 'admin': declare += " tags=administrator "
     else: declare += ' tags="" '
 
@@ -180,7 +180,7 @@ def broker_get_exchanges(url, ssl_key_file=None, ssl_cert_file=None):
         conn = http.client.HTTPConnection(url.hostname, "15672")
 
     bcredentials = bytes(
-        url.username + ':' + urllib.parse.unquote(url.password), "utf-8")
+        url.username + ':' + url.password, "utf-8")
     b64credentials = base64.b64encode(bcredentials).decode("ascii")
     headers = {"Authorization": "Basic " + b64credentials}
 
