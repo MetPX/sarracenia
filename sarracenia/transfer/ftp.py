@@ -228,13 +228,13 @@ class Ftp(Transfer):
                 ftp = ftplib.FTP()
                 ftp.encoding = 'utf-8'
                 ftp.connect(self.host, self.port, timeout=expire)
-                ftp.login(self.user, unquote(self.password))
+                ftp.login(self.user, self.password)
             # implicit FTPS (usually port 990)
             elif self.tls and self.implicit_ftps:
                 ftp = IMPLICIT_FTP_TLS()
                 ftp.encoding = self.o.ftpFilenameEncoding
                 ftp.connect(host=self.host, port=self.port, timeout=expire)
-                ftp.login(user=self.user, passwd=unquote(self.password))
+                ftp.login(user=self.user, passwd=self.password)
                 if self.prot_p:
                     ftp.prot_p()
             # explicit FTPS (port 21)
@@ -242,7 +242,7 @@ class Ftp(Transfer):
                 # ftplib supports FTPS with TLS
                 ftp = ftplib.FTP_TLS(self.host,
                                      self.user,
-                                     unquote(self.password),
+                                     self.password,
                                      timeout=expire)
                 ftp.encoding = self.o.ftpFilenameEncoding
                 if self.prot_p: ftp.prot_p()
