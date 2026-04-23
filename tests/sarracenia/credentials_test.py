@@ -99,3 +99,43 @@ class Test_CredentialDbAdd:
         keys = list(db.credentials.keys())
         assert any('pass%23word' not in k and 'broker.example.com' in k for k in keys), \
             f"password not stripped from key, keys: {keys}"
+
+
+class Test_LogScrubbing:
+    """Verify that broker_str construction strips the password from log output.
+
+    Regression for https://github.com/MetPX/sarracenia/issues/989.
+    geturl() preserves percent-encoding, so the replace must use raw_password
+    (encoded form) rather than password (decoded form) to match.
+    """
+
+    def test_scrub_plain_password(self):
+        """Plain password is stripped from geturl() output."""
+        url = _urlparse('amqps://user:secret@broker.example.com/')
+        broker_str = url.geturl().replace(':' + url.raw_password + '@', '@')
+        assert 'secret' not in broker_str
+        assert 'user@broker.example.com' in broker_str
+
+    def test_scrub_encoded_hash_password(self):
+        """Percent-encoded '#' password (%23) is stripped from geturl() output."""
+        url = _urlparse('amqps://user:pass%23word@broker.example.com/')
+        broker_str = url.geturl().replace(':' + url.raw_password + '@', '@')
+        assert '%23' not in broker_str
+        assert 'pass' not in broker_str
+        assert 'user@broker.example.com' in broker_str
+
+    def test_scrub_with_decoded_password_fails(self):
+        """Demonstrates why decoded .password fails to scrub encoded URLs.
+
+        This is the root cause of the PR #989 log-leak bug: geturl() keeps
+        the encoded form, but .password returns the decoded form, so replace()
+        finds no match.
+        """
+        url = _urlparse('amqps://user:pass%23word@broker.example.com/')
+        broker_str_broken = url.geturl().replace(':' + url.password + '@', '@')
+        assert 'pass%23word' in broker_str_broken
+
+    def test_password_decoded_for_auth(self):
+        """url.password delivers the decoded value for library auth calls."""
+        url = _urlparse('amqps://user:pass%23word@broker.example.com/')
+        assert url.password == 'pass#word'

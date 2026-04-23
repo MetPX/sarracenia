@@ -39,7 +39,7 @@ import os
 import ssl
 
 import time
-from urllib.parse import unquote
+
 
 logger = logging.getLogger(__name__)
 """
@@ -252,7 +252,8 @@ class AMQP(Moth):
         self.connection = amqp.Connection(host=host,
                                           userid=broker.url.username,
                                           password=broker.url.password,
-                                          login_method=broker.login_method,                                          virtual_host=vhost,
+                                          login_method=broker.login_method,
+                                          virtual_host=vhost,
                                           ssl=sslarg,
                                           client_properties={'product':'MetPX Sarracenia (sr3)',
                                                              'product_version':sarracenia.__version__,
@@ -485,8 +486,8 @@ class AMQP(Moth):
 
             # transaction mode... confirms would be better...
             self.channel.tx_select()
-            broker_str = str(self.o['broker'])
-                ':' + self.o['broker'].url.password + '@', '@')
+            broker_str = self.o['broker'].url.geturl().replace(
+                ':' + self.o['broker'].url.raw_password + '@', '@')
 
             logger.debug('putSetup ... 1. connected to %s', broker_str)
 
