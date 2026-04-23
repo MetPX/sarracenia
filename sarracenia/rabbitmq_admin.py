@@ -291,7 +291,8 @@ def user_access(url, user):
 
 
 if __name__ == "__main__":
-    url = urllib.parse.urlparse(sys.argv[1])
+    from sarracenia.config.credentials import _urlparse
+    url = _urlparse(sys.argv[1])
     print(exec_rabbitmqadmin(url, "list queue names")[1])
 
     import json
