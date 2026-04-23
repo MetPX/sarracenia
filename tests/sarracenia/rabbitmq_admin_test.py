@@ -4,7 +4,7 @@ from unittest.mock import patch, MagicMock
 
 import sarracenia.config
 import sarracenia.rabbitmq_admin
-from sarracenia.rabbitmq_admin import exec_rabbitmqadmin
+from sarracenia.rabbitmq_admin import exec_rabbitmqadmin, run_rabbitmqadmin
 from sarracenia.config.credentials import _urlparse
 
 
@@ -74,6 +74,43 @@ class Test_ExecRabbitmqadmin:
         assert '--ssl' in cmdlst
         assert '--port=15671' in cmdlst
 
+class Test_RunRabbitmqadmin:
+    """Tests for run_rabbitmqadmin JSON parsing (eval -> json.loads fix)."""
+
+    def _run_with_response(self, stdout_bytes, returncode=0):
+        url = _urlparse('amqp://admin:secret@localhost/')
+        with patch('sarracenia.rabbitmq_admin.subprocess.run') as mock_run:
+            mock_run.return_value = MagicMock(returncode=returncode, stdout=stdout_bytes)
+            return run_rabbitmqadmin(url, 'list exchanges name')
+
+    def test_valid_json_parsed_to_list(self):
+        """Valid JSON array from rabbitmqadmin is returned as a Python list."""
+        result = self._run_with_response(b'[{"name": "xpublic"}, {"name": "xs_user"}]')
+        assert result == [{'name': 'xpublic'}, {'name': 'xs_user'}]
+
+    def test_malicious_eval_payload_not_executed(self):
+        """A response that would execute code under eval() is safe under json.loads().
+
+        eval('[x for x in ().__class__.__bases__[0].__subclasses__()]') would
+        return a list of all Python classes — a code-execution gadget.
+        json.loads() raises JSONDecodeError instead.
+        """
+        malicious = b'[x for x in ().__class__.__bases__[0].__subclasses__()]'
+        result = self._run_with_response(malicious)
+        assert result == []
+
+    def test_non_json_response_returns_empty_list(self):
+        """Non-JSON output (e.g. rabbitmqadmin error text) returns [] without raising."""
+        result = self._run_with_response(b'Error: blah blah blah')
+        assert result == []
+
+    def test_failed_subprocess_returns_empty_list(self):
+        """Non-zero exit code from rabbitmqadmin returns [] without raising."""
+        result = self._run_with_response(b'', returncode=1)
+        assert result == []
+
+
+class Test_StdlibUrlparseRegression:
     def test_plain_urlparse_would_pass_encoded_password(self):
         """Demonstrates the bug: stdlib urlparse returns encoded password from url.password.
 

@@ -3,6 +3,7 @@
    rabbitmq administration bindings, to allow sr to invoke broker management functions.
 
 """
+import json
 import shlex
 import sys
 import urllib, urllib.parse
@@ -279,8 +280,6 @@ if __name__ == "__main__":
     url = _urlparse(sys.argv[1])
     print(exec_rabbitmqadmin(url, "list queue names")[1])
 
-    import json
-
     lex = list(
         map(lambda x: x['name'],
             json.loads(exec_rabbitmqadmin(url, "list exchanges name")[1])))
@@ -309,17 +308,13 @@ def run_rabbitmqadmin(url, options, simulate=False):
             logger.error("run_rabbitmqadmin invocation failed")
             return []
 
-        if answer == None or len(answer) == 0: return []
-
-        lst = []
         try:
-            lst = eval(answer)
-        except:
-            pass
+            return json.loads(answer)
+        except json.JSONDecodeError:
+            logger.error('run_rabbitmqadmin: non-JSON response from rabbitmqadmin: %s', answer[:200])
+            return []
 
-        return lst
-
-    except:
-        logger.error(f"sr_rabbit/run_rabbitmqadmin failed with option '{options}'")
+    except Exception:
+        logger.error("sr_rabbit/run_rabbitmqadmin failed with option '%s'", options)
         logger.debug('Exception details: ', exc_info=True)
     return []
