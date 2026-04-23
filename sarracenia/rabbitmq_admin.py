@@ -3,6 +3,7 @@
    rabbitmq administration bindings, to allow sr to invoke broker management functions.
 
 """
+import shlex
 import sys
 import urllib, urllib.parse
 import base64
@@ -28,51 +29,34 @@ def exec_rabbitmqadmin(url, options, simulate=False):
     """
        invoke rabbitmqadmin using a sub-process, with the given options.
     """
+    cmdlst = [
+        rabbitmqadmin,
+        '--host', url.hostname,
+        '--user', url.username,
+        '-p', url.password,
+        '--format', 'raw_json',
+    ]
+    if url.scheme == 'amqps':
+        cmdlst += ['--ssl', '--port=15671']
+    cmdlst += shlex.split(options)
+
+    logger.debug('exec_rabbitmqadmin host=%s options=%s', url.hostname, options)
+
+    if simulate:
+        print(f"dry_run: {' '.join(shlex.quote(a) for a in cmdlst)}")
+        return 0, None
 
     try:
-        command = rabbitmqadmin
-        command += ' --host \'' + url.hostname
-        command += '\' --user \'' + url.username
-        command += '\' -p \'' + url.password
-        command += '\' --format raw_json '
-        if url.scheme == 'amqps':
-            command += ' --ssl --port=15671 '
-        command += ' ' + options
-
-        logger.debug('command = %s', command)
-        if sys.version_info.major < 3 or (sys.version_info.major == 3
-                                          and sys.version_info.minor < 5):
-            if logger: logger.debug("using subprocess.getstatusoutput")
-
-            if simulate:
-                print(f"dry_run: {' '.join(command)}")
-                return 0, None
-
-            return subprocess.getstatusoutput(command)
-        else:
-            cmdlin = command.replace("'", '')
-            cmdlst = cmdlin.split()
-            if logger:
-                logger.debug('using subprocess.run cmdlst=%s', ' '.join(cmdlst))
-
-            if simulate:
-                print(f"dry_run: {cmdlin}")
-                return 0, None
-
-            rclass = subprocess.run(cmdlst, stdout=subprocess.PIPE)
-            if rclass.returncode == 0:
-                output = rclass.stdout
-                if type(output) == bytes: output = output.decode("utf-8")
-                return rclass.returncode, output
-            return rclass.returncode, None
-    except:
-        if sys.version_info.major < 3 or (sys.version_info.major == 3
-                                          and sys.version_info.minor < 5):
-            if logger: logger.error( f"trying run command {command}" )
-        else:
-            if logger:
-                logger.error( f"trying run command {' '.join(cmdlst)}" )
-        if logger: logger.debug('Exception details:', exc_info=True)
+        rclass = subprocess.run(cmdlst, stdout=subprocess.PIPE)
+        if rclass.returncode == 0:
+            output = rclass.stdout
+            if isinstance(output, bytes):
+                output = output.decode("utf-8")
+            return rclass.returncode, output
+        return rclass.returncode, None
+    except Exception:
+        logger.error('exec_rabbitmqadmin failed for host=%s options=%s', url.hostname, options)
+        logger.debug('Exception details:', exc_info=True)
 
     return 0, None
 

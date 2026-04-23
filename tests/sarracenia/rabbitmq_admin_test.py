@@ -11,32 +11,68 @@ from sarracenia.config.credentials import _urlparse
 class Test_ExecRabbitmqadmin:
     """Regression tests for PR #989 / #1677 credential handling in rabbitmq_admin."""
 
-    def test_plain_password_reaches_command(self):
-        """Plain password is passed to exec_rabbitmqadmin without modification."""
-        url = _urlparse('amqp://admin:secret@localhost/')
+    def _run_and_get_cmdlst(self, url, options='list exchanges name'):
         with patch('sarracenia.rabbitmq_admin.subprocess.run') as mock_run:
             mock_run.return_value = MagicMock(returncode=0, stdout=b'[]')
-            exec_rabbitmqadmin(url, 'list exchanges name')
-        call_args = mock_run.call_args[0][0]
-        assert 'secret' in call_args
+            exec_rabbitmqadmin(url, options)
+        return mock_run.call_args[0][0]
+
+    def test_password_passed_as_separate_argument(self):
+        """Password must be a standalone element in the argument list, not shell-interpolated.
+
+        The old implementation built a shell command string and used getstatusoutput
+        (shell=True) or replace()+split(), both of which allowed injection or corruption.
+        The fix uses subprocess.run with a list — password is never shell-parsed.
+        """
+        url = _urlparse('amqp://admin:secret@localhost/')
+        cmdlst = self._run_and_get_cmdlst(url)
+        assert isinstance(cmdlst, list), "subprocess.run must receive a list, not a string"
+        # '-p' followed immediately by the password as its own element
+        assert '-p' in cmdlst
+        password_index = cmdlst.index('-p') + 1
+        assert cmdlst[password_index] == 'secret'
 
     def test_encoded_hash_password_decoded_for_command(self):
-        """Password with '%23' must be decoded to '#' before being passed to rabbitmqadmin.
-
-        Regression: exec_rabbitmqadmin used urllib.parse.urlparse() in __main__
-        (plain ParseResult) and then dropped the unquote() call, so percent-encoded
-        passwords were passed verbatim ('pass%23word') instead of decoded ('pass#word').
-        """
+        """Password '%23' must be decoded to '#' as a separate argument."""
         url = _urlparse('amqp://admin:pass%23word@localhost/')
-        assert url.password == 'pass#word', "UrlParseResult must decode %23 to #"
+        cmdlst = self._run_and_get_cmdlst(url)
+        password_index = cmdlst.index('-p') + 1
+        assert cmdlst[password_index] == 'pass#word'
+        assert 'pass%23word' not in cmdlst
 
-        with patch('sarracenia.rabbitmq_admin.subprocess.run') as mock_run:
-            mock_run.return_value = MagicMock(returncode=0, stdout=b'[]')
-            exec_rabbitmqadmin(url, 'list exchanges name')
-        call_args = mock_run.call_args[0][0]
-        # Decoded password must appear; encoded form must not
-        assert 'pass#word' in ' '.join(call_args) or 'pass#word' in call_args
-        assert 'pass%23word' not in ' '.join(call_args)
+    def test_password_with_single_quote_not_corrupted(self):
+        """Password containing a single quote must not be stripped or split.
+
+        The old replace("'","").split() approach silently dropped the quote,
+        causing authentication to fail for any password containing "'".
+        """
+        url = _urlparse("amqp://admin:it's@localhost/")
+        cmdlst = self._run_and_get_cmdlst(url)
+        password_index = cmdlst.index('-p') + 1
+        assert cmdlst[password_index] == "it's"
+
+    def test_no_shell_injection_via_password(self):
+        """A password containing shell metacharacters is passed as a single safe argument."""
+        url = _urlparse('amqp://admin:secret;id@localhost/')
+        cmdlst = self._run_and_get_cmdlst(url)
+        assert isinstance(cmdlst, list)
+        password_index = cmdlst.index('-p') + 1
+        assert cmdlst[password_index] == 'secret;id'
+
+    def test_options_tokenised_correctly(self):
+        """Options string is split into tokens, not concatenated into a shell string."""
+        url = _urlparse('amqp://admin:secret@localhost/')
+        cmdlst = self._run_and_get_cmdlst(url, 'list exchanges name')
+        assert 'list' in cmdlst
+        assert 'exchanges' in cmdlst
+        assert 'name' in cmdlst
+
+    def test_amqps_adds_ssl_flag(self):
+        """AMQPS scheme adds --ssl and --port=15671 to the argument list."""
+        url = _urlparse('amqps://admin:secret@broker.example.com/')
+        cmdlst = self._run_and_get_cmdlst(url)
+        assert '--ssl' in cmdlst
+        assert '--port=15671' in cmdlst
 
     def test_plain_urlparse_would_pass_encoded_password(self):
         """Demonstrates the bug: stdlib urlparse returns encoded password from url.password.
@@ -47,4 +83,4 @@ class Test_ExecRabbitmqadmin:
         import urllib.parse
         url_broken = urllib.parse.urlparse('amqp://admin:pass%23word@localhost/')
         assert url_broken.password == 'pass%23word', \
-            "stdlib urlparse must NOT decode — confirms why _urlparse is needed in __main__"
+            "stdlib urlparse must NOT decode -- confirms why _urlparse is needed in __main__"
