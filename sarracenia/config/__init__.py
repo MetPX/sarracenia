@@ -897,7 +897,7 @@ class Config:
         self.v2plugin_options = []
         self.imports = []
         self.logEvents = set(['after_accept', 'after_post', 'after_work', 'on_housekeeping' ])
-        self.destfn_scripts = []
+        self.destfn_scripts = set() # Define a set to avoid duplicate entries
         self.plugins_late = []
         self.plugins_early = []
         self.exchange = None
@@ -1107,7 +1107,7 @@ class Config:
             args = []
         if fn and re.compile('DESTFNSCRIPT=.*').match(fn):
             script=fn[13:]
-            self.destfn_scripts.append(script)
+            self.destfn_scripts.add(script)
 
         if self.directory:
            d = os.path.expanduser(self.directory)
