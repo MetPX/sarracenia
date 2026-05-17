@@ -214,10 +214,11 @@ class Ftp(Transfer):
         # timeout alarm 100 secs to connect
         alarm_set(self.o.timeout)
 
+        ftp = None
         try:
             expire = -999
             if self.o.timeout: expire = self.o.timeout
-            if self.port == '' or self.port == None: 
+            if self.port == '' or self.port == None:
                 if self.implicit_ftps:
                     self.port = 990
                 else:
@@ -255,7 +256,7 @@ class Ftp(Transfer):
 
             try:
                 self.originalDir = ftp.pwd()
-            except:
+            except Exception:
                 logger.warning("Unable to ftp.pwd")
                 logger.debug('Exception details: ', exc_info=True)
 
@@ -263,9 +264,14 @@ class Ftp(Transfer):
             self.connected = True
             self.ftp = ftp
 
-        except:
-            logger.error(f"Unable to connect to {self.host} (user:{self.user})")
+        except Exception:
+            logger.error("Unable to connect to %s (user:%s)", self.host, self.user)
             logger.debug('Exception details: ', exc_info=True)
+            if ftp is not None:
+                try:
+                    ftp.close()
+                except Exception:
+                    pass
 
         alarm_cancel()
         return self.connected
