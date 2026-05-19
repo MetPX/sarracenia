@@ -66,6 +66,7 @@ class octal_number(int):
 
     def __new__(cls, value):
         if type(value) is str:
+            value = value[2:] if value.startswith("0o") else value
             return super().__new__(cls, int(value, base=8))
         elif type(value) is int:
             return super().__new__(cls, value)
