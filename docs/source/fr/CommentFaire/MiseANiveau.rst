@@ -47,6 +47,11 @@ des instructions « accept » ou « reject » existantes (si les messages re
 est recommandé de vérifier les configurations existantes afin de s'assurer que cette mise à jour n'entraînera
 aucun changement inattendu.
 
+*CHANGEMENT* : Les polls sont censés filtrer les fichiers qui ne sont pas lisibles par l’utilisateur qui interroge,
+en utilisant l’option ``permDefault`` comme masque. Cela ne fonctionnait pas correctement et a été corrigé, mais
+peut faire en sorte que ``polls`` ignore les fichiers qui étaient détectés avant ce changement. Si des
+configurations poll dépendent de ce comportement cassé, l’option ``permDefault`` peut avoir besoin d’être ajustée.
+
 3.02.00
 -------
 

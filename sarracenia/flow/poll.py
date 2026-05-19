@@ -17,7 +17,7 @@ logger = logging.getLogger(__name__)
 default_options = {
     'blockSize': 1,
     'bufSize': 1024 * 1024,
-    'chmod': 0o400,
+    'permDefault': 0o400,
     'pollUrl': None,
     'follow_symlinks': False,
     'force_polling': False,
