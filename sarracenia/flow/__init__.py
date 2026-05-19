@@ -419,16 +419,6 @@ class Flow:
             Return the time when housekeeping should be run next
         """
         logger.info(f'on_housekeeping pid: {os.getpid()} {self.o.component}/{self.o.config} instance: {self.o.no}')
-        if hasattr(self, "on_housekeeping"):
-            if self._logLevel_debug :
-                self.on_housekeeping()
-            else:
-                try:
-                    self.on_housekeeping()
-                except Exception as ex:
-                    logger.error( f'flow on_housekeeping crashed: {ex}' )
-                    logger.debug( "details:", exc_info=True )
-
         self.runCallbacksTime('on_housekeeping')
         self.metricsFlowReset()
         self.metrics['flow']['last_housekeeping'] = now
