@@ -45,10 +45,11 @@ class Wis(PostFormat):
     @staticmethod
     def mine(payload, headers, content_type, options) -> bool:
         """
-          return true if the message is in this encoding.
+          return true if the message conforms to the wis.wmo.int format as reported in the conformsTo field.
+          See https://wmo-im.github.io/wis2-notification-message/standard/wis2-notification-message-STABLE.html#_conformance_2
         """
-        if content_type == Wis.content_type():
-            return True
+        for content in content_type:
+            if content.find('wis.wmo.int'): return True
         return False
 
     @staticmethod

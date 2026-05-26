@@ -623,10 +623,20 @@ class MQTT(Moth):
                 logger.info( f"User Property: {mqttMessage.properties.UserProperty}")
 
         self.metrics['rxByteCount'] += len(mqttMessage.payload)
+
+        try:
+            json_payload = json.loads(mqttMessage.payload.decode("utf-8"))
+        except Exception as ex:
+            json_payload = None
+
         try:
             if hasattr( mqttMessage.properties , 'UserProperty'):
                 [ headers.update({k:v}) for k,v in mqttMessage.properties.UserProperty ]
-            message = PostFormat.importAny( mqttMessage.payload.decode('utf-8'), headers, mqttMessage.properties.ContentType, self.o)
+            if json_payload and 'conformsTo' in json_payload:
+                # If conformsTo field is found, a WIS2 message has been received.
+                message = PostFormat.importAny( mqttMessage.payload.decode('utf-8'), headers, json_payload['conformsTo'], self.o)
+            else:
+                message = PostFormat.importAny( mqttMessage.payload.decode('utf-8'), headers, mqttMessage.properties.ContentType, self.o)
 
         except Exception as ex:
             logger.error( f"ignored malformed message: {mqttMessage.payload}" )
@@ -634,7 +644,7 @@ class MQTT(Moth):
             logger.error('Exception details: ', exc_info=True)
             self.metrics['rxBadCount'] += 1
             return None
-
+        
         if self.o['exchange']:
             message['exchange'] = mqttMessage.topic.split('/')[0]
             message['_deleteOnPost'] |= set( ['exchange' ])
