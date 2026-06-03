@@ -889,6 +889,7 @@ class sr_GlobalState:
                 'rxMessageRate':0, 'rxMessageRateCpu':0, 'rxDataRate':0, 'rxFileRate':0, 'rxMessageByteRate':0, 
                 'txMessageRate':0, 'txDataRate':0, 'txFileRate':0, 'txMessageByteRate':0
                 }
+
         for c in self.components:
             if (c not in self.states) or (c not in self.configs):
                 continue
@@ -934,10 +935,11 @@ class sr_GlobalState:
 
                         #print( f"states of {c}/{cfg}: {self.states[c][cfg]} " )
                         #print( f"instance metrics states of {c}/{cfg}: {self.states[c][cfg]['instance_metrics']} " )
+                        #print(f"Now looking at following metrics for {cfg}. Metrics: {self.states[c][cfg]['instance_metrics']}")
                         for j in self.states[c][cfg]['instance_metrics'][i]:
                             #print( f"i={i}, j={j}, c={c}, cfg={cfg}" )
                             for k in self.states[c][cfg]['instance_metrics'][i][j]:
-                                #print( f"k={k}" )
+                                #print( f"k={k}. k type {type(self.states[c][cfg]['instance_metrics'][i][j][k])}" )
                                 if k in metrics:
                                     newval = self.states[c][cfg]['instance_metrics'][i][j][k]
                                     #print( f"k={k}, type={type(newval)} newval={newval}" )
@@ -954,20 +956,28 @@ class sr_GlobalState:
                                         newval = sarracenia.timestr2flt(newval)
                                         if 'transferLast' not in metrics or (newval > metrics['transferLast']):
                                             metrics['transferLast'] = newval
-                                    elif k in [ "rxLast", "txLast"  ]:
-                                        newval = sarracenia.timestr2flt(newval)
-                                        if k == 'rxLast' and 'rxLast' not in metrics or (newval > metrics['rxLast']):
-                                            metrics['rxLast'] = newval
-                                        if k == 'txLast' and 'txLast' not in metrics or (newval > metrics['txLast']):
-                                            metrics['txLast'] = newval
-                                        if 'messageLast' not in metrics or (newval > metrics['messageLast']):
-                                            metrics['messageLast'] = newval
                                     elif k in [ "cpuTime" ]:
                                         metrics['cpuTime'] += newval
                                     else:
                                         metrics[k] += newval
-                                #else:
-                                #    print( f'skipping {k}')
+                                else:
+                                    # Post and gather metrics fields (post.message/gather.message) include more nested dictionaries
+                                    # The k field inside of post.message and gather.message includes the broker name (introduced in the multi subscribe/publish support
+                                    # - Added in https://github.com/MetPX/sarracenia/commit/55882d8767).
+                                    # The broker string won't be included in the ordinary metrics fields so we need to bypass the original condition to access the per broker metrics.
+                                    if j in [ "post.message", "gather.message" ]:
+                                        for l in self.states[c][cfg]['instance_metrics'][i][j][k]:
+                                            #print(f"l: {l}")
+                                            if l in [ "rxLast", "txLast"  ]:
+                                                newval = self.states[c][cfg]['instance_metrics'][i][j][k][l]
+                                                if type(newval) == str: newval = sarracenia.timestr2flt(newval)
+                                                if l == 'rxLast' and ('rxLast' not in metrics or (newval > metrics['rxLast'])):
+                                                    metrics['rxLast'] = newval
+                                                if l == 'txLast' and ('txLast' not in metrics or (newval > metrics['txLast'])):
+                                                    metrics['txLast'] = newval
+                                                if 'messageLast' not in metrics or (newval > metrics['messageLast']):
+                                                    metrics['messageLast'] = newval
+
 
                         if 'transferConnectTime' in metrics:
                             metrics['transferConnectTime'] = metrics['transferConnectTime'] / len(self.states[c][cfg]['instance_metrics']) 
@@ -1149,12 +1159,12 @@ class sr_GlobalState:
                     elif flow_status in [ 'down', 'disconnected' ]:
                         pass
                     elif hasattr(self.configs[c][cfg]['options'],'publishers') and len(self.configs[c][cfg]['options'].publishers) \
-                            and (now-self.states[c][cfg]['metrics']['txLast']) > self.configs[c][cfg]['options'].runStateThreshold_idle:
+                            and (self.states[c][cfg]['metrics']['txLast'] != 0) and (now-self.states[c][cfg]['metrics']['txLast']) > self.configs[c][cfg]['options'].runStateThreshold_idle:
                         flow_status = 'idle'
                     elif  hasattr(self.configs[c][cfg]['options'],'download') and self.configs[c][cfg]['options'].download \
-                            and (now-self.states[c][cfg]['metrics']['transferLast']) > self.configs[c][cfg]['options'].runStateThreshold_idle:
+                            and (self.states[c][cfg]['metrics']['transferLast'] != 0) and (now-self.states[c][cfg]['metrics']['transferLast']) > self.configs[c][cfg]['options'].runStateThreshold_idle:
                         flow_status = 'idle'
-                    elif (now-self.states[c][cfg]['metrics']['rxLast']) > self.configs[c][cfg]['options'].runStateThreshold_idle:
+                    elif (self.states[c][cfg]['metrics']['rxLast'] != 0) and (now-self.states[c][cfg]['metrics']['rxLast']) > self.configs[c][cfg]['options'].runStateThreshold_idle:
                         flow_status = 'idle'
                     elif self.states[c][cfg]['metrics']['msgRate'] > 0 and \
                            self.states[c][cfg]['metrics']['msgRateCpu'] < self.configs[c][cfg]['options'].runStateThreshold_cpuSlow:
