@@ -624,6 +624,8 @@ class MQTT(Moth):
 
         self.metrics['rxByteCount'] += len(mqttMessage.payload)
 
+        #logger.debug(f"MQTT properties {mqttMessage.properties}")
+
         try:
             json_payload = json.loads(mqttMessage.payload.decode("utf-8"))
         except Exception as ex:
@@ -632,9 +634,14 @@ class MQTT(Moth):
         try:
             if hasattr( mqttMessage.properties , 'UserProperty'):
                 [ headers.update({k:v}) for k,v in mqttMessage.properties.UserProperty ]
-            if json_payload and 'conformsTo' in json_payload:
-                # If conformsTo field is found, a WIS2 message has been received.
-                message = PostFormat.importAny( mqttMessage.payload.decode('utf-8'), headers, json_payload['conformsTo'], self.o)
+            if json_payload:
+                if 'conformsTo' in json_payload:
+                    # If conformsTo field is found, a WIS2 message has been received.
+                    message = PostFormat.importAny( mqttMessage.payload.decode('utf-8'), headers, json_payload['conformsTo'], self.o)
+                elif 'version' in json_payload:
+                    # version is the legacy field that preceeds the conformsTo field. If found, a WIS2 message has been received.
+                    message = PostFormat.importAny( mqttMessage.payload.decode('utf-8'), headers, json_payload['version'], self.o)
+
             else:
                 message = PostFormat.importAny( mqttMessage.payload.decode('utf-8'), headers, mqttMessage.properties.ContentType, self.o)
 
