@@ -1698,7 +1698,7 @@ class Flow:
         else:
             mode=self.o.permDirDefault
 
-        if type(mode) is not int:
+        if isinstance(mode, str):
             mode=int(mode,base=8)
 
         try:
