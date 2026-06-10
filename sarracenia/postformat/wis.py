@@ -116,7 +116,11 @@ class Wis(PostFormat):
                 msg['size']  = GeoJSONBody['links'][0]['length']
                 if 'type' in GeoJSONBody['links'][0]:
                     msg['contentType']  = GeoJSONBody['links'][0]['type']
+                # We may want to keep using the links field for plugins. We don't want to repost this field however. 
+                # It will get re-created from the poster configuration if WIS2 post_format is used.
                 msg['links'] = GeoJSONBody['links']
+                msg['_deleteOnPost'] |= set( ['links' ])
+
                 msg['baseUrl'] = url.scheme + '://' + url.netloc
                 msg['retrievePath' ] = urlstr[len(msg['baseUrl']):] 
 
