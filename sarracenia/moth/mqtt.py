@@ -641,6 +641,9 @@ class MQTT(Moth):
                 elif 'version' in json_payload:
                     # version is the legacy field that preceeds the conformsTo field. If found, a WIS2 message has been received.
                     message = PostFormat.importAny( mqttMessage.payload.decode('utf-8'), headers, json_payload['version'], self.o)
+                else:
+                    # Add a fallback state
+                    message = PostFormat.importAny( mqttMessage.payload.decode('utf-8'), headers, mqttMessage.properties.ContentType, self.o)
 
             else:
                 message = PostFormat.importAny( mqttMessage.payload.decode('utf-8'), headers, mqttMessage.properties.ContentType, self.o)

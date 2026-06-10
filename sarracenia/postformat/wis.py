@@ -70,7 +70,7 @@ class Wis(PostFormat):
             try:
                 GeoJSONBody=json.loads(body)
             except Exception as ex:
-                logger.warning(f'expected geojson, decode error: {ex}')
+                logger.warning(f'Expected json, decode error: {ex}')
                 logger.debug('Exception details: ', exc_info=True)
                 return None
 
@@ -79,7 +79,7 @@ class Wis(PostFormat):
                     t=GeoJSONBody['properties']['pubtime']
                     msg['pubTime'] = t[0:4]+t[5:7]+t[8:13]+t[14:16]+t[17:-1]
                 else:
-                    logger.error( 'invalid message missing pubtime (WMO mandatory field)' )
+                    logger.error( 'Invalid message missing pubtime (WMO mandatory field)' )
   
                 for h in GeoJSONBody['properties']:
                     if h not in [ 'pubtime' ]:
@@ -87,7 +87,7 @@ class Wis(PostFormat):
 
             #logger.warning( f" headers: {headers}, msg: {msg}  ... GeoJSONBody: {GeoJSONBody}  ")
             if not 'type' in GeoJSONBody:
-                logger.warning( 'Invalid message. Missing type field(WMO mandatory field)' )
+                logger.warning( 'Invalid message. Missing type field (WMO mandatory field)' )
 
             if 'geometry' in GeoJSONBody :
                 if GeoJSONBody['geometry'] is not None:
@@ -98,7 +98,7 @@ class Wis(PostFormat):
             if not ( 'version' in GeoJSONBody or 'conformsTo' in GeoJSONBody ):
                 logger.warning( 'Invalid message. Missing either version or conformsTo field (WMO Mandatory field)' )
 
-            # Use by default the MQTT 'topic' as part of the relPath. Fallback to 'data_id'. If neither is found, log a warning and leave relPath unset.
+            # Use by default the MQTT 'topic' as part of the relPath. Topic is a mandatory field in MQTT. If the topic is not found, log an error and return the message as is.
             if 'topic' in headers:
                 msg['relPath'] = headers['topic']
             #elif 'properties' in GeoJSONBody and ('data_id' in GeoJSONBody['properties']):
