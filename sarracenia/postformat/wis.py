@@ -107,6 +107,9 @@ class Wis(PostFormat):
                 logger.error( 'Invalid message. All MQTT streams should be accompanied with a topic.')
                 return msg
            
+            # Links can only hold ONE value of 'canonical', 'update' or 'deletion'. All other links provided are not references to the source data.
+            # See https://wmo-im.github.io/wis2-notification-message/standard/wis2-notification-message-STABLE.html#_1_17_links section I.
+            # TODO: Read metadata held inside additional links fields?
             if 'links' in GeoJSONBody:
                 urlstr = GeoJSONBody['links'][0]['href']
                 url = urllib.parse.urlparse( urlstr )
