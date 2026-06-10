@@ -614,6 +614,7 @@ class MQTT(Moth):
                 headers['content-type'] = mqttMessage.properties.ContentType
             else:
                 logger.warning('message is missing content-type header')
+                mqttMessage.properties.ContentType = None
 
             if hasattr(mqttMessage, 'payload'): 
                 logger.info( f"payload: type: {type(mqttMessage.payload)}"
@@ -623,6 +624,9 @@ class MQTT(Moth):
                 logger.info( f"User Property: {mqttMessage.properties.UserProperty}")
 
         self.metrics['rxByteCount'] += len(mqttMessage.payload)
+
+        #logger.debug(f"MQTT properties {mqttMessage.properties}")
+
         try:
             if hasattr( mqttMessage.properties , 'UserProperty'):
                 [ headers.update({k:v}) for k,v in mqttMessage.properties.UserProperty ]
@@ -634,7 +638,7 @@ class MQTT(Moth):
             logger.error('Exception details: ', exc_info=True)
             self.metrics['rxBadCount'] += 1
             return None
-
+        
         if self.o['exchange']:
             message['exchange'] = mqttMessage.topic.split('/')[0]
             message['_deleteOnPost'] |= set( ['exchange' ])

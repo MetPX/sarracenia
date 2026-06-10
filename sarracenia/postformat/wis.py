@@ -40,15 +40,25 @@ class Wis(PostFormat):
 
     @staticmethod
     def content_type():
-        return 'application/geo+json'
+        return 'application/json'
 
     @staticmethod
     def mine(payload, headers, content_type, options) -> bool:
         """
-          return true if the message is in this encoding.
+          return true if the message conforms to the wis.wmo.int format as reported in the conformsTo field OR;
+          v04 is returned as the version from the JSON message.
+          See https://wmo-im.github.io/wis2-notification-message/standard/wis2-notification-message-STABLE.html#_conformance_2
         """
-        if content_type == Wis.content_type():
-            return True
+
+        try:
+            json_payload = json.loads(payload)
+        except Exception as ex:
+            logger.warning(f'Expected json, decode error: {ex}')
+            logger.debug('Exception details: ', exc_info=True)
+            return False
+
+        if 'version' in json_payload and json_payload['version'] == 'v04': return True
+        if 'conformsTo' in json_payload and 'wis.wmo.int' in json_payload['conformsTo'][0]: return True
         return False
 
     @staticmethod
@@ -67,7 +77,7 @@ class Wis(PostFormat):
             try:
                 GeoJSONBody=json.loads(body)
             except Exception as ex:
-                logger.warning(f'expected geojson, decode error: {ex}')
+                logger.warning(f'Expected json, decode error: {ex}')
                 logger.debug('Exception details: ', exc_info=True)
                 return None
 
@@ -76,7 +86,7 @@ class Wis(PostFormat):
                     t=GeoJSONBody['properties']['pubtime']
                     msg['pubTime'] = t[0:4]+t[5:7]+t[8:13]+t[14:16]+t[17:-1]
                 else:
-                    logger.error( 'invalid message missing pubtime (WMO mandatory field)' )
+                    logger.error( 'Invalid message missing pubtime (WMO mandatory field)' )
   
                 for h in GeoJSONBody['properties']:
                     if h not in [ 'pubtime' ]:
@@ -84,33 +94,51 @@ class Wis(PostFormat):
 
             #logger.warning( f" headers: {headers}, msg: {msg}  ... GeoJSONBody: {GeoJSONBody}  ")
             if not 'type' in GeoJSONBody:
-                logger.warning( 'invalid message missing type (WMO mandatory field)' )
+                logger.warning( 'Invalid message. Missing type field (WMO mandatory field)' )
 
             if 'geometry' in GeoJSONBody :
                 if GeoJSONBody['geometry'] is not None:
                     msg['geometry'] = GeoJSONBody['geometry']
             else:
-                logger.warning( 'invalid message missing geometry (WMO mandatory field)' )
+                logger.warning( 'Invalid message. Missing geometry (WMO mandatory field)' )
 
-            if not ( 'version' in GeoJSONBody and GeoJSONBody['version'] == 'v04' ):
-                logger.warning( 'invalide message missing version (WMO Mandatory field)' )
+            if not ( 'version' in GeoJSONBody or 'conformsTo' in GeoJSONBody ):
+                logger.warning( 'Invalid message. Missing either version or conformsTo field (WMO Mandatory field)' )
 
-            if ('data_id' in msg) and ('topic' in headers):
-                msg['relPath'] = headers['topic'] + '/' + msg['data_id']
+            # Use by default the MQTT 'topic' as part of the relPath. Topic is a mandatory field in MQTT. If the topic is not found, log an error and return the message as is.
+            if 'topic' in headers:
+                msg['relPath'] = headers['topic']
+            #elif 'properties' in GeoJSONBody and ('data_id' in GeoJSONBody['properties']):
+            #    msg['relPath'] = GeoJSONBody['properties']['data_id']
             else:
-                logger.warning( 'invalid message missing data_id (WMO mandatory field)' )
+                logger.error( 'Invalid message. All MQTT streams should be accompanied with a topic.')
+                return msg
            
+            # Links can only hold ONE value of 'canonical', 'update' or 'deletion'. All other links provided are not references to the source data.
+            # See https://wmo-im.github.io/wis2-notification-message/standard/wis2-notification-message-STABLE.html#_1_17_links section I.
+            # TODO: Read metadata held inside additional links fields?
             if 'links' in GeoJSONBody:
                 urlstr = GeoJSONBody['links'][0]['href']
                 url = urllib.parse.urlparse( urlstr )
                 msg['size']  = GeoJSONBody['links'][0]['length']
                 if 'type' in GeoJSONBody['links'][0]:
                     msg['contentType']  = GeoJSONBody['links'][0]['type']
+                # We may want to keep using the links field for plugins. We don't want to repost this field however. 
+                # It will get re-created from the poster configuration if WIS2 post_format is used.
                 msg['links'] = GeoJSONBody['links']
+                msg['_deleteOnPost'] |= set( ['links' ])
+
                 msg['baseUrl'] = url.scheme + '://' + url.netloc
                 msg['retrievePath' ] = urlstr[len(msg['baseUrl']):] 
+
+                # The topic normally doesn't hold the filename inside its structure. It is however present in the href link, to fetch the data.
+                # Extract this filename value when possible.
+                if url.path.split('/')[-1] != '':
+                    if msg['relPath'][-1] != '/':
+                        msg['relPath'] += '/'
+                    msg['relPath'] += url.path.split('/')[-1]
             else:
-                logger.warning( 'message missing links (WMO mandatory field)' )
+                logger.warning( 'Invalid message. Missing links field (WMO mandatory field)' )
 
             return msg
 
@@ -119,7 +147,7 @@ class Wis(PostFormat):
             """
            given a v03 (internal) message, produce an encoded version.
        """
-            GeoJSONBody={ 'type': 'Feature', 'geometry': None, 'properties':{}, 'version':'v04' }
+            GeoJSONBody={ 'type': 'Feature', 'geometry': None, 'properties':{}, 'conformsTo': ["http://wis.wmo.int/spec/wnm/1/conf/core"]  }
 
             for literal in [ 'geometry', 'properties' ]:
                 if literal in body:
