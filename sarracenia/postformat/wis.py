@@ -49,9 +49,16 @@ class Wis(PostFormat):
           v04 is returned as the version from the JSON message.
           See https://wmo-im.github.io/wis2-notification-message/standard/wis2-notification-message-STABLE.html#_conformance_2
         """
-        for content in content_type:
-            if content.find('wis.wmo.int'): return True
-            if content.find('v04'): return True
+
+        try:
+            json_payload = json.loads(payload)
+        except Exception as ex:
+            logger.warning(f'Expected json, decode error: {ex}')
+            logger.debug('Exception details: ', exc_info=True)
+            return False
+
+        if 'version' in json_payload and json_payload['version'] == 'v04': return True
+        if 'conformsTo' in json_payload and 'wis.wmo.int' in json_payload['conformsTo'][0]: return True
         return False
 
     @staticmethod

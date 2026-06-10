@@ -614,6 +614,7 @@ class MQTT(Moth):
                 headers['content-type'] = mqttMessage.properties.ContentType
             else:
                 logger.warning('message is missing content-type header')
+                mqttMessage.properties.ContentType = None
 
             if hasattr(mqttMessage, 'payload'): 
                 logger.info( f"payload: type: {type(mqttMessage.payload)}"
@@ -627,26 +628,9 @@ class MQTT(Moth):
         #logger.debug(f"MQTT properties {mqttMessage.properties}")
 
         try:
-            json_payload = json.loads(mqttMessage.payload.decode("utf-8"))
-        except Exception as ex:
-            json_payload = None
-
-        try:
             if hasattr( mqttMessage.properties , 'UserProperty'):
                 [ headers.update({k:v}) for k,v in mqttMessage.properties.UserProperty ]
-            if json_payload:
-                if 'conformsTo' in json_payload:
-                    # If conformsTo field is found, a WIS2 message has been received.
-                    message = PostFormat.importAny( mqttMessage.payload.decode('utf-8'), headers, json_payload['conformsTo'], self.o)
-                elif 'version' in json_payload:
-                    # version is the legacy field that preceeds the conformsTo field. If found, a WIS2 message has been received.
-                    message = PostFormat.importAny( mqttMessage.payload.decode('utf-8'), headers, json_payload['version'], self.o)
-                else:
-                    # Add a fallback state
-                    message = PostFormat.importAny( mqttMessage.payload.decode('utf-8'), headers, mqttMessage.properties.ContentType, self.o)
-
-            else:
-                message = PostFormat.importAny( mqttMessage.payload.decode('utf-8'), headers, mqttMessage.properties.ContentType, self.o)
+            message = PostFormat.importAny( mqttMessage.payload.decode('utf-8'), headers, mqttMessage.properties.ContentType, self.o)
 
         except Exception as ex:
             logger.error( f"ignored malformed message: {mqttMessage.payload}" )
