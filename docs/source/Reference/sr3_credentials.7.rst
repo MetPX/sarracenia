@@ -41,6 +41,7 @@ passwords and settings needed by components.  The format is one entry per line. 
 
 - **sftp://user5:password5@host**
 - **sftp://user6:password6@host:22  ssh_keyfile=/users/local/.ssh/id_dsa**
+- **sftp://user5:password5@host  sftp_compat_mode**
 
 - **ftp://user7:password7@host  passive,binary**
 - **ftp://user8:password8@host:2121  active,ascii**
@@ -82,6 +83,7 @@ Supported details:
 - ``bearer_token=<token>`` (or ``bt=<token>``) - (HTTP) Bearer token for authentication
 - ``login_method=<PLAIN|AMQPLAIN|EXTERNAL|GSSAPI>`` - (AMQP) By default, the login method will be automatically determined. This can be overriden by explicity specifying a login method, which may be required if a broker supports multiple methods and an incorrect one is automatically selected.
 - ``implicit_ftps`` - (FTPS) Use implicit FTPS (otherwise, explicit FTPS is used). Setting this will also set ``tls`` to True.
+- ``sftp_compat_mode`` - (SFTP) Disable some performance enhancements (prefetch reads, pipelined writes) that could potentially cause compatibility issues with certain SFTP servers.
 - Details for the S3 protocol:
     - ``s3_endpoint=<url>`` - use a specific endpoint, such as a non-Amazon S3 service.
     - ``s3_session_token=<string>`` - when specifying credentials for S3, the username field is used as the "Access Key ID", the password as the "Secret Access Key". Sometimes a Session Token is also required, and can be provided with this option.
