@@ -52,9 +52,7 @@ class Wis(PostFormat):
 
         try:
             json_payload = json.loads(payload)
-        except Exception as ex:
-            logger.warning(f'Expected json, decode error: {ex}')
-            logger.debug('Exception details: ', exc_info=True)
+        except:
             return False
 
         if 'version' in json_payload and json_payload['version'] == 'v04': return True
