@@ -190,7 +190,7 @@ class Transfer():
         """
         now=nowflt()
         if now-self.lastLog > self.logMinimumInterval:
-            logger.info( f"{naturalSize(sz)} written so far.")
+            logger.info( f"{naturalSize(sz)} written so far. ({naturalSize(self.byteRate)}/s)")
             self.lastLog=now
 
     def local_read_close(self, src):

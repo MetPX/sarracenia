@@ -224,10 +224,9 @@ class Sftp(Transfer):
                 self.ssh.connect(self.host,self.port,self.user,self.password, \
                                  pkey=None,key_filename=self.ssh_keyfile,\
                                  timeout=self.o.timeout)
-            #if ssh_keyfile != None :
-            #  key=DSSKey.from_private_key_file(ssh_keyfile,password=None)
 
             sftp = self.ssh.open_sftp()
+
             if self.o.timeout != None:
                 logger.debug('sr_sftp connect setting timeout %f', self.o.timeout)
                 channel = sftp.get_channel()
@@ -268,6 +267,7 @@ class Sftp(Transfer):
             self.user = url.username
             self.password = url.password
             self.ssh_keyfile = details.ssh_keyfile
+            self.compat_mode = details.sftp_compat_mode
 
             if url.username == '': self.user = None
             if url.password == '': self.password = None
@@ -509,6 +509,11 @@ class Sftp(Transfer):
         # read from local_file and write to rfp
 
         try:
+            if not self.compat_mode:
+                # MAX_REQUEST_SIZE does not work here (at least when the destination is OpenSSH)
+                # performance improvement: pipelined mode
+                rfp.set_pipelined(pipelined=True)
+
             rw_length = self.readlocal_write(local_file, local_offset,
                                              length, rfp)
 
