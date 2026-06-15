@@ -1493,6 +1493,9 @@ class sr_GlobalState:
 
         '''
 
+        if not self.validate_dangerWillRobinson():
+            return
+
         filtered_users = []
 
         if len(self.filtered_configurations) < len(self.all_configs):
@@ -1505,6 +1508,11 @@ class sr_GlobalState:
                     continue
 
                 o = self.configs[c][cfg]['options']
+
+                # Issue 1710 - Do not declare configurations that are disabled.
+                if self.configs[c][cfg]['status'] in ['disabled'] or os.path.exists(self.user_cache_dir + os.sep + c + os.sep + cfg + os.sep + 'disabled'):
+                    logger.debug(f"Configuration {c}/{cfg}.conf is disabled. Skipping")
+                    continue
 
                 if hasattr(o, "subscriptions") and len(o.subscriptions):
                     for s in o.subscriptions:
@@ -1578,6 +1586,12 @@ class sr_GlobalState:
 
             if not 'options' in self.configs[c][cfg]:
                 continue
+
+            # Issue 1710 - Do not declare configurations that are disabled.
+            if self.configs[c][cfg]['status'] in ['disabled'] or os.path.exists(self.user_cache_dir + os.sep + c + os.sep + cfg + os.sep + 'disabled'):
+                logger.debug(f"Configuration {c}/{cfg}.conf is disabled. Skipping")
+                continue
+
             logging.info(f'looking at {c}/{cfg} ')
             if hasattr(self.configs[c][cfg]['options'],'publishers'):
                 for p in self.configs[c][cfg]['options'].publishers:
@@ -1602,6 +1616,12 @@ class sr_GlobalState:
 
             if not 'options' in self.configs[c][cfg]:
                 continue
+
+            # Issue 1710 - Do not declare configurations that are disabled.
+            if self.configs[c][cfg]['status'] in ['disabled'] or os.path.exists(self.user_cache_dir + os.sep + c + os.sep + cfg + os.sep + 'disabled'):
+                logger.debug(f"Configuration {c}/{cfg}.conf is disabled. Skipping")
+                continue
+
             logging.info(f'looking at {c}/{cfg} ')
             o = self.configs[c][cfg]['options']
             if not hasattr(o,'subscriptions'):
@@ -1627,6 +1647,11 @@ class sr_GlobalState:
             (c, cfg) = f.split(os.sep)
 
             if not 'options' in self.configs[c][cfg]:
+                continue
+
+            # Issue 1710 - Do not declare configurations that are disabled.
+            if self.configs[c][cfg]['status'] in ['disabled'] or os.path.exists(self.user_cache_dir + os.sep + c + os.sep + cfg + os.sep + 'disabled'):
+                logger.debug(f"Configuration {c}/{cfg}.conf is disabled. Skipping")
                 continue
 
             o = self.configs[c][cfg]['options']
