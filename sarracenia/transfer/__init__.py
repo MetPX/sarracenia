@@ -481,7 +481,6 @@ class Transfer():
             exception message.
             Raises Exception if the command returns non-zero.
         """
-        exc_prefix += ' '
         p = subprocess.Popen(cmd, stderr=subprocess.PIPE)
         _, stderr = p.communicate()
         if p.returncode != 0:
@@ -489,7 +488,7 @@ class Transfer():
                 stderr = stderr.decode().strip()
             except Exception:
                 pass
-            raise Exception(f"{exc_prefix}failed: {stderr} (cmd used: {' '.join(cmd)})")
+            raise Exception(f"{exc_prefix} failed: {stderr} (cmd used: {' '.join(cmd)})")
 
 # batteries included.
 import sarracenia.transfer.file
