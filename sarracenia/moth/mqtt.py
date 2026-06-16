@@ -607,15 +607,16 @@ class MQTT(Moth):
            decode MQTT message (protocol specific thingamabob) into sr3 one (python dictionary)
         """
         headers = { 'topic' : mqttMessage.topic }
+
+        if hasattr(mqttMessage.properties, 'ContentType'):
+            logger.debug( f'Content-type: {mqttMessage.properties.ContentType}')
+            headers['content-type'] = mqttMessage.properties.ContentType
+        else:
+            logger.debug('message is missing content-type header')
+            mqttMessage.properties.ContentType = None
+
         if self.o['messageDebugDump']:
             logger.info( f"raw message start topic={mqttMessage.topic}, qos={mqttMessage.qos}, mid={mqttMessage.mid}")
-            if hasattr(mqttMessage.properties, 'ContentType'): 
-                logger.info( f'Content-type: {mqttMessage.properties.ContentType}')
-                headers['content-type'] = mqttMessage.properties.ContentType
-            else:
-                logger.warning('message is missing content-type header')
-                mqttMessage.properties.ContentType = None
-
             if hasattr(mqttMessage, 'payload'): 
                 logger.info( f"payload: type: {type(mqttMessage.payload)}"
                         f"(len: {len(mqttMessage.payload):d} bytes) body:{mqttMessage.payload}" )
