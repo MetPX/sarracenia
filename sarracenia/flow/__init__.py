@@ -644,8 +644,8 @@ class Flow:
                         f"{self.metrics['retry']['msgs_in_post_retry']} messages in the post retry queue.")
                     # Messages can't be retried before housekeeping has run, so run it right now
                     next_housekeeping = now - 1
-                    # sleep for a bit, self.o.sleep is 0 (this probably isn't needed)
-                    current_sleep = 1
+                    # sleep for a bit (self.o.sleep is 0 so using a non-zero value here)
+                    current_sleep = 0.1
                 else:
                     self.runCallbacksTime('please_stop')
 
