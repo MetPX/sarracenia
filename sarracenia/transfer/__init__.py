@@ -28,6 +28,7 @@ import logging
 import os
 import random
 import signal
+import subprocess
 import stat
 import sys
 import time
@@ -474,6 +475,21 @@ class Transfer():
 
     def gethttpsUrl(self, path):
         return None
+
+    def runAccelCommand(self, cmd, exc_prefix=''):
+        """ Run a command, capture stderr. exc_prefix is a string that is added to the beginning of the
+            exception message.
+            Raises Exception if the command returns non-zero.
+        """
+        exc_prefix += ' '
+        p = subprocess.Popen(cmd, stderr=subprocess.PIPE)
+        _, stderr = p.communicate()
+        if p.returncode != 0:
+            try:
+                stderr = stderr.decode().strip()
+            except Exception:
+                pass
+            raise Exception(f"{exc_prefix}failed: {stderr} (cmd used: {' '.join(cmd)})")
 
 # batteries included.
 import sarracenia.transfer.file

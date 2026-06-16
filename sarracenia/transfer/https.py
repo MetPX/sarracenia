@@ -26,7 +26,6 @@ import logging
 import os
 import sarracenia
 import ssl
-import subprocess
 import sys
 
 from sarracenia.transfer import Transfer
@@ -237,10 +236,10 @@ class Https(Transfer):
             cmd = [cmd[0]] + cmd[1:]
 
         logger.info(f"accel_wget: {' '.join(cmd)}")
-        p = subprocess.Popen(cmd)
-        p.wait()
-        if p.returncode != 0:
-            logger.warning( f"binary accelerator {cmd} returned: {p.returncode}" )
+        try:
+            self.runAccelCommand(cmd)
+        except Exception as e:
+            logger.error(e)
             return -1
         # FIXME: length is not validated.
         return length
