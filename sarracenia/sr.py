@@ -1322,6 +1322,7 @@ class sr_GlobalState:
         self.please_stop=False
         self.users = opt.users
         self.declared_users = opt.declared_users
+        self.has_disabled_config = False
 
         signal.signal(signal.SIGTERM, self._stop_signal)
         signal.signal(signal.SIGINT, self._stop_signal)
@@ -1493,27 +1494,38 @@ class sr_GlobalState:
 
         '''
 
+        if not self.validate_dangerWillRobinson():
+            return
+
         filtered_users = []
 
-        if len(self.filtered_configurations) < len(self.all_configs):
+        for config in self.filtered_configurations:
 
-            for config in self.filtered_configurations:
+            (c, cfg) = config.split(os.sep)
 
-                (c, cfg) = config.split(os.sep)
+            if not 'options' in self.configs[c][cfg]:
+                continue
 
-                if not 'options' in self.configs[c][cfg]:
-                    continue
+            o = self.configs[c][cfg]['options']
 
-                o = self.configs[c][cfg]['options']
+            # Issue 1710 - Do not declare configurations that are disabled.
+            # If any configs are disabled, don't declare any
+            if self.configs[c][cfg]['status'] in ['disabled'] or os.path.exists(self.user_cache_dir + os.sep + c + os.sep + cfg + os.sep + 'disabled'):
+                self.has_disabled_config = True
+                logger.error(f"Config {c}/{cfg} is disabled. It must be enabled before declaring.")
 
-                if hasattr(o, "subscriptions") and len(o.subscriptions):
-                    for s in o.subscriptions:
-                        filtered_users.append(f"{s['broker'].url.username}@{s['broker'].url.hostname}")
-                if hasattr(o, "publishers") and len(o.publishers):
-                    for p in o.publishers:
-                        filtered_users.append(f"{p['broker'].url.username}@{p['broker'].url.hostname}")
-                if hasattr(o, "report_broker") and o.report_broker:
-                    filtered_users.append(f"{o.report_broker.url.username}@{o.report_broker.url.hostname}")
+            if hasattr(o, "subscriptions") and len(o.subscriptions):
+                for s in o.subscriptions:
+                    filtered_users.append(f"{s['broker'].url.username}@{s['broker'].url.hostname}")
+            if hasattr(o, "publishers") and len(o.publishers):
+                for p in o.publishers:
+                    filtered_users.append(f"{p['broker'].url.username}@{p['broker'].url.hostname}")
+            if hasattr(o, "report_broker") and o.report_broker:
+                filtered_users.append(f"{o.report_broker.url.username}@{o.report_broker.url.hostname}")
+
+        if self.has_disabled_config:
+            logger.error("No configs have been declared due to disabled configurations.")
+            return
 
         # add users (?)
         if self.users: # check if users exist in the configuration (?)
@@ -1578,6 +1590,7 @@ class sr_GlobalState:
 
             if not 'options' in self.configs[c][cfg]:
                 continue
+
             logging.info(f'looking at {c}/{cfg} ')
             if hasattr(self.configs[c][cfg]['options'],'publishers'):
                 for p in self.configs[c][cfg]['options'].publishers:
@@ -1602,6 +1615,7 @@ class sr_GlobalState:
 
             if not 'options' in self.configs[c][cfg]:
                 continue
+
             logging.info(f'looking at {c}/{cfg} ')
             o = self.configs[c][cfg]['options']
             if not hasattr(o,'subscriptions'):
@@ -2329,18 +2343,16 @@ class sr_GlobalState:
         if count > 0:
             logger.info( "sanitize complete, proceeding with start" )
 
-        has_disabled_config = False
-
         # if any configs are disabled, don't start any
         if not self._action_all_configs:
             for f in self.filtered_configurations:
                 (c, cfg) = f.split(os.sep)
             
-                if self.configs[c][cfg]['status'] == 'disabled':
-                    has_disabled_config = True
+                if self.configs[c][cfg]['status'] in ['disabled'] or os.path.exists(self.user_cache_dir + os.sep + c + os.sep + cfg + os.sep + 'disabled'):
+                    self.has_disabled_config = True
                     logger.error(f"Config {c}/{cfg} is disabled. It must be enabled before starting.")
 
-            if has_disabled_config:
+            if self.has_disabled_config:
                 logger.error("No configs have been started due to disabled configurations.")
                 return
 
