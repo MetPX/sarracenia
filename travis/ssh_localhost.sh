@@ -4,7 +4,8 @@ if [[ $(($check_wsl == "init" )) ]]; then
 	sudo service ssh start
 fi
 
-ssh localhost /bin/true
+# check if ssh already works *without asking for a password*
+ssh -oChallengeResponseAuthentication=no -oPasswordAuthentication=no -oStrictHostKeyChecking=no localhost /bin/true
 ssh_works=$?
 if [ ${ssh_works} -gt 0 ]; then
     echo "no ssh to localhost... must fix..."
