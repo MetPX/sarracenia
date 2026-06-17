@@ -642,9 +642,10 @@ class Flow:
                     and self.metrics['retry']['msgs_in_post_retry'] > 0):
                     logger.info( f"retryEmptyBeforeExit=True and there are still "
                         f"{self.metrics['retry']['msgs_in_post_retry']} messages in the post retry queue.")
-                    # Sleep for a while. Messages can't be retried before housekeeping has run...
-                    # how long to sleep is unclear... if there are a lot of retries, and a low batch... could take a long time.
-                    current_sleep = self.o.batch if self.o.batch < self.o.housekeeping else self.o.housekeeping // 2
+                    # Messages can't be retried before housekeeping has run, so run it right now
+                    next_housekeeping = now - 1
+                    # sleep for a bit (self.o.sleep is 0 so using a non-zero value here)
+                    current_sleep = 0.1
                 else:
                     self.runCallbacksTime('please_stop')
 
