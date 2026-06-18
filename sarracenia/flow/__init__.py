@@ -639,7 +639,8 @@ class Flow:
             # trigger shutdown once gather is finished, where sleep < 0 (e.g. a post)
             if (last_gather_len == 0) and (self.o.sleep < 0):
                 if (self.o.retryEmptyBeforeExit and "retry" in self.metrics
-                    and self.metrics['retry']['msgs_in_post_retry'] > 0):
+                    and (self.metrics['retry']['msgs_in_post_retry'] > 0
+                         or self.metrics['retry']['msgs_in_download_retry'] > 0) ):
                     logger.info( f"retryEmptyBeforeExit=True and there are still "
                         f"{self.metrics['retry']['msgs_in_post_retry']} messages in the post retry queue.")
                     # Messages can't be retried before housekeeping has run, so run it right now
