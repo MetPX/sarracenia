@@ -1034,7 +1034,7 @@ class Flow:
                     continue
 
                 if self.o.component != 'poll' and self.o.fileAgeMin > 0 and age < self.o.fileAgeMin:
-                    logger.warning( f"file too young: queueing for retry.")
+                    logger.warning( f"file {m['relPath']} too young: queueing for retry later")
                     self.worklist.failed.append(m)
                     continue
 
