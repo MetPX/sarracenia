@@ -45,7 +45,8 @@ queue = {'name': 'q_anonymous_' + socket.getfqdn() + '_' + options['queueShare']
 
 options['subscriptions'] = sarracenia.config.subscription.Subscriptions( [ { 
    'broker': options['broker'],
-   'bindings': [ { 'exchange':'xpublic', 'prefix': ['v02','post'], 'sub':['#'] } ],
+   'bindings': [ { 'exchange':'xpublic', 'topic':'v02.post.#' } ],
+   'bindings_to_remove': [],
    'queue' : queue
       } ] )
 
