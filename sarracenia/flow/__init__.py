@@ -642,8 +642,8 @@ class Flow:
                     and (self.metrics['retry']['msgs_in_post_retry'] > 0
                          or self.metrics['retry']['msgs_in_download_retry'] > 0) ):
                     logger.info("retryEmptyBeforeExit=True and there are still messages in the retry queues"
-                                + f"(post: {self.metrics['retry']['msgs_in_post_retry']}, "
-                                + f"download: {self.metrics['retry']['msgs_in_download_retry']})")
+                                + f" (post: {self.metrics['retry']['msgs_in_post_retry']}, "
+                                + f"work: {self.metrics['retry']['msgs_in_download_retry']})")
                     # Messages can't be retried before housekeeping has run, so run it right now
                     next_housekeeping = now - 1
                     # sleep for a bit (self.o.sleep is <0)
