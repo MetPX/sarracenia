@@ -9,7 +9,6 @@ on:
       - v2_dev
       - stable
       - v2_stable
-      - test_fix_retryEmptyBeforeExit
 
     paths-ignore:
       - '.github/**'
@@ -52,7 +51,6 @@ jobs:
         run: |
           cd ${HOME}; pwd; ls ; 
           echo hoho
-          cd ${HOME}/sr_insects/; git pull; git checkout wait_for_post_test2; git pull
           cd ${HOME}/sr_insects/${{ matrix.which_test }}; ./flow_setup.sh
 
       # Enable tmate debugging of manually-triggered workflows if the input option was provided
