@@ -160,6 +160,7 @@ class Disk(NoDupe):
             max_mtime = self.now + 100
 
         for m in worklist.incoming:
+            m_is_retry = m.isRetry()
             if ('mtime' in m) :
                 mtime=timestr2flt(m['mtime'])
                 if mtime < min_mtime:
@@ -168,14 +169,17 @@ class Disk(NoDupe):
                     m.setReport(406,  f"{m['mtime']} too old (nodupe check), oldest allowed {timeflt2str(min_mtime)}" )
                     worklist.rejected.append(m)
                     continue
-                elif mtime > max_mtime:
+                # too new messages should only be *rejected* in polls. In other components, too new messages
+                # are put into the work retry list and get retried until they become old enough to be processed.
+                # The logic in Flow handles the retry stuff; if a msg is not a retry, nodupe can reject it.
+                elif mtime > max_mtime and not m_is_retry:
                     m['_deleteOnPost'] |= set(['reject'])
                     m['reject'] = f"{m['mtime']} too new (nodupe check), newest allowed {timeflt2str(max_mtime)}"
                     m.setReport(425,  f"{m['mtime']} too new (nodupe check), newest allowed {timeflt2str(max_mtime)}" )
                     worklist.rejected.append(m)
                     continue
 
-            if m.isRetry() or self.check_message(m):
+            if m_is_retry or self.check_message(m):
                 new_incoming.append(m)
             else:
                 m['_deleteOnPost'] |= set(['reject'])
