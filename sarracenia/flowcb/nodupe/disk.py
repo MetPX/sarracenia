@@ -172,11 +172,16 @@ class Disk(NoDupe):
                 # too new messages should only be *rejected* in polls. In other components, too new messages
                 # are put into the work retry list and get retried until they become old enough to be processed.
                 # The logic in Flow handles the retry stuff; if a msg is not a retry, nodupe can reject it.
-                elif mtime > max_mtime and not m_is_retry:
+                elif mtime > max_mtime and self.o.component in [ 'poll' ]:
                     m['_deleteOnPost'] |= set(['reject'])
                     m['reject'] = f"{m['mtime']} too new (nodupe check), newest allowed {timeflt2str(max_mtime)}"
                     m.setReport(425,  f"{m['mtime']} too new (nodupe check), newest allowed {timeflt2str(max_mtime)}" )
+                    logger.warning( f"file {m['relPath']} too young: queueing for retry later")
                     worklist.rejected.append(m)
+                    continue
+                # Messages that are too new, that are not polls and that are retries should get re-appended to the retry list.
+                elif mtime > max_mtime and m_is_retry:
+                    worklist.failed.append(m)
                     continue
 
             if m_is_retry or self.check_message(m):
