@@ -176,11 +176,12 @@ class Disk(NoDupe):
                     m['_deleteOnPost'] |= set(['reject'])
                     m['reject'] = f"{m['mtime']} too new (nodupe check), newest allowed {timeflt2str(max_mtime)}"
                     m.setReport(425,  f"{m['mtime']} too new (nodupe check), newest allowed {timeflt2str(max_mtime)}" )
-                    logger.warning( f"file {m['relPath']} too young: queueing for retry later")
                     worklist.rejected.append(m)
                     continue
                 # Messages that are too new, that are not polls and that are retries should get re-appended to the retry list.
+                # When retry_refilter is off, the fileAgeMin check in flow gets bypassed
                 elif mtime > max_mtime and m_is_retry:
+                    logger.warning( f"file {m['relPath']} too young: queueing for retry later")
                     worklist.failed.append(m)
                     continue
 
