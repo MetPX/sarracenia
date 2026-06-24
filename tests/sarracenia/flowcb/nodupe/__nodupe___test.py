@@ -228,7 +228,7 @@ def test_after_accept__WithFileAges(tmp_path, capsys):
         BaseOptions.inflight = 0
 
         message_now = nowflt() + 10
-        message_new_mtime = timeflt2str(message_now)
+        message_new_mtime = timeflt2str(message_now + 10000)
         message_old_mtime = timeflt2str(message_now - 10000)
 
         message_old = make_message()
@@ -262,30 +262,30 @@ def test_after_accept__WithFileAges(tmp_path, capsys):
 
         nodupe_redis.after_accept(worklist_redis)
 
-        assert len(worklist_disk.rejected) == len(worklist_redis.rejected) == 2
+        assert len(worklist_disk.rejected) == len(worklist_redis.rejected) == 1
         assert worklist_disk.rejected[0]['reject'].count(message_old_mtime + " too old (nodupe check), oldest allowed") \
             == worklist_redis.rejected[0]['reject'].count(message_old_mtime + " too old (nodupe check), oldest allowed") \
             == 1
-        
-        assert worklist_disk.rejected[1]['reject'].count(message_new_mtime + " too new (nodupe check), newest allowed") \
-            == worklist_redis.rejected[1]['reject'].count(message_new_mtime + " too new (nodupe check), newest allowed") \
-            == 1
+
+        # too new message go into worklist.failed when component is not a poll
+        assert len(worklist_disk.failed) == len(worklist_redis.failed) == 1
 
 @pytest.mark.depends(on=['sarracenia/flowcb/nodupe/disk_test.py', 'sarracenia/flowcb/nodupe/redis_test.py'])
-def test_after_accept__InFlight(tmp_path, capsys):
+def test_after_accept__WithFileAges_poll(tmp_path, capsys):
     with patch(target="redis.from_url", new=fakeredis.FakeStrictRedis.from_url, ):
-        from sarracenia import nowflt, timeflt2str
+        from sarracenia import nowflt, nowstr, timeflt2str
 
         BaseOptions = Options()
         BaseOptions.pid_filename = str(tmp_path) + os.sep + "pidfilename.txt"
         BaseOptions.redisqueue_serverurl = "redis://Never.Going.To.Resolve:6379/0"
-        BaseOptions.config = "test_after_accept__InFlight.conf"
+        BaseOptions.config = "test_after_accept__WithFileAges.conf"
         BaseOptions.cfg_run_dir = str(tmp_path)
         BaseOptions.no = 5
-        BaseOptions.inflight = 1000
+        BaseOptions.inflight = 0
+        BaseOptions.component = 'poll'
 
         message_now = nowflt() + 10
-        message_new_mtime = timeflt2str(message_now)
+        message_new_mtime = timeflt2str(message_now + 10000)
         message_old_mtime = timeflt2str(message_now - 10000)
 
         message_old = make_message()
@@ -293,32 +293,37 @@ def test_after_accept__InFlight(tmp_path, capsys):
         message_new = make_message()
         message_new['mtime'] = message_new_mtime
 
-        #Redis
-        nodupe_redis = NoDupe_Redis(BaseOptions)
-        nodupe_redis.o.nodupe_ttl = 100000
-        nodupe_redis.now = message_now
-        nodupe_redis.on_start()
-
-        worklist_redis = copy.deepcopy(WorkList)
-        worklist_redis.incoming = [message_old, message_new]
-        nodupe_redis.after_accept(worklist_redis)
-        
         #Disk
         nodupe_disk = NoDupe_Disk(BaseOptions)
         nodupe_disk.o.nodupe_ttl = 100000
+        nodupe_disk.o.fileAgeMin = 1000
+        nodupe_disk.o.fileAgeMax = 1000
         nodupe_disk.now = message_now
         nodupe_disk.on_start()
 
         worklist_disk = copy.deepcopy(WorkList)
         worklist_disk.incoming = [message_old, message_new]
+
         nodupe_disk.after_accept(worklist_disk)
 
-        assert len(worklist_disk.rejected) == len(worklist_redis.rejected) == 1
-        assert len(worklist_disk.incoming) == len(worklist_redis.incoming) == 1
-        assert worklist_disk.incoming[0]['mtime'] == worklist_redis.incoming[0]['mtime'] == message_old_mtime
+        #Redis
+        nodupe_redis = NoDupe_Redis(BaseOptions)
+        nodupe_redis.o.nodupe_ttl = 100000
+        nodupe_redis.o.fileAgeMin = 1000
+        nodupe_redis.o.fileAgeMax = 1000
+        nodupe_redis.now = message_now
+        nodupe_redis.on_start()
 
-        # FIXME: Peter found these failing, and did not understand them enought to get them to pass.
-        #    it looks like the nodupe classes changed and this didn't follow, so the test is now slightly wrong.
-        #assert worklist_redis.rejected[0]['reject'].count(message_new_mtime + " too new (nodupe check), newest allowed") \
-        #    == worklist_disk.rejected[0]['reject'].count(message_new_mtime + " too new (nodupe check), newest allowed") \
-        #    == 1
+        worklist_redis = copy.deepcopy(WorkList)
+        worklist_redis.incoming = [message_old, message_new]
+
+        nodupe_redis.after_accept(worklist_redis)
+
+        assert len(worklist_disk.rejected) == len(worklist_redis.rejected) == 2
+        assert worklist_disk.rejected[0]['reject'].count(message_old_mtime + " too old (nodupe check), oldest allowed") \
+            == worklist_redis.rejected[0]['reject'].count(message_old_mtime + " too old (nodupe check), oldest allowed") \
+            == 1
+
+        assert worklist_disk.rejected[1]['reject'].count(message_new_mtime + " too new (nodupe check), newest allowed") \
+            == worklist_redis.rejected[1]['reject'].count(message_new_mtime + " too new (nodupe check), newest allowed") \
+            == 1
