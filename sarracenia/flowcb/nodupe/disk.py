@@ -160,7 +160,6 @@ class Disk(NoDupe):
             max_mtime = self.now + 100
 
         for m in worklist.incoming:
-            m_is_retry = m.isRetry()
             if ('mtime' in m) :
                 mtime=timestr2flt(m['mtime'])
                 if mtime < min_mtime:
@@ -169,23 +168,24 @@ class Disk(NoDupe):
                     m.setReport(406,  f"{m['mtime']} too old (nodupe check), oldest allowed {timeflt2str(min_mtime)}" )
                     worklist.rejected.append(m)
                     continue
-                # too new messages should only be *rejected* in polls. In other components, too new messages
-                # are put into the work retry list and get retried until they become old enough to be processed.
-                # The logic in Flow handles the retry stuff; if a msg is not a retry, nodupe can reject it.
+                # too new messages should only be *rejected* in polls.
                 elif mtime > max_mtime and self.o.component in [ 'poll' ]:
                     m['_deleteOnPost'] |= set(['reject'])
                     m['reject'] = f"{m['mtime']} too new (nodupe check), newest allowed {timeflt2str(max_mtime)}"
                     m.setReport(425,  f"{m['mtime']} too new (nodupe check), newest allowed {timeflt2str(max_mtime)}" )
                     worklist.rejected.append(m)
                     continue
-                # Messages that are too new, that are not polls and that are retries should get re-appended to the retry list.
-                # When retry_refilter is off, the fileAgeMin check in flow gets bypassed
-                elif mtime > max_mtime and m_is_retry:
+                # in non-poll components, files that are too new are put into the work retry list and get retried
+                # until they become old enough to be processed. The logic in Flow normally handles that, except it
+                # gets bypassed when a message is being retried with retry_refilter=False, so check again here.
+                # (the fileAgeMin check in Flow is a bit redundant and could be deleted, except then the fileAgeMin
+                #  check wouldn't work when nodupe is disabled, so we're keeping it in both places.)
+                elif mtime > max_mtime:
                     logger.warning( f"file {m['relPath']} too young: queueing for retry later")
                     worklist.failed.append(m)
                     continue
 
-            if m_is_retry or self.check_message(m):
+            if m.isRetry() or self.check_message(m):
                 new_incoming.append(m)
             else:
                 m['_deleteOnPost'] |= set(['reject'])
