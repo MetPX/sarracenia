@@ -1,8 +1,8 @@
 name: Flow Tests / Redis
 
 on:
-  pull_request:
-    types: [opened, edited, reopened]
+  # pull_request:
+  #   types: [opened, edited, reopened]
   push:
     branches:
       - v03_disabled
