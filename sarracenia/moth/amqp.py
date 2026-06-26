@@ -786,7 +786,7 @@ class AMQP(Moth):
                 if (type(headers[k]) is str) and (len(headers[k]) >=
                                                       amqp_ss_maxlen):
                     logger.error(f"message header {k} too long, dropping")
-                    return False
+                    continue
 
         AMQP_Message = amqp.Message(raw_body,
                                         content_type=content_type,
