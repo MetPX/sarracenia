@@ -21,7 +21,7 @@
 #
 #
 
-import logging, paramiko, os, subprocess, sys, time
+import logging, paramiko, os, sys, time
 from paramiko import *
 from stat import *
 
@@ -399,9 +399,10 @@ class Sftp(Transfer):
         cmd = self.o.accelScpCommand.replace('%s', arg1)
         cmd = cmd.replace('%d', arg2).split()
         logger.info(f"accel_sftp:  {' '.join(cmd)}")
-        p = subprocess.Popen(cmd)
-        p.wait()
-        if p.returncode != 0:
+        try:
+            self.runAccelCommand(cmd)
+        except Exception as e:
+            logger.error(e)
             return -1
         sz = os.stat(arg2).st_size
         return sz
@@ -548,10 +549,7 @@ class Sftp(Transfer):
         cmd = cmd.replace('%d', arg2).split()
 
         logger.info(f"accel_sftp:  {' '.join(cmd)}")
-        p = subprocess.Popen(cmd)
-        p.wait()
-        if p.returncode != 0:
-            return -1
+        self.runAccelCommand(cmd, 'putAccelerated')
         # FIXME: faking success... not sure how to check really.
         sz = int(msg['size'])
         return sz

@@ -25,7 +25,7 @@ from sarracenia.transfer import Transfer
 
 import sarracenia
 
-import os, stat, subprocess, sys, time
+import os, stat, sys, time
 
 import logging
 
@@ -152,9 +152,10 @@ class File(Transfer):
         cmd = cmd.replace('%d', arg2).split()
 
         logger.info(f"accel_cp:  {' '.join(cmd)}")
-        p = subprocess.Popen(cmd)
-        p.wait()
-        if p.returncode != 0:
+        try:
+            self.runAccelCommand(cmd)
+        except Exception as e:
+            logger.error(e)
             return -1
         sz = os.stat(arg2).st_size
         return sz
