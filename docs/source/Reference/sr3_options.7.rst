@@ -825,16 +825,50 @@ how to process them. If it is not set, then no symbolic link events will ever be
 
    FIXME: rename algorithm improved in v3 to avoid use of double post... just
 
-exchange <name> (default: xpublic) and exchangeSuffix
+exchange <name> (default: default) and exchangeSuffix
 ------------------------------------------------------
 
-The convention on data pumps is to use the *xpublic* exchange. Users can establish
-private data flow for their own processing. Users can declare their own exchanges
-that always begin with *xs_<username>*, so to save having to specify that each
-time, one can just set *exchangeSuffix kk* which will result in the exchange
-being set to *xs_<username>_kk* (overriding the *xpublic* default).
+This setting determines the *exchange* that will be used in subscriptions.  In AMQP 0.9,
+the exchange is a required element of a subscription, separate from the topic hierarchy.
+In other protocols, it can be used as an organizing mechanism in the topic hierarchy.
 These settings must appear in the configuration file before the corresponding
 *topicPrefix* and *subtopic* settings.
+
+* exchange default
+
+When the setting is at it's *default* setting, then conventions apply:
+The convention on data pumps is to use the *xpublic* exchange. Users can establish
+private data flow for their own processing. 
+
+
+* exchange xs_username_hoho
+* exchangeSuffix hoho
+
+On sr3 dedicated brokers, users can declare their own exchanges that always begin 
+with *xs_<username>*, so to save having to specify that each time, one can just 
+set *exchangeSuffix kk* which will result in the exchange being set 
+to *xs_<username>_kk* (overriding the *xpublic* default).
+So the two above settings are equivalent alternatives.
+
+The *exchange* setting explicitly sets the exchange name for subscription bindings. 
+sr3 brokers apply the naming convention, but external brokers may not, 
+so any name is allowed here.
+
+on protocols that do not have *exchange* as a concept (every one other than AMQP 0.9), 
+specifying the *exchange* results in a topic hierarchy like so::
+
+   exchange xs_username_hoho
+   topicPrefix v02
+
+   xs_username_hoho/v03/post/relative/path/of/posting...
+
+
+* exchange None
+
+Setting exchange to None will cause errors and failure to connect in AMQP 0.9.
+For other protocols, it will suppress the prepending of the exchange before
+the *topicPrefix* in subscriptions.
+
 
 
 exchangeDeclare <flag>
@@ -1313,6 +1347,9 @@ All the other components are used in data pumps, and usually preserving
 the entire tree is the desired behaviour. So for all other components
 *mirror on* is the default.
 
+
+
+
 no <count>
 ----------
 
@@ -1583,6 +1620,9 @@ When publishing a product, a user can trigger a script, using
 flow callback entry_points such as **after_accept**, and **after_work** 
 to modify messages generated about files prior to posting.
 
+Setting post_exchange to None will suppress it's inclusion in a posted
+message's topic hierarchy in non amqp 0.9 protocols.
+
 post_exchangeSplit <count> (default: 0)
 ---------------------------------------
 
@@ -1619,6 +1659,7 @@ Sets the message format for posted messages. the currently included values are:
 When provided, this value overrides whatever can be deduced from the post_topicPrefix.
 
 
+
 post_messageAgeMax <duration>  (default: 0)
 -------------------------------------------
 
@@ -1651,7 +1692,9 @@ post_topicPrefix (default: topicPrefix)
 Prepended to the sub-topic to form a complete topic hierarchy. 
 This option applies to publishing.  Denotes the version of messages published 
 in the sub-topics. (v03 refers to `<sr3_post.7.html>`_) defaults to whatever
-was received. 
+was received. Suppress using::
+
+   post_topicPrefix None
 
 
 prefetch <N> (default: 1)
@@ -1854,6 +1897,24 @@ the reception cache is also discarded.
 
 The AMQP protocol defines other queue options which are not exposed
 via sarracenia, because sarracenia itself picks appropriate values.
+
+
+retryCountMax <count> (default: 0)
+----------------------------------
+
+The **retryCountMax** option sets a limit on the number of times a message will be
+retried after a failure.  When a message fails to be transferred (in a subscriber)
+or published (in a post/sender), it is added to a retry queue. Each time it is
+retrieved from the queue for another attempt, its retry counter is incremented.
+
+If the number of attempts exceeds **retryCountMax**, the message is discarded
+and an ERROR is logged.
+
+The default value is 0, which means there is no limit on the number of retries
+(subject to **retry_ttl**).
+
+This option works alongside **retry_ttl**; the message will be discarded
+whichever limit is reached first.
 
 
 retryEmptyBeforeExit: <boolean> (default: False)
@@ -2329,10 +2390,42 @@ the connection should succeed regardless.
 topic <string> 
 --------------
 
-Explicitly set a subscribing topic string, overriding the value usually
+Please use *subtopic*, this is for exceptional use only. *topic* is used to
+explicitly override a subscribing topic string, overriding the value usually
 derived from a group of settings. For sarracenia data pumps, this should never be needed,
 as the use of *exchange*, *topicPrefix*, and *subtopic* normally builds the right
 value.
+
+sample configuration::
+
+   broker mqtt://user@broker
+   queueName q_user_Doreen
+   subtopic #
+
+resulting subscription topic:   $share/q_user_Doreen/xpublic/v03/#
+
+The result is visible in the bindings field of the *sr3 show* command.
+
+The resulting subscription topic is built from:
+
+* the subscription sharing prefix used for all MQTT subscriptions (required for multiple 
+  instances to share a single subscription) 
+* the queueName is used to identify the subscription sharing group.
+* the default exchange (xpublic), 
+* the default topicPrefix (v03)
+* finally the given subtopic.
+
+all catenated together.
+
+vs::
+   broker mqtt://user@broker
+   queueName q_user_Doreen
+   topic #
+
+   resulting subscrption topic:   #
+
+Then specifying topic, all other settings are ignored and the provided setting
+taken literally.
 
 
 topicPrefix (default: v03)
@@ -2349,6 +2442,11 @@ subscribe to.
 For example, Sr3 expects v03 messages by default, but there are
 plenty of sources that offer the old version (requiring a topicPrefix of *v02.post*)
 to specify the old version of messages.
+
+to disable::
+
+   topicPrefix None
+
 
 users <flag> (default: false)
 -----------------------------

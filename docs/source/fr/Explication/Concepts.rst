@@ -319,7 +319,9 @@ les protocoles sous-jacents, voici les mappages:
     - les utilisateurs définissent *subtopic*,
     - les sujets avec séparateur de points sont transformés au minimum, plutôt qu'encodés.
     - La fil d’attente est définie sur *durable* afin que les messages ne soient pas perdus lors des redémarrages du broker.
-    - nous utilisons des *en-têtes de message* (langage AMQP pour les paires clé-valeur) plutôt que d'encoder en JSON ou dans un autre format de charge utile.
+    - Dans les messages au format v02, nous utilisons des *en-têtes de message* (le terme AMQP pour désigner les paires clé-valeur) plutôt que
+      l'encodage en JSON ou dans un autre format de charge utile.
+    - Dans les messages au format v03, nous sommes passés à l'encodage JSON afin de contourner la limite de longueur (255) des en-têtes AMQP.
     - *expire* combien de temps pour conserver une fil d’attente inactive ou un échange.
 
 - réduire la complexité par le biais de conventions.
@@ -345,7 +347,8 @@ ne sont qu’un parmi une variété de choix pour les méthodes de routage dans 
 
     * AMQP: Une fil d’attente nommée *queuename* est liée à un échange xpublic avec clé: v03.observations ...
     * Abonnement MQTT: thème $shared/*queuename*/xpublic/v03/observations ...
-
+    * cette traduction de conceptes/hierarchies de thèmes peut être désactivé avec *exchange None*
+ 
   - Les connexions sont normalement clean_sesssion = 0, pour récupérer les messages lorsqu’une connexion est rompue.
   - MQTT QoS==1 est utilisé pour s’assurer que les messages sont envoyés au moins une fois et éviter les frais généraux
     de ne s’assurer qu’une seule fois.

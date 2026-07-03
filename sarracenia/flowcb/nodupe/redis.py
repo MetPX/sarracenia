@@ -51,7 +51,7 @@ class Redis(NoDupe):
 
         self.o.add_option( 'nodupe_ttl', 'duration', 0 ) 
 
-        logger.info('time_to_live=%d, ' % (self.o.nodupe_ttl))
+        logger.info( f"time_to_live={self.o.nodupe_ttl:d}" )
 
         self.o.add_option( 'nodupe_redis_serverurl', 'str')
         self.o.add_option( 'nodupe_redis_keybase', 'str', 'sr3.nodupe.' + self.o.component + '.' + self.o.config.replace(".","_")) 
@@ -95,7 +95,7 @@ class Redis(NoDupe):
         message['noDupe'] = { 'key': key, 'path': path }
         message['_deleteOnPost'] |= set(['noDupe'])
 
-        logger.debug("checking (%s, %s)" % (key, path))
+        logger.debug('checking (%s, %s)', key, path)
 
         self.cache_hit = None
         key_hashed = self._hash(key)
@@ -110,12 +110,12 @@ class Redis(NoDupe):
         self._redis.set(redis_key, str(self.now) + "|" + path_quoted, ex=int(self.o.nodupe_ttl))
         
         if got != None:
-            logger.debug("entry already in cache: key=%s" % (redis_key) )
-            logger.debug("updated time entry: time=%s" % (str(self.now)) )
+            logger.debug('entry already in cache: key=%s', redis_key)
+            logger.debug('updated time entry: time=%s', str(self.now))
             self.cache_hit = path_quoted
             return False
         else:
-            logger.debug("adding entry to cache; key=%s" % (redis_key) )
+            logger.debug('adding entry to cache; key=%s', redis_key)
             #self._redis.incr(self._rkey_count)
             return True
 
@@ -134,7 +134,8 @@ class Redis(NoDupe):
         new_count = len(self._redis.keys(self._rkey_base + ":*"))
         self.now = nowflt()
         
-        logger.info("cache size was %d items %5.2f sec ago, now saved %d entries" % (self._last_count, self.now - self._last_time, new_count))
+        logger.info( f"cache size was {self._last_count:d} items " \
+              f"{self.now - self._last_time:5.2f} sec ago, now saved {new_count:d} entries" )
 
         self._last_time = self.now
 
@@ -150,8 +151,6 @@ class Redis(NoDupe):
 
         if self.o.fileAgeMin > 0:
             max_mtime = self.now - self.o.fileAgeMin
-        elif type(self.o.inflight) in [ int, float ] and self.o.inflight > 0:
-            max_mtime = self.now - self.o.inflight
         else:
             # FIXME: should we add some time here to allow for different clocks?
             #        100 seconds in the future? hmm...
@@ -166,11 +165,21 @@ class Redis(NoDupe):
                     m.setReport(406,  f"{m['mtime']} too old (nodupe check), oldest allowed {timeflt2str(min_mtime)}" )
                     worklist.rejected.append(m)
                     continue
-                elif mtime > max_mtime:
+                # too new messages should only be *rejected* in polls.
+                elif mtime > max_mtime and self.o.component in [ 'poll' ]:
                     m['_deleteOnPost'] |= set(['reject'])
                     m['reject'] = f"{m['mtime']} too new (nodupe check), newest allowed {timeflt2str(max_mtime)}"
                     m.setReport(425,  f"{m['mtime']} too new (nodupe check), newest allowed {timeflt2str(max_mtime)}" )
                     worklist.rejected.append(m)
+                    continue
+                # in non-poll components, files that are too new are put into the work retry list and get retried
+                # until they become old enough to be processed. The logic in Flow normally handles that, except it
+                # gets bypassed when a message is being retried with retry_refilter=False, so check again here.
+                # (the fileAgeMin check in Flow is a bit redundant and could be deleted, except then the fileAgeMin
+                #  check wouldn't work when nodupe is disabled, so we're keeping it in both places.)
+                elif mtime > max_mtime:
+                    logger.warning( f"file {m['relPath']} too young: queueing for retry later")
+                    worklist.failed.append(m)
                     continue
 
             if m.isRetry() or self._is_new(m):
@@ -181,7 +190,7 @@ class Redis(NoDupe):
                 m.setReport(304, 'Not modified 1 (nodupe check)')
                 worklist.rejected.append(m)
 
-        logger.debug("items registered in duplicate suppression cache: %d" % (len(self._redis.keys(self._rkey_base + ":*"))) )
+        logger.debug('items registered in duplicate suppression cache: %d', len(self._redis.keys(self._rkey_base + ':*')))
         worklist.incoming = new_incoming
 
     def on_start(self):

@@ -60,7 +60,7 @@ class Copernicus_marine_s3(sarracenia.flowcb.FlowCB):
         # set poll.copernicus_marine_s3.logLevel debug
         if hasattr(self.o, 'logLevel'):
             logger.setLevel(self.o.logLevel.upper())
-            logger.debug(f"logLevel {self.o.logLevel.upper()}")
+            logger.debug('logLevel %s', self.o.logLevel.upper())
 
         self.o.add_option('productID', kind='list', default_value=[])
         
@@ -102,7 +102,7 @@ class Copernicus_marine_s3(sarracenia.flowcb.FlowCB):
                             if productIDs[id].match(link['href']):
                                 datasets.add(link['href'])
                             else:
-                                logger.debug(f"{link['href']} doesn't match {productIDs[id]}, ignoring")
+                                logger.debug("%s doesn't match %s, ignoring", link['href'], productIDs[id])
                         else: # no regex, no need to filter        
                             datasets.add(link['href'])
                 
@@ -122,14 +122,14 @@ class Copernicus_marine_s3(sarracenia.flowcb.FlowCB):
                             s3_urls[id] = []
                         s3_urls[id].append(dataset_page['assets']['native']['href'])
                     else: 
-                        logger.error("Failed to find Native dataset S3 URL for productID {id} + dataset {dataset}")
-                        logger.debug(f"dataset page: {self.stac_base_url + id + '/' + dataset}")
+                        logger.error(f"Failed to find Native dataset S3 URL for productID {id} + dataset {dataset}")
+                        logger.debug('dataset page: %s', self.stac_base_url + id + '/' + dataset)
 
             except Exception as e:
                 logger.error(f"Could not poll productID {id} ({e})")
-                logger.debug(f"Exception:", exc_info=True)
+                logger.debug('Exception:', exc_info=True)
         
-        logger.debug(f"STAC poll found {s3_urls}")
+        logger.debug('STAC poll found %s', s3_urls)
         return s3_urls
 
     def _identify_client(self, model, params, request_signer, **kwargs):
@@ -148,7 +148,7 @@ class Copernicus_marine_s3(sarracenia.flowcb.FlowCB):
             if 'User-Agent' in params['headers']:
                 params['headers']['User-Agent'] = 'Sarracenia' + sarracenia.__version__ + ' ' + params['headers']['User-Agent']
             
-            logger.debug(f"request: {model}, params: {params}, request_signer: {request_signer}, kwargs: {kwargs}")
+            logger.debug('request: %s, params: %s, request_signer: %s, kwargs: %s', model, params, request_signer, kwargs)
         except:
             # Don't really care if this fails, something wrong in this method shouldn't stop the poll from working
             logger.debug('Exception setting identification', exc_info=True)
@@ -175,7 +175,7 @@ class Copernicus_marine_s3(sarracenia.flowcb.FlowCB):
                     bucket_prefix_by_endpoint[endpoint] = []
                 bucket_prefix_by_endpoint[endpoint].append({'bucket':bucket, 'prefix':prefix})
         
-        logger.debug(f"Going to S3 list {bucket_prefix_by_endpoint}")
+        logger.debug('Going to S3 list %s', bucket_prefix_by_endpoint)
 
         # Have a bunch of prefixes now (directories), poll them to find files
         objects_by_endpoint_bucket = {}
@@ -203,7 +203,7 @@ class Copernicus_marine_s3(sarracenia.flowcb.FlowCB):
                             break
             except Exception as e:
                 logger.error(f"Error during S3 poll for endpoint {endpoint} ({e})")
-                logger.debug(f"Exception:", exc_info=True)
+                logger.debug('Exception:', exc_info=True)
 
         # Build a message for each object we found
         for endpoint in objects_by_endpoint_bucket:

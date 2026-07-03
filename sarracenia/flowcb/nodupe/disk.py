@@ -69,7 +69,7 @@ class Disk(NoDupe):
 
     def on_housekeeping(self):
 
-        logger.debug("start with %d entries)" % len(self.cache_dict))
+        logger.debug('start with %d entries)', len(self.cache_dict))
 
         count = self.count
         self.save()
@@ -78,8 +78,7 @@ class Disk(NoDupe):
         new_count = self.count
 
         if new_count > 0:
-            logger.info( "was %d, but since %5.2f sec, increased up to %d, now saved %d entries"
-                 % (self.last_count, self.now - self.last_time, count, new_count))
+            logger.info( f"was {self.last_count:d}, but since {(self.now-self.last_time):5.2f} sec, increased up to {count:d}, now saved {new_count:d} entries" )
 
         self.last_time = self.now
         self.last_count = new_count
@@ -98,28 +97,28 @@ class Disk(NoDupe):
             kdict = {}
             kdict[relpath] = self.now
             self.cache_dict[key] = kdict
-            self.fp.write("%s %f %s\n" % (key, self.now, qpath))
+            self.fp.write(f"{key} {self.now:f} {qpath}\n")
             self.count += 1
             return True
 
          
 
-        logger.debug( f"entry already in NoDupe cache: key={key}" )
+        logger.debug('entry already in NoDupe cache: key=%s', key)
         kdict = self.cache_dict[key]
         present = relpath in kdict and (kdict[relpath]+self.o.nodupe_ttl) >= self.now
 
         kdict[relpath] = self.now
 
         # differ or newer, write to file
-        self.fp.write("%s %f %s\n" % (key, self.now, qpath))
+        self.fp.write(f"{key} {self.now:f} {qpath}\n")
         self.count += 1
 
         if present:
-            logger.debug( f"updated time of old NoDupe entry: relpath={relpath}" )
+            logger.debug('updated time of old NoDupe entry: relpath=%s', relpath)
             self.cache_hit = relpath
             return False
         else:
-            logger.debug( f"added relpath={relpath}")
+            logger.debug('added relpath=%s', relpath)
 
         return True
 
@@ -142,7 +141,7 @@ class Disk(NoDupe):
         msg['noDupe'] = { 'key': key, 'path': path }
         msg['_deleteOnPost'] |= set(['noDupe'])
 
-        logger.debug("NoDupe calling check( %s, %s )" % (key, path))
+        logger.debug('NoDupe calling check( %s, %s )', key, path)
         return self._not_in_cache(key, path)
 
     def after_accept(self, worklist):
@@ -169,11 +168,21 @@ class Disk(NoDupe):
                     m.setReport(406,  f"{m['mtime']} too old (nodupe check), oldest allowed {timeflt2str(min_mtime)}" )
                     worklist.rejected.append(m)
                     continue
-                elif mtime > max_mtime:
+                # too new messages should only be *rejected* in polls.
+                elif mtime > max_mtime and self.o.component in [ 'poll' ]:
                     m['_deleteOnPost'] |= set(['reject'])
                     m['reject'] = f"{m['mtime']} too new (nodupe check), newest allowed {timeflt2str(max_mtime)}"
                     m.setReport(425,  f"{m['mtime']} too new (nodupe check), newest allowed {timeflt2str(max_mtime)}" )
                     worklist.rejected.append(m)
+                    continue
+                # in non-poll components, files that are too new are put into the work retry list and get retried
+                # until they become old enough to be processed. The logic in Flow normally handles that, except it
+                # gets bypassed when a message is being retried with retry_refilter=False, so check again here.
+                # (the fileAgeMin check in Flow is a bit redundant and could be deleted, except then the fileAgeMin
+                #  check wouldn't work when nodupe is disabled, so we're keeping it in both places.)
+                elif mtime > max_mtime:
+                    logger.warning( f"file {m['relPath']} too young: queueing for retry later")
+                    worklist.failed.append(m)
                     continue
 
             if m.isRetry() or self.check_message(m):
@@ -186,7 +195,7 @@ class Disk(NoDupe):
 
         if self.fp:
             self.fp.flush()
-        logger.debug( f"items registered in duplicate suppression cache: {len(self.cache_dict.keys())}" )
+        logger.debug('items registered in duplicate suppression cache: %s', len(self.cache_dict.keys()))
         worklist.incoming = new_incoming
 
     def on_start(self):
@@ -231,7 +240,7 @@ class Disk(NoDupe):
                 self.count += 1
 
                 if persist:
-                    self.fp.write("%s %f %s\n" % (key, t, qpath))
+                    self.fp.write(f"{key} {t:f} {qpath}\n")
 
             if len(ndict) > 0: new_dict[key] = ndict
 
@@ -244,8 +253,7 @@ class Disk(NoDupe):
             self.fp.flush()
             self.fp.close()
         except Exception as err:
-            logger.warning('did not close: cache_file={}, err={}'.format(
-                self.cache_file, err))
+            logger.warning(f'did not close: cache_file={self.cache_file}, err={err}')
             logger.debug('Exception details:', exc_info=True)
         self.fp = None
 
@@ -253,8 +261,7 @@ class Disk(NoDupe):
             try:
                 os.unlink(self.cache_file)
             except Exception as err:
-                logger.warning("did not unlink: cache_file={}: err={}".format(
-                    self.cache_file, err))
+                logger.warning(f"did not unlink: cache_file={self.cache_file}: err={err}")
                 logger.debug('Exception details:', exc_info=True)
         self.cache_dict = {}
         self.count = 0
@@ -278,8 +285,7 @@ class Disk(NoDupe):
         try:
             os.unlink(self.cache_file)
         except Exception as err:
-            logger.warning("did not unlink: cache_file={}, err={}".format(
-                self.cache_file, err))
+            logger.warning(f"did not unlink: cache_file={self.cache_file}, err={err}")
             logger.debug('Exception details:', exc_info=True)
         self.fp = open(self.cache_file, 'w')
 
@@ -355,14 +361,12 @@ class Disk(NoDupe):
         try:
             os.unlink(self.cache_file)
         except Exception as err:
-            logger.warning("did not unlink: cache_file={}, err={}".format(
-                self.cache_file, err))
+            logger.warning(f"did not unlink: cache_file={self.cache_file}, err={err}")
             logger.debug('Exception details:', exc_info=True)
         # new empty file, write unexpired entries
         try:
             self.fp = open(self.cache_file, 'w')
             self.clean(persist=True)
         except Exception as err:
-            logger.warning("did not clean: cache_file={}, err={}".format(
-                self.cache_file, err))
+            logger.warning(f"did not clean: cache_file={self.cache_file}, err={err}")
             logger.debug('Exception details:', exc_info=True)

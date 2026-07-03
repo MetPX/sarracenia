@@ -2,6 +2,7 @@
 import copy
 import json
 import os
+import sarracenia
 
 import logging
 
@@ -26,32 +27,38 @@ class Publisher(dict):
 
         self['broker'] = copy.deepcopy(options.post_broker)
 
-        if hasattr(options,'post_exchange'):
-            exchange_root = options.post_exchange
-        else:
-            exchange_root = 'xs_%s' % options.post_broker.url.username
+        exchange_root = getattr(options,'post_exchange', 'default' if self['broker'].url.scheme.lower().startswith('amqp') else None )
+
+        if exchange_root == "default":
+            if not hasattr(self['broker'].url,'username') or ( self['broker'].url.username == 'anonymous' ):
+                exchange_root = 'xpublic'
+            else:
+                exchange_root = f'xs_{self["broker"].url.username}'
 
         already_a_list = hasattr(options,'post_exchange') and type(options.post_exchange) == list
         #logger.debug( f" {exchange_root=}  {already_a_list=} " )
 
-        if already_a_list:
-            self['exchange'] = options.post_exchange
-        else:
-           if hasattr(options, 'post_exchangeSuffix'):
-               exchange_root += '_%s' % options.post_exchangeSuffix
+        if exchange_root:
+            if already_a_list:
+                self['exchange'] = options.post_exchange
+            else:
+               if hasattr(options, 'post_exchangeSuffix'):
+                   exchange_root += f'_{options.post_exchangeSuffix}'
 
-           if hasattr(options, 'post_exchangeSplit') and options.post_exchangeSplit > 1:
-               l = []
-               for i in range(0, int(options.post_exchangeSplit)):
-                   y = f"{exchange_root}{i:02d}"
-                   l.append(y)
-               self['exchange'] = l
-           else:
-               self['exchange'] = [ exchange_root ]
+               if hasattr(options, 'post_exchangeSplit') and options.post_exchangeSplit > 1:
+                   l = []
+                   for i in range(0, int(options.post_exchangeSplit)):
+                       y = f"{exchange_root}{i:02d}"
+                       l.append(y)
+                   self['exchange'] = l
+               else:
+                   self['exchange'] = [ exchange_root ]
 
-        if 'exchange' not in self:
-            logger.error("malformed publisher, missing (post_)exchange")
-            return
+            if 'exchange' not in self:
+                logger.error("malformed publisher, missing (post_)exchange")
+                return
+
+        # else, *exchange* will not be present...
 
         if hasattr(options,'tlsRigour') :
             self['tlsRigour'] = options.tlsRigour
@@ -68,7 +75,7 @@ class Publisher(dict):
         elif hasattr(options, 'topicPrefix') and options.topicPrefix:
             self['topicPrefix'] = options.topicPrefix
         else:
-            self['topicPrefix'] = None
+            self['topicPrefix'] = []
 
         for a in [ 'baseDir', 'baseUrl', 'exchangeSplit', 'topicPrefix' ]:
             aa = "post_"+a
@@ -78,7 +85,7 @@ class Publisher(dict):
         if (not 'baseUrl' in self or not self['baseUrl']) and hasattr(options,'pollUrl') and options.pollUrl:
             self['baseUrl'] = options.pollUrl
 
-        if not 'baseDir' in self and not self['baseDir']:
+        if not 'baseDir' in self or not self['baseDir']:
             if self['baseUrl'] and ( self['baseUrl'][0:5] in [ 'file:' ] ):
                 self['baseDir'] = self['baseUrl'][5:]
             elif self['baseUrl'] and ( self['baseUrl'][0:5] in [ 'sftp:' ] ):
