@@ -122,7 +122,7 @@ class Copernicus_marine_s3(sarracenia.flowcb.FlowCB):
                             s3_urls[id] = []
                         s3_urls[id].append(dataset_page['assets']['native']['href'])
                     else: 
-                        logger.error("Failed to find Native dataset S3 URL for productID {id} + dataset {dataset}")
+                        logger.error(f"Failed to find Native dataset S3 URL for productID {id} + dataset {dataset}")
                         logger.debug('dataset page: %s', self.stac_base_url + id + '/' + dataset)
 
             except Exception as e:

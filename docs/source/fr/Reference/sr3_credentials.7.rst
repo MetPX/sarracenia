@@ -40,6 +40,7 @@ ainsi que les paramètres nécessaires aux composants.  Le format est d'une entr
 
 - **sftp://user5:password5@host**
 - **sftp://user6:password6@host:22  ssh_keyfile=/users/local/.ssh/id_dsa**
+- **sftp://user5:password5@host  sftp_compat_mode**
 
 - **ftp://user7:password7@host  passive,binary**
 - **ftp://user8:password8@host:2121  active,ascii**
@@ -82,6 +83,7 @@ Détails pris en charge :
 - ``bearer_token=<token>`` (ou ``bt=<token>``) - (HTTP) Jeton Bearer pour l’authentification
 - ``login_method=<PLAIN|AMQPLAIN|EXTERNAL|GSSAPI>`` - (AMQP) Par défaut, la méthode de connexion sera automatiquement
 - ``implicit_ftps`` - (FTPS) Utilisez FTPS implicite (sinon, FTPS explicite est utilisé). Définir ceci définira également ``tls`` sur True.
+- ``sftp_compat_mode`` - (SFTP) Désactiver certaines améliorations de performances (lecture préchargée, écritures pipelinées) susceptibles d'entraîner des problèmes de compatibilité avec certains serveurs SFTP.
 - Détails du protocole S3:
     - ``s3_endpoint=<url>`` - utiliser un point de terminaison spécifique, comme un service non Amazon S3.
     - ``s3_session_token=<string>`` - lors de la spécification des informations d'identification pour S3, le champ du nom d'utilisateur est utilisé comme « ID de clé d'accès », le mot de passe comme « clé d'accès secrète ». Parfois, un jeton de session est également requis et peut être fourni avec cette option.

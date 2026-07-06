@@ -889,6 +889,7 @@ class sr_GlobalState:
                 'rxMessageRate':0, 'rxMessageRateCpu':0, 'rxDataRate':0, 'rxFileRate':0, 'rxMessageByteRate':0, 
                 'txMessageRate':0, 'txDataRate':0, 'txFileRate':0, 'txMessageByteRate':0
                 }
+
         for c in self.components:
             if (c not in self.states) or (c not in self.configs):
                 continue
@@ -934,10 +935,11 @@ class sr_GlobalState:
 
                         #print( f"states of {c}/{cfg}: {self.states[c][cfg]} " )
                         #print( f"instance metrics states of {c}/{cfg}: {self.states[c][cfg]['instance_metrics']} " )
+                        #print(f"Now looking at following metrics for {cfg}. Metrics: {self.states[c][cfg]['instance_metrics']}")
                         for j in self.states[c][cfg]['instance_metrics'][i]:
                             #print( f"i={i}, j={j}, c={c}, cfg={cfg}" )
                             for k in self.states[c][cfg]['instance_metrics'][i][j]:
-                                #print( f"k={k}" )
+                                #print( f"k={k}. k type {type(self.states[c][cfg]['instance_metrics'][i][j][k])}" )
                                 if k in metrics:
                                     newval = self.states[c][cfg]['instance_metrics'][i][j][k]
                                     #print( f"k={k}, type={type(newval)} newval={newval}" )
@@ -954,20 +956,28 @@ class sr_GlobalState:
                                         newval = sarracenia.timestr2flt(newval)
                                         if 'transferLast' not in metrics or (newval > metrics['transferLast']):
                                             metrics['transferLast'] = newval
-                                    elif k in [ "rxLast", "txLast"  ]:
-                                        newval = sarracenia.timestr2flt(newval)
-                                        if k == 'rxLast' and 'rxLast' not in metrics or (newval > metrics['rxLast']):
-                                            metrics['rxLast'] = newval
-                                        if k == 'txLast' and 'txLast' not in metrics or (newval > metrics['txLast']):
-                                            metrics['txLast'] = newval
-                                        if 'messageLast' not in metrics or (newval > metrics['messageLast']):
-                                            metrics['messageLast'] = newval
                                     elif k in [ "cpuTime" ]:
                                         metrics['cpuTime'] += newval
                                     else:
                                         metrics[k] += newval
-                                #else:
-                                #    print( f'skipping {k}')
+                                else:
+                                    # Post and gather metrics fields (post.message/gather.message) include more nested dictionaries
+                                    # The k field inside of post.message and gather.message includes the broker name (introduced in the multi subscribe/publish support
+                                    # - Added in https://github.com/MetPX/sarracenia/commit/55882d8767).
+                                    # The broker string won't be included in the ordinary metrics fields so we need to bypass the original condition to access the per broker metrics.
+                                    if j in [ "post.message", "gather.message" ]:
+                                        for l in self.states[c][cfg]['instance_metrics'][i][j][k]:
+                                            #print(f"l: {l}")
+                                            if l in [ "rxLast", "txLast"  ]:
+                                                newval = self.states[c][cfg]['instance_metrics'][i][j][k][l]
+                                                if type(newval) == str: newval = sarracenia.timestr2flt(newval)
+                                                if l == 'rxLast' and ('rxLast' not in metrics or (newval > metrics['rxLast'])):
+                                                    metrics['rxLast'] = newval
+                                                if l == 'txLast' and ('txLast' not in metrics or (newval > metrics['txLast'])):
+                                                    metrics['txLast'] = newval
+                                                if 'messageLast' not in metrics or (newval > metrics['messageLast']):
+                                                    metrics['messageLast'] = newval
+
 
                         if 'transferConnectTime' in metrics:
                             metrics['transferConnectTime'] = metrics['transferConnectTime'] / len(self.states[c][cfg]['instance_metrics']) 
@@ -1149,12 +1159,12 @@ class sr_GlobalState:
                     elif flow_status in [ 'down', 'disconnected' ]:
                         pass
                     elif hasattr(self.configs[c][cfg]['options'],'publishers') and len(self.configs[c][cfg]['options'].publishers) \
-                            and (now-self.states[c][cfg]['metrics']['txLast']) > self.configs[c][cfg]['options'].runStateThreshold_idle:
+                            and (self.states[c][cfg]['metrics']['txLast'] != 0) and (now-self.states[c][cfg]['metrics']['txLast']) > self.configs[c][cfg]['options'].runStateThreshold_idle:
                         flow_status = 'idle'
                     elif  hasattr(self.configs[c][cfg]['options'],'download') and self.configs[c][cfg]['options'].download \
-                            and (now-self.states[c][cfg]['metrics']['transferLast']) > self.configs[c][cfg]['options'].runStateThreshold_idle:
+                            and (self.states[c][cfg]['metrics']['transferLast'] != 0) and (now-self.states[c][cfg]['metrics']['transferLast']) > self.configs[c][cfg]['options'].runStateThreshold_idle:
                         flow_status = 'idle'
-                    elif (now-self.states[c][cfg]['metrics']['rxLast']) > self.configs[c][cfg]['options'].runStateThreshold_idle:
+                    elif (self.states[c][cfg]['metrics']['rxLast'] != 0) and (now-self.states[c][cfg]['metrics']['rxLast']) > self.configs[c][cfg]['options'].runStateThreshold_idle:
                         flow_status = 'idle'
                     elif self.states[c][cfg]['metrics']['msgRate'] > 0 and \
                            self.states[c][cfg]['metrics']['msgRateCpu'] < self.configs[c][cfg]['options'].runStateThreshold_cpuSlow:
@@ -1312,6 +1322,7 @@ class sr_GlobalState:
         self.please_stop=False
         self.users = opt.users
         self.declared_users = opt.declared_users
+        self.has_disabled_config = False
 
         signal.signal(signal.SIGTERM, self._stop_signal)
         signal.signal(signal.SIGINT, self._stop_signal)
@@ -1483,27 +1494,38 @@ class sr_GlobalState:
 
         '''
 
+        if not self.validate_dangerWillRobinson():
+            return
+
         filtered_users = []
 
-        if len(self.filtered_configurations) < len(self.all_configs):
+        for config in self.filtered_configurations:
 
-            for config in self.filtered_configurations:
+            (c, cfg) = config.split(os.sep)
 
-                (c, cfg) = config.split(os.sep)
+            if not 'options' in self.configs[c][cfg]:
+                continue
 
-                if not 'options' in self.configs[c][cfg]:
-                    continue
+            o = self.configs[c][cfg]['options']
 
-                o = self.configs[c][cfg]['options']
+            # Issue 1710 - Do not declare configurations that are disabled.
+            # If any configs are disabled, don't declare any
+            if self.configs[c][cfg]['status'] in ['disabled'] or os.path.exists(self.user_cache_dir + os.sep + c + os.sep + cfg + os.sep + 'disabled'):
+                self.has_disabled_config = True
+                logger.error(f"Config {c}/{cfg} is disabled. It must be enabled before declaring.")
 
-                if hasattr(o, "subscriptions") and len(o.subscriptions):
-                    for s in o.subscriptions:
-                        filtered_users.append(f"{s['broker'].url.username}@{s['broker'].url.hostname}")
-                if hasattr(o, "publishers") and len(o.publishers):
-                    for p in o.publishers:
-                        filtered_users.append(f"{p['broker'].url.username}@{p['broker'].url.hostname}")
-                if hasattr(o, "report_broker") and o.report_broker:
-                    filtered_users.append(f"{o.report_broker.url.username}@{o.report_broker.url.hostname}")
+            if hasattr(o, "subscriptions") and len(o.subscriptions):
+                for s in o.subscriptions:
+                    filtered_users.append(f"{s['broker'].url.username}@{s['broker'].url.hostname}")
+            if hasattr(o, "publishers") and len(o.publishers):
+                for p in o.publishers:
+                    filtered_users.append(f"{p['broker'].url.username}@{p['broker'].url.hostname}")
+            if hasattr(o, "report_broker") and o.report_broker:
+                filtered_users.append(f"{o.report_broker.url.username}@{o.report_broker.url.hostname}")
+
+        if self.has_disabled_config:
+            logger.error("No configs have been declared due to disabled configurations.")
+            return
 
         # add users (?)
         if self.users: # check if users exist in the configuration (?)
@@ -1568,6 +1590,7 @@ class sr_GlobalState:
 
             if not 'options' in self.configs[c][cfg]:
                 continue
+
             logging.info(f'looking at {c}/{cfg} ')
             if hasattr(self.configs[c][cfg]['options'],'publishers'):
                 for p in self.configs[c][cfg]['options'].publishers:
@@ -1592,6 +1615,7 @@ class sr_GlobalState:
 
             if not 'options' in self.configs[c][cfg]:
                 continue
+
             logging.info(f'looking at {c}/{cfg} ')
             o = self.configs[c][cfg]['options']
             if not hasattr(o,'subscriptions'):
@@ -2319,18 +2343,16 @@ class sr_GlobalState:
         if count > 0:
             logger.info( "sanitize complete, proceeding with start" )
 
-        has_disabled_config = False
-
         # if any configs are disabled, don't start any
         if not self._action_all_configs:
             for f in self.filtered_configurations:
                 (c, cfg) = f.split(os.sep)
             
-                if self.configs[c][cfg]['status'] == 'disabled':
-                    has_disabled_config = True
+                if self.configs[c][cfg]['status'] in ['disabled'] or os.path.exists(self.user_cache_dir + os.sep + c + os.sep + cfg + os.sep + 'disabled'):
+                    self.has_disabled_config = True
                     logger.error(f"Config {c}/{cfg} is disabled. It must be enabled before starting.")
 
-            if has_disabled_config:
+            if self.has_disabled_config:
                 logger.error("No configs have been started due to disabled configurations.")
                 return
 

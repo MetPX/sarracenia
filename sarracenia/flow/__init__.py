@@ -419,16 +419,6 @@ class Flow:
             Return the time when housekeeping should be run next
         """
         logger.info(f'on_housekeeping pid: {os.getpid()} {self.o.component}/{self.o.config} instance: {self.o.no}')
-        if hasattr(self, "on_housekeeping"):
-            if self._logLevel_debug :
-                self.on_housekeeping()
-            else:
-                try:
-                    self.on_housekeeping()
-                except Exception as ex:
-                    logger.error( f'flow on_housekeeping crashed: {ex}' )
-                    logger.debug( "details:", exc_info=True )
-
         self.runCallbacksTime('on_housekeeping')
         self.metricsFlowReset()
         self.metrics['flow']['last_housekeeping'] = now
@@ -649,12 +639,15 @@ class Flow:
             # trigger shutdown once gather is finished, where sleep < 0 (e.g. a post)
             if (last_gather_len == 0) and (self.o.sleep < 0):
                 if (self.o.retryEmptyBeforeExit and "retry" in self.metrics
-                    and self.metrics['retry']['msgs_in_post_retry'] > 0):
-                    logger.info( f"retryEmptyBeforeExit=True and there are still "
-                        f"{self.metrics['retry']['msgs_in_post_retry']} messages in the post retry queue.")
-                    # Sleep for a while. Messages can't be retried before housekeeping has run...
-                    # how long to sleep is unclear... if there are a lot of retries, and a low batch... could take a long time.
-                    current_sleep = self.o.batch if self.o.batch < self.o.housekeeping else self.o.housekeeping // 2
+                    and (self.metrics['retry']['msgs_in_post_retry'] > 0
+                         or self.metrics['retry']['msgs_in_download_retry'] > 0) ):
+                    logger.info("retryEmptyBeforeExit=True and there are still messages in the retry queues"
+                                + f" (post: {self.metrics['retry']['msgs_in_post_retry']}, "
+                                + f"work: {self.metrics['retry']['msgs_in_download_retry']})")
+                    # Messages can't be retried before housekeeping has run, so run it right now
+                    next_housekeeping = now - 1
+                    # sleep for a bit (self.o.sleep is <0)
+                    current_sleep = 0.1
                 else:
                     self.runCallbacksTime('please_stop')
 
@@ -1043,7 +1036,7 @@ class Flow:
                     continue
 
                 if self.o.component != 'poll' and self.o.fileAgeMin > 0 and age < self.o.fileAgeMin:
-                    logger.warning( f"file too young: queueing for retry.")
+                    logger.warning( f"file {m['relPath']} too young: queueing for retry later")
                     self.worklist.failed.append(m)
                     continue
 
@@ -1708,7 +1701,7 @@ class Flow:
         else:
             mode=self.o.permDirDefault
 
-        if type(mode) is not int:
+        if isinstance(mode, str):
             mode=int(mode,base=8)
 
         try:

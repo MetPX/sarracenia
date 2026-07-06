@@ -562,30 +562,32 @@ def test_after_accept__WithFileAges(tmp_path, capsys):
     message_old = make_message()
     message_old['mtime'] = timeflt2str(nodupe.now - 10000)
     message_new = make_message()
-    message_new['mtime'] = nowstr()
-    
+    message_new['mtime'] = timeflt2str(nodupe.now + 10000)
+
     after_accept_worklist__WithFileAges = copy.deepcopy(WorkList)
     after_accept_worklist__WithFileAges.incoming = [message_old, message_new]
 
     nodupe.after_accept(after_accept_worklist__WithFileAges)
-
-    assert len(after_accept_worklist__WithFileAges.rejected) == 2
+    
+    assert len(after_accept_worklist__WithFileAges.rejected) == 1
     assert after_accept_worklist__WithFileAges.rejected[0]['reject'].count(message_old['mtime'] + " too old (nodupe check), oldest allowed")
-    #PS do not know what this is or why it is failing.
-    #assert after_accept_worklist__WithFileAges.rejected[1]['reject'].count(message_new['mtime'] + " too new (nodupe check), newest allowed")
+    # when component is not poll, messages that are too new (fileAgeMin) should get queued for retry
+    assert len(after_accept_worklist__WithFileAges.failed) == 1
 
-@pytest.mark.depends(on=['test_check_message'])
-def test_after_accept__InFlight(tmp_path, capsys):
+def test_after_accept__WithFileAges_poll(tmp_path, capsys):
     from sarracenia import nowflt, nowstr, timeflt2str
 
     BaseOptions = Options()
     BaseOptions.pid_filename = str(tmp_path) + os.sep + "pidfilename.txt"
     BaseOptions.cfg_run_dir = str(tmp_path)
     BaseOptions.no = 5
-    BaseOptions.inflight = 1000
+    BaseOptions.inflight = 0
+    BaseOptions.component = 'poll'
 
     nodupe = Disk(BaseOptions)
     nodupe.o.nodupe_ttl = 100000
+    nodupe.o.fileAgeMin = 1000
+    nodupe.o.fileAgeMax = 1000
 
     nodupe.open()
     nodupe.now = nowflt() + 10
@@ -593,17 +595,16 @@ def test_after_accept__InFlight(tmp_path, capsys):
     message_old = make_message()
     message_old['mtime'] = timeflt2str(nodupe.now - 10000)
     message_new = make_message()
-    message_new['mtime'] = nowstr()
-    
-    test_after_accept__InFlight = copy.deepcopy(WorkList)
-    test_after_accept__InFlight.incoming = [message_old, message_new]
+    message_new['mtime'] = timeflt2str(nodupe.now + 10000)
 
-    nodupe.after_accept(test_after_accept__InFlight)
+    after_accept_worklist__WithFileAges = copy.deepcopy(WorkList)
+    after_accept_worklist__WithFileAges.incoming = [message_old, message_new]
 
-    assert len(test_after_accept__InFlight.rejected) == 1
-    assert len(test_after_accept__InFlight.incoming) == 1
-    assert test_after_accept__InFlight.incoming[0]['mtime'] == message_old['mtime']
-    # PS do not know what this is testing, but it fails... no idea how to fix.
-    #   implementation changed... message formats were misunderstood... tests slightly wrong.
-    #assert test_after_accept__InFlight.rejected[0]['reject'].count(message_new['mtime'] + " too new (nodupe check), newest allowed")
+    nodupe.after_accept(after_accept_worklist__WithFileAges)
+
+    assert len(after_accept_worklist__WithFileAges.rejected) == 2
+    assert after_accept_worklist__WithFileAges.rejected[0]['reject'].count(message_old['mtime'] + " too old (nodupe check), oldest allowed")
+    # when component is poll, both messages should be rejected, none should be put in failed
+    assert len(after_accept_worklist__WithFileAges.failed) == 0
+    assert after_accept_worklist__WithFileAges.rejected[1]['reject'].count(message_new['mtime'] + " too new (nodupe check), newest allowed")
 

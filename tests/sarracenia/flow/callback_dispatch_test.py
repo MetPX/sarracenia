@@ -2,6 +2,7 @@
 Test that flow callback dispatch uses getattr instead of eval.
 """
 
+import time
 import unittest
 from unittest.mock import MagicMock
 
@@ -91,6 +92,24 @@ class TestCallbackDispatch(unittest.TestCase):
 
         # Should not raise — entry_point not in self.plugins
         Flow.runCallbacksTime(flow, 'nonexistent')
+
+    def test_runHousekeeping_calls_on_housekeeping_once(self):
+        """_runHousekeeping should dispatch on_housekeeping only through runCallbacksTime."""
+        from sarracenia.flow import Flow
+
+        flow = self._make_flow()
+        flow.o.component = 'flow'
+        flow.o.config = 'test'
+        flow.o.no = 0
+        flow.o.housekeeping = 300
+        flow.on_housekeeping = MagicMock()
+        flow.metricsFlowReset = MagicMock()
+        flow.metrics = {'flow': {}}
+        flow.runCallbacksTime = lambda entry_point: Flow.runCallbacksTime(flow, entry_point)
+
+        Flow._runHousekeeping(flow, time.time())
+
+        flow.on_housekeeping.assert_called_once_with()
 
 
 if __name__ == '__main__':

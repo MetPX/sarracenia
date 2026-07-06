@@ -21,7 +21,7 @@
 #
 #
 
-import logging, paramiko, os, subprocess, sys, time
+import logging, paramiko, os, sys, time
 from paramiko import *
 from stat import *
 
@@ -224,10 +224,9 @@ class Sftp(Transfer):
                 self.ssh.connect(self.host,self.port,self.user,self.password, \
                                  pkey=None,key_filename=self.ssh_keyfile,\
                                  timeout=self.o.timeout)
-            #if ssh_keyfile != None :
-            #  key=DSSKey.from_private_key_file(ssh_keyfile,password=None)
 
             sftp = self.ssh.open_sftp()
+
             if self.o.timeout != None:
                 logger.debug('sr_sftp connect setting timeout %f', self.o.timeout)
                 channel = sftp.get_channel()
@@ -244,6 +243,12 @@ class Sftp(Transfer):
         except:
             logger.error( f"sr_sftp/connect: unable to connect to {self.host} (user:{self.user})" )
             logger.debug('Exception details: ', exc_info=True)
+            try:
+                if self.ssh is not None:
+                    self.ssh.close()
+                    self.ssh = None
+            except Exception:
+                pass
 
         finally:
             alarm_cancel()
@@ -262,6 +267,7 @@ class Sftp(Transfer):
             self.user = url.username
             self.password = url.password
             self.ssh_keyfile = details.ssh_keyfile
+            self.compat_mode = details.sftp_compat_mode
 
             if url.username == '': self.user = None
             if url.password == '': self.password = None
@@ -393,9 +399,10 @@ class Sftp(Transfer):
         cmd = self.o.accelScpCommand.replace('%s', arg1)
         cmd = cmd.replace('%d', arg2).split()
         logger.info(f"accel_sftp:  {' '.join(cmd)}")
-        p = subprocess.Popen(cmd)
-        p.wait()
-        if p.returncode != 0:
+        try:
+            self.runAccelCommand(cmd)
+        except Exception as e:
+            logger.error(e)
             return -1
         sz = os.stat(arg2).st_size
         return sz
@@ -503,6 +510,11 @@ class Sftp(Transfer):
         # read from local_file and write to rfp
 
         try:
+            if not self.compat_mode:
+                # MAX_REQUEST_SIZE does not work here (at least when the destination is OpenSSH)
+                # performance improvement: pipelined mode
+                rfp.set_pipelined(pipelined=True)
+
             rw_length = self.readlocal_write(local_file, local_offset,
                                              length, rfp)
 
@@ -537,10 +549,7 @@ class Sftp(Transfer):
         cmd = cmd.replace('%d', arg2).split()
 
         logger.info(f"accel_sftp:  {' '.join(cmd)}")
-        p = subprocess.Popen(cmd)
-        p.wait()
-        if p.returncode != 0:
-            return -1
+        self.runAccelCommand(cmd, 'putAccelerated')
         # FIXME: faking success... not sure how to check really.
         sz = int(msg['size'])
         return sz

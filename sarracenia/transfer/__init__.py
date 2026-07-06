@@ -28,6 +28,7 @@ import logging
 import os
 import random
 import signal
+import subprocess
 import stat
 import sys
 import time
@@ -190,7 +191,7 @@ class Transfer():
         """
         now=nowflt()
         if now-self.lastLog > self.logMinimumInterval:
-            logger.info( f"{naturalSize(sz)} written so far.")
+            logger.info( f"{naturalSize(sz)} written so far. ({naturalSize(self.byteRate)}/s)")
             self.lastLog=now
 
     def local_read_close(self, src):
@@ -474,6 +475,20 @@ class Transfer():
 
     def gethttpsUrl(self, path):
         return None
+
+    def runAccelCommand(self, cmd, exc_prefix=''):
+        """ Run a command, capture stderr. exc_prefix is a string that is added to the beginning of the
+            exception message.
+            Raises Exception if the command returns non-zero.
+        """
+        p = subprocess.Popen(cmd, stderr=subprocess.PIPE)
+        _, stderr = p.communicate()
+        if p.returncode != 0:
+            try:
+                stderr = stderr.decode().strip()
+            except Exception:
+                pass
+            raise Exception(f"{exc_prefix} failed: {stderr} (cmd used: {' '.join(cmd)})")
 
 # batteries included.
 import sarracenia.transfer.file

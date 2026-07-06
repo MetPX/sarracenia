@@ -197,6 +197,16 @@ class AMQP(Moth):
             if 'logLevel' in self.o['settings'][me]:
                 logger.setLevel(self.o['logLevel'].upper())
 
+        # timeout option is a float and default is 0.0. basic_publish wants int or None for no timeout
+        try:
+            if self.o['timeout']:
+                self.timeout = int(self.o['timeout'])
+            else:
+                self.timeout = None
+        except Exception as err:
+            logger.debug('Set AMQP timeout to None. Exception details: ', exc_info=True)
+            self.timeout = None
+
         self.connection = None
         self.connection_id = None
         self.broker = None
@@ -252,11 +262,15 @@ class AMQP(Moth):
         self.connection = amqp.Connection(host=host,
                                           userid=broker.url.username,
                                           password=broker.url.password,
-                                          login_method=broker.login_method,                                          virtual_host=vhost,
+                                          login_method=broker.login_method,
+                                          virtual_host=vhost,
                                           ssl=sslarg,
                                           client_properties={'product':'MetPX Sarracenia (sr3)',
                                                              'product_version':sarracenia.__version__,
-                                                            }
+                                                            },
+                                          connect_timeout=self.timeout,
+                                          read_timeout=self.timeout,
+                                          write_timeout=self.timeout,
                                           )
         self.connection_id = str(uuid.uuid4()) + ("_sub" if self.is_subscriber else "_pub")
         self.broker = host + '/' + vhost
@@ -772,7 +786,7 @@ class AMQP(Moth):
                 if (type(headers[k]) is str) and (len(headers[k]) >=
                                                       amqp_ss_maxlen):
                     logger.error(f"message header {k} too long, dropping")
-                    return False
+                    continue
 
         AMQP_Message = amqp.Message(raw_body,
                                         content_type=content_type,
@@ -784,22 +798,11 @@ class AMQP(Moth):
             self.metrics['txByteCount'] += len(''.join(str(headers)))
         self.metrics['txLast'] = sarracenia.nowstr()
 
-        # timeout option is a float and default is 0.0. basic_publish wants int or None for no timeout
-        try:
-            if self.o['timeout']:
-                pub_timeout = int(self.o['timeout'])
-            else:
-                pub_timeout = None
-        except Exception as err:
-            logger.debug('Set pub_timeout to None. Exception details: ', exc_info=True)
-            pub_timeout = None
-
         body=raw_body
         ebo = 1
         try:
             logger.debug('trying to publish body: %s headers: %s to %s under: %s ', body, headers, exchange, topic)
-            self.channel.basic_publish(AMQP_Message, exchange, topic, timeout=pub_timeout)
-            # Issue #732: tx_commit can get stuck forever
+            self.channel.basic_publish(AMQP_Message, exchange, topic, timeout=self.timeout)
             self.channel.tx_commit()
             logger.debug(f"published body: {body} headers: {headers} to {exchange} under: {topic} ")
             self.metrics['txGoodCount'] += 1

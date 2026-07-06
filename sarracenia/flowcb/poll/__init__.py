@@ -389,9 +389,13 @@ class Poll(FlowCB):
 
         # assert at this point we have an sftp_obj...
         # filter out files we don't have the necessary permissions for.
-        if 'sftp_obj' in locals() and ((sftp_obj.st_mode
-                                        & self.o.permDefault) == self.o.permDefault):
+        if 'sftp_obj' in locals() and ((sftp_obj.st_mode & self.o.permDefault) == self.o.permDefault):
             return sftp_obj
+        elif 'sftp_obj' in locals() and not ((sftp_obj.st_mode & self.o.permDefault) == self.o.permDefault):
+            logger.debug("ignored file %s with permissions %s (permDefault mask: %s)", sftp_obj.longname,
+                                                                                       sftp_obj.st_mode,
+                                                                                       self.o.permDefault)
+            return None
         else:
             return None
 
