@@ -20,7 +20,7 @@
 #  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307  USA
 #
 
-import ftplib, os, subprocess, sys, time, ssl
+import ftplib, os, sys, time, ssl
 import logging
 from sarracenia.transfer import Transfer
 from sarracenia.transfer import alarm_cancel, alarm_set, alarm_raise
@@ -214,10 +214,11 @@ class Ftp(Transfer):
         # timeout alarm 100 secs to connect
         alarm_set(self.o.timeout)
 
+        ftp = None
         try:
             expire = -999
             if self.o.timeout: expire = self.o.timeout
-            if self.port == '' or self.port == None: 
+            if self.port == '' or self.port == None:
                 if self.implicit_ftps:
                     self.port = 990
                 else:
@@ -255,7 +256,7 @@ class Ftp(Transfer):
 
             try:
                 self.originalDir = ftp.pwd()
-            except:
+            except Exception:
                 logger.warning("Unable to ftp.pwd")
                 logger.debug('Exception details: ', exc_info=True)
 
@@ -263,9 +264,14 @@ class Ftp(Transfer):
             self.connected = True
             self.ftp = ftp
 
-        except:
-            logger.error(f"Unable to connect to {self.host} (user:{self.user})")
+        except Exception:
+            logger.error("Unable to connect to %s (user:%s)", self.host, self.user)
             logger.debug('Exception details: ', exc_info=True)
+            if ftp is not None:
+                try:
+                    ftp.close()
+                except Exception:
+                    pass
 
         alarm_cancel()
         return self.connected
@@ -358,9 +364,10 @@ class Ftp(Transfer):
         cmd = cmd.replace('%d', arg2).split()
 
         logger.info(f"accel_ftp:  {' '.join(cmd)}")
-        p = subprocess.Popen(cmd)
-        p.wait()
-        if p.returncode != 0:
+        try:
+            self.runAccelCommand(cmd)
+        except Exception as e:
+            logger.error(e)
             return -1
         sz = os.stat(arg2).st_size
         return sz
@@ -481,10 +488,7 @@ class Ftp(Transfer):
         cmd = cmd.replace('%d', arg2).split()
 
         logger.info(f"accel_ftp:  {' '.join(cmd)}")
-        p = subprocess.Popen(cmd)
-        p.wait()
-        if p.returncode != 0:
-            return -1
+        self.runAccelCommand(cmd, 'putAccelerated')
         # FIXME: faking success... not sure how to check really.
         sz = int(msg['size'])
         return sz

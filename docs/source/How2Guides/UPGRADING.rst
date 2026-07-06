@@ -47,6 +47,11 @@ in sr3. This version fixes the bug, but may cause existing ``accept`` or ``rejec
 differently (if received messages contain ``sundew_extension``). Existing configurations should be audited to
 verify that this will not cause any unexpected changes.
 
+*CHANGE*: polls are supposed to filter out files that are not readable by the user that is polling, using the
+``permDefault`` option as a mask. This was not working correctly and has been fixed, but may cause polls to miss
+files that were previously being posted. If any poll configs depend on the old, broken behaviour, the ``permDefault``
+can be set to ``000`` to allow un-readable files to be posted.
+
 3.02.00
 -------
 

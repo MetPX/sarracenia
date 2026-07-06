@@ -136,6 +136,7 @@ class AMQPConsumer(AMQP):
                     return None
                 else:
                     self.metrics['rxGoodCount'] += 1
+                self.metrics['rxLast'] = sarracenia.nowstr()
                 if hasattr(self.o, 'fixed_headers'):
                     for k in self.o.fixed_headers:
                         msg[k] = self.o.fixed_headers[k]

@@ -111,6 +111,7 @@ class Credential:
         login_method (str): force a specific login method for AMQP (PLAIN,
             AMQPLAIN, EXTERNAL or GSSAPI)
         implicit_ftps (bool): use implicit FTPS, defaults to ``False`` (i.e. explicit FTPS)
+        sftp_compat_mode (bool): disable performance improvements in SFTP code, use paramiko defaults instead
 
     Usage:
 
@@ -148,6 +149,7 @@ class Credential:
         self.s3_anonymous = False
         self.azure_credentials = None
         self.implicit_ftps = False
+        self.sftp_compat_mode = False
 
     def __str__(self):
         """Returns attributes of the Credential object as a readable string.
@@ -175,7 +177,7 @@ class Credential:
             if scheme.startswith('ftp'):
                 alist = [ 'passive', 'binary', 'tls', 'prot_p', 'login_method', 'implicit_ftps' ]
             elif scheme.startswith('sftp'):
-                alist = [ 'ssh_keyfile' ]
+                alist = [ 'ssh_keyfile', 'sftp_compat_mode' ]
             elif scheme.startswith('amqp') or scheme.startswith('mqtt'):
                 alist = [ 'login_method' ]
             elif scheme.startswith('amq1'):
@@ -461,6 +463,8 @@ class CredentialDB:
                 elif keyword == 'implicit_ftps':
                     details.implicit_ftps = True
                     details.tls = True
+                elif keyword == 'sftp_compat_mode':
+                    details.sftp_compat_mode = True
                 else:
                     logger.warning(f"bad credential option ({keyword})")
 

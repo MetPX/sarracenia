@@ -179,7 +179,6 @@ class Retry(FlowCB):
         to_retry = self.__filter_by_retry_count(worklist.failed)
 
         self.post_retry.put(to_retry)
-        worklist.failed=[]
 
     def metricsReport(self) -> dict:
         """Returns the number of messages in the download_retry and post_retry queues.
