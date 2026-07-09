@@ -141,7 +141,7 @@ class S3CloudSender(FlowCB):
             logger.info("post_urlType and post_baseUrl not set, using s3://")
             self.o.post_baseUrl = "s3://"
         else:
-            logger.debug(f"Using post_baseUrl {self.o.post_baseUrl}")
+            logger.debug('Using post_baseUrl %s', self.o.post_baseUrl)
 
         # sendTo destination in config file sets the URL and access key ID
         #  - Access Key and Secret Access Key should be defined in credentials.conf
@@ -180,9 +180,8 @@ class S3CloudSender(FlowCB):
 
     def send(self, msg):
 
-        logger.debug(f"Received msg: {msg}")
-        logger.debug(f"Received msg: format={msg['_format']}, baseUrl={msg['baseUrl']}, " +
-                     f"relPath={msg['relPath']}, new_dir={msg['new_dir']}, new_file={msg['new_file']}")
+        logger.debug('Received msg: %s', msg)
+        logger.debug('Received msg: format=%s, baseUrl=%s, relPath=%s, new_dir=%s, new_file=%s', msg['_format'], msg['baseUrl'], msg['relPath'], msg['new_dir'], msg['new_file'])
 
         # Bucket name and (optional remote path) come from the directory setting in the config
         # remote path should not start with /
@@ -199,7 +198,7 @@ class S3CloudSender(FlowCB):
             logger.error(f"File does not exist: {local_file} (baseDir: {self.o.baseDir}, relPath: {msg['relPath']})")
             return False
 
-        logger.debug(f"Going to upload local file: {local_file} to S3 bucket: {s3_bucket_name}, path: {remote_path}")
+        logger.debug('Going to upload local file: %s to S3 bucket: %s, path: %s', local_file, s3_bucket_name, remote_path)
 
         try:
             self.s3_client.upload_file(local_file, s3_bucket_name, remote_path)
@@ -238,7 +237,7 @@ class S3CloudSender(FlowCB):
             msg['new_relPath'] = remote_path
             logger.error(f"Couldn't determine baseUrl type for {msg['new_baseUrl']}, set to s3:// with relPath {msg['new_relPath']}")
 
-        logger.debug(f"Modified msg: {msg}")
+        logger.debug('Modified msg: %s', msg)
 
         return True
 

@@ -38,6 +38,21 @@ Instructions d’installation
 git
 ---
 
+3.03.00
+-------
+
+*CHANGEMENT*: En raison d'un bogue (# 1573), le filtrage des messages à l'aide de l'en-tête « sundew_extension » ne
+fonctionnait pas correctement dans la version 3. Cette version corrige ce bogue, mais peut modifier le comportement
+des instructions « accept » ou « reject » existantes (si les messages reçus contiennent « sundew_extension »). Il
+est recommandé de vérifier les configurations existantes afin de s'assurer que cette mise à jour n'entraînera
+aucun changement inattendu.
+
+*CHANGEMENT* : Les polls sont censés filtrer les fichiers qui ne sont pas lisibles par l’utilisateur qui interroge,
+en utilisant l’option ``permDefault`` comme masque. Cela ne fonctionnait pas correctement et a été corrigé, mais
+peut faire en sorte que ``polls`` ignore les fichiers qui étaient détectés avant ce changement. Si des
+configurations poll dépendent de l'ancien comportement défectueux, la valeur de ``permDefault`` peut être
+définie sur ``000`` pour autoriser l'envoi de fichiers illisibles.
+
 3.02.00
 -------
 

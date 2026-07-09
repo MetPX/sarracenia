@@ -19,14 +19,14 @@ class Delete(FlowCB):
     def after_accept(self, worklist):
         new_incoming = []
         for message in worklist.incoming:
-            f = "%s/%s" % (message['new_dir'], message['new_file'])
+            f = f"{message['new_dir']}/{message['new_file']}"
             try:
                 os.unlink(f)
                 os.unlink(f.replace('/cfr/', '/cfile/'))
-                logger.info("deleted: %s and the cfile version." % f)
+                logger.info(f"deleted: {f} and the cfile version.")
                 new_incoming.append(message)
             except OSError as err:
-                logger.error("could not unlink {}: {}".format(f, err))
+                logger.error(f"could not unlink {f}: {err}")
                 logger.debug("Exception details:", exc_info=True)
                 self.o.consumer.sleep_now = self.o.consumer.sleep_min
                 self.o.consumer.msg_to_retry()

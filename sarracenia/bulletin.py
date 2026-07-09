@@ -74,7 +74,7 @@ class Bulletin:
         # Remove the ['z', 'Z'] or ['utc', 'UTC'] if they're present in the group DDHHmm
         if len(tokens[2]) > 6: 
             tokens[2] = tokens[2][0:6]
-            logger.info("Header normalized (%s): truncated the DDHHMM group (>6 characters)" % str(header))
+            logger.info(f"Header normalized ({header!s}): truncated the DDHHMM group (>6 characters)")
             rebuild = 1
 
         # Verify first three fields, T1T2AiA2ii CCCC DDHHmm -> https://www.weather.gov/tg/headef 
@@ -194,8 +194,13 @@ class Bulletin:
 
             #print " ********************* header = ", data[0][0:7]
             # switch depends on bulletin type.
+
             if data[0][0:2] == "SA":
-                if data[1].split()[0] in ["METAR","LWIS"]:
+                # If there are more then 1 METAR in a SA file, don't use the station found as the header.
+                metar_count = sum(s.count('METAR') for s in data)
+                if metar_count > 1:
+                    station = ''
+                elif data[1].split()[0] in ["METAR","LWIS"]:
                     station = premiereLignePleine.split()[1]
                 else:
                     station = premiereLignePleine.split()[0]

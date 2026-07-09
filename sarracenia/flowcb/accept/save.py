@@ -42,4 +42,4 @@ class Save(FlowCB):
         for message in worklist.incoming:
             self.msgSaveFile.write(jsonpickle.encode(message) + '\n')
             self.msgSaveFile.flush()
-            logger.info("msg_save saving msg with topic:%s (aborting further processing)" % message['topic'])
+            logger.info(f"msg_save saving msg with topic:{message['topic']} (aborting further processing)")

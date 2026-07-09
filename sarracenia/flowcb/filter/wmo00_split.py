@@ -80,7 +80,7 @@ class Wmo00_split(FlowCB):
             record_count=1
             current=0
             while current+13 < len(input_data):
-                logger.debug( f"at byte {current} record {record_count} in stream" )
+                logger.debug('at byte %s record %s in stream', current, record_count)
                 # should be at start of record, 8 bytes recordlength.
                 try:
                     payload_len_str = input_data[current:current+8]
@@ -97,7 +97,7 @@ class Wmo00_split(FlowCB):
                     continue
 
                 # skip first len header.
-                logger.debug( f"consuming 10 byte outer header, payload length is: {payload_len}" )
+                logger.debug('consuming 10 byte outer header, payload length is: %s', payload_len)
                 current += 10 
 
                 if self.o.wmo00_encapsulate:
@@ -141,7 +141,7 @@ class Wmo00_split(FlowCB):
                 else:
                     filename += '_' + hashlib.md5(payload).hexdigest()
 
-                logger.debug( f"TT={TT}, AA={AA}, ii={ii}, YY={YY}, GG={GG}, gg={gg} RRR={RRR}" )
+                logger.debug('TT=%s, AA=%s, ii=%s, YY=%s, GG=%s, gg=%s RRR=%s', TT, AA, ii, YY, GG, gg, RRR)
 
                 if self.o.wmo00_tree:
                     directory=f"{self.o.wmo00_work_directory}/{TT}/{CCCC}/{GG}"

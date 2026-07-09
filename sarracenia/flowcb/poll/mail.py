@@ -82,8 +82,7 @@ class Mail(Poll):
                     mailman.login(user, password)
                 except imaplib.IMAP4.error as e:
                     logger.error(
-                        "poll_email_ingest imaplib connection error: {}".
-                        format(e))
+                        f"poll_email_ingest imaplib connection error: {e}")
                     return
 
             elif protocol == "imap":
@@ -92,8 +91,7 @@ class Mail(Poll):
                     mailman.login(user, password)
                 except imaplib.IMAP4.error as e:
                     logger.error(
-                        "poll_email_ingest imaplib connection error: {}".
-                        format(e))
+                        f"poll_email_ingest imaplib connection error: {e}")
                     return
             else:
                 return
@@ -122,8 +120,7 @@ class Mail(Poll):
                     logger.debug("poll_email_ingest connection started")
                 except poplib.error_proto as e:
                     logger.error(
-                        "poll_email_ingest pop3 connection error: {}".format(
-                            e))
+                        f"poll_email_ingest pop3 connection error: {e}")
                     return
 
             elif protocol == "pop":
@@ -133,8 +130,7 @@ class Mail(Poll):
                     mailman.pass_(password)
                 except poplib.error_proto as e:
                     logger.error(
-                        "poll_email_ingest pop3 connection error: {}".format(
-                            e))
+                        f"poll_email_ingest pop3 connection error: {e}")
                     return
             else:
                 return

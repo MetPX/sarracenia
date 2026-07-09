@@ -128,7 +128,7 @@ class Geometry(FlowCB):
 
                 # catch cases for when neither the config or the message have points or poylgons (multipoint, line, etc..)
                 else:
-                    logger.debug(f"Message or config aren't a Point or Polygon, failing; message={m}")
+                    logger.debug("Message or config aren't a Point or Polygon, failing; message=%s", m)
                     worklist.failed.append(m)
                     continue
                 

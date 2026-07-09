@@ -45,14 +45,12 @@ class Mail_ingest(FlowCB):
                 if ok: 
                         setting         = details.url
                         user            = setting.username
-                        user = urllib.parse.unquote(user)
                         password        = setting.password
-                        password = urllib.parse.unquote(password)
                         server          = setting.hostname
                         protocol        = setting.scheme.lower() 
                         port            = setting.port
                 else:
-                        logger.error("download_email_ingest: destination has invalid credentials: %s" % msg['baseUrl'])
+                        logger.error(f"download_email_ingest: destination has invalid credentials: {msg['baseUrl']}")
                         return False
 
                 if not port:
@@ -71,7 +69,7 @@ class Mail_ingest(FlowCB):
                                         mailman = imaplib.IMAP4_SSL(server, port=port)
                                         mailman.login(user, password)
                                 except imaplib.IMAP4.error as e:
-                                        logger.error("download_email_ingest imaplib connection error: {}".format(e))
+                                        logger.error(f"download_email_ingest imaplib connection error: {e}")
                                         return False
 
                         elif protocol == "imap":
@@ -79,7 +77,7 @@ class Mail_ingest(FlowCB):
                                         mailman = imaplib.IMAP4(server, port=port)
                                         mailman.login(user, password)
                                 except imaplib.IMAP4.error as e:
-                                        logger.error("download_email_ingest imaplib connection error: {}".format(e))
+                                        logger.error(f"download_email_ingest imaplib connection error: {e}")
                                         return False
                         else: return False
 
@@ -88,7 +86,7 @@ class Mail_ingest(FlowCB):
                         for index in data[0].split():
                                 r, d = mailman.fetch(index, '(RFC822)')
                                 msg = d[0][1].decode("utf-8", "ignore") + "\n"
-                                logger.info("download_email_ingest downloaded file: %s" % msg['new_dir']+'/'+msg['new_file'])
+                                logger.info(f"download_email_ingest downloaded file: {msg['new_dir']}"+'/'+msg['new_file'])
                                 with open(msg['new_dir']+'/'+msg['new_file'], 'w') as f:
                                        f.write(msg)
                                        f.close()
@@ -107,7 +105,7 @@ class Mail_ingest(FlowCB):
                                         mailman.user(user)
                                         mailman.pass_(password)
                                 except poplib.error_proto as e:
-                                        logger.error("download_email_ingest pop3 connection error: {}".format(e))
+                                        logger.error(f"download_email_ingest pop3 connection error: {e}")
                                         return False
 
                         elif protocol == "pop":
@@ -116,7 +114,7 @@ class Mail_ingest(FlowCB):
                                         mailman.user(user)
                                         mailman.pass_(password)
                                 except poplib.error_proto as e:
-                                        logger.error("download_email_ingest pop3 connection error: {}".format(e))
+                                        logger.error(f"download_email_ingest pop3 connection error: {e}")
                                         return False
                         else: return False
                         # only retrieves msgs that haven't triggered internal pop3 'read' flag
@@ -132,7 +130,7 @@ class Mail_ingest(FlowCB):
 
                                 # if it worked, write it locally, update message as needed.
                                 if msgid == msg['new_file']:                                        
-                                    logger.info("download_email_ingest downloaded file: %s" % msg['new_dir']+'/'+msg['new_file'])
+                                    logger.info(f"download_email_ingest downloaded file: {msg['new_dir']}"+'/'+msg['new_file'])
                                     
                                     sumalgo = sarracenia.identity.Identity.factory(self.o.identity_method)
                                     sumalgo.set_path(path)

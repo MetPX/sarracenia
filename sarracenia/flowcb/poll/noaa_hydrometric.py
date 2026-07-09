@@ -70,10 +70,10 @@ class Noaa_hydrometric(FlowCB):
                     for line in f:
                         items = line.split('|')
                         sitecodes.append(items[2])
-                logger.info("poll_noaa used stn_file %s" % stn_file)
+                logger.info(f"poll_noaa used stn_file {stn_file}")
 
             except IOError as e:
-                logger.error("poll_noaa couldn't open stn file: %s" % stn_file)
+                logger.error(f"poll_noaa couldn't open stn file: {stn_file}")
 
         else:
             # Grab station site codes from https://opendap.co-ops.nos.noaa.gov/stations/stationsXML.jsp
