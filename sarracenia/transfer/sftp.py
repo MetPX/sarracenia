@@ -483,13 +483,19 @@ class Sftp(Transfer):
             length=0):
         logger.debug(' local_file=%s remote_file=%s local_offset=%s remote_offset=%s length=%s', local_file, remote_file, local_offset, remote_offset, length)
 
+        # do not use a Paramiko buffered file when using pipelined uploads. It seems to sometimes cause hangs.
+        if self.compat_mode:
+            bufSize = self.o.bufSize
+        else:
+            bufSize = 0
+
         # simple file
 
         alarm_set(2 * self.o.timeout)
 
         try:
            if length == 0:
-               rfp = self.sftp.file(remote_file, 'wb', self.o.bufSize)
+               rfp = self.sftp.file(remote_file, 'wb', bufSize)
                rfp.settimeout(1.0 * self.o.timeout)
 
            # parts
@@ -497,10 +503,10 @@ class Sftp(Transfer):
                try:
                    self.sftp.stat(remote_file)
                except:
-                   rfp = self.sftp.file(remote_file, 'wb', self.o.bufSize)
+                   rfp = self.sftp.file(remote_file, 'wb', bufSize)
                    rfp.close()
 
-               rfp = self.sftp.file(remote_file, 'r+b', self.o.bufSize)
+               rfp = self.sftp.file(remote_file, 'r+b', bufSize)
                rfp.settimeout(1.0 * self.o.timeout)
                if remote_offset != 0: rfp.seek(remote_offset, 0)
 
