@@ -89,7 +89,7 @@ def signal_pid( pid, sig ) -> int:
         return -2
 
     except Exception as ex:
-       logger.warning('sending kill signal to pid:%s failed: %s' % ( pid, ex))
+       logger.warning(f'sending kill signal to pid:{pid} failed: {ex}')
        return -1
 
 # noinspection PyArgumentList
@@ -119,7 +119,7 @@ class sr_GlobalState:
             if not os.path.exists(s):
                 s += '.py'
             if not os.path.exists(s):
-                print("don't know where the script files are for: %s" % c)
+                print(f"don't know where the script files are for: {c}")
                 return ''
             return s
         else:  # C components
@@ -151,7 +151,7 @@ class sr_GlobalState:
                     except FileExistsError:
                         dir_not_there = False 
                     except Exception as ex:
-                        logging.error( "makedirs {} failed err={}".format(os.path.dirname(lfn),ex))
+                        logging.error( f"makedirs {os.path.dirname(lfn)} failed err={ex}")
                         logging.debug("Exception details:", exc_info=True)
                         time.sleep(0.1)
                 
@@ -201,14 +201,13 @@ class sr_GlobalState:
                                  stderr=subprocess.STDOUT)
             #print( f"launched: {cmd}" )
         except Exception as ex:
-            print("failed to launch: %s >%s >2&1 (reason: %s) " %
-                  (' '.join(cmd), lfn, ex))
+            print(f"failed to launch: {' '.join(cmd)} >{lfn} >2&1 (reason: {ex}) ")
 
     def save_procs(self, File="procs.json"):
         """
            dump image of process table to a file, one process per line, JSON UTF-8 encoded.
         """
-        print('save_procs to: %s' % File)
+        print(f'save_procs to: {File}')
         with open(File, 'a') as f:
             f.seek(0, 0)
             f.truncate()
@@ -270,7 +269,7 @@ class sr_GlobalState:
            read process table from a save file, for reproducible testing.
         """
         self.procs = {}
-        print('getting procs from %s: ' % File, end='', flush=True)
+        print(f'getting procs from {File}: ', end='', flush=True)
         pcount = 0
         with open(File, 'r') as f:
             self.me = f.readline().rstrip()
@@ -392,7 +391,7 @@ class sr_GlobalState:
 
         for f in ['default.conf', 'admin.conf']:
             to = other_config_dir + os.sep + f
-            print('save_configs copying: %s %s' % (f, to))
+            print(f'save_configs copying: {f} {to}')
             shutil.copyfile(f, to)
 
         self._cleanse_credentials(other_config_dir + os.sep +
@@ -407,7 +406,7 @@ class sr_GlobalState:
                 for cfg in os.listdir():
                     if cfg[0] == '.': continue
                     to = other_c_dir + os.sep + cfg
-                    print('save_configs copying: %s %s' % (cfg, to))
+                    print(f'save_configs copying: {cfg} {to}')
                     shutil.copyfile(cfg, to)
                 os.chdir('..')
 
@@ -439,7 +438,7 @@ class sr_GlobalState:
                     for f in os.listdir():
                         if f[0] == '.': continue
                         to = other_cfg_dir + os.sep + f
-                        print('save_states copying: %s %s' % (f, to))
+                        print(f'save_states copying: {f} {to}')
                         shutil.copyfile(f, to)
                     os.chdir('..')
                 os.chdir('..')
@@ -524,7 +523,7 @@ class sr_GlobalState:
                                         with p.open() as f:
                                             t = f.read().strip()
                                 except FileNotFoundError:
-                                    logger.error("state file %s disappeared (race condition, see #1571), skipping", pathname)
+                                    logger.error( f"state file {pathname} disappeared (race condition, see #1571), skipping" )
                                     continue
                                 #print( 'read pathname:%s len: %d contents:%s' % ( pathname, len(t), t[0:10] ) )
                                 if len(t) == 0:
@@ -653,7 +652,7 @@ class sr_GlobalState:
                                             with p.open() as f:
                                                 t = f.read().strip()
                                     except FileNotFoundError:
-                                        logger.error("pid file %s disappeared (race condition, see #1571), skipping.", filename)
+                                        logger.error( f"pid file {filename} disappeared (race condition, see #1571), skipping." )
                                         continue
                                     if t.isdigit():
                                         pid = int(t)
@@ -706,7 +705,7 @@ class sr_GlobalState:
                                         with p.open() as f:
                                             t = f.read().strip()
                                 except FileNotFoundError:
-                                    logger.error("pid file %s disappeared (race condition, see #1571), skipping cleanup", filename)
+                                    logger.error( f"pid file {filename} disappeared (race condition, see #1571), skipping cleanup" )
                                     continue
                                 if t.isdigit():
                                     pid = int(t)
@@ -829,7 +828,8 @@ class sr_GlobalState:
                         host = self._init_broker_host(s['broker'].url.netloc)
                         xl=[]
                         for b in s['bindings']:
-                            xl.append(b['exchange'])
+                            if 'exchange' in b:
+                                xl.append(b['exchange'])
                         #logger.critical( f" {xl=}  ")
                         q = s['queue']['name']
 
@@ -847,10 +847,11 @@ class sr_GlobalState:
                 if hasattr(o,'publishers') and len(o.publishers):
                     for p in o.publishers:
                         host = self._init_broker_host(p['broker'].url.netloc)
-                        if 'exchange' in self.brokers[host]:
-                            self.brokers[host]['exchange'].extend(p['exchange'])
-                        else:
-                            self.brokers[host]['exchange'] = p['exchange']
+                        if 'exchange' in p:
+                            if 'exchange' in self.brokers[host]:
+                                self.brokers[host]['exchange'].extend(p['exchange'])
+                            else:
+                                self.brokers[host]['exchange'] = p['exchange']
 
         self.exchange_summary = {}
         for h in self.brokers:
@@ -888,6 +889,7 @@ class sr_GlobalState:
                 'rxMessageRate':0, 'rxMessageRateCpu':0, 'rxDataRate':0, 'rxFileRate':0, 'rxMessageByteRate':0, 
                 'txMessageRate':0, 'txDataRate':0, 'txFileRate':0, 'txMessageByteRate':0
                 }
+
         for c in self.components:
             if (c not in self.states) or (c not in self.configs):
                 continue
@@ -897,7 +899,7 @@ class sr_GlobalState:
                     self.cumulative_stats['flowNameWidth'] = len( f"{c}/{cfg}" ) 
 
                 if cfg not in self.states[c]:
-                    logger.debug('no existing state files for %s/%s' % (c,cfg))
+                    logger.debug('no existing state files for %s/%s', c, cfg)
                     self.states[c][cfg] = {}
                     self.states[c][cfg]['instance_pids'] = {}
                     self.states[c][cfg]['queueName'] = None
@@ -928,15 +930,16 @@ class sr_GlobalState:
                     metrics=copy.deepcopy(empty_metrics)
                     for i in self.states[c][cfg]['instance_metrics']:
                         if self.states[c][cfg]['instance_metrics'][i]['status']['mtime'] < expiry:
-                            logger.debug( f"metrics for {c}/{cfg}/ instance {i} too old ignoring." )
+                            logger.debug('metrics for %s/%s/ instance %s too old ignoring.', c, cfg, i)
                             continue
 
                         #print( f"states of {c}/{cfg}: {self.states[c][cfg]} " )
                         #print( f"instance metrics states of {c}/{cfg}: {self.states[c][cfg]['instance_metrics']} " )
+                        #print(f"Now looking at following metrics for {cfg}. Metrics: {self.states[c][cfg]['instance_metrics']}")
                         for j in self.states[c][cfg]['instance_metrics'][i]:
                             #print( f"i={i}, j={j}, c={c}, cfg={cfg}" )
                             for k in self.states[c][cfg]['instance_metrics'][i][j]:
-                                #print( f"k={k}" )
+                                #print( f"k={k}. k type {type(self.states[c][cfg]['instance_metrics'][i][j][k])}" )
                                 if k in metrics:
                                     newval = self.states[c][cfg]['instance_metrics'][i][j][k]
                                     #print( f"k={k}, type={type(newval)} newval={newval}" )
@@ -953,20 +956,28 @@ class sr_GlobalState:
                                         newval = sarracenia.timestr2flt(newval)
                                         if 'transferLast' not in metrics or (newval > metrics['transferLast']):
                                             metrics['transferLast'] = newval
-                                    elif k in [ "rxLast", "txLast"  ]:
-                                        newval = sarracenia.timestr2flt(newval)
-                                        if k == 'rxLast' and 'rxLast' not in metrics or (newval > metrics['rxLast']):
-                                            metrics['rxLast'] = newval
-                                        if k == 'txLast' and 'txLast' not in metrics or (newval > metrics['txLast']):
-                                            metrics['txLast'] = newval
-                                        if 'messageLast' not in metrics or (newval > metrics['messageLast']):
-                                            metrics['messageLast'] = newval
                                     elif k in [ "cpuTime" ]:
                                         metrics['cpuTime'] += newval
                                     else:
                                         metrics[k] += newval
-                                #else:
-                                #    print( f'skipping {k}')
+                                else:
+                                    # Post and gather metrics fields (post.message/gather.message) include more nested dictionaries
+                                    # The k field inside of post.message and gather.message includes the broker name (introduced in the multi subscribe/publish support
+                                    # - Added in https://github.com/MetPX/sarracenia/commit/55882d8767).
+                                    # The broker string won't be included in the ordinary metrics fields so we need to bypass the original condition to access the per broker metrics.
+                                    if j in [ "post.message", "gather.message" ]:
+                                        for l in self.states[c][cfg]['instance_metrics'][i][j][k]:
+                                            #print(f"l: {l}")
+                                            if l in [ "rxLast", "txLast"  ]:
+                                                newval = self.states[c][cfg]['instance_metrics'][i][j][k][l]
+                                                if type(newval) == str: newval = sarracenia.timestr2flt(newval)
+                                                if l == 'rxLast' and ('rxLast' not in metrics or (newval > metrics['rxLast'])):
+                                                    metrics['rxLast'] = newval
+                                                if l == 'txLast' and ('txLast' not in metrics or (newval > metrics['txLast'])):
+                                                    metrics['txLast'] = newval
+                                                if 'messageLast' not in metrics or (newval > metrics['messageLast']):
+                                                    metrics['messageLast'] = newval
+
 
                         if 'transferConnectTime' in metrics:
                             metrics['transferConnectTime'] = metrics['transferConnectTime'] / len(self.states[c][cfg]['instance_metrics']) 
@@ -1148,12 +1159,12 @@ class sr_GlobalState:
                     elif flow_status in [ 'down', 'disconnected' ]:
                         pass
                     elif hasattr(self.configs[c][cfg]['options'],'publishers') and len(self.configs[c][cfg]['options'].publishers) \
-                            and (now-self.states[c][cfg]['metrics']['txLast']) > self.configs[c][cfg]['options'].runStateThreshold_idle:
+                            and (self.states[c][cfg]['metrics']['txLast'] != 0) and (now-self.states[c][cfg]['metrics']['txLast']) > self.configs[c][cfg]['options'].runStateThreshold_idle:
                         flow_status = 'idle'
                     elif  hasattr(self.configs[c][cfg]['options'],'download') and self.configs[c][cfg]['options'].download \
-                            and (now-self.states[c][cfg]['metrics']['transferLast']) > self.configs[c][cfg]['options'].runStateThreshold_idle:
+                            and (self.states[c][cfg]['metrics']['transferLast'] != 0) and (now-self.states[c][cfg]['metrics']['transferLast']) > self.configs[c][cfg]['options'].runStateThreshold_idle:
                         flow_status = 'idle'
-                    elif (now-self.states[c][cfg]['metrics']['rxLast']) > self.configs[c][cfg]['options'].runStateThreshold_idle:
+                    elif (self.states[c][cfg]['metrics']['rxLast'] != 0) and (now-self.states[c][cfg]['metrics']['rxLast']) > self.configs[c][cfg]['options'].runStateThreshold_idle:
                         flow_status = 'idle'
                     elif self.states[c][cfg]['metrics']['msgRate'] > 0 and \
                            self.states[c][cfg]['metrics']['msgRateCpu'] < self.configs[c][cfg]['options'].runStateThreshold_cpuSlow:
@@ -1184,7 +1195,7 @@ class sr_GlobalState:
           put all the ones that do not match in leftovers.
         """
 
-        logging.debug( 'starting match_patterns with: %s' % patterns )
+        logging.debug( f'starting match_patterns with: {patterns}' )
         self.filtered_configurations = []
         self.leftovers = []
         leftover_matches = {}
@@ -1204,7 +1215,7 @@ class sr_GlobalState:
                 candidates.append(fcc)
     
         self.all_configs = candidates
-        logger.debug( f"candidates: {candidates}" )
+        logger.debug('candidates: %s', candidates)
         new_patterns=[]
         for p in patterns:
             if p in [ 'examples','eg','ie', 'flow_callback','flowcb','fcb','v2plugins','v2p']:
@@ -1217,7 +1228,7 @@ class sr_GlobalState:
             leftover_matches[p] = 0
         patterns=new_patterns
 
-        logger.debug( f"patterns: {patterns}" )
+        logger.debug('patterns: %s', patterns)
         for fcc in candidates:
             if (patterns is None) or (len(patterns) < 1):
                 self.filtered_configurations.append(fcc)
@@ -1279,8 +1290,8 @@ class sr_GlobalState:
                         if fnmatch.fnmatch(fcc, p):
                             self.filtered_configurations.append(fcc)
 
-        logging.debug( 'match_patterns result filtered_configurations: %s' % self.filtered_configurations )
-        logging.debug( 'match_patterns result leftovers: %s' % self.leftovers )
+        logging.debug( f'match_patterns result filtered_configurations: {self.filtered_configurations}' )
+        logging.debug( f'match_patterns result leftovers: {self.leftovers}' )
 
     # FIXME: this should be in config.py
     @property
@@ -1311,6 +1322,7 @@ class sr_GlobalState:
         self.please_stop=False
         self.users = opt.users
         self.declared_users = opt.declared_users
+        self.has_disabled_config = False
 
         signal.signal(signal.SIGTERM, self._stop_signal)
         signal.signal(signal.SIGINT, self._stop_signal)
@@ -1397,7 +1409,7 @@ class sr_GlobalState:
                 for filename, lineno, name, line in traceback.extract_stack(stack):
                     code.append('File: "%s", line %d, in %s' % (filename, lineno, name))
                     if line:
-                        code.append("  %s" % (line.strip()))
+                        code.append(f"  {line.strip()}")
             logging.debug('\n'.join(code))
         self.please_stop=True
         # Signal is also sent to subprocesses. Once they exit, subprocess.run returns and sr.py should terminate.
@@ -1428,7 +1440,7 @@ class sr_GlobalState:
             else:
                 subprocess.run(cmd_list, check=True)
         except subprocess.CalledProcessError as err:
-            logging.critical("subprocess.run failed err={}".format(err))
+            logging.critical(f"subprocess.run failed err={err}")
             logging.debug("Exception details:", exc_info=True)
         except KeyboardInterrupt:
             logging.info("KeyboardInterrupt...")
@@ -1464,13 +1476,12 @@ class sr_GlobalState:
             for candidate in suggestions:
                 if os.path.exists(candidate):
                     pathlib.Path(destdir).mkdir(parents=True, exist_ok=True)
-                    logger.info("copying: %s to %s " %
-                                (candidate, destdir + os.sep + cfg))
+                    logger.info(f"copying: {candidate} to {destdir + os.sep + cfg} ")
                     shutil.copyfile(candidate, destdir + os.sep + cfg)
                     found = True
                     break
             if not found:
-                logger.info("did not find anything to copy for: %s. creating an empty one." % l)
+                logger.info(f"did not find anything to copy for: {l}. creating an empty one.")
                 if cfg[-5:] not in [ '.inc', '.conf' ]:
                     cfg = cfg + '.conf'
                 with open( destdir + os.sep + cfg, 'w' ) as f:
@@ -1483,27 +1494,38 @@ class sr_GlobalState:
 
         '''
 
+        if not self.validate_dangerWillRobinson():
+            return
+
         filtered_users = []
 
-        if len(self.filtered_configurations) < len(self.all_configs):
+        for config in self.filtered_configurations:
 
-            for config in self.filtered_configurations:
+            (c, cfg) = config.split(os.sep)
 
-                (c, cfg) = config.split(os.sep)
+            if not 'options' in self.configs[c][cfg]:
+                continue
 
-                if not 'options' in self.configs[c][cfg]:
-                    continue
+            o = self.configs[c][cfg]['options']
 
-                o = self.configs[c][cfg]['options']
+            # Issue 1710 - Do not declare configurations that are disabled.
+            # If any configs are disabled, don't declare any
+            if self.configs[c][cfg]['status'] in ['disabled'] or os.path.exists(self.user_cache_dir + os.sep + c + os.sep + cfg + os.sep + 'disabled'):
+                self.has_disabled_config = True
+                logger.error(f"Config {c}/{cfg} is disabled. It must be enabled before declaring.")
 
-                if hasattr(o, "subscriptions") and len(o.subscriptions):
-                    for s in o.subscriptions:
-                        filtered_users.append(f"{s['broker'].url.username}@{s['broker'].url.hostname}")
-                if hasattr(o, "publishers") and len(o.publishers):
-                    for p in o.publishers:
-                        filtered_users.append(f"{p['broker'].url.username}@{p['broker'].url.hostname}")
-                if hasattr(o, "report_broker") and o.report_broker:
-                    filtered_users.append(f"{o.report_broker.url.username}@{o.report_broker.url.hostname}")
+            if hasattr(o, "subscriptions") and len(o.subscriptions):
+                for s in o.subscriptions:
+                    filtered_users.append(f"{s['broker'].url.username}@{s['broker'].url.hostname}")
+            if hasattr(o, "publishers") and len(o.publishers):
+                for p in o.publishers:
+                    filtered_users.append(f"{p['broker'].url.username}@{p['broker'].url.hostname}")
+            if hasattr(o, "report_broker") and o.report_broker:
+                filtered_users.append(f"{o.report_broker.url.username}@{o.report_broker.url.hostname}")
+
+        if self.has_disabled_config:
+            logger.error("No configs have been declared due to disabled configurations.")
+            return
 
         # add users (?)
         if self.users: # check if users exist in the configuration (?)
@@ -1537,7 +1559,7 @@ class sr_GlobalState:
                                 user = f"{u_url.username}@{h}"
 
                                 if filtered_users and user not in filtered_users:
-                                    logger.debug(f"not adding {user}")
+                                    logger.debug('not adding %s', user)
                                     continue
 
                                 sarracenia.rabbitmq_admin.add_user( \
@@ -1568,7 +1590,8 @@ class sr_GlobalState:
 
             if not 'options' in self.configs[c][cfg]:
                 continue
-            logging.info('looking at %s/%s ' % (c, cfg))
+
+            logging.info(f'looking at {c}/{cfg} ')
             if hasattr(self.configs[c][cfg]['options'],'publishers'):
                 for p in self.configs[c][cfg]['options'].publishers:
                      if 'exchange' in p:
@@ -1592,7 +1615,8 @@ class sr_GlobalState:
 
             if not 'options' in self.configs[c][cfg]:
                 continue
-            logging.info('looking at %s/%s ' % (c, cfg))
+
+            logging.info(f'looking at {c}/{cfg} ')
             o = self.configs[c][cfg]['options']
             if not hasattr(o,'subscriptions'):
                 continue
@@ -1643,7 +1667,7 @@ class sr_GlobalState:
                 continue
 
             if 'instance_pids' in self.states[c][cfg] and len(self.states[c][cfg]['instance_pids']) > 0:
-                logging.error("cannot disable %s while it is running! " % f)
+                logging.error(f"cannot disable {f} while it is running! ")
                 continue
 
             self._tag_progress( c, cfg, 'disabled', ending=False )
@@ -1667,7 +1691,7 @@ class sr_GlobalState:
                 else:
                     editor = 'vi'
                 logger.info(
-                    'using %s. Set EDITOR variable pick another one.' % editor)
+                    f'using {editor}. Set EDITOR variable pick another one.')
 
             self.run_command([editor, cfgfile])
 
@@ -1700,7 +1724,7 @@ class sr_GlobalState:
             state_file_cfg_disabled = state_file_cfg + os.sep + 'disabled'
             if os.path.exists(state_file_cfg):
                 if not os.path.exists(state_file_cfg_disabled):
-                    logging.error('%s already enabled' % f)
+                    logging.error(f'{f} already enabled')
                     continue
                 else:
                     os.remove(state_file_cfg_disabled)
@@ -1851,7 +1875,7 @@ class sr_GlobalState:
                         print( f" could not resolve broker: {o.broker} " )
                         continue
 
-                    print('deleting: %s is: %s @ %s' % (f, q['name'], broker.url.hostname ))
+                    print(f"deleting: {f} is: {q['name']} @ {broker.url.hostname}")
                     qdc = sarracenia.moth.Moth.subFactory(
                         {
                             'broker': broker,
@@ -1881,11 +1905,10 @@ class sr_GlobalState:
                     if qd[1] in xx:
                         if 'admin' not in self.brokers[h]:
                             continue
-                        print(' remove %s from %s subscribers ' %
-                              (qd[1], x))
+                        print(f' remove {qd[1]} from {x} subscribers ')
                         xx.remove(qd[1])
                         if len(o.publishers) and len(xx) < 1:
-                            print("No local queues found for exchange %s, attemping to remove it..." % x)
+                            print(f"No local queues found for exchange {x}, attemping to remove it...")
                             for p in o.publishers:
                                 if p['broker'].url.hostname != h:
                                     continue
@@ -1894,7 +1917,7 @@ class sr_GlobalState:
                                     {
                                         'broker': p['broker'],
                                         'declare': False,
-                                        'exchange': p['exchange'],
+                                        'exchange': p['exchange'] if 'exchange' in p else None,
                                         'dry_run': self.options.dry_run,
                                         'broker': self.brokers[h]['admin'],
                                         'message_strategy': { 'stubborn':True },
@@ -1957,9 +1980,9 @@ class sr_GlobalState:
 
                     asf = cache_dir + os.sep + state_file
                     if self.options.dry_run:
-                        print('removing state file (dry run): %s' % asf)
+                        print(f'removing state file (dry run): {asf}')
                     else:
-                        print('removing state file: %s' % asf)
+                        print(f'removing state file: {asf}')
                         if os.path.exists(asf):
                             os.unlink(asf)
 
@@ -2005,7 +2028,7 @@ class sr_GlobalState:
 
             sr_GlobalState.print_column += 1
             count += 1
-            print("%-32s " % f, end='')
+            print(f"{f:32} ", end='')
 
     def print_configdir(self, prefix, configdir, component):
         """
@@ -2037,7 +2060,7 @@ class sr_GlobalState:
 
             sr_GlobalState.print_column += 1
             count += 1
-            print("%-32s " % f, end='')
+            print(f"{f:32} ", end='')
 
     def config_list(self):
         """
@@ -2046,21 +2069,20 @@ class sr_GlobalState:
 
         if hasattr(self, 'leftovers') and (len(self.leftovers) > 0):
             if self.leftovers[0] in ['examples', 'eg', 'ie']:
-                print('Sample Configurations: (from: %s )' %
-                      (self.package_lib_dir + os.sep + 'examples'))
+                print(f"Sample Configurations: (from: {self.package_lib_dir + os.sep + 'examples'} )")
                 for c in sarracenia.config.Config.components:
                     self.print_configdir2(
-                        " of %s " % c,
+                        f" of {c} ",
                         os.path.normpath(self.package_lib_dir + os.sep +
                                          'examples' + os.sep + c), c)
             elif self.leftovers[0] in ['flow_callback', 'flowcb', 'fcb']:
-                print('Provided callback classes: ( %s ) ' % self.package_lib_dir)
+                print(f'Provided callback classes: ( {self.package_lib_dir} ) ')
                 self.print_configdir2(
                     " of callback classes: ",
                     os.path.normpath(self.package_lib_dir + os.sep + 'flowcb'),
                     'flowcb')
             elif self.leftovers[0] in ['v2plugins', 'v2p']:
-                print('Provided v2 plugins: ( %s ) ' % self.package_lib_dir)
+                print(f'Provided v2 plugins: ( {self.package_lib_dir} ) ')
                 self.print_configdir2(
                     " of plugins: ",
                     os.path.normpath(self.package_lib_dir + os.sep +
@@ -2070,15 +2092,15 @@ class sr_GlobalState:
                     'Valid things to list: examples,eg,ie flow_callback,flowcb,fcb v2plugins,v2p'
                 )
         else:
-            print('User Configurations: (from: %s )' % self.user_config_dir)
+            print(f'User Configurations: (from: {self.user_config_dir} )')
             for c in sarracenia.config.Config.components:
                 self.print_configdir(
-                    "for %s" % c,
+                    f"for {c}",
                     os.path.normpath(self.user_config_dir + os.sep + c), c)
 
             self.print_configdir("general",
                                  os.path.normpath(self.user_config_dir), '')
-            print("\nlogs are in: %s\n" % os.path.normpath(self.log_dir))
+            print(f"\nlogs are in: {os.path.normpath(self.log_dir)}\n")
 
     def config_show(self):
         """
@@ -2096,12 +2118,12 @@ class sr_GlobalState:
             if c not in [ 'cpost', 'cpump' ]:
                 flow = sarracenia.flow.Flow.factory(o)
                 flow.loadCallbacks()
-                print('\nConfig of %s/%s: (with callbacks)' % (c, cfg))
+                print(f'\nConfig of {c}/{cfg}: (with callbacks)')
                 flow.o.dump()
                 del flow
                 flow=None
             else:
-                print('\nConfig of %s/%s: ' % (c, cfg))
+                print(f'\nConfig of {c}/{cfg}: ')
                 o.dump()
 
     def remove(self):
@@ -2136,16 +2158,16 @@ class sr_GlobalState:
                     if p in self.procs:
                         running +=1
                 if running > 0:
-                    logging.error("cannot remove %s/%s while it is running! " % ( c, cfg ) )
+                    logging.error(f"cannot remove {c}/{cfg} while it is running! " )
                     continue
 
             cfgfile = self.user_config_dir + os.sep + c + os.sep + cfg + '.conf'
             statefile = self.user_cache_dir + os.sep + c + os.sep + cfg
 
             if self.options.dry_run:
-                logging.info('removing (dry run) %s/%s ' % ( c, cfg ))
+                logging.info(f'removing (dry run) {c}/{cfg} ')
             else:
-                logging.info('removing %s/%s' % ( c, cfg ))
+                logging.info(f'removing {c}/{cfg}')
                 os.unlink(cfgfile)
                 try:
                     shutil.rmtree(statefile)
@@ -2244,7 +2266,7 @@ class sr_GlobalState:
                 if m[0] + os.sep + m[1] in self.filtered_configurations:
                     filtered_missing.append(m)
 
-            print('missing: %s' % filtered_missing)
+            print(f'missing: {filtered_missing}')
             print('starting them up...')
             if not self.options.dry_run:
                 self._start_missing()
@@ -2321,18 +2343,16 @@ class sr_GlobalState:
         if count > 0:
             logger.info( "sanitize complete, proceeding with start" )
 
-        has_disabled_config = False
-
         # if any configs are disabled, don't start any
         if not self._action_all_configs:
             for f in self.filtered_configurations:
                 (c, cfg) = f.split(os.sep)
             
-                if self.configs[c][cfg]['status'] == 'disabled':
-                    has_disabled_config = True
+                if self.configs[c][cfg]['status'] in ['disabled'] or os.path.exists(self.user_cache_dir + os.sep + c + os.sep + cfg + os.sep + 'disabled'):
+                    self.has_disabled_config = True
                     logger.error(f"Config {c}/{cfg} is disabled. It must be enabled before starting.")
 
-            if has_disabled_config:
+            if self.has_disabled_config:
                 logger.error("No configs have been started due to disabled configurations.")
                 return
 
@@ -2381,11 +2401,11 @@ class sr_GlobalState:
                      return
 
                  partial=True
-                 logger.debug( f"{pid_count}/{self.configs[c][cfg]['options'].instances} instances started." )
+                 logger.debug('%s/%s instances started.', pid_count, self.configs[c][cfg]['options'].instances)
                  time.sleep(5)
                  pid_count = self._pid_file_count(c,cfg)
 
-            logger.debug( f"{c}/{cfg}: {pid_count}/{self.configs[c][cfg]['options'].instances} instances started." )
+            logger.debug('%s/%s: %s/%s instances started.', c, cfg, pid_count, self.configs[c][cfg]['options'].instances)
 
             # skip posts that cannot run as daemons
             if c in ['post', 'cpost'] and not self._post_can_be_daemon(c, cfg): continue
@@ -2575,8 +2595,7 @@ class sr_GlobalState:
 
             if self.configs[c][cfg]['status'] in self.status_active:
                 for i in self.states[c][cfg]['instance_pids']:
-                    print("failed to kill: %s/%s instance: %s, pid: %s )" %
-                          (c, cfg, i, self.states[c][cfg]['instance_pids'][i]))
+                    print(f"failed to kill: {c}/{cfg} instance: {i}, pid: {self.states[c][cfg]['instance_pids'][i]} )")
 
             self._tag_progress( c, cfg, 'shutdown', ending=True )
 
@@ -2596,7 +2615,7 @@ class sr_GlobalState:
                     elif self.options.dangerWillRobinson: 
                          print( f"\tforeground {p}: \"{' '.join(self.procs[p]['cmdline'])}\"" )
                 else:
-                    logger.debug( f"\tdid not even try to kill: {p}: \"{' '.join(self.procs[p]['cmdline'])}\"" )
+                    logger.debug('\tdid not even try to kill: %s: "%s"', p, ' '.join(self.procs[p]['cmdline']))
             return 1
 
     def dump(self): 
@@ -2623,7 +2642,7 @@ class sr_GlobalState:
             for indexC,cfg in enumerate(self.configs[c]):
                 self.configs[c][cfg]['options']={ 'omitted': 'use show' }
                 self.configs[c][cfg]['credentials']=[ 'omitted' ]
-                print('\t\t\"%s\" : %s ' % (cfg, json.dumps(self.configs[c][cfg])),end="")
+                print(f'\t\t"{cfg}" : {json.dumps(self.configs[c][cfg])} ',end="")
                 if lengthSelfConfigC-1 > indexC:
                    print(',')
             print('}',end="")
@@ -2636,7 +2655,7 @@ class sr_GlobalState:
             print('\t\"%s\": { ' % c)
             lengthC = len(self.states[c])
             for indexC,cfg in enumerate(self.states[c]):
-                print('\t\t\"%s\" :  %s ' % (cfg, json.dumps(self.states[c][cfg])))
+                print(f'\t\t"{cfg}" :  {json.dumps(self.states[c][cfg])} ')
                 if lengthC -1 > indexC:
                    print(',')
             print( "\t}", end="")
@@ -2652,13 +2671,13 @@ class sr_GlobalState:
             print("\n\t\t\"exchanges\": { ", end="")
             lengthExchange = len(self.brokers[h]['exchanges'])
             for indexExchange,x in enumerate(self.brokers[h]['exchanges']):
-                print("\"%s\":  %s " % (x, json.dumps(self.brokers[h]['exchanges'][x])), end="")
+                print(f"\"{x}\":  {json.dumps(self.brokers[h]['exchanges'][x])} ", end="")
                 if lengthExchange -1 > indexExchange:
                    print(',')
             print("},\n\t\t\"queues\": {")
             lengthBrokersQueues = len(self.brokers[h]['queues'])
             for indexBrokerQueues,q in enumerate(self.brokers[h]['queues']):
-                print("\t\"%s\":  \"%s\" " % (q, self.brokers[h]['queues'][q]), end="")
+                print(f"\t\"{q}\":  \"{self.brokers[h]['queues'][q]}\" ", end="")
                 if lengthBrokersQueues -1 > indexBrokerQueues:
                    print(',')
             print( " \n}\n}",end="")
@@ -2671,16 +2690,15 @@ class sr_GlobalState:
         for indexSelfBroker,h in enumerate(self.brokers):
             if 'admin' in self.brokers[h]:
                 admin_url = self.brokers[h]['admin'].url
-                admin_urlstr = "%s://%s@%s" % ( admin_url.scheme, \
-                   admin_url.username, admin_url.hostname)
+                admin_urlstr = f"{admin_url.scheme}://{admin_url.username}@{admin_url.hostname}"
                 if admin_url.port:
                     admin_urlstr += ":" + str(admin_url.port)
-                a = 'admin: %s' % admin_urlstr
+                a = f'admin: {admin_urlstr}'
             else:
                 a = 'admin: none'
             print('\"%s\":{' % (h))
             
-            print('\n\"URL\": \"%s\",\n\"exchanges\": [ ' %(a), end='')
+            print(f'\n"URL": "{a}",\n"exchanges": [ ', end='')
             lengthExchangeSummary  = len(self.exchange_summary[h])
             for indexSummary,x in enumerate(self.exchange_summary[h]):
                 print("\"%s-%d\" " % (x, self.exchange_summary[h][x]), end='')
@@ -2689,7 +2707,7 @@ class sr_GlobalState:
             print('],"queues\": [', end="")
             lengthBrokersQueues = len(self.brokers[h]['queues'])
             for indexBrokersSummary,q in enumerate(self.brokers[h]['queues']):
-                print("\"%s-%d\" " % (q, len(self.brokers[h]["queues"][q])),end="")
+                print(f"\"{q}-{len(self.brokers[h]['queues'][q])}\" ",end="")
                 if lengthBrokersQueues -1 > indexBrokersSummary:
                    print(',')
             print(']\n}', end="")
@@ -2720,7 +2738,7 @@ class sr_GlobalState:
 
         if self.options.displayFull:
             line += "%10s %-40s %17s %33s %40s" % ("", "Counters (per housekeeping)", "", "Data Counters", "" )
-            line += "%s %-21s " % (" ", "Memory" ) 
+            line += f"  {'Memory':21} " 
 
         if self.options.displayFull:
             line += "%10s %10s " % ( " ", "CPU Time" )
@@ -2844,9 +2862,7 @@ class sr_GlobalState:
                         line += "%10s %10s %10s " % (\
                              naturalSize( ru['uss'] ), naturalSize( ru['rss'] ), naturalSize( ru['vms'] )  \
                              )
-                        line += "%10.2f %10.2f " % (\
-                             ru['user_cpu'], ru['system_cpu'] \
-                             )
+                        line += f"{ru['user_cpu']:10.2f} {ru['system_cpu']:10.2f} "
                 else:
                     if self.options.displayFull:
                         line += "%10s %10s %10s" % ( "-", "-", "-" )
@@ -2889,7 +2905,7 @@ class sr_GlobalState:
             for h in self.brokers:
                 for x in self.exchange_summary[h]:
                     if self.exchange_summary[h][x] == 0:
-                        print("exchange with no bindings: %s-%s " % (h, x), end='')
+                        print(f"exchange with no bindings: {h}-{x} ", end='')
         except:
             pass
 
@@ -2930,7 +2946,7 @@ class sr_GlobalState:
                 v2_config_path = v2_config_path_inc
                 v3_config_path = base_v3 + cfg + '.inc'
             else:
-                logging.error('Invalid config %s' % cfg)
+                logging.error(f'Invalid config {cfg}')
                 return
 
         if not os.path.isdir(base_v3 + component):
@@ -3166,13 +3182,9 @@ class sr_GlobalState:
                 status[self.configs[c][cfg]['status']].append(cfg + sfx)
 
             if (len(status['partial']) + len(status['running'])) < 1:
-                print('%-10s %-10s %-6s %3d %s' %
-                      (c, 'stopped', 'OK', len(status['stopped']), ', '.join(
-                          status['stopped'])))
+                print(f"{c:10} {'stopped':10} {'OK':6} {len(status['stopped']):3} {', '.join(status['stopped'])}")
             elif len(status['running']) == len(self.configs[c]):
-                print('%-10s %-10s %-6s %3d %s' %
-                      (c, 'running', 'OK', len(self.configs[c]), ', '.join(
-                          status['running'])))
+                print(f"{c:10} {'running':10} {'OK':6} {len(self.configs[c]):3} {', '.join(status['running'])}")
             elif len(status['running']) == (len(self.configs[c]) -
                                             len(status['disabled'])):
                 print('%-10s %-10s %-6s %-3d %s' % (c, 'most', 'OKd', \
@@ -3183,8 +3195,7 @@ class sr_GlobalState:
                 bad = 1
                 for sv in self.status_values:
                     if len(status[sv]) > 0:
-                        print('    %3d %s: %s ' %
-                              (len(status[sv]), sv, ', '.join(status[sv])))
+                        print(f"    {len(status[sv]):3} {sv}: {', '.join(status[sv])} ")
 
             configs_running += len(status['running'])
 
@@ -3202,7 +3213,7 @@ class sr_GlobalState:
         for h in self.brokers:
             for x in self.exchange_summary[h]:
                 if self.exchange_summary[h][x] == 0:
-                    print("exchange with no bindings: %s-%s " % (h, x), end='')
+                    print(f"exchange with no bindings: {h}-{x} ", end='')
 
         return bad
 
@@ -3390,7 +3401,7 @@ def main():
     #cfg.finalize()
 
     if not hasattr(cfg, 'action'):
-        print('USAGE: %s [ -h ] (%s)' % (sys.argv[0], '|'.join(actions)))
+        print(f"USAGE: {sys.argv[0]} [ -h ] ({'|'.join(actions)})")
         return
 
     action = cfg.action
@@ -3406,11 +3417,11 @@ def main():
     #gs.read_proc_file()
 
     if action in ['add']:
-        print('%s: ' % action, end='', flush=True)
+        print(f'{action}: ', end='', flush=True)
         gs.add()
 
     if action in ['declare', 'setup']:
-        print('%s: ' % action, end='', flush=True)
+        print(f'{action}: ', end='', flush=True)
         gs.declare()
 
     if action == 'cleanup':

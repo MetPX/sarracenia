@@ -55,7 +55,7 @@ class AMQPConsumer(AMQP):
 
         # control log level in config file:
         # set sarracenia.moth.amqpconsumer.AMQPConsumer.logLevel debug
-        me = "%s.%s" % (__class__.__module__, __class__.__name__)
+        me = f"{__class__.__module__}.{__class__.__name__}"
         if ('settings' in self.o) and (me in self.o['settings']):
             for s in self.o['settings'][me]:
                 self.o[s] = self.o['settings'][me][s]
@@ -65,7 +65,7 @@ class AMQPConsumer(AMQP):
     def __get_on_message(self, msg):
         """ Callback for AMQP basic_consume, called when the broker sends a new message.
         """
-        logger.debug(f"new message pushed from broker: {msg.body}")
+        logger.debug('new message pushed from broker: %s', msg.body)
         # This will block until the msg can be put in the queue
         self._raw_msg_q.put(msg)
 
@@ -128,7 +128,7 @@ class AMQPConsumer(AMQP):
                 try: 
                     msg = self._msgRawToDict(raw_msg)
                 except Exception as err:
-                    logger.error("message decode failed. raw message: %s" % raw_msg.body )
+                    logger.error(f"message decode failed. raw message: {raw_msg.body}" )
                     logger.debug('Exception details: ', exc_info=True)
                     msg = None
                 if msg is None:
@@ -136,15 +136,16 @@ class AMQPConsumer(AMQP):
                     return None
                 else:
                     self.metrics['rxGoodCount'] += 1
+                self.metrics['rxLast'] = sarracenia.nowstr()
                 if hasattr(self.o, 'fixed_headers'):
                     for k in self.o.fixed_headers:
                         msg[k] = self.o.fixed_headers[k]
-                logger.debug("new msg: %s" % msg)
+                logger.debug('new msg: %s', msg)
                 return msg
         except Exception as err:
             subscription = self.o['subscriptions'][self.o['subscription_index']]
             sub_queue = subscription['queue']
-            logger.warning("failed %s: %s" % (sub_queue['name'], err))
+            logger.warning(f"failed {sub_queue['name']}: {err}")
             logger.debug('Exception details: ', exc_info=True)
 
         if not self.o['message_strategy']['stubborn']:

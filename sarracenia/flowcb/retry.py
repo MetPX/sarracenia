@@ -64,7 +64,7 @@ class Retry(FlowCB):
 
         #queuedriver = os.getenv('SR3_QUEUEDRIVER', 'disk')
 
-        logger.debug('logLevel=%s' % self.o.logLevel)
+        logger.debug('logLevel=%s', self.o.logLevel)
 
 
     def gather(self, qty) -> None:
@@ -92,6 +92,7 @@ class Retry(FlowCB):
                     del m[k]
             self.__set_isRetry(m)
 
+        message_list = self.__filter_by_retry_count(message_list)
 
         return (True, message_list)
 
@@ -122,6 +123,8 @@ class Retry(FlowCB):
         for m in mlist:
             self.__set_isRetry(m)
 
+        mlist = self.__filter_by_retry_count(mlist)
+
         #logger.debug("loading from %s: qty=%d ... got: %d " % (self.download_retry_name, qty, len(mlist)))
         if len(mlist) > 0:
             worklist.incoming.extend(mlist)
@@ -135,8 +138,11 @@ class Retry(FlowCB):
             return
 
         if len(worklist.failed) != 0:
-            logger.debug( f"putting {len(worklist.failed)} messages into {self.download_retry_name}"  )
-            self.download_retry.put(worklist.failed)
+            for m in worklist.failed:
+                self.__set_isRetry(m)
+            to_retry = self.__filter_by_retry_count(worklist.failed)
+            logger.debug('putting %s messages into %s', len(to_retry), self.download_retry_name)
+            self.download_retry.put(to_retry)
             worklist.failed = []
 
         if len(self.post_retry) < 1:
@@ -156,7 +162,7 @@ class Retry(FlowCB):
 
         mlist = self.post_retry.get(qty)
 
-        logger.debug( f"loading from {self.post_retry_name}: qty={qty} ... got: {len(mlist)}" )
+        logger.debug('loading from %s: qty=%s ... got: %s', self.post_retry_name, qty, len(mlist))
         if len(mlist) > 0:
             worklist.ok.extend(mlist)
 
@@ -170,8 +176,9 @@ class Retry(FlowCB):
         for m in worklist.failed:
             self.__set_isRetry(m)
 
-        self.post_retry.put(worklist.failed)
-        worklist.failed=[]
+        to_retry = self.__filter_by_retry_count(worklist.failed)
+
+        self.post_retry.put(to_retry)
 
     def metricsReport(self) -> dict:
         """Returns the number of messages in the download_retry and post_retry queues.
@@ -224,3 +231,17 @@ class Retry(FlowCB):
         if '_deleteOnPost' not in msg:
             msg['_deleteOnPost'] = set()
         msg['_deleteOnPost'].add('_isRetry')
+
+    def __filter_by_retry_count(self, message_list):
+        if self.o.retryCountMax <= 0:
+            return message_list
+
+        kept = []
+        for m in message_list:
+            count = m.get('_isRetry', 0)
+            if count > self.o.retryCountMax:
+                logger.error("gave up after %d retries: %s %s" %
+                             (count, m.get('baseUrl', ''), m.get('relPath', '')))
+            else:
+                kept.append(m)
+        return kept

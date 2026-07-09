@@ -28,6 +28,7 @@ import logging
 import os
 import random
 import signal
+import subprocess
 import stat
 import sys
 import time
@@ -161,8 +162,7 @@ class Transfer():
 
         logger.setLevel(getattr(logging, ll.upper()))
 
-        logger.debug("class=%s , subclasses=%s" %
-                     (type(self).__name__, Transfer.__subclasses__()))
+        logger.debug('class=%s , subclasses=%s', type(self).__name__, Transfer.__subclasses__())
         self.init()
 
     def init(self):
@@ -191,7 +191,7 @@ class Transfer():
         """
         now=nowflt()
         if now-self.lastLog > self.logMinimumInterval:
-            logger.info( f"{naturalSize(sz)} written so far.")
+            logger.info( f"{naturalSize(sz)} written so far. ({naturalSize(self.byteRate)}/s)")
             self.lastLog=now
 
     def local_read_close(self, src):
@@ -206,8 +206,7 @@ class Transfer():
             self.data_checksum = self.data_sumalgo.value
 
     def local_read_open(self, local_file, local_offset=0):
-        logger.debug("sr_proto local_read_open getcwd=%s self.cwd=%s" %
-                     (os.getcwd(), self.getcwd()))
+        logger.debug('sr_proto local_read_open getcwd=%s self.cwd=%s', os.getcwd(), self.getcwd())
 
         self.checksum = None
 
@@ -370,9 +369,7 @@ class Transfer():
         # 2022/12/02 - pas should see a lot of these messages in HPC case from now on...
         
         if not self.o.acceptSizeWrong and length != 0 and rw_length != length:
-            logger.debug(
-                "util/writelocal mismatched file length writing %s. Message said to expect %d bytes.  Got %d bytes."
-                % (local_file, length, rw_length))
+            logger.debug('util/writelocal mismatched file length writing %s. Message said to expect %d bytes.  Got %d bytes.', local_file, length, rw_length)
 
         return rw_length
 
@@ -394,7 +391,7 @@ class Transfer():
 
         # FIXME: 2020/09 - commented out for now... unsure about this.
         #if (not self.o.on_data_list) and length != 0 and rw_length != length :
-        #   logger.error("util/readlocal mismatched file length reading %s. Message announced it as %d bytes, but read %d bytes " % (local_file,length,rw_length))
+        #   logger.error( f"util/readlocal mismatched file length reading {local_file}. Message announced it as {length} bytes, but read {rw_length} bytes" )
 
         # 2022/12/02 - pas attempting to get files that get shorter addressed.
         if ((length==0) or (rw_length < length)) and hasattr(dst,'truncate') and not self.o.nofsetstat:
@@ -403,7 +400,7 @@ class Transfer():
         return rw_length
 
     def set_sumalgo(self, sumalgo):
-        logger.debug("sr_proto set_sumalgo %s" % sumalgo)
+        logger.debug('sr_proto set_sumalgo %s', sumalgo)
         self.sumalgo = sarracenia.identity.Identity.factory(sumalgo)
         self.data_sumalgo = sarracenia.identity.Identity.factory(sumalgo)
 
@@ -478,6 +475,20 @@ class Transfer():
 
     def gethttpsUrl(self, path):
         return None
+
+    def runAccelCommand(self, cmd, exc_prefix=''):
+        """ Run a command, capture stderr. exc_prefix is a string that is added to the beginning of the
+            exception message.
+            Raises Exception if the command returns non-zero.
+        """
+        p = subprocess.Popen(cmd, stderr=subprocess.PIPE)
+        _, stderr = p.communicate()
+        if p.returncode != 0:
+            try:
+                stderr = stderr.decode().strip()
+            except Exception:
+                pass
+            raise Exception(f"{exc_prefix} failed: {stderr} (cmd used: {' '.join(cmd)})")
 
 # batteries included.
 import sarracenia.transfer.file

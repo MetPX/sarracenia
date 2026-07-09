@@ -37,7 +37,7 @@ jobs:
     timeout-minutes: 45
     
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
 
       - name: Install dependencies
         run: |
@@ -73,6 +73,7 @@ jobs:
         if: always()
         continue-on-error: true
         run: |
+          killall sr3_cpost sr3_cpump flow_post.sh
           sr3 stop --dangerWillRobinson=1
           cd ${HOME}/.cache/sr3/
           tar -czf ${HOME}/cache_sr3.tar.gz *

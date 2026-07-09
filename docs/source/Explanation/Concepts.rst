@@ -233,11 +233,13 @@ MetPX-Sarracenia is only a light wrapper/coating around Message Queueing Protoco
 
     - Users configure a *broker*, instead of a pump.
     - By convention, the default vhost '/' is always used (did not feel the need to use other vhosts yet)
-    - Users explicitly can pick their *queue* names (this ia a client-id in MQTT.)
+    - Users explicitly can pick their *queue* names (this is a client-id in MQTT.)
     - Users set *subtopic*,
     - Topics with dot separator are minimally transformed, rather than encoded.
     - Queue is set to *durable* so that notification messages are not lost across broker restarts.
-    - We use *message headers* (AMQP-speak for key-value pairs) rather than encoding in JSON or some other payload format.
+    - in v02 format messages, We use *message headers* (AMQP-speak for key-value pairs) rather than 
+          encoding in JSON or some other payload format.
+    - in v03 format messages, we switched to JSON encoding the messages to get around length limit (255) for AMQP headers.
     - *expire* how long to keep an idle queue or exchange around. 
 
   - Reduce complexity through conventions.
@@ -261,6 +263,7 @@ MQTT is actually a better match to Sarracenia than AMQP, as it is entirely based
 
     * AMQP: A queue named *queuename* is bound to an exchange xpublic with key: v03.observations ...  
     * MQTT subscription: topic $shared/*queuename*/xpublic/v03/observations ...  
+    * This mapping can be turned off and overridden with a setting: *Exchange None* in which case, exchange will not be used.
 
   - Connections are clean_sesssion=0 normally, to recover notification messages when a connection is broken.
   - MQTT QoS==1 is used to assure notification messages are sent at least once, and avoid overhead

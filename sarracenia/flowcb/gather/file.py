@@ -69,8 +69,8 @@ class File(FlowCB):
     also should likely switch from listdir to scandir
     """
     def on_add(self, event, src, dst):
-        logger.debug("%s %s %s" % ( event, src, dst ) )
-        self.new_events['%s %s' % (src, dst)] = (event, src, dst)
+        logger.debug('%s %s %s', event, src, dst)
+        self.new_events[f'{src} {dst}'] = (event, src, dst)
 
     def on_created(self, event):
         # on_created (for SimpleEventHandler)
@@ -104,7 +104,7 @@ class File(FlowCB):
         if not features['watch']['present']:
             logger.critical("watchdog module must be installed to watch directories")
             
-        logger.debug("%s used to be overwrite_defaults" % self.o.component)
+        logger.debug('%s used to be overwrite_defaults', self.o.component)
 
         self.obs_watched = []
         self.watch_handler = None
@@ -169,8 +169,7 @@ class File(FlowCB):
         if os_stat.S_ISDIR(lstat.st_mode):
             return [msg]
 
-        # complete message
-        if (self.o.post_topicPrefix[0] == 'v03') and self.o.inline:
+        if (self.o.post_format == 'v03') and self.o.inline:
             if fsiz < self.o.inlineByteMax:
 
                 if self.o.inlineEncoding == 'guess':
@@ -201,8 +200,8 @@ class File(FlowCB):
                         }
             else:
                 if self.o.inlineOnly:
-                    logger.error('skipping file %s too large (%d bytes > %d bytes max)) for inlining' % \
-                       ( path, fsiz, self.o.inlineByteMax )  )
+                    logger.error( f"skipping file {path} too large ({fsiz:d} bytes > "\
+                        f"{self.o.inlineByteMax:d} bytes max)) for inlining" )
                     return []
 
         return [msg]
@@ -212,7 +211,7 @@ class File(FlowCB):
 
         msg = sarracenia.Message.fromFileInfo(path, self.o, lstat)
 
-        logger.debug( f"initial msg:{msg}" )
+        logger.debug('initial msg:%s', msg)
         # check the value of blockSize
 
         fsiz = lstat.st_size
@@ -241,7 +240,7 @@ class File(FlowCB):
             'number': -1,
             'manifest': {}
         }
-        logger.debug( f" blocks:{blocks} " )
+        logger.debug(' blocks:%s ', blocks)
 
         for current_block in blocks:
 
@@ -473,15 +472,15 @@ class File(FlowCB):
             age = time.time() - lstat.st_mtime
 
             if age < self.o.fileAgeMin:
-                logger.debug("%d vs (fileAgeMin setting) %d seconds. Too New! %s" % (age,self.o.fileAgeMin,src) )
+                logger.debug('%d vs (fileAgeMin setting) %d seconds. Too New! %s', age, self.o.fileAgeMin, src)
                 return (False, [])
 
             if self.o.fileAgeMax > 0 and age > self.o.fileAgeMax:
-                logger.debug("%d vs (fileAgeMax setting) %d seconds. Too Old! %s" % (age,self.o.fileAgeMax,src) )
+                logger.debug('%d vs (fileAgeMax setting) %d seconds. Too Old! %s', age, self.o.fileAgeMax, src)
                 return (True, [])
         else:
-            logger.debug(f"lstat or st_mtime problem? lstat={lstat}")
-            logger.debug(f"st_mtime={lstat.st_mtime}")
+            logger.debug('lstat or st_mtime problem? lstat=%s', lstat)
+            logger.debug('st_mtime=%s', lstat.st_mtime)
 
         # post it
 
@@ -540,8 +539,7 @@ class File(FlowCB):
                   not sure if it should be an error message or not.
                   
                 """
-                logger.debug("skipping event that could not be processed: ({}): {}".format(
-                    event, err))
+                logger.debug(f"skipping event that could not be processed: ({event}): {err}")
                 logger.debug("Exception details:", exc_info=True)
                 event_done=True
             if event_done:
@@ -552,7 +550,7 @@ class File(FlowCB):
         """
           walk directory tree returning 1 message for each file in it.
         """
-        logger.debug("walk %s" % src)
+        logger.debug('walk %s', src)
 
         # how to proceed with symlink
 
@@ -597,7 +595,7 @@ class File(FlowCB):
             if sys.platform == 'win32':
                 realp = realp.replace('\\', '/')
 
-            logger.info("sr_watch %s is a link to directory %s" % (p, realp))
+            logger.info(f"sr_watch {p} is a link to directory {realp}")
             if self.o.realpathPost:
                 d = realp
             else:
@@ -607,11 +605,11 @@ class File(FlowCB):
 
         try:
             fs = sarracenia.stat(d)
-            dir_dev_id = '%s,%s' % (fs.st_dev, fs.st_ino)
+            dir_dev_id = f'{fs.st_dev},{fs.st_ino}'
             if dir_dev_id in self.inl:
                 return True
         except OSError as err:
-            logger.warning("could not stat file ({}): {}".format(d, err))
+            logger.warning(f"could not stat file ({d}): {err}")
             logger.debug("Exception details:", exc_info=True)
 
         if os.access(d, os.R_OK | os.X_OK):
@@ -622,11 +620,9 @@ class File(FlowCB):
                 self.obs_watched.append(ow)
                 self.inl[dir_dev_id] = (ow, d)
                 logger.info(
-                    "sr_watch priming watch (instance=%d) scheduled for: %s " %
-                    (len(self.obs_watched), d))
+                    f"sr_watch priming watch (instance={len(self.obs_watched)}) scheduled for: {d} ")
             except:
-                logger.warning("sr_watch priming watch: %s failed, deferred." %
-                               d)
+                logger.warning(f"sr_watch priming watch: {d} failed, deferred.")
                 logger.debug('Exception details:', exc_info=True)
 
                 # add path created
@@ -635,8 +631,7 @@ class File(FlowCB):
 
         else:
             logger.warning(
-                "sr_watch could not schedule priming watch of: %s (EPERM) deferred."
-                % d)
+                f"sr_watch could not schedule priming watch of: {d} (EPERM) deferred.")
             logger.debug('Exception details:', exc_info=True)
 
             # add path created
@@ -646,7 +641,7 @@ class File(FlowCB):
         return True
 
     def watch_dir(self, sld):
-        logger.debug("watch_dir %s" % sld)
+        logger.debug('watch_dir %s', sld)
 
         if not features['watch']['present']:
             logger.critical("sr_watch needs the python watchdog library to be installed.")
@@ -671,8 +666,7 @@ class File(FlowCB):
         logger.info(
             "sr_watch priming walk done, but not yet active. Starting...")
         self.observer.start()
-        logger.info("sr_watch now active on %s posting to exchange: %s" %
-                    (sld, self.o.post_exchange))
+        logger.info( f"sr_watch now active on {sld} posting to exchange: {self.o.post_exchange}" )
 
         if self.o.post_on_start:
             return self.walk(sld)
@@ -727,7 +721,7 @@ class File(FlowCB):
             if d[0] != os.sep: d = cwd + os.sep + d
 
             d=self.o.variableExpansion(d)
-            logger.debug("postpath = %s" % d)
+            logger.debug('postpath = %s', d)
 
             if self.o.sleep > 0:
                 if features['watch']['present']:
@@ -737,19 +731,18 @@ class File(FlowCB):
                 continue
 
             if os.path.isdir(d):
-                logger.debug("postpath = %s" % d)
+                logger.debug('postpath = %s', d)
                 messages.extend(self.walk(d))
             elif os.path.islink(d):
                 messages.extend(self.post1file(d, None))
             elif os.path.isfile(d):
                 messages.extend(self.post1file(d, sarracenia.stat(d)))
             else:
-                logger.error("could not post %s (exists %s)" %
-                             (d, os.path.exists(d)))
+                logger.error(f"could not post {d} (exists {os.path.exists(d)})")
 
         if len(messages) > self.o.batch:
             self.queued_messages = messages[self.o.batch:]
-            logger.info("len(queued_messages)=%d" % len(self.queued_messages))
+            logger.info(f"len(queued_messages)={len(self.queued_messages)}")
             messages = messages[0:self.o.batch]
 
         self.primed = True

@@ -556,4 +556,54 @@ def test_SN_syno_bulletin():
     renamer.after_gather(worklist)
     assert re.match('SNVD02_CWAO_280700___.....' , worklist.incoming[0]['rename'])
 
+# Test 17: Multiple METAR bulletins into one bulletin file
+def test_multiple_METAR_bulletin():
+    BaseOptions = Options()
+    BaseOptions.AddSMHeader = True
+    renamer = Raw2bulletin(BaseOptions)
+    am_instance = Am(BaseOptions)
 
+    message_test17 = make_message()
+    message_test17['content']['encoding'] = 'iso-8859-1'
+    message_test17['content']['value'] = b'SANL32 EHDB 041925\nMETAR EHEH 041925Z AUTO 08003KT 9999 NCD 09/06 Q1024\nBLU NOSIG=\nMETAR EHKD 041925Z AUTO 09005KT 9000 BR NCD 08/07 Q1025\nBLU NOSIG='
+
+    bulletin, firstchars, lines, missing_ahl, station, charset = _get_bulletin_info(message_test17)
+
+    bulletinHeader = lines[0].decode('iso-8859-1').replace(' ', '_')
+    message_test17['new_file'] = bulletinHeader + '__12345'
+    message_test17['new_dir'] = BaseOptions.directory
+
+    message_test17['content']['value'] = bulletin.decode('iso-8859-1')
+
+    worklist = make_worklist()
+    worklist.incoming = [message_test17]
+
+    renamer.after_gather(worklist)
+    print(worklist.incoming[0]['rename'])
+    assert re.match('SANL32_EHDB_041925___.....' , worklist.incoming[0]['rename'])
+
+# Test 18: Singular METAR into bulletin file
+def test_single_METAR_bulletin():
+    BaseOptions = Options()
+    BaseOptions.AddSMHeader = True
+    renamer = Raw2bulletin(BaseOptions)
+    am_instance = Am(BaseOptions)
+
+    message_test18 = make_message()
+    message_test18['content']['encoding'] = 'iso-8859-1'
+    message_test18['content']['value'] = b'SANL32 EHDB 041925\nMETAR EHEH 041925Z AUTO 08003KT 9999 NCD 09/06 Q1024\nBLU NOSIG='
+
+    bulletin, firstchars, lines, missing_ahl, station, charset = _get_bulletin_info(message_test18)
+
+    bulletinHeader = lines[0].decode('iso-8859-1').replace(' ', '_')
+    message_test18['new_file'] = bulletinHeader + '__12345'
+    message_test18['new_dir'] = BaseOptions.directory
+
+    message_test18['content']['value'] = bulletin.decode('iso-8859-1')
+
+    worklist = make_worklist()
+    worklist.incoming = [message_test18]
+
+    renamer.after_gather(worklist)
+    print(worklist.incoming[0]['rename'])
+    assert re.match('SANL32_EHDB_041925__EHEH_.....' , worklist.incoming[0]['rename'])

@@ -40,14 +40,14 @@ class SundewPxRoute(FlowCB):
             logger.error("sundew_pxroute pxRouting file not defined")
             return
         elif not os.path.exists(self.o.pxRouting):
-            logger.error("sundew_pxroute pxRouting file (%s) not found" % self.o.pxRouting)
+            logger.error(f"sundew_pxroute pxRouting file ({self.o.pxRouting}) not found")
             return
         
         self.ahls_to_route = {}
         
         pxrf = open(self.o.pxRouting, 'r')
         possible_references = self.o.pxClient.split(',')
-        logger.info("sundew_pxroute, target clients: %s" % possible_references)
+        logger.info(f"sundew_pxroute, target clients: {possible_references}")
 
         for line in pxrf:
             words = line.split()
@@ -60,7 +60,7 @@ class SundewPxRoute(FlowCB):
                 for i in possible_references:
                     if i in expansion:
                         possible_references.append(words[1])
-                        logger.debug("sundew_pxroute adding clientAlias %s to possible_reference %s" % (words[1], possible_references))
+                        logger.debug('sundew_pxroute adding clientAlias %s to possible_reference %s', words[1], possible_references)
                         continue
 
             if words[0] == 'key':
@@ -70,7 +70,7 @@ class SundewPxRoute(FlowCB):
                         self.ahls_to_route[words[1]] = True
         pxrf.close()
 
-        logger.debug("sundew_pxroute For %s, the following headers are routed %s" % (self.o.pxClient, self.ahls_to_route.keys()))
+        logger.debug('sundew_pxroute For %s, the following headers are routed %s', self.o.pxClient, self.ahls_to_route.keys())
 
     def after_accept(self, worklist):
         new_incoming = []
@@ -79,16 +79,16 @@ class SundewPxRoute(FlowCB):
             ahl = message['new_file'].split('/')[-1][0:11]
 
             if (len(ahl) < 11) or (ahl[6] != '_'):
-                logger.debug("sundew_pxroute not an AHL: %s" % ahl)
+                logger.debug('sundew_pxroute not an AHL: %s', ahl)
                 worklist.rejected.append(message)
                 continue
 
             if (ahl in self.ahls_to_route.keys()):
-                logger.debug("sundew_pxroute yes, deliver: %s" % ahl)
+                logger.debug('sundew_pxroute yes, deliver: %s', ahl)
                 new_incoming.append(message)
                 continue
             else:
-                logger.debug("sundew_pxroute no, do not deliver: %s" % ahl)
+                logger.debug('sundew_pxroute no, do not deliver: %s', ahl)
                 worklist.rejected.append(message)
 
         worklist.incoming = new_incoming

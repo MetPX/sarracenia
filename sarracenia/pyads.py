@@ -97,7 +97,7 @@ class ADS():
         return len(self.streams) > 0
 
     def full_filename(self, stream):
-        return "%s:%s" % (self.filename, stream)
+        return f"{self.filename}:{stream}"
 
     def add_stream_from_file(self, filename):
         if os.path.exists(filename):
@@ -105,7 +105,7 @@ class ADS():
                 content = f.read()
             return self.add_stream_from_string(filename, content)
         else:
-            print("Could not find file: {0}".format(filename))
+            print(f"Could not find file: {filename}")
             return False
 
     def add_stream_from_string(self, stream_name, string):

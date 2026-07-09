@@ -260,7 +260,7 @@ class Nasa_cmr(sarracenia.flowcb.FlowCB):
         t_range_start = t_now_minus.strftime("%Y-%m-%dT%H:%M:%SZ")
         
         temporal_range = t_range_start + "," + t_range_end
-        logger.debug(f"Temporal range: {temporal_range} (timeNowMinus={self.o.timeNowMinus})")
+        logger.debug('Temporal range: %s (timeNowMinus=%s)', temporal_range, self.o.timeNowMinus)
 
         ### DO THE POLL
 
@@ -285,7 +285,7 @@ class Nasa_cmr(sarracenia.flowcb.FlowCB):
                 data_url = None
                 md5_url = None
                 if 'RelatedUrls' not in itm['umm']:
-                    logger.debug(f"No RelatedUrls in {itm['umm']}")
+                    logger.debug('No RelatedUrls in %s', itm['umm'])
                     continue
                 for url in itm['umm']['RelatedUrls']:
                     if self.stop_requested:
@@ -301,7 +301,7 @@ class Nasa_cmr(sarracenia.flowcb.FlowCB):
 
                     # OPeNDAP
                     elif (self.o.dataSource == "opendap" and 'OPeNDAP' in url['Description'] ):
-                        logger.debug(f"OPENDAP URL {url['URL']}")
+                        logger.debug('OPENDAP URL %s', url['URL'])
                         # Add dap url extension and file type
                         data_url = url['URL'] + "." + self.o.dap_urlExtension + "." + dap_fileType
 
@@ -310,7 +310,7 @@ class Nasa_cmr(sarracenia.flowcb.FlowCB):
                             'GET DATA' in url['Type'] and
                             'Download' in url['Description'] and
                             'podaac' in url['URL']):
-                        logger.debug(f"PODAAC data URL {url['URL']}")
+                        logger.debug('PODAAC data URL %s', url['URL'])
                         data_url = url['URL']
 
                     # PO.DAAC md5
@@ -319,22 +319,21 @@ class Nasa_cmr(sarracenia.flowcb.FlowCB):
                             'Download' in url['Description'] and
                             'md5' in url['Description'] and
                             'podaac' in url['URL']):
-                        logger.debug(f"PODAAC md5 URL {url['URL']}")
+                        logger.debug('PODAAC md5 URL %s', url['URL'])
                         md5_url = url['URL']
                     
                     # Other
                     elif (self.o.dataSource == "other" and 
                             self.o.relatedUrl_type == url['Type'] ):
-                        logger.debug(f"Other ({self.o.relatedUrl_type}) URL {url['URL']}")
+                        logger.debug('Other (%s) URL %s', self.o.relatedUrl_type, url['URL'])
                         # Skip this URL when other options are defined and don't match
-                        logger.debug(f"remove {self.o.relatedUrl_descriptionContains}")
+                        logger.debug('remove %s', self.o.relatedUrl_descriptionContains)
                         if ( (self.o.relatedUrl_descriptionContains is not None and 'Description' in url and
                                 all(desc not in url['Description'] for desc in self.o.relatedUrl_descriptionContains))
                               or (self.o.relatedUrl_urlContains is not None and
                                 all(url_c not in url['URL'] for url_c in self.o.relatedUrl_urlContains)) ):
                             description = url['Description'] if 'Description' in url else "(Not Available)"
-                            logger.debug(f"Skipping {url['URL']} with Description {description}..." + 
-                                " doesn't match relatedUrl_descriptionContains relatedUrl_urlContains options")
+                            logger.debug("Skipping %s with Description %s... doesn't match relatedUrl_descriptionContains relatedUrl_urlContains options", url['URL'], description)
                         else:
                             data_url = url['URL']
                 
@@ -344,7 +343,7 @@ class Nasa_cmr(sarracenia.flowcb.FlowCB):
                     try:
                         md5_resp = requests.get(md5_url)
                         md5 = md5_resp.text.split(" ")[0]
-                        logger.debug(f"MD5 Checksum: {md5}")
+                        logger.debug('MD5 Checksum: %s', md5)
                         new_identity = {"method":"md5", "value":md5}
                     except Exception as e:
                         logger.debug("Exception details:", exc_info=True)
@@ -368,13 +367,13 @@ class Nasa_cmr(sarracenia.flowcb.FlowCB):
                     m['_deleteOnPost'] |= {'post_baseUrl'}
                     if m:
                         if new_identity:
-                            logger.debug(f"Changing identity from {m['identity']} to {new_identity} for {data_url}")
+                            logger.debug('Changing identity from %s to %s for %s', m['identity'], new_identity, data_url)
                             m['identity'] = new_identity
-                        logger.debug(f"message for {data_url} is\t{m}")
+                        logger.debug('message for %s is\t%s', data_url, m)
                         gathered_messages.append(m)
                     else:
                         logger.error(f"failed to create message for {data_url}")
                 else:
-                    logger.debug(f"couldn't find a URL to post")
+                    logger.debug("couldn't find a URL to post")
         
         return gathered_messages
