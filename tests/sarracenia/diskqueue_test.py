@@ -302,6 +302,125 @@ def test_on_housekeeping(tmp_path, caplog):
     assert log_found_NumMessages == True
     assert log_found_Elapsed == True
 
+
+def test_on_housekeeping__partial_failure_preserves_new(tmp_path):
+    options = Options()
+    options.pid_filename = str(tmp_path) + os.sep + "pidfilename.txt"
+    dq = DiskQueue(options, 'test_housekeeping_partial_failure')
+
+    m1 = make_message()
+    m2 = make_message()
+    m2['pubTime'] = "20200118151049.356378078"
+    dq.put([m1, m2])
+
+    with open(dq.new_path, 'rb') as source:
+        original_new = source.read()
+
+    original_msg_to_json = dq.msgToJSON
+    calls = 0
+
+    def fail_on_second_message(message):
+        nonlocal calls
+        calls += 1
+        if calls == 2:
+            raise OSError("injected partial consolidation failure")
+        return original_msg_to_json(message)
+
+    with patch.object(dq, 'msgToJSON', side_effect=fail_on_second_message):
+        dq.on_housekeeping()
+
+    assert dq.msg_count == 0
+    assert dq.msg_count_new == 2
+    assert len(dq) == 2
+    assert os.path.isfile(dq.new_path)
+    assert not os.path.exists(dq.queue_file)
+    assert not os.path.exists(dq.housekeeping_path)
+    assert dq.housekeeping_fp is None
+
+    with open(dq.new_path, 'rb') as source:
+        assert source.read() == original_new
+
+    dq.on_housekeeping()
+    assert dq.msg_count == 2
+    assert dq.msg_count_new == 0
+    assert dq.get(2) == [m1, m2]
+
+
+def test_on_housekeeping__replace_failure_preserves_new(tmp_path):
+    options = Options()
+    options.pid_filename = str(tmp_path) + os.sep + "pidfilename.txt"
+    dq = DiskQueue(options, 'test_housekeeping_replace_failure')
+
+    message = make_message()
+    dq.put([message])
+
+    with open(dq.new_path, 'rb') as source:
+        original_new = source.read()
+
+    with patch('sarracenia.diskqueue.os.replace',
+               side_effect=OSError("injected replace failure")):
+        dq.on_housekeeping()
+
+    assert dq.msg_count == 0
+    assert dq.msg_count_new == 1
+    assert len(dq) == 1
+    assert os.path.isfile(dq.new_path)
+    assert not os.path.exists(dq.queue_file)
+    assert not os.path.exists(dq.housekeeping_path)
+    assert dq.housekeeping_fp is None
+
+    with open(dq.new_path, 'rb') as source:
+        assert source.read() == original_new
+
+    dq.on_housekeeping()
+    assert dq.get() == [message]
+
+
+@pytest.mark.parametrize('exception_type', [KeyboardInterrupt, SystemExit])
+def test_on_housekeeping__control_exception_rolls_back(tmp_path, exception_type):
+    options = Options()
+    options.pid_filename = str(tmp_path) + os.sep + "pidfilename.txt"
+    dq = DiskQueue(options, 'test_housekeeping_control_exception')
+
+    m1 = make_message()
+    m2 = make_message()
+    m2['pubTime'] = "20200118151049.356378078"
+    dq.put([m1, m2])
+
+    with open(dq.new_path, 'rb') as source:
+        original_new = source.read()
+
+    original_msg_to_json = dq.msgToJSON
+    calls = 0
+
+    def interrupt_second_message(message):
+        nonlocal calls
+        calls += 1
+        if calls == 2:
+            raise exception_type()
+        return original_msg_to_json(message)
+
+    with pytest.raises(exception_type):
+        with patch.object(dq, 'msgToJSON', side_effect=interrupt_second_message):
+            dq.on_housekeeping()
+
+    assert dq.msg_count == 0
+    assert dq.msg_count_new == 2
+    assert len(dq) == 2
+    assert dq.housekeeping_fp is None
+    assert dq.new_fp is None
+    assert dq.queue_fp is None
+    assert os.path.isfile(dq.new_path)
+    assert not os.path.exists(dq.queue_file)
+    assert not os.path.exists(dq.housekeeping_path)
+
+    with open(dq.new_path, 'rb') as source:
+        assert source.read() == original_new
+
+    dq.on_housekeeping()
+    assert dq.get(2) == [m1, m2]
+
+
 def test_diskqueue(tmp_path, caplog):
     """ DiskQueue integration test, tests the behaviour of the class, mimicking how it's actually used in sr3.
     """
@@ -533,4 +652,3 @@ def test_msg_get_from_file__all_corrupted(tmp_path):
 
     assert fp_out is None
     assert msg is None
-

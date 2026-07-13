@@ -390,9 +390,31 @@ class DiskQueue():
 
         self.now = sarracenia.nowflt()
         self.retry_cache = {}
+        previous_msg_count = self.msg_count
+        previous_msg_count_new = self.msg_count_new
         N = 0
+        fp = None
 
-        # put this in try/except in case ctrl-c breaks something
+        def rollback():
+            try:
+                if fp is not None:
+                    fp.close()
+            except Exception:
+                pass
+            try:
+                if self.housekeeping_fp is not None:
+                    self.housekeeping_fp.close()
+            except Exception:
+                pass
+
+            self.housekeeping_fp = None
+            try:
+                os.unlink(self.housekeeping_path)
+            except Exception:
+                pass
+
+            self.msg_count = previous_msg_count
+            self.msg_count_new = previous_msg_count_new
 
         try:
             self.close()
@@ -400,14 +422,11 @@ class DiskQueue():
                 os.unlink(self.housekeeping_path)
             except Exception:
                 pass
-            fp = open(self.housekeeping_path, 'w')
-            fp.close()
 
             i = 0
             last = None
 
-            fp = self.queue_fp
-            self.housekeeping_fp = open(self.housekeeping_path, 'a')
+            self.housekeeping_fp = open(self.housekeeping_path, 'w')
 
             logger.debug('has queue %s', os.path.isfile(self.queue_file))
 
@@ -448,36 +467,40 @@ class DiskQueue():
             logger.debug('retrieved %d from the %d retry', N - j, i)
 
             self.housekeeping_fp.close()
+            self.housekeeping_fp = None
 
-        except Exception as Err:
-            logger.error("something went wrong")
-            logger.debug('Exception details: ', exc_info=True)
+            if N == 0:
+                try:
+                    os.unlink(self.housekeeping_path)
+                except Exception:
+                    pass
+            else:
+                os.replace(self.housekeeping_path, self.queue_file)
 
-        # no more retry
+        except (KeyboardInterrupt, SystemExit):
+            rollback()
+            raise
+        except Exception as err:
+            rollback()
+            logger.error("could not consolidate %s retry queue: %s", self.name, err)
+            logger.debug('Exception details:', exc_info=True)
+            return
 
         self.msg_count = N
         if N == 0:
             logger.debug('%s No retry in list', self.name)
-            try:
-                os.unlink(self.housekeeping_path)
-            except Exception:
-                pass
-
-        # housekeeping file becomes new retry
-
         else:
             logger.info( f"{self.name} Number of messages in retry list {N:d}" )
-            try:
-                os.rename(self.housekeeping_path, self.queue_file)
-            except Exception:
-                logger.error("Something went wrong with rename")
 
-        # cleanup
-        self.msg_count_new = 0
+        self.msg_count_new = previous_msg_count_new
         try:
             os.unlink(self.new_path)
-        except Exception:
-            pass
+        except FileNotFoundError:
+            self.msg_count_new = 0
+        except OSError as err:
+            logger.error("could not remove consolidated %s retry input: %s", self.name, err)
+        else:
+            self.msg_count_new = 0
 
         elapse = sarracenia.nowflt() - self.now
         logger.debug('on_housekeeping elapse %f', elapse)
