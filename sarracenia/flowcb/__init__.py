@@ -53,6 +53,8 @@ class FlowCB:
     * worklist.ok       --> successfully processed
     * worklist.rejected --> messages to not be further processed.
     * worklist.failed   --> messages for which processing failed. Failed messages will be retried.
+    * worklist.failed_ackable --> failed messages safely persisted for retry and ready to acknowledge.
+    * worklist.failed_pending --> failed messages waiting for retry persistence before intake resumes.
     * worklist.directories_ok --> list of directories created during processing.
     
     Initially, all messages are placed in incoming.
@@ -121,10 +123,11 @@ class FlowCB:
         Task: operate on worklist.ok (files which have arrived.)
 
         All messages on the worklist.ok list have been acknowledged, so to suppress posting
-        of them, or futher processing, the messages must be removed from worklist.ok.
+        of them, or further processing, the messages must be removed from worklist.ok.
 
-        worklist.failed processing should occur in here as it will be zeroed out after this step.
-        The flowcb/retry.py plugin, for example, processes failed messages.
+        worklist.failed processing should occur in here. The flowcb/retry.py plugin, for example,
+        persists failed messages and moves them to the internal failed_ackable list. The flow
+        acknowledges only that list after the callbacks return.
 
     def destfn(self,msg) -> str::
 

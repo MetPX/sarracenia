@@ -92,6 +92,8 @@ class Flow:
       * worklist.ok       --> successfully processed
       * worklist.rejected --> messages to not be further processed.
       * worklist.failed   --> messages for which processing failed.
+      * worklist.failed_ackable --> failed messages safely persisted for retry.
+      * worklist.failed_pending --> failed messages waiting for retry persistence.
       * worklist.dirrectories_ok --> directories created.
 
       Initially all messages are placed in incoming.
@@ -171,6 +173,8 @@ class Flow:
         self.worklist.incoming = []
         self.worklist.rejected = []
         self.worklist.failed = []
+        self.worklist.failed_ackable = []
+        self.worklist.failed_pending = []
         self.worklist.directories_ok = []
 
         # keep track of messages gathered from polling
@@ -569,10 +573,12 @@ class Flow:
         while True:
 
             if self._stop_requested:
-                if stopping:
+                if stopping and not self.worklist.failed_pending:
                     logger.debug('clean stop from run loop')
                     self.close()
                     break
+                elif stopping:
+                    logger.debug('delaying stop while retry persistence is pending')
                 else:
                     logger.debug('starting last pass (without gather) through loop for cleanup.')
                     stopping = True
@@ -586,12 +592,12 @@ class Flow:
 
             self.worklist.incoming = []
 
-            if (self.o.component == 'poll') or self.have_vip:
+            if (self.o.component == 'poll') or self.have_vip or self.worklist.failed_pending:
 
                 if ( self.o.messageRateMax > 0 ) and (current_rate > 0.8*self.o.messageRateMax ):
                     logger.debug('current_rate (%.2f) vs. messageRateMax(%.2f)) ', current_rate, self.o.messageRateMax)
 
-                if not stopping:
+                if not stopping and not self.worklist.failed_pending:
                     self.gather()
 
                 last_gather_len = len(self.worklist.incoming)
@@ -626,7 +632,8 @@ class Flow:
             total_messages += after_filter_len
 
             # trigger shutdown when messageCountMax is reached
-            if (self.o.messageCountMax > 0) and (total_messages > self.o.messageCountMax):
+            if (self.o.messageCountMax > 0) and (total_messages > self.o.messageCountMax) \
+                    and not self.worklist.failed_pending:
                 logger.info(f'{total_messages} messages processed > messageCountMax {self.o.messageCountMax}')
                 self.runCallbacksTime('please_stop')
 
@@ -637,7 +644,7 @@ class Flow:
             self.metrics['flow']['msgRateCpu'] = total_messages / (self.metrics['flow']['cpuTime']+self.metrics['flow']['last_housekeeping_cpuTime'] )
 
             # trigger shutdown once gather is finished, where sleep < 0 (e.g. a post)
-            if (last_gather_len == 0) and (self.o.sleep < 0):
+            if (last_gather_len == 0) and (self.o.sleep < 0) and not self.worklist.failed_pending:
                 if (self.o.retryEmptyBeforeExit and "retry" in self.metrics
                     and (self.metrics['retry']['msgs_in_post_retry'] > 0
                          or self.metrics['retry']['msgs_in_download_retry'] > 0) ):
@@ -650,6 +657,11 @@ class Flow:
                     current_sleep = 0.1
                 else:
                     self.runCallbacksTime('please_stop')
+
+            # One-shot flows use a negative sleep value. If retry persistence is unavailable,
+            # keep retrying locally but impose a positive delay instead of spinning on the store.
+            if self.worklist.failed_pending and current_sleep <= 0:
+                current_sleep = 0.1
 
             if spamming and (current_sleep < 5):
                 current_sleep *= 2
@@ -686,7 +698,7 @@ class Flow:
                     last_time = now
                     continue
 
-            if not self._stop_requested and (stime > 0):
+            if (not self._stop_requested or self.worklist.failed_pending) and (stime > 0):
                 # dividing into small sleeps so exit processing happens faster
                 # bug #595, still relatively low cpu usage in increment sized chunks.
                 if 5 < stime:
@@ -696,7 +708,7 @@ class Flow:
                 while (stime > 0):
                     logger.debug('sleeping for %.2f', increment)
                     time.sleep(increment)
-                    if self._stop_requested:
+                    if self._stop_requested and not self.worklist.failed_pending:
                         break
                     else:
                         stime -= 5 
@@ -1166,7 +1178,6 @@ class Flow:
         self.worklist.ok = []
         self.ack(self.worklist.rejected)
         self.worklist.rejected = []
-        self.ack(self.worklist.failed)
 
 
     def gather(self) -> None:
@@ -1285,7 +1296,6 @@ class Flow:
         # need to acknowledge here, because posting will delete message-id
         self.ack(self.worklist.ok)
         self.ack(self.worklist.rejected)
-        self.ack(self.worklist.failed)
 
         # adjust message after action is done, but before 'after_work' so adjustment is possible.
         post_messages=[]
@@ -1313,7 +1323,14 @@ class Flow:
 
         self.ack(self.worklist.rejected)
         self.worklist.rejected = []
-        self.ack(self.worklist.failed)
+        self.ack(self.worklist.failed_ackable)
+        self.worklist.failed_ackable = []
+        if self.worklist.failed:
+            logger.critical(
+                "retry persistence failed; pausing intake with %d messages pending",
+                len(self.worklist.failed))
+            self.worklist.failed_pending.extend(self.worklist.failed)
+            self.worklist.failed = []
 
 
 

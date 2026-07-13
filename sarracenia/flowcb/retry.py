@@ -108,6 +108,9 @@ class Retry(FlowCB):
         if not features['retry']['present'] or self.o.retry_refilter:
             return
 
+        if getattr(worklist, 'failed_pending', []):
+            return
+
         if len(self.download_retry) < 1:
             return
 
@@ -137,13 +140,31 @@ class Retry(FlowCB):
         if not features['retry']['present'] :
             return
 
-        if len(worklist.failed) != 0:
-            for m in worklist.failed:
+        failed_pending = getattr(worklist, 'failed_pending', [])
+        failed_new = worklist.failed
+        if failed_new:
+            for m in failed_new:
                 self.__set_isRetry(m)
-            to_retry = self.__filter_by_retry_count(worklist.failed)
-            logger.debug('putting %s messages into %s', len(to_retry), self.download_retry_name)
-            self.download_retry.put(to_retry)
+        failed_to_persist = failed_pending + failed_new
+        if failed_to_persist:
+            to_retry = self.__filter_by_retry_count(failed_to_persist)
+            if to_retry:
+                logger.debug('putting %s messages into %s', len(to_retry), self.download_retry_name)
+                try:
+                    self.download_retry.put(to_retry)
+                except Exception as ex:
+                    logger.error('failed to persist %d retry messages: %s', len(failed_to_persist), ex)
+                    logger.debug('Exception details: ', exc_info=True)
+                    worklist.failed_pending = failed_to_persist
+                    worklist.failed = []
+                    return
+            if not hasattr(worklist, 'failed_ackable'):
+                worklist.failed_ackable = []
+            worklist.failed_ackable.extend(failed_to_persist)
+            worklist.failed_pending = []
             worklist.failed = []
+            if failed_pending:
+                return
 
         if len(self.post_retry) < 1:
             return
