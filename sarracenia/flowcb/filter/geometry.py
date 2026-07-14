@@ -85,9 +85,10 @@ class Geometry(FlowCB):
                 #We're just going to trust that geometry is a properly formatted GeoJSON object
                 # Ultimately, if it's not, some of the logic in following sections will fail, and we'll have to catch those errors then
                 message_geometry = json.loads(m['geometry'])
-            except json.decoder.JSONDecodeError as err:
+            except (json.decoder.JSONDecodeError, TypeError) as err:
                 logger.error(f"error parsing message geometry: {err}; {m}")
-                raise
+                worklist.failed.append(m)
+                continue
             
 
             accept_message = False

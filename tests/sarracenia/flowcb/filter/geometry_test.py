@@ -153,14 +153,19 @@ def test_after_accept():
 
 
     #Tests where message geometry is invalid JSON
+    options.geometry_maxDistance = 10
     geojson = sarracenia.flowcb.filter.geometry.Geometry(options)
 
     worklist = make_worklist()
     #failed
-    worklist.incoming.append(make_message("pointB"))
-    worklist.incoming[0]['geometry'] = 'lkjasdf'
-    with pytest.raises(json.decoder.JSONDecodeError):
-        geojson.after_accept(worklist)
+    malformed = make_message("pointB")
+    malformed['geometry'] = 'lkjasdf'
+    worklist.incoming.append(malformed)
+    worklist.incoming.append(make_message("pointA"))
+    geojson.after_accept(worklist)
+    assert worklist.failed == [malformed]
+    assert len(worklist.incoming) == 1
+    assert worklist.incoming[0]['geometry'] == features['pointA']
 
 
     #Tests missing geometry in config
@@ -174,4 +179,3 @@ def test_after_accept():
 
     geojson.after_accept(worklist)
     assert len(worklist.rejected) == 2
-
