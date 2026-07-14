@@ -129,7 +129,13 @@ class AMQP(Moth):
             else:
                 content_type = None
 
-            msg = PostFormat.importAny( body, raw_msg.headers, content_type, self.o )
+            try:
+                msg = PostFormat.importAny(body, raw_msg.headers, content_type, self.o)
+            except Exception as err:
+                logger.error('Decode failed, discarding message: %s', err)
+                logger.debug('Exception details: ', exc_info=True)
+                self.channel.basic_ack(raw_msg.delivery_info['delivery_tag'])
+                return None
             if not msg:
                 logger.error('Decode failed, discarding message')
                 self.channel.basic_ack( raw_msg.delivery_info['delivery_tag'])
