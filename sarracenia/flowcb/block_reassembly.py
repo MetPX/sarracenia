@@ -208,8 +208,13 @@ class Block_reassembly(FlowCB):
             # copy data from block partition file into final destination.
             sz=self.o.bufSize if self.o.bufSize > byteCount else byteCount
             bytesTransferred=0
-            while bytesTransferred < byteCount: 
+            short_block = False
+            while bytesTransferred < byteCount:
                 b = pf.read(sz)
+                if not b:
+                    logger.error("block %s ended after %s of %s bytes", part_file, bytesTransferred, byteCount)
+                    short_block = True
+                    break
                 rf.write(b)
                 bytesTransferred += len(b)
                 bytesLeft = byteCount - bytesTransferred
@@ -217,6 +222,11 @@ class Block_reassembly(FlowCB):
 
             rf.close()
             pf.close()
+
+            if short_block:
+                worklist.failed.append(m)
+                flck.unlock()
+                continue
 
             # assert: block data is now in main file, so delete block
             os.unlink(part_file)
