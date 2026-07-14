@@ -83,6 +83,34 @@ def test_get_closes_handles_on_read_error():
         # this would eventually fail under a low ulimit.
 
 
+@pytest.mark.parametrize(
+    'exact_length, expected',
+    [
+        (False, b'0123456789'),
+        (True, b'012'),
+    ],
+)
+def test_get_only_limits_exact_length_transfers(tmp_path, exact_length, expected):
+    options = make_options()
+    xfer = File('file', options)
+    source_dir = tmp_path / 'source'
+    source_dir.mkdir()
+    (source_dir / 'data').write_bytes(b'0123456789')
+    destination = tmp_path / 'destination'
+    xfer.cwd = str(source_dir)
+
+    transferred = xfer.get(
+        sarracenia.Message(),
+        'data',
+        str(destination),
+        length=3,
+        exactLength=exact_length,
+    )
+
+    assert transferred == len(expected)
+    assert destination.read_bytes() == expected
+
+
 def test_get_no_fd_leak_over_many_transfers():
     """Transfer many files via file:// and verify no fd accumulation.
 

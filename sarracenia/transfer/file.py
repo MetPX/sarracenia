@@ -132,7 +132,7 @@ class File(Transfer):
             if self.sumalgo: self.sumalgo.set_path(remote_file)
 
             # download
-            rw_length = self.read_write(src, dst, length)
+            rw_length = self.read_write(src, dst, length if exactLength else 0)
         finally:
             self.local_read_close(src)
             self.local_write_close(dst)
