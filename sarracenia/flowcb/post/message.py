@@ -37,6 +37,30 @@ class Message(FlowCB):
         #else:
         #    logger.error( f"no publishers for {self.o.component}/{self.o.config}")
 
+    @staticmethod
+    def _publisher_identity(publisher):
+        identity = {}
+        for key in ['broker', 'exchange', 'topicPrefix', 'format']:
+            if key in publisher:
+                identity[key] = str(publisher[key]) if key == 'broker' else copy.deepcopy(publisher[key])
+        return identity
+
+    def _publisher_index(self, message):
+        retry_identity = message.get('publisher_identity')
+        if retry_identity is not None:
+            for index, publisher in enumerate(self.o.publishers):
+                if retry_identity == self._publisher_identity(publisher):
+                    message['publisher_index'] = index
+                    return index
+            return None
+
+        index = message.get('publisher_index')
+        if type(index) is not int or index < 0 or index >= len(self.posters):
+            return None
+
+        message['publisher_identity'] = self._publisher_identity(self.o.publishers[index])
+        message['_deleteOnPost'].add('publisher_identity')
+        return index
 
     def post(self, worklist):
         old_ok = worklist.ok
@@ -46,16 +70,20 @@ class Message(FlowCB):
             i=0
             failures=[]
             if 'publisher_index' in m:
-                i=m['publisher_index']
-                p=self.posters[i]
-                if hasattr(p,'putNewMessage'):
-                    try:
-                        if not p.putNewMessage(m):
+                i = self._publisher_index(m)
+                if i is None:
+                    logger.warning("publisher for retry is no longer configured: %s", m.get('publisher_identity'))
+                    failures.append(m.get('publisher_index', -1))
+                else:
+                    p = self.posters[i]
+                    if hasattr(p, 'putNewMessage'):
+                        try:
+                            if not p.putNewMessage(m):
+                                failures.append(i)
+                        except Exception as e:
+                            logger.warning("putNewMessage crashed %s", e)
+                            logger.debug("Exception details:", exc_info=True)
                             failures.append(i)
-                    except Exception as e:
-                        logger.warning(f"putNewMessage crashed {e}")
-                        logger.debug("Exception details:", exc_info=True)
-                        failures.append(i)
             else:
                 for p in self.posters:
                     if hasattr(p,'putNewMessage'):
@@ -81,6 +109,9 @@ class Message(FlowCB):
             if len(failures)<1:
                 if 'post_failures' in m:
                    del m['post_failures']
+                if 'publisher_identity' in m:
+                    del m['publisher_identity']
+                    m['_deleteOnPost'].discard('publisher_identity')
                 worklist.ok.append(m)
             else:
                 m['post_failures'] = failures
