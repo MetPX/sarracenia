@@ -345,10 +345,7 @@ class V2Wrapper(FlowCB):
             if self.run_entry('on_file', m):
                 ok_to_post.append(m)
             else:
-                #worklist.failed.append(m)
-                pass
-                # FIXME: what should we do on failure of on_file plugin?
-                #     download worked, but on_file failed... hmm...
+                worklist.failed.append(m)
 
         worklist.ok = ok_to_post
 
