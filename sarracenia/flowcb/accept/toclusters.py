@@ -38,7 +38,8 @@ class ToClusters(FlowCB):
     def after_accept(self, worklist):
         new_incoming = []
         for message in worklist.incoming:
-            if message['to_clusters'] in self.o.msgToClusters:
+            destinations = [destination.strip() for destination in message['to_clusters'].split(',')]
+            if any(destination in self.o.msgToClusters for destination in destinations):
                 new_incoming.append(message)
             else:
                 worklist.rejected.append(message)

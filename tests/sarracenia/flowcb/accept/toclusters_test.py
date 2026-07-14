@@ -45,9 +45,15 @@ def test_after_accept(caplog):
     toclusters = ToClusters(options)
 
     worklist = make_worklist()
-    worklist.incoming = [make_message('GoodCluster'), make_message('AnotherGoodCluster'), make_message('BadCluster')]
+    worklist.incoming = [
+        make_message('GoodCluster'),
+        make_message('BadCluster, AnotherGoodCluster, ThirdCluster'),
+        make_message('BadCluster,ThirdCluster')
+    ]
 
     toclusters.after_accept(worklist)
 
     assert len(worklist.incoming) == 2
     assert len(worklist.rejected) == 1
+    assert worklist.incoming[1]['to_clusters'] == 'BadCluster, AnotherGoodCluster, ThirdCluster'
+    assert worklist.rejected[0]['to_clusters'] == 'BadCluster,ThirdCluster'
