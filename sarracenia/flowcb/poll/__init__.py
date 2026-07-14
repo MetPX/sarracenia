@@ -489,18 +489,18 @@ class Poll(FlowCB):
 
                 ok = sarracenia.Message.fromFileInfo(path, self.o, lstat)
                 if os.path.islink(path):
-                    if 'size' in msg:
-                        del msg['size']
+                    if 'size' in ok:
+                        del ok['size']
                     if not self.o.follow_symlinks:
                         try: 
                             ok['fileOp'] = { 'link': os.readlink(path) } 
-                            if 'Identity' in msg:
-                                 del ok['Identity']
+                            if 'identity' in ok:
+                                 del ok['identity']
                         except:
                             logger.error(f"cannot read link {path} message dropped")
                             logger.debug('Exception details: ', exc_info=True)
                             ok=None
-                return ok
+                return [ok] if ok else []
 
         post_relPath = destDir + '/' + remote_file
 
