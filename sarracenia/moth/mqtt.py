@@ -844,7 +844,7 @@ class MQTT(Moth):
             if hasattr(self, 'pending_publishes'):
                 ebo=0.1
                 total_wait = 0.0
-                max_wait = self.o['timeout'] if 'timeout' in self.o else 300
+                max_wait = self.o['timeout'] if self.o.get('timeout', 0) > 0 else 300
                 while  len(self.pending_publishes) >0:
                     if total_wait >= max_wait:
                         logger.warning('gave up waiting for %d pending publishes after %.1f seconds',
