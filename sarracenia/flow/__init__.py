@@ -1325,11 +1325,18 @@ class Flow:
         self.worklist.rejected = []
         self.ack(self.worklist.failed_ackable)
         self.worklist.failed_ackable = []
-        if self.worklist.failed:
-            logger.critical(
-                "retry persistence failed; pausing intake with %d messages pending",
-                len(self.worklist.failed))
-            self.worklist.failed_pending.extend(self.worklist.failed)
+        if features['retry']['present']:
+            if self.worklist.failed:
+                logger.critical(
+                    "%d failed messages were not persisted for retry; pausing intake",
+                    len(self.worklist.failed))
+                self.worklist.failed_pending.extend(self.worklist.failed)
+                self.worklist.failed = []
+        elif self.worklist.failed:
+            # no retry store available: nothing was, or could have been, persisted.
+            # preserve pre-existing behaviour of acknowledging and moving on instead
+            # of stalling intake on a guarantee this build cannot provide.
+            self.ack(self.worklist.failed)
             self.worklist.failed = []
 
 
