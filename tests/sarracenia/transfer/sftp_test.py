@@ -94,7 +94,7 @@ class Test_SftpConnectCleanup:
             m.close.assert_called_once()
 
 
-class TestSftpMultipartPut:
+class Test_SftpMultipartPut:
 
     @staticmethod
     def make_transfer():
