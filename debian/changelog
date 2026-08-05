@@ -5,6 +5,8 @@ metpx-sr3 (3.03.00rc1) UNRELEASED; urgency=medium
   * ai tools applied, many bugs found & fixed. (perf) means no behaviour change
     only improved performance.
   * many fixes to tests: unit, flow, etc...
+  * doc #1753 sftp: document using ~/.ssh/config rather than ssh_keyfile in
+    credentials.conf, so accelerated (scp) transfers use the same settings.
   * fix #38, #1637 Stateful queue binding: editing subtopics works properly.
   * fix #38 Stateful queue binding: queue parameter changes flagged.
   * fix #1627 log when putNewMessage crashes (message publish failure.)
