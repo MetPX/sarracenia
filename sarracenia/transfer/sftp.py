@@ -603,5 +603,5 @@ class Sftp(Transfer):
             except Exception as ex:
                 logger.warning( f"utime {path} failed: {ex}")
                 logging.debug("Exception details:", exc_info=True)
-            finally:
-                alarm_cancel()
+
+        alarm_cancel()
