@@ -1,4 +1,4 @@
-metpx-sr3 (3.03.00rc2) UNRELEASED; urgency=medium
+metpx-sr3 (3.03.00) unstable; urgency=medium
 
   * increment version number
   * lots of changes, changelog to be completed. old bindings get removed now.
