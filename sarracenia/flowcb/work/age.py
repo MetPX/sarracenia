@@ -42,11 +42,12 @@ class Age(FlowCB):
 
     def on_housekeeping(self) -> None:
         #logger.info( f" maximum Age: {datetime.timedelta(seconds=self.metrics['ageMax'])}  Average Age: {datetime.timedelta(seconds=self.metrics['ageMean'])} files: {self.metrics['ageCount']}" )
-        logger.info( "Age of files (in seconds) when transfer complete, maximum: %.2g Average: %.2g file count: %d" % 
-            ( self.metrics['ageMax'], self.metrics['ageMean'], self.metrics['ageCount'] ) )
+        logger.info( "Age of files (in seconds) when transfer complete, maximum: " \
+            f" {self.metrics['ageMax']:.2g} Average: {self.metrics['ageMean']:.2g} file count: {self.metrics['ageCount']:d}" )
 
-        logger.info( "Copy time for files (in seconds) when transfer complete, maximum: %.2g Average: %.2g file count: %d" % 
-            ( self.metrics['copyMax'], self.metrics['copyMean'], self.metrics['ageCount'] ) )
+        logger.info( "Copy time for files (in seconds) when transfer complete, " \
+            f" maximum: {self.metrics['copyMax']:.2g} Average: {self.metrics['copyMean']:2g}," \
+            f" file count: {self.metrics['ageCount']:d}" )
 
 
     def after_work(self, worklist) -> None:

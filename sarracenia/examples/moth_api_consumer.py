@@ -45,7 +45,8 @@ queue = {'name': 'q_anonymous_' + socket.getfqdn() + '_' + options['queueShare']
 
 options['subscriptions'] = sarracenia.config.subscription.Subscriptions( [ { 
    'broker': options['broker'],
-   'bindings': [ { 'exchange':'xpublic', 'prefix': ['v02','post'], 'sub':['#'] } ],
+   'bindings': [ { 'exchange':'xpublic', 'topic':'v02.post.#' } ],
+   'bindings_to_remove': [],
    'queue' : queue
       } ] )
 
@@ -58,7 +59,7 @@ options['subscription_index'] = 0
 
 #options['logLevel'] = 'debug'
 
-print('options: %s' % options)
+print(f'options: {options}')
 
 h = sarracenia.moth.Moth.subFactory(options)
 
@@ -66,7 +67,7 @@ count = 0
 while count < 5:
     m = h.getNewMessage()
     if m is not None:
-        print("message: %s" % m)
+        print(f"message: {m}")
         #content = m.getContent()
         #print("corresponding file: %s" % content)
         h.ack(m)

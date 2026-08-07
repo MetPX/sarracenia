@@ -47,7 +47,7 @@ class BearerToken(sarracenia.flowcb.FlowCB):
             try: 
                 token_already_in_creds = (ok and details.bearer_token == token)
                 if token_already_in_creds:
-                    logger.debug(f"Token for {msg['baseUrl']} already in credentials database")
+                    logger.debug('Token for %s already in credentials database', msg['baseUrl'])
             except:
                 token_already_in_creds = False
 

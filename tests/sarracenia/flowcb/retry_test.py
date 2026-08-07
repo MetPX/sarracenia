@@ -24,6 +24,7 @@ class Options:
         self.pid_filename = "/tmp/sarracenia/retyqueue_test/pid_filename"
         self.housekeeping = float(0)
         self.batch = 0
+        self.retryCountMax = 0
     def add_option(self, option, type, default = None):
         if not hasattr(self, option):
             setattr(self, option, default)

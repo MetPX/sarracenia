@@ -820,15 +820,46 @@ comment les traiter. S’il n’est pas défini, aucun événement de lien symbo
 FIXME : algorithme de renommage amélioré en v3 pour éviter l’utilisation de double post...
 
 
-exchange <nom> (défaut: xpublic) et exchangeSuffix
---------------------------------------------------
+exchange <nom> (par défaut : default) et exchange_suffix
+--------------------------------------------------------
 
-La norme pour les pompes de données est d’utiliser l’échange *xpublic*. Les utilisateurs peuvent établir un
-flux de données privées pour leur propre traitement. Les utilisateurs peuvent déclarer leurs propres échanges
-qui commencent toujours par *xs_<nom-d'utilisatueur>*. Pour éviter d’avoir à le spécifier à chaque
-fois, on peut simplement régler *exchangeSuffix kk* qui entraînera l’échange
-à être défini a *xs_<nom-d'utilisatueur>_kk* (en remplaçant le défaut *xpublic*).
-Ces paramètres doivent apparaître dans le fichier de configuration avant les paramètres *topicPrefix* et *subtopic*.
+Ce paramètre détermine l’*échange* utilisé dans les abonnements. Dans AMQP 0.9,
+l’échange est un élément obligatoire d’un abonnement, distinct de la hiérarchie des sujets.
+Dans d’autres protocoles, il peut servir de mécanisme d’organisation au dans l'hiérarchie des sujets.
+
+Ces paramètres doivent figurer dans le fichier de configuration avant les paramètres *topicPrefix* et *subtopic* correspondants.
+
+* exchange default
+
+Lorsque ce paramètre est à sa valeur par défaut, les conventions suivantes s’appliquent :
+La convention pour les pompes de données est d’utiliser l’échange *xpublic*. Les utilisateurs peuvent établir
+un flux de données privé pour leur propre traitement.
+
+* exchange xs_username_hoho
+* exchangeSuffix hoho
+
+Sur les courtiers dédiés SR3, les utilisateurs peuvent déclarer leurs propres échanges commençant toujours 
+par *xs_<nom_utilisateur>*. Pour éviter de le spécifier à chaque fois, il suffit de 
+définir *exchangeSuffix kk*, ce qui aura pour effet de définir l'échange 
+sur *xs_<nom_utilisateur>_kk* (remplaçant ainsi la valeur par défaut de *xpublic*).
+
+Les deux paramètres ci-dessus sont donc équivalents.
+Le paramètre *exchange* définit explicitement le nom de l'échange pour les liaisons d'abonnement.
+Les courtiers SR3 appliquent cette convention de nommage, mais ce n'est pas forcément le cas des courtiers externes.
+Par conséquent, tout nom est autorisé. Pour les protocoles qui n'ont pas le concept d'*exchange* (tous sauf AMQP 0.9),
+la spécification de l'*exchange* génère une hiérarchie de sujets comme suit::
+
+
+    exchange xs_username_hoho
+    topicPrefix v02
+
+    résultat:   xs_username_hoho/v03/post/relative/path/of/posting...
+
+* exchange None
+
+Définir l'échange sur None entraînera des erreurs et l'impossibilité de se connecter sous AMQP 0.9.
+Pour les autres protocoles, cela empêchera l'ajout de l'échange avant le *topicPrefix* dans les 
+abonnements.
 
 
 exchangeDeclare <flag>
@@ -1291,6 +1322,7 @@ Pour avoir un effet, il faut que *mirror* apparait dans le fichier avant *accept
 Le composant *subscribe* est généralement utilisé pour le téléchargement finale, et *mirror off* signifie que le paramètre *directory* indiquera exactement où les fichiers sont téléchargés.
 
 Tous les autres composants sont utilisés dans les pompes de données, et la préservation de l'intégralité de l'arborescence est généralement souhaitée. Ainsi, pour tous les autres composants, *mirror on* est la valeur par défaut.
+
 
 
 no <count>
@@ -1830,6 +1862,25 @@ la cache de réception est également supprimé.
 Le protocole AMQP définit d’autres options de fil d’attente qui ne sont pas exposées
 via Sarracenia, parce que Sarracenia choisit soi-même des valeurs appropriées.
 
+retryCountMax <nombre> (défaut: 0)
+----------------------------------
+
+L'option **retryCountMax** définit une limite au nombre de fois qu'un message sera
+re-tenté après un échec. Lorsqu'un message ne parvient pas à être transféré (dans un abonné)
+ou publié (dans un post/expéditeur), il est ajouté à une file d'attente de re-tentative.
+Chaque fois qu'il est récupéré de la file d'attente pour une nouvelle tentative, son
+compteur de re-tentative est incrémenté.
+
+Si le nombre de tentatives dépasse **retryCountMax**, le message est rejeté
+et une ERREUR est enregistrée dans le journal.
+
+La valeur par défaut est 0, ce qui signifie qu'il n'y a pas de limite au nombre de re-tentatives
+(sous réserve de **retry_ttl**).
+
+Cette option fonctionne parallèlement à **retry_ttl**; le message sera rejeté
+selon la limite atteinte en premier.
+
+
 retryEmptyBeforeExit: <booléen> (défaut: False)
 -----------------------------------------------
 
@@ -1861,6 +1912,7 @@ retry_ttl <intervalle> (défaut: identique à expire)
 L’option **retry_ttl** (nouvelle tentative de durée de vie) indique combien de temps il faut continuer à essayer d’envoyer
 un fichier avant qu’il ne soit  rejeté de la fil d’attente.  Le défaut est de deux jours.  Si un fichier n’a pas
 été transféré après deux jours de tentatives, il est jeté.
+
 
 runStateThreshold_cpuSlow <count> (par défaut : 0)
 ---------------------------------------------------
@@ -2302,10 +2354,50 @@ permettre la connexion de réussir.
 topic <chaine> 
 --------------
 
+Veuillez plutôt utiliser *subtopic*. *topic* sert à remplir explicitement la chaîne de 
+*topic* d'abonnement, en remplaçant la valeur généralement dérivée d'un ensemble 
+de paramètres. Pour les pompes de données Sarracenia, cela devrait être très rarement 
+nécessaire, car l'utilisation de *exchange*, *topicPrefix* et *subtopic* génère
+normalement une valeur appropriée.
+
+Exemple de configuration::
+
+    broker mqtt://user@broker
+    queueName q_user_Doreen
+    subtopic #
+
+Sujet d'abonnement résultant : $share/q_user_Doreen/xpublic/v03/#
+
+Le résultat est visible dans le champ *bindings* de la commande *sr3 show*.
+
+Le sujet d'abonnement résultant est construit à partir des éléments suivants:
+
+* l'identifiant de partage d'abonnement utilisé pour tous les abonnements MQTT (requis pour que plusieurs instances partagent un même abonnement)
+
+* le queueName (utilisateur comme identifiant de groupe de partage.)
+
+* l'échange par défaut (xpublic)
+
+* le *topicPrefix* par défaut (v03)
+
+* enfin, le *subtopics* spécifié.
+
+Tous ces éléments sont concaténés.
+
+vs::
+
+    broker mqtt://user@broker
+    queueName q_user_Doreen
+    topic #
+
+Sujet d'abonnement résultant : #
+
+Lorsque vous spécifiez un sujet, tous les autres paramètres sont ignorés et le paramètre fourni est pris au pied de la lettre.
 Définissez explicitement une chaîne de sujet d'abonnement ou de publication, en remplaçant la valeur
-dériver à partir de l'habituel groupe de paramètres. Pour les pompes de données Sarracenia, cela ne 
+dérivé à partir de l'habituel groupe de paramètres. Pour les pompes de données Sarracenia, cela ne 
 devrait jamais être nécessaire, car l'utilisation de l'*exchange*, *topicPrefix* et *subtopic*  
 construit normalement le bon valeur.
+
 
 topicPrefix (défaut: v03)
 -------------------------

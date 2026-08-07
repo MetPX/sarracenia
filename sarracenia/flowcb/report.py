@@ -1,4 +1,5 @@
 
+import copy
 import logging
 import sarracenia
 from sarracenia.flowcb import FlowCB
@@ -125,7 +126,7 @@ class Report(FlowCB):
             self.reportPost(m)
 
         for m in worklist.failed:
-            mm=copy.deepcopy(m) # copy because might be retried, so no modification is allowed.
+            mm = copy.copy(m)  # shallow copy: reportPost only deletes top-level keys
             self.reportPost(mm)
 
         for m in worklist.rejected:
@@ -135,14 +136,12 @@ class Report(FlowCB):
         tot = self.reportCount
         how_long = sarracenia.nowflt() - self.last_housekeeping
         if tot > 0:
-            apc = 100 * self.reportCount / tot
             rate = self.reportCount / how_long
         else:
-            apc = 0
             rate = 0
 
         self.reportRate = rate
-        logger.info( "reports %d, rate %3.1f reports/s" % (self.reportCount , rate))
+        logger.info( f"reports {tot}, rate {rate:3.1f} reports/s" )
 
 
     def on_declare(self):

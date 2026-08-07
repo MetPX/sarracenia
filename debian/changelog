@@ -1,3 +1,48 @@
+metpx-sr3 (3.03.00rc2) UNRELEASED; urgency=medium
+
+  * increment version number
+  * lots of changes, changelog to be completed. old bindings get removed now.
+  * ai tools applied, many bugs found & fixed. (perf) means no behaviour change
+    only improved performance.
+  * many fixes to tests: unit, flow, etc...
+  * fix #38, #1637 Stateful queue binding: editing subtopics works properly.
+  * fix #38 Stateful queue binding: queue parameter changes flagged.
+  * fix #1627 log when putNewMessage crashes (message publish failure.)
+  * fix #1622 MQTT client thread leak 
+  * perf #1618 cache logLevel check in callback dispatch.
+  * fix #1617 diskqueue fd hygiene. 
+  * perf #1604,#1611,#1630 replace deepcopy with shallow copy in message publishes.
+  * perf #1609 replace eval with getattr() for callback dispatch
+  * perf #1628,#1626,#1623,#1613 string formatting optimization fstrings everywhere except loggging.debug
+  * fix #1639,#1640,#1642,#1664 unit test fixes
+  * fix #1645,1648,1680 file/sftp/http leaks
+  * fix #1646,#1647,#1649,#1650,#1651 various ai fixes
+  * fix #1652 close inhereted fd on os.execl
+  * fix #1656,#1659 filename/nodupe_ttl option parsing
+  * perf #1662 add amqp1.0 moth implementation
+  * perf #1671 simplify MQTT rx_msg
+  * fix #1673 rabbitmqadmin bugs
+  * fix #1675 exitType to ExitType
+  * perf #1677 detect hashtag in credentials and unquote password
+  * fix #1678 add retryCountMax documentation
+  * fix #732,#1688 set timeout on amqp connections
+  * fix #1691 desftn_script so it doesn't get propogated
+  * fix #1694 change chmod to permDefault in poll default options
+  * perf #1697,#1728 add key filter plugin
+  * perf #1702 add rxLast metric to amqpconsumer
+  * perf #1706,#1709,#1718 WIS2 adjustments
+  * fix #1693,#1707 octal_number tweaks
+  * perf #1708 SFTP performance improvements
+  * fix #1703,#1711 prevent env. vars to apply to all configs
+  * fix #1710,#1713 prevent sr3 declare on disabled configs
+  * fix #1714 putAccelerated errors not being caught
+  * perf #1717,#1719,#1722,#1723,#1725,#1726,#1727 flow test improvements
+  * fix #1590,#1729 no log messages for failed posts
+  * fix #1749 handle race conditions in check for existing inflight file
+  * fix #1732 alarms getting triggered in random places
+
+ -- Reid Sunderland <reid.sunderland@ssc-spc.gc.ca>  Mon, 03 Jul 2026 17:55:18 +0000
+
 metpx-sr3 (3.02.00) unstable; urgency=medium
 
   * Fix metricsReport plugin list leak in flow algorithm #1603

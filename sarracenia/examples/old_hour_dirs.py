@@ -24,17 +24,17 @@ except:
 
 cutoff = dateparser.parse(how_many_hours)
 
-print("last is: %s\n" % cutoff)
+print(f"last is: {cutoff}\n")
 
 old_dirs = []
 
 for d in os.listdir('.'):
     ddt = dateparser.parse(d, ['%Y%m%dT%H'])
-    print("this one is: %s\n" % ddt)
+    print(f"this one is: {ddt}\n")
     if ddt is not None and ddt < cutoff:
         old_dirs.append(d)
         continue
-    print("skipping: %s" % d)
+    print(f"skipping: {d}")
 
 old_dirs.sort()
 random.shuffle(old_dirs)
@@ -42,14 +42,14 @@ for d in old_dirs:
 
     while True:
         try:
-            print("shutil.rmtree(%s)\n" % d)
+            print(f"shutil.rmtree({d})\n")
             shutil.rmtree(d)
 
             if not os.path.isdir(d):
-                print('succeeded? %s failed isdir' % d)
+                print(f'succeeded? {d} failed isdir')
                 break
-            print("ugh. rmtree(%s) succeeded, but it is still there" % (d))
+            print(f"ugh. rmtree({d}) succeeded, but it is still there")
             time.sleep(30)
         except Exception as ex:
-            print("ugh. rmtree(%s) failed: %s" % (d, ex))
+            print(f"ugh. rmtree({d}) failed: {ex}")
             time.sleep(30)

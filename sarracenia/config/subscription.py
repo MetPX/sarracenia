@@ -11,42 +11,72 @@ logger = logging.getLogger(__name__)
 
 class Subscription(dict):
 
-    def __init__(self, options, queueName_template, queueName, subtopic):
+    def __init__(self, options, queueName_template, queueName, subtopic, topicOverride=False):
 
         exchange=None
-        if hasattr(options,'exchange') and options.exchange:
+        if hasattr(options,'exchange') and options.exchange != 'default':
             exchange=options.exchange
         else:
             if not hasattr(options.broker.url,'username') or ( options.broker.url.username == 'anonymous' ):
                 exchange = 'xpublic'
             else:
-                exchange = 'xs_%s' % options.broker.url.username
+                exchange = f'xs_{options.broker.url.username}'
 
             if options.component in [ 'poll', 'post', 'watch' ]:
                 if hasattr(options,'post_exchange') and options.post_exchange:
                     exchange = options.post_exchange
 
                 if hasattr(options,'post_exchangeSuffix') and options.post_exchangeSuffix:
-                    exchange += '_%s' % options.post_exchangeSuffix
+                    exchange += f'_{options.post_exchangeSuffix}'
 
                 if hasattr(options, 'post_exchangeSplit') and hasattr( options, 'no') and (options.no > 0):
                     exchange += "%02d" % (options.no % options.post_exchangeSplit)
             else:
                 if hasattr(options, 'exchangeSuffix'):
-                    exchange += '_%s' % options.exchangeSuffix
+                    exchange += f'_{options.exchangeSuffix}'
 
                 if hasattr(options, 'exchangeSplit') and hasattr( options, 'no') and (options.no > 0):
                     exchange += "%02d" % (options.no % options.exchangeSplit)
 
         self['broker'] = options.broker
-        self['bindings'] = [ { 'exchange': exchange, 'prefix': options.topicPrefix, 'sub': subtopic } ]
 
-        self['queue']={ 'name': queueName, 'template': queueName_template, 'cleanup_needed': None }
+        if options.topicPrefix:
+            prefix=options.topicPrefix
+        else:
+            prefix=[]
+        if exchange and not self['broker'].url.scheme.lower().startswith('amqp'):
+            prefix= [ exchange ] + prefix
+
+        # For MQTTv5 usage with >1 instance, you need MQTT shared subscriptions. 
+        #  
+        if  'mqtt' in self['broker'].url.scheme.lower():
+           prefix= [ '$share', queueName ] + prefix
+           topic_separator='/'
+        else:
+           topic_separator='.'
+
+
+        if topicOverride:
+            if self['broker'].url.scheme.lower().startswith('amqp'):
+                self['bindings'] = [ { 'exchange': exchange, 'topic': topic_separator.join(subtopic) } ]
+            elif exchange:
+                self['bindings'] = [ { 'topic': topic_separator.join([exchange] + subtopic) } ]
+            else:
+                self['bindings'] = [ { 'topic': topic_separator.join(subtopic) } ]
+        else:
+            if self['broker'].url.scheme.lower().startswith('amqp'):
+                self['bindings'] = [ { 'exchange': exchange, 'topic': topic_separator.join(prefix + subtopic) } ]
+            else:
+                self['bindings'] = [ { 'topic':  topic_separator.join(prefix + subtopic) } ]
+
+
+        self['queue']={ 'name': queueName, 'template': queueName_template, 'cleanup_needed': None, 'mismatch':[] }
         for a in [ 'queueBind', 'queueDeclare' , 'queueType' ]:
             aa = a.replace('queue','').lower()
             if hasattr(options, a):
                 self['queue'][aa] = getattr(options,a)
 
+        self['bindings_to_remove'] = []
         for a in [ 'auto_delete', 'clean_session', 'durable', 'expire', 'max_inflight_messages', \
                 'max_queued_messages',  'prefetch', 'qos', 'receiveMaximum', 'tlsRigour', 'topic' ]:
             if hasattr(options, a):
@@ -82,30 +112,73 @@ class Subscriptions(list):
 
         try:
             with open(fn,'r') as f:
-                #self=json.loads(f.readlines())
-                self=copy.deepcopy(json.load(f))
+                data = json.load(f)
+                self[:] = copy.deepcopy(data)
 
             for s in self:
                 if type(s['broker']) is str:
                     ok, broker = options.credentials.validate_urlstr(s['broker'])
                     if ok:
                         s['broker'] = broker
-            if 'auto_delete' not in self:
-                s['auto_delete'] = options.auto_delete
+
+                # old subscriptions (pre 3.02) that have "sub" fields in them need conversion.
+                if 'mqtt' in s['broker'].url.scheme.lower(): 
+                    proto='mqtt'
+                    sep = '/' 
+                else:
+                    proto= 'amqp'
+                    sep = '.'
+
+                # subscription format change, recover for version before 3.02
+
+                for b in s['bindings']:
+                    if 'sub' in b:
+                         pfx=b.get('prefix',[])
+                         sub=b['sub']
+                         if not type(pfx) == list:
+                             pfx=list(pfx)
+                         if not type(sub) == list:
+                             sub=list(sub)
+                         if proto in ['mqtt']:
+                             b['topic'] =  sep.join( [ '$share', s['queue']['name'] ] + pfx + sub )
+                         else:
+                             b['topic'] =  sep.join(pfx+sub)
+
+                    if 'sub' in b:
+                        del b['sub']
+                    if 'prefix' in b:
+                        del b['prefix']
+
+                if 'queue' in s:
+                    if not 'tlsRigour' in s['queue']:
+                         s['queue']['tlsRigour'] = options.tlsRigour
+
+                if 'auto_delete' not in s:
+                    s['auto_delete'] = options.auto_delete
+     
             return self
 
         except Exception as Ex:
-            logger.debug( f"failed {fn}: {Ex}" )
+            logger.debug('failed %s: %s', fn, Ex)
             logger.debug('Exception details: ', exc_info=True)
             return []
 
     def write(self,fn):
 
         jl=[]
+        badness=False
         for s in self:
             jd=copy.deepcopy(s)
             jd['broker']=str(s['broker'])
+            if 'mismatch' in jd['queue'] and jd['queue']['mismatch']:
+                badness=True
+                logger.critical( f"cannot persist configuration with inconsistent queue" \
+                    f" {jd['queue']['name']} state: {jd['queue']['mismatch']} ")
+
             jl.append(jd)
+            
+        if badness:
+           return
 
         try:
             with open(fn,'w') as f:
@@ -133,7 +206,7 @@ class Subscriptions(list):
             self.append(new_subscription)
 
             
-    def deltAnalyze(self, other):
+    def finalize(self,old_subscriptions):
         """
            NOT IMPLEMENTED!
 
@@ -151,7 +224,37 @@ class Subscriptions(list):
                * auto-delete mismatch
                * exclusive mismatch
         """
-        if self == other:
+        if self == old_subscriptions:
             return None
 
-        different_subscriptons=[]
+        bindings_in_both=[]
+        for os in old_subscriptions:        
+            for s in self:
+                bindings_to_remove=[]
+                if s['broker'] != os['broker']:
+                     continue
+                if s['queue']['name'] != os['queue']['name']:
+                     continue 
+                q_bad=[]
+                for x in [ 'auto_delete', 'durable', 'expire', 'prefetch' ]:
+                    if x not in s['queue'] or x not in os['queue']:
+                        continue
+                    if s['queue'][x] != os['queue'][x]:
+                       logger.critical( f"INVARIANT queue parameter {x} changed, lossy message queue cleanup required to implement" )
+                       q_bad.append(x)
+                s['queue']['mismatch'] = q_bad
+
+                for b in s['bindings']:
+                    for ob in os['bindings']:
+                        if ( 'exchange' in b and not 'exchange' in ob ) or ( 'exchange' not in b and 'exchange' in ob ) :
+                             continue
+                        if 'exchange' in b and b['exchange'] != ob['exchange']:
+                             continue                     
+                        if b['topic'] != ob['topic']:
+                             continue                     
+                        bindings_in_both.append(b)
+                bindings_to_remove=[]
+                for ob in os['bindings']:
+                    if not ob in bindings_in_both:
+                        bindings_to_remove.append(ob)
+                s['bindings_to_remove']  = bindings_to_remove

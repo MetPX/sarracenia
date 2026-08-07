@@ -42,6 +42,50 @@ import urllib, urllib.parse
 import sys
 
 
+_REDACT_RE = re.compile(r'(://[^:@/]+:)[^@]+(@)')
+
+
+class UrlParseResult(urllib.parse.ParseResult):
+    """ParseResult subclass that auto-unquotes username and password.
+
+    urllib.parse preserves percent-encoding in .username and .password
+    (e.g. 'pass%23word' stays 'pass%23word', not 'pass#word').  Consumers
+    that need the decoded value had to call urllib.parse.unquote() themselves.
+    This subclass does that transparently via the .username and .password
+    properties, so callers always receive the human-readable decoded form.
+
+    When reconstructing a URL string (e.g. for passing to an external library),
+    use .raw_username and .raw_password to get the percent-encoded forms, or
+    use .netloc / .geturl() directly so encoding is preserved correctly.
+    """
+
+    @property
+    def username(self) -> str:
+        raw = super().username
+        return urllib.parse.unquote(raw) if raw else raw
+
+    @property
+    def password(self) -> str:
+        raw = super().password
+        return urllib.parse.unquote(raw) if raw else raw
+
+    @property
+    def raw_username(self) -> str:
+        """Username in percent-encoded form, suitable for URL reconstruction."""
+        return super().username
+
+    @property
+    def raw_password(self) -> str:
+        """Password in percent-encoded form, suitable for URL reconstruction."""
+        return super().password
+
+
+def _urlparse(urlstr: str) -> UrlParseResult:
+    """Parse a URL string and return a UrlParseResult with auto-unquoted credentials."""
+    pr = urllib.parse.urlparse(urlstr)
+    return UrlParseResult(pr.scheme, pr.netloc, pr.path, pr.params, pr.query, pr.fragment)
+
+
 class Credential:
     r"""
 
@@ -67,6 +111,7 @@ class Credential:
         login_method (str): force a specific login method for AMQP (PLAIN,
             AMQPLAIN, EXTERNAL or GSSAPI)
         implicit_ftps (bool): use implicit FTPS, defaults to ``False`` (i.e. explicit FTPS)
+        sftp_compat_mode (bool): disable performance improvements in SFTP code, use paramiko defaults instead
 
     Usage:
 
@@ -88,7 +133,7 @@ class Credential:
         """
 
         if urlstr is not None:
-            self.url = urllib.parse.urlparse(urlstr)
+            self.url = _urlparse(urlstr)
         else:
             self.url = None
 
@@ -104,6 +149,7 @@ class Credential:
         self.s3_anonymous = False
         self.azure_credentials = None
         self.implicit_ftps = False
+        self.sftp_compat_mode = False
 
     def __str__(self):
         """Returns attributes of the Credential object as a readable string.
@@ -131,15 +177,17 @@ class Credential:
             if scheme.startswith('ftp'):
                 alist = [ 'passive', 'binary', 'tls', 'prot_p', 'login_method', 'implicit_ftps' ]
             elif scheme.startswith('sftp'):
-                alist = [ 'ssh_keyfile' ]
-            elif scheme.startswith('amqp') or  scheme.startswith('mqtt'):
+                alist = [ 'ssh_keyfile', 'sftp_compat_mode' ]
+            elif scheme.startswith('amqp') or scheme.startswith('mqtt'):
                 alist = [ 'login_method' ]
+            elif scheme.startswith('amq1'):
+                alist = [ 'login_method' ] # TODO: will probably need to add certificate stuff here
             elif scheme.startswith('https'):
                 alist = [ 'prot_p', 'bearer_token', 'login_method', 's3_endpoint', 'implicit_ftps']
                 if self.s3_session_token: 
-                    s += " %s" % 's3_session_token=Yes' 
+                    s += f" s3_session_token=Yes" 
                 if self.azure_credentials: 
-                    s += " %s" % 'azure_credentials=Yes' 
+                    s += f" azure_credentials=Yes" 
 
         for a in alist:
             if getattr(self, a):
@@ -192,9 +240,9 @@ class CredentialDB:
         key=urlstr
         if details == None:
             details = Credential()
-            details.url = urllib.parse.urlparse(urlstr)
-            if hasattr(details.url,'password'):
-                key = key.replace( f":{details.url.password}", "" )
+            details.url = _urlparse(urlstr)
+            if hasattr(details.url,'raw_password') and details.url.raw_password:
+                key = key.replace( f":{details.url.raw_password}", "" )
 
         self.credentials[key] = details
 
@@ -223,14 +271,14 @@ class CredentialDB:
 
         # create url object if needed
 
-        url = urllib.parse.urlparse(urlstr)
+        url = _urlparse(urlstr)
 
         # add anonymous default, if necessary.
         if ( 'amqp' in url.scheme ) and \
            ( (url.username == None) or (url.username == '') ):
             urlstr = urllib.parse.urlunparse( ( url.scheme, \
-                'anonymous:anonymous@%s' % url.netloc, url.path, None, None, url.port ) )
-            url = urllib.parse.urlparse(urlstr)
+                f'anonymous:anonymous@{url.netloc}', url.path, None, None, url.port ) )
+            url = _urlparse(urlstr)
             if self.isValid(url):
                 self.add(urlstr)
                 return False, self.credentials[urlstr.replace(':anonymous@','@')]
@@ -258,7 +306,7 @@ class CredentialDB:
         Args:
             urlstr(str): credentials in a URL string.
         """
-        logger.debug("has %s" % urlstr)
+        logger.debug('has %s', urlstr)
         return urlstr in self.credentials
 
     def isTrue(self, S):
@@ -345,7 +393,21 @@ class CredentialDB:
             # first field url string = protocol://user:password@host:port[/vost]
             parts = sline.split()
             urlstr = parts[0]
-            url = urllib.parse.urlparse(urlstr)
+            url = _urlparse(urlstr)
+
+            # Detect credentials broken by unencoded '#' in password/username.
+            # urlparse treats '#' as a fragment delimiter, so 'user:pass#word@host'
+            # is parsed as netloc='user:pass' and fragment='word@host/'.
+            # The '@' that separates userinfo from host ends up in the fragment
+            # instead of netloc -- that is the reliable symptom.
+            # Use %23 in credentials.conf to encode '#'.
+            if url.fragment and '@' in url.fragment and '@' not in url.netloc:
+                logger.error(
+                    "credential URL appears malformed -- the password likely contains '#' "
+                    "which is a URL fragment delimiter. Replace '#' with '%%23' in credentials.conf. "
+                    "Other special characters: '@' -> '%%40', ':' -> '%%3a', '/' -> '%%2f'. "
+                    "Offending line: %s", _REDACT_RE.sub(r'\1<secret>\2', urlstr))
+                return
 
             # credential details
             details = Credential()
@@ -354,7 +416,7 @@ class CredentialDB:
             # no option
             if len(parts) == 1:
                 if not self.isValid(url, details):
-                    logger.error("bad credential 1 (%s)" % line)
+                    logger.error(f"bad credential 1 ({line})")
                     return
                 self.add(urlstr, details)
                 return
@@ -401,12 +463,14 @@ class CredentialDB:
                 elif keyword == 'implicit_ftps':
                     details.implicit_ftps = True
                     details.tls = True
+                elif keyword == 'sftp_compat_mode':
+                    details.sftp_compat_mode = True
                 else:
-                    logger.warning("bad credential option (%s)" % keyword)
+                    logger.warning(f"bad credential option ({keyword})")
 
             # need to check validity
             if not self.isValid(url, details):
-                logger.error("bad credential 2 (%s)" % line)
+                logger.error(f"bad credential 2 ({line})")
                 return
 
             # seting options to protocol
@@ -414,7 +478,7 @@ class CredentialDB:
             self.add(urlstr, details)
 
         except:
-            logger.error("credentials/parse %s" % line)
+            logger.error(f"credentials/parse {line}")
             logger.debug('Exception details: ', exc_info=True)
 
     def read(self, path):
@@ -435,7 +499,7 @@ class CredentialDB:
                 for line in lines:
                     self._parse(line)
         except:
-            logger.error("credentials/read path = %s" % path)
+            logger.error(f"credentials/read path = {path}")
             logger.debug('Exception details: ', exc_info=True)
         #logger.debug("Credentials = %s\n" % self.credentials)
 
@@ -458,7 +522,7 @@ class CredentialDB:
         # create url object if needed
 
         if not url:
-            url = urllib.parse.urlparse(urlstr)
+            url = _urlparse(urlstr)
 
         # resolving credentials
 
@@ -504,10 +568,10 @@ class CredentialDB:
         # check url and add credentials if needed from credential file
         ok, cred_details = self.get(urlstr)
         if cred_details is None:
-            logging.critical("bad credential %s" % urlstr)
+            logging.critical(f"bad credential {urlstr}")
             # Callers expect that a Credential object will be returned
             cred_details = Credential()
-            cred_details.url = urllib.parse.urlparse(urlstr)
+            cred_details.url = _urlparse(urlstr)
             return False, cred_details
         return True, cred_details
 

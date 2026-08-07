@@ -66,16 +66,16 @@ class octal_number(int):
 
     def __new__(cls, value):
         if type(value) is str:
-            self = int(value,base=8)
+            value = value[2:] if value.startswith("0o") else value
+            return super().__new__(cls, int(value, base=8))
         elif type(value) is int:
-            self = value
-        return self
+            return super().__new__(cls, value)
 
     def __str__(self) -> str:
-        return f"0o{self:o}"
+        return f"0o{self:03o}"
 
     def __repr__(self) -> str:
-        return f"0o{self:o}"
+        return f"0o{self:03o}"
 
 
 default_options = {
@@ -84,6 +84,7 @@ default_options = {
     'amqp_consumer': False,
     'attempts': 3,
     'batch' : 100,
+    'retryCountMax': 0,
     'baseDir': None,
     'baseUrl_relPath': False,
     'delete': False,
@@ -137,8 +138,8 @@ default_options = {
 }
 
 count_options = [
-    'batch', 'count', 'exchangeSplit', 'instances', 'logRotateCount', 'no', 
-    'post_exchangeSplit', 'prefetch', 'messageCountMax', 'runStateThreshold_cpuSlow', 
+    'batch', 'count', 'exchangeSplit', 'instances', 'logRotateCount', 'no',
+    'post_exchangeSplit', 'prefetch', 'messageCountMax', 'retryCountMax', 'runStateThreshold_cpuSlow',
     'runStateThreshold_disconnected', 
     'runStateThreshold_reject', 'runStateThreshold_retry', 'runStateThreshold_slow', 
 ]
@@ -191,7 +192,7 @@ str_options = [
     'accelCpCommand', 'accelWgetCommand', 'accelScpCommand',
     'action', 'admin', 'baseDir', 'broker', 'cluster', 'directory', 'exchange',
     'exchangeSuffix', 'feeder', 'filename', 'flatten', 'flowMain', 'header', 
-    'hostname', 'httpsSafeQuote', 'identity', 'inlineEncoding', 'logFormat', 'logLevel',
+    'hostname', 'httpsSafeQuote', 'httpUserAgent', 'identity', 'inlineEncoding', 'logFormat', 'logLevel',
     'pollUrl', 'post_baseUrl', 'post_baseDir', 'post_broker', 'post_exchange',
     'post_exchangeSuffix', 'post_format', 'post_topic', 'queueName', 'queueShare', 'queueType', 'sendTo', 'rename',
     'report_exchange', 'source', 'strip', 'timezone', 'nodupe_ttl', 'nodupe_driver', 
@@ -484,7 +485,7 @@ def get_metrics_filename(hostdir, component, configuration, no):
     return metricsdir + os.sep + component + configuration + '_%02d' % no + '.json'
 
 def wget_config(urlstr, path, remote_config_url=False):
-    logger.debug("wget_config %s %s" % (urlstr, path))
+    logger.debug('wget_config %s %s', urlstr, path)
 
     try:
         req = urllib.request.Request(urlstr)
@@ -497,7 +498,7 @@ def wget_config(urlstr, path, remote_config_url=False):
                 last_mod_remote = time.mktime(ts)
                 last_mod_local = os.stat(path).st_mtime
                 if last_mod_remote <= last_mod_local:
-                    logger.info("file %s is up to date (%s)" % (path, urlstr))
+                    logger.info(f"file {path} is up to date ({urlstr})")
                     return True
             except:
                 logger.error(
@@ -514,7 +515,7 @@ def wget_config(urlstr, path, remote_config_url=False):
         # (and damagable for plugins)
 
         if remote_config_url:
-            fp.write(bytes("remote_config_url %s\n" % urlstr, 'utf-8'))
+            fp.write(bytes(f"remote_config_url {urlstr}\n", 'utf-8'))
         while True:
             chunk = resp.read(8192)
             if not chunk: break
@@ -527,36 +528,33 @@ def wget_config(urlstr, path, remote_config_url=False):
             pass
         os.rename(path + '.downloading', path)
 
-        logger.info("file %s downloaded (%s)" % (path, urlstr))
+        logger.info(f"file {path} downloaded ({urlstr})")
 
         return True
 
     except urllib.error.HTTPError as e:
         if os.path.isfile(path):
-            logger.warning('file %s could not be processed1 (%s)' %
-                           (path, urlstr))
+            logger.warning(f'file {path} could not be processed1 ({urlstr})')
             logger.warning('resume with the one on the server')
         else:
-            logger.error('Download failed 0: %s' % urlstr)
+            logger.error(f'Download failed 0: {urlstr}')
             logger.error('Server couldn\'t fulfill the request')
-            logger.error('Error code: %s, %s' % (e.code, e.reason))
+            logger.error(f'Error code: {e.code}, {e.reason}')
 
     except urllib.error.URLError as e:
         if os.path.isfile(path):
-            logger.warning('file %s could not be processed2 (%s)' %
-                           (path, urlstr))
+            logger.warning(f'file {path} could not be processed2 ({urlstr})')
             logger.warning('resume with the one on the server')
         else:
-            logger.error('Download failed 1: %s' % urlstr)
-            logger.error('Failed to reach server. Reason: %s' % e.reason)
+            logger.error(f'Download failed 1: {urlstr}')
+            logger.error(f'Failed to reach server. Reason: {e.reason}')
 
     except Exception as e:
         if os.path.isfile(path):
-            logger.warning('file %s could not be processed3 (%s) %s' %
-                           (path, urlstr, e.reason))
+            logger.warning(f'file {path} could not be processed3 ({urlstr}) {e.reason}')
             logger.warning('resume with the one on the server')
         else:
-            logger.error('Download failed 2: %s %s' % (urlstr, e.reason))
+            logger.error(f'Download failed 2: {urlstr} {e.reason}')
             logger.debug('Exception details: ', exc_info=True)
 
     try:
@@ -565,7 +563,7 @@ def wget_config(urlstr, path, remote_config_url=False):
         pass
 
     if os.path.isfile(path):
-        logger.warning("continue using existing %s" % path)
+        logger.warning(f"continue using existing {path}")
 
     return False
 
@@ -576,7 +574,7 @@ def config_path(subdir, config, mandatory=True, ctype='conf'):
 
     return Tuple:   Found (True/False), path_of_file_found|config_that_was_not_found
     """
-    logger.debug("config_path = %s %s" % (subdir, config))
+    logger.debug('config_path = %s %s', subdir, config)
 
     if config == None: return False, None
 
@@ -589,7 +587,7 @@ def config_path(subdir, config, mandatory=True, ctype='conf'):
         path = get_user_config_dir() + os.sep + subdir + os.sep + name
         config = name
 
-        logger.debug("http url %s path %s name %s" % (urlstr, path, name))
+        logger.debug('http url %s path %s name %s', urlstr, path, name)
 
         # do not allow plugin (Peter's mandatory decision)
         # because plugins may need system or python packages
@@ -601,7 +599,7 @@ def config_path(subdir, config, mandatory=True, ctype='conf'):
 
     # priority 1 : config given is a valid path
 
-    logger.debug("config_path %s " % config)
+    logger.debug('config_path %s ', config)
     if os.path.isfile(config):
         return True, config
     config_file = os.path.basename(config)
@@ -618,7 +616,7 @@ def config_path(subdir, config, mandatory=True, ctype='conf'):
 
     config_path = os.path.join(get_user_config_dir(), subdir,
                                config_name + ext)
-    logger.debug("config_path %s " % config_path)
+    logger.debug('config_path %s ', config_path)
 
     if os.path.isfile(config_path):
         return True, config_path
@@ -627,7 +625,7 @@ def config_path(subdir, config, mandatory=True, ctype='conf'):
 
     config_path = os.path.join(get_site_config_dir(), subdir,
                                config_name + ext)
-    logger.debug("config_path %s " % config_path)
+    logger.debug('config_path %s ', config_path)
 
     if os.path.isfile(config_path):
         return True, config_path
@@ -637,15 +635,15 @@ def config_path(subdir, config, mandatory=True, ctype='conf'):
     if subdir == 'plugins':
         config_path = get_package_lib_dir(
         ) + os.sep + 'plugins' + os.sep + config_name + ext
-        logger.debug("config_path %s " % config_path)
+        logger.debug('config_path %s ', config_path)
         if os.path.isfile(config_path):
             return True, config_path
 
     # return bad file ...
     if mandatory:
-        if subdir == 'plugins': logger.error("script not found %s" % config)
+        if subdir == 'plugins': logger.error(f"script not found {config}")
         elif config_name != 'plugins':
-            logger.error("file not found %s" % config)
+            logger.error(f"file not found {config}")
 
     return False, config
 
@@ -866,8 +864,9 @@ class Config:
             Config.credentials.read(get_user_config_dir() + os.sep +
                                     "credentials.conf")
         self.directory = None
-
-        self.env = copy.deepcopy(os.environ)
+        
+        # dict is required, deepcopy won't work, see issue #1703
+        self.env = dict(os.environ)
 
         egdir = os.path.dirname(inspect.getfile(sarracenia)) + os.sep + 'examples' 
 
@@ -899,7 +898,7 @@ class Config:
         self.v2plugin_options = []
         self.imports = []
         self.logEvents = set(['after_accept', 'after_post', 'after_work', 'on_housekeeping' ])
-        self.destfn_scripts = []
+        self.destfn_scripts = set() # Define a set to avoid duplicate entries
         self.plugins_late = []
         self.plugins_early = []
         self.exchange = None
@@ -916,6 +915,7 @@ class Config:
         self.log_flowcb_needed = False
         self.sleep = 0.1
         self.housekeeping = 300
+        self.httpUserAgent = 'Sarracenia ' + sarracenia.__version__
         self.inline = False
         self.inlineByteMax = 4096
         self.inlineEncoding = 'guess'
@@ -929,13 +929,12 @@ class Config:
         self.messageAgeMax = 0
         self.post_exchanges = []
         self.post_messageAgeMax = 0
-	    #self.post_topicPrefix = None
         self.pstrip = False
         self.queueShare = "${USER}_${HOSTNAME}_${RAND8}"
         self.queueName = "q_${BROKER_USER}.${COMPONENT}.${CONFIG}.${QUEUESHARE}"
         self.randomize = False
         self.rename = None
-        self.randid = "%04x" % randint(0, 65536)
+        self.randid = f"{randint(0, 65536):04x}"
         self.statehost = False
         self.settings = {}
         self.strip = 0
@@ -1109,7 +1108,7 @@ class Config:
             args = []
         if fn and re.compile('DESTFNSCRIPT=.*').match(fn):
             script=fn[13:]
-            self.destfn_scripts.append(script)
+            self.destfn_scripts.add(script)
 
         if self.directory:
            d = os.path.expanduser(self.directory)
@@ -1255,7 +1254,7 @@ class Config:
             logger.error( f"{','.join(self.files)}{self.lineno} invalid kind: {kind} for option: {option} ignored" )
             return
 
-        logger.debug( f"{','.join(self.files)}{self.lineno} {option} declared as type:{type(getattr(self,option))} value:{v}" )
+        logger.debug('%s%s %s declared as type:%s value:%s', ','.join(self.files), self.lineno, option, type(getattr(self, option)), v)
 
     def dump(self):
         """ print out what the configuration looks like.
@@ -1372,7 +1371,7 @@ class Config:
             for k in oth.__dict__.keys():
                 self._override_field(k, self._varsub(getattr(oth, k)))
 
-    def _parse_binding(self, subtopic_string):
+    def _parse_binding(self, subtopic_string, topicOverride=False):
         """
          FIXME: see original parse, with substitions for url encoding.
                 also should sqwawk about error if no exchange or topicPrefix defined.
@@ -1385,13 +1384,17 @@ class Config:
         resolved_queueName = self._resolveQueueName(self.component,self.config)
 
         if type(subtopic_string) is str:
-            if self.broker.url.scheme == 'amq' :
+            bsl = self.broker.url.scheme.lower()
+            if bsl == 'amqp' :
                 subtopic = subtopic_string.split('.')
-            else:
+            elif bsl == 'mqtt':
                 subtopic = subtopic_string.split('/')
+            # for other protocols, e.g. AMQP1.0, leave the subtopic alone.
+            else:
+                subtopic = [subtopic_string]
             
         if hasattr(self, 'exchange') and hasattr(self, 'topicPrefix'):
-            self.subscriptions.add(Subscription(self, self.queueName, resolved_queueName, subtopic))
+            self.subscriptions.add(Subscription(self, self.queueName, resolved_queueName, subtopic, topicOverride))
 
     def _parse_v2plugin(self, entryPoint, value):
         """
@@ -1400,7 +1403,7 @@ class Config:
        """
         if not entryPoint in Config.v2entry_points:
             logging.error(
-                "undefined entry point: {} skipped".format(entryPoint))
+                f"undefined entry point: {entryPoint} skipped")
             return
 
         if not entryPoint in self.v2plugins:
@@ -1579,9 +1582,9 @@ class Config:
                     line = convert_to_v3[k][v]
                     k = line[0]
                     if 'continue' in line:
-                        logger.debug( f'{cfname}:{lineno} obsolete v2: \"{l}\" ignored' )
+                        logger.debug('%s:%s obsolete v2: "%s" ignored', cfname, lineno, l)
                     else:
-                        logger.debug( f'{cfname}:{lineno} obsolete v2:\"{l}\" converted to sr3:\"{" ".join(line)}\"' )
+                        logger.debug('%s:%s obsolete v2:"%s" converted to sr3:"%s"', cfname, lineno, l, ' '.join(line))
             else:
                 if convert_to_v3[k] == 'continue':
                     if k in self.undeclared:
@@ -1668,17 +1671,21 @@ class Config:
             except Exception as ex:
                 logger.error( f"{','.join(self.files)}:{self.lineno} file {v} failed to parse:  {ex}" )
                 logger.debug('Exception details: ', exc_info=True)
-        elif k in ['subtopic']:
+        elif k in ['subtopic', 'topic']:
             self.subtopic_seen=True
-            self._parse_binding(v)
+            self._parse_binding(v, k in ['topic'] )
         elif k in ['topicPrefix']:
-            if '/' in v :
+            if v.lower() in [ 'none', 'off', 'false' ]:
+                self.topicPrefix = []
+            elif '/' in v :
                 self.topicPrefix = v.split('/')
             else:
                 self.topicPrefix = v.split('.')
         elif k in ['post_topicPrefix']:
             #if (not self.post_broker.url) or self.post_broker.url.scheme[0:3] == 'amq':
-            if '/' in v :
+            if v.lower() in [ 'none', 'off', 'false' ]:
+                self.post_topicPrefix = []
+            elif '/' in v :
                 self.post_topicPrefix = v.split('/')
             else:
                 self.post_topicPrefix = v.split('.')
@@ -1787,13 +1794,16 @@ class Config:
                 logger.info( f"{','.join(self.files)}:{lineno} if download is false, directory has no effect" )
 
             v = ' '.join(line[1:])
-            if v == 'None':
+            # filename NONE and None are different
+            if k == 'filename' and v == 'None':
+                v=None
+            elif k != 'filename' and v.lower() in [ 'none', 'off', 'false' ]:
                 v=None
             setattr(self, k, v)
         else:
             #FIXME: with _options lists for all types and addition of declare, this is probably now dead code.
             if k not in self.undeclared:
-                logger.debug( f'{",".join(self.files)}:{self.lineno} possibly undeclared option: {line}' )
+                logger.debug('%s:%s possibly undeclared option: %s', ','.join(self.files), self.lineno, line)
             v = ' '.join(line[1:])
             if hasattr(self, k):
                 if type(getattr(self, k)) is float:
@@ -1868,7 +1878,7 @@ class Config:
 
         if not self.old_subscriptions:
             self.subscriptionsPath=self._getSubscriptionsFileName(self.component,self.config)
-            self.old_subscriptions=self.subscriptions.read(self, self.subscriptionsPath)
+            self.old_subscriptions.read(self, self.subscriptionsPath)
 
         # look for template in old subscriptions.
         if self.old_subscriptions:
@@ -1969,13 +1979,14 @@ class Config:
         if self.action not in self.actions:
             logger.error( f"invalid action: {self.action} must be one of: {','.join(self.actions)}" )
 
-        if hasattr(self, 'nodupe_ttl'):
+        # nodupe_ttl is a combined duration and flag option for legacy reasons
+        # defaults to 0 (nodupe disabled)
+        if hasattr(self, 'nodupe_ttl') and self.nodupe_ttl is not None:
             if (type(self.nodupe_ttl) is str):
                 if isTrue(self.nodupe_ttl):
                     self.nodupe_ttl = 300
                 else:
-                    self.nodupe_ttl = durationToSeconds(
-                        self.nodupe_ttl, default=300)
+                    self.nodupe_ttl = durationToSeconds(self.nodupe_ttl, default=300)
         else:
             self.nodupe_ttl = 0
 
@@ -2057,8 +2068,8 @@ class Config:
                                             component, cfg)
 
         if self.post_broker is not None and self.post_broker.url is not None:
-            if not hasattr(self, 'post_exchange') or self.post_exchange is None:
-                self.post_exchange = 'xs_%s' % self.post_broker.url.username
+            if not hasattr(self, 'post_exchange'): 
+                self.post_exchange = f'xs_{self.post_broker.url.username}'
 
             post_broker_isList = hasattr(self,'post_exchange') and type(self.post_exchange) is list
 
@@ -2098,10 +2109,10 @@ class Config:
             if ((len(self.subscriptions) == 0) and hasattr(self, 'exchange')):
                 self.subscriptions.append(Subscription(self, self.queueName, resolved_queueName, [ '#' ]))
 
+        self.subscriptions.finalize(self.old_subscriptions)
         if self.action in [ 'start', 'foreground', 'declare' ] and \
                 (not hasattr(self,'no') or self.no < 2) and  \
                 len(self.subscriptions) > 0:
-
             self.subscriptions.write(self.subscriptionsPath)
             self._writeQueueFile(self.subscriptions[0]['queue']['name'])
 
@@ -2124,7 +2135,7 @@ class Config:
 
         if hasattr(self, 'pollUrl'):
             if not hasattr(self,'post_baseUrl') or not self.post_baseUrl :
-                logger.debug( f"{component}/{config} defaulting post_baseUrl to match pollURl, since it isn't specified." )
+                logger.debug("%s/%s defaulting post_baseUrl to match pollURl, since it isn't specified.", component, config)
                 self.post_baseUrl = self.pollUrl
             
         # verify post_baseDir
@@ -2143,7 +2154,7 @@ class Config:
                 self.post_baseDir = u.path
             elif self.baseDir is not None:
                 self.post_baseDir = os.path.expanduser(self.baseDir)
-                logger.debug( f"{component}/{config} defaulting post_baseDir to same as baseDir")
+                logger.debug('%s/%s defaulting post_baseDir to same as baseDir', component, config)
 
 
         if self.messageCountMax > 0:
@@ -2207,7 +2218,7 @@ class Config:
              if not hasattr(self,u):
                 no_defaults.add( u )
 
-        logger.debug("missing defaults: %s" % no_defaults)
+        logger.debug('missing defaults: %s', no_defaults)
 
     """
       2020/05/26 FIXME here begins sheer terror.
@@ -2537,10 +2548,19 @@ class Config:
                 return
 
             if type(namespace.topicPrefix) is str:
-               if namespace.broker.scheme[0:3] == 'amq':
+               if namespace.topicPrefix.lower() in [ 'none', 'off', 'false' ]:
+                   topicPrefix=[]
+               elif namespace.broker.scheme[0:4].lower() == 'amqp':
                    topicPrefix = namespace.topicPrefix.split('.')
-               else:
+               elif namespace.broker.scheme[0:4].lower() == 'mqtt':
                    topicPrefix = namespace.topicPrefix.split('/')
+               # for other protocols, e.g. AMQP1.0, leave the topicPrefix alone.
+               else:
+                   topicPrefix = [namespace.topicPrefix]
+
+               namespace.topicPrefix = topicPrefix
+
+               namespace.topicPrefix = topicPrefix
 
             namespace.subscriptions.add(Subscription(namespace, namespace.queueName, resolved_qn, values))
 
@@ -2573,7 +2593,7 @@ class Config:
         """
 
         parser=argparse.ArgumentParser( \
-             description='version: %s\nSarracenia flexible tree copy ( https://MetPX.github.io/sarracenia ) ' % sarracenia.__version__ ,\
+             description=f'version: {sarracenia.__version__}\nSarracenia flexible tree copy ( https://MetPX.github.io/sarracenia ) ' ,\
              formatter_class=argparse.ArgumentDefaultsHelpFormatter )
 
         if sys.version_info[0] >= 3 and sys.version_info[1] < 8:
@@ -2759,7 +2779,7 @@ class Config:
             '--version',
             '-v',
             action='version',
-            version='%s' % sarracenia.__version__,
+            version=f'{sarracenia.__version__}',
             help=
             'server-side filtering: MQTT subtopic, wilcards # to match rest, + to match one topic'
         )
@@ -2877,12 +2897,12 @@ def one_config(component, config, action, isPost=False, hostDir=None):
 
     #FIXME parse old subscriptions here.
     cfg.subscriptionsPath=cfg._getSubscriptionsFileName(cfg.component,cfg.config)
-    cfg.old_subscriptions=cfg.subscriptions.read(cfg, cfg.subscriptionsPath)
+    cfg.old_subscriptions.read(cfg, cfg.subscriptionsPath)
 
     if os.path.exists(fname):
          cfg.parse_file(fname,component)
     else:
-         logger.error('config %s not found' % fname )
+         logger.error(f'config {fname} not found' )
          return None
 
     os.chdir(store_pwd)
@@ -2907,8 +2927,8 @@ def one_config(component, config, action, isPost=False, hostDir=None):
                 cfg.postpath.extend(cfg.path)
             else:
                 cfg.postpath.append(cfg.path)
-            logger.debug('path is : %s' % cfg.path)
-            logger.debug('postpath is : %s' % cfg.postpath)
+            logger.debug('path is : %s', cfg.path)
+            logger.debug('postpath is : %s', cfg.postpath)
         
     #pp = pprint.PrettyPrinter(depth=6)
     #pp.pprint(cfg)
@@ -2943,7 +2963,7 @@ def cfglogs(cfg_preparse, component, config, logLevel, child_inst):
             except FileExistsError:
                 dir_not_there = False
             except Exception as ex:
-                logging.error( "makedirs {} failed err={}".format(os.path.dirname(metricsfilename),ex))
+                logging.error( f"makedirs {os.path.dirname(metricsfilename)} failed err={ex}")
                 logging.debug("Exception details:", exc_info=True)
                 time.sleep(0.1)
 
@@ -2959,7 +2979,7 @@ def cfglogs(cfg_preparse, component, config, logLevel, child_inst):
             except FileExistsError:
                 dir_not_there = False
             except Exception as ex:
-                logging.error( "makedirs {} failed err={}".format(os.path.dirname(logfilename),ex))
+                logging.error( f"makedirs {os.path.dirname(logfilename)} failed err={ex}")
                 logging.debug("Exception details:", exc_info=True)
                 time.sleep(0.1)
 

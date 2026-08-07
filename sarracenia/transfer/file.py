@@ -25,7 +25,7 @@ from sarracenia.transfer import Transfer
 
 import sarracenia
 
-import os, stat, subprocess, sys, time
+import os, stat, sys, time
 
 import logging
 
@@ -74,7 +74,7 @@ class File(Transfer):
            cd is for REMOTE directory... when file remote as a protocol it is for the source.
            should not change the "local" working directory when downloading.
         """
-        logger.debug("sr_file cd %s" % path)
+        logger.debug('sr_file cd %s', path)
         #os.chdir(path)
         self.cwd = path
         self.path = path
@@ -84,7 +84,7 @@ class File(Transfer):
 
     # chmod
     def chmod(self, perm, path):
-        logger.debug("sr_file chmod %s %s" % ("{0:o}".format(perm), path))
+        logger.debug('sr_file chmod %s %s', f'{perm:o}', path)
         os.chmod(path, perm)
 
     # close
@@ -94,7 +94,7 @@ class File(Transfer):
 
     # connect
     def connect(self):
-        logger.debug("sr_file connect %s" % self.o.sendTo)
+        logger.debug('sr_file connect %s', self.o.sendTo)
 
         self.recursive = True
         self.connected = True
@@ -104,7 +104,7 @@ class File(Transfer):
     # delete
     def delete(self, path):
         p = os.path.join( self.cwd, path )
-        logger.debug("sr_file rm %s" % p)
+        logger.debug('sr_file rm %s', p)
         os.unlink(p)
 
     # get
@@ -118,23 +118,24 @@ class File(Transfer):
 
         remote_path = self.cwd + os.sep + remote_file
 
-        logger.debug( "get %s %s (cwd: %s) %d" % (remote_path,local_file,os.getcwd(), local_offset))
+        logger.debug('get %s %s (cwd: %s) %d', remote_path, local_file, os.getcwd(), local_offset)
 
         if not os.path.exists(remote_path):
-            logger.warning("file to read not found %s" % (remote_path))
+            logger.warning(f"file to read not found {remote_path}")
             return -1
 
         src = self.local_read_open(remote_path, remote_offset)
         dst = self.local_write_open(local_file, local_offset)
 
-        # initialize sumalgo
-        if self.sumalgo: self.sumalgo.set_path(remote_file)
+        try:
+            # initialize sumalgo
+            if self.sumalgo: self.sumalgo.set_path(remote_file)
 
-        # download
-        rw_length = self.read_write(src, dst, length)
-
-        # close
-        self.local_write_close(dst)
+            # download
+            rw_length = self.read_write(src, dst, length)
+        finally:
+            self.local_read_close(src)
+            self.local_write_close(dst)
 
         return rw_length
 
@@ -150,10 +151,11 @@ class File(Transfer):
         cmd = self.o.accelCpCommand.replace('%s', arg1)
         cmd = cmd.replace('%d', arg2).split()
 
-        logger.info("accel_cp:  %s" % ' '.join(cmd))
-        p = subprocess.Popen(cmd)
-        p.wait()
-        if p.returncode != 0:
+        logger.info(f"accel_cp:  {' '.join(cmd)}")
+        try:
+            self.runAccelCommand(cmd)
+        except Exception as e:
+            logger.error(e)
             return -1
         sz = os.stat(arg2).st_size
         return sz
@@ -244,7 +246,7 @@ def file_process(options):
     # I decided for the moment to warn and to return success... it preserves old behavior without the 0 byte file generated
 
     if not os.path.isfile(msg['relPath']):
-        logger.warning("%s moved or removed since announced" % msg['relPath'])
+        logger.warning(f"{msg['relPath']} moved or removed since announced")
         return True
 
     try:
@@ -267,7 +269,7 @@ def file_process(options):
                 try:
                     os.unlink(p)
                 except:
-                    logger.error("delete of link to %s failed" % p)
+                    logger.error(f"delete of link to {p} failed")
             return ok
 
     # This part is for 2 reasons : insert part
@@ -276,13 +278,12 @@ def file_process(options):
         ok = file_insert(options, msg)
         if options.delete:
             if msg.partflg.startswith('i'):
-                logger.info("delete unimplemented for in-place part files %s" %
-                            (msg['relPath']))
+                logger.info( f"delete unimplemented for in-place part files {msg['relPath']}" )
             else:
                 try:
                     os.unlink(p)
                 except:
-                    logger.error("delete of %s after copy failed" % p)
+                    logger.error(f"delete of {p} after copy failed")
 
         if ok: return ok
 
@@ -290,7 +291,7 @@ def file_process(options):
         logger.error('sr_file/file_process error')
         logger.debug('Exception details: ', exc_info=True)
 
-    logger.error("could not copy %s in %s" % (p, msg['new_file']))
+    logger.error(f"could not copy {p} in {msg['new_file']}")
 
     return False
 
@@ -305,7 +306,7 @@ def file_write_length(req, msg, bufsize, filesize, options):
     msg.onfly_checksum = None
 
     chk = msg.sumalgo
-    logger.debug("file_write_length chk = %s" % chk)
+    logger.debug('file_write_length chk = %s', chk)
     if chk: chk.set_path(msg['new_file'])
 
     # file should exists
@@ -352,7 +353,7 @@ def file_write_length(req, msg, bufsize, filesize, options):
                  times=(timestr2flt(h['atime']), timestr2flt(h['mtime'])))
 
     if chk:
-        msg.onfly_checksum = "{},{}".format(chk.registered_as(), chk.value)
+        msg.onfly_checksum = f"{chk.registered_as()},{chk.value}"
 
     return True
 
