@@ -12,7 +12,7 @@ Requires=network-online.target
 
 [Service]
 Type=forking
-exitType=cgroup
+ExitType=cgroup
 ExecStart=/usr/bin/sr3 start
 User=sarra
 Group=sarra

@@ -57,6 +57,8 @@ eboIntervalMaximum = 60 + random.random()*60
 def ProtocolPresent(p) -> bool:
     if ( p[0:4] in ['amqp'] ) and sarracenia.features['amqp']['present']:
        return True
+    if ( p[0:4] in ['amq1', 'amqp1'] ) and sarracenia.features['amqp1']['present']:
+        return True
     if ( p[0:4] in ['mqtt'] ) and sarracenia.features['mqtt']['present']:
        return True
     if p in sarracenia.features:
@@ -267,7 +269,9 @@ class Moth():
             publisher = props['publishers'][pubIndex]
             broker = publisher['broker']
             props['broker'] = broker
-            props['exchange'] = publisher['exchange']
+            if 'exchange' in publisher:
+                props['exchange'] = publisher['exchange']
+
         elif not props['broker']:
             logger.error('no broker specified')
             return None
@@ -333,13 +337,16 @@ class Moth():
                 subscription=self.o['subscriptions'][self.o['subscription_index']]
                 broker = subscription['broker']
                 self.o['broker'] = broker
-                self.o['exchange'] = subscription['exchange']
+                if 'exchange' in subscription:
+                    self.o['exchange'] = subscription['exchange']
         else:
             if 'publisher_index' in self.o:
                 publisher=self.o['publishers'][self.o['publisher_index']]
                 self.o['broker'] = publisher['broker']
-                self.o['exchange'] = publisher['exchange']
-                self.o['topicPrefix'] = publisher['topicPrefix']
+                if 'exchange' in publisher:
+                    self.o['exchange'] = publisher['exchange']
+                if 'topicPrefix' in publisher:
+                    self.o['topicPrefix'] = publisher['topicPrefix']
 
         # apply settings from props.
         if 'settings' in self.o:
@@ -349,7 +356,7 @@ class Moth():
 
         logging.basicConfig(format=self.o['logFormat'],
                             level=getattr(logging, self.o['logLevel'].upper()))
-        logger.debug( f" Maximum interval exponential back off of connecting to broker: {eboIntervalMaximum} " )
+        logger.debug(' Maximum interval exponential back off of connecting to broker: %s ', eboIntervalMaximum)
 
     def ack(self, message: sarracenia.Message ) -> bool:
         """
@@ -499,3 +506,6 @@ if features['amqp']['present']:
 
 if features['mqtt']['present']:
     import sarracenia.moth.mqtt
+
+if features['amqp1']['present']:
+    import sarracenia.moth.amq1

@@ -30,4 +30,4 @@ class Sender(Flow):
 
         self.do_send()
 
-        logger.debug('processing %d messages worked!' % len(self.worklist.ok))
+        logger.debug('processing %d messages worked!', len(self.worklist.ok))

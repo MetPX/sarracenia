@@ -63,26 +63,26 @@ class Delete(FlowCB):
                 files_to_delete.append(message['delete_source'])
 
             if self.o.delete_destination:
-                self.dirsOfDeletion |= set(message['new_dir'])
+                self.dirsOfDeletion |= set([message['new_dir']])
                 files_to_delete.append(
-                    "%s/%s" % (message['new_dir'], message['new_file']))
+                    f"{message['new_dir']}/{message['new_file']}")
 
             for f in files_to_delete:
-                logger.info("deleting %s" % f)
+                logger.info(f"deleting {f}")
                 try:
                     os.unlink(f)
                 except OSError as err:
-                    logger.error("could not unlink {}: {}".format(f, err))
+                    logger.error(f"could not unlink {f}: {err}")
                     logger.debug("Exception details:", exc_info=True)
 
     def on_housekeeping(self):
 
-        dirlist=self.dirsOfDeletion
+        dirlist=list(self.dirsOfDeletion)
 
         logger.info('scan for directories to cleanup')
         for d in dirlist:
             if d in self.sacredDirs:
-                self.dirsOfDeletion.remove(d)
+                self.dirsOfDeletion.discard(d)
                 continue
             if os.path.isdir(d):
                 l = os.listdir(d)
@@ -93,11 +93,11 @@ class Delete(FlowCB):
                     if age > self.o.housekeeping:
                         try:
                             os.rmdir(d)
-                            self.dirsOfDeletion.remove(d)
-                            self.dirsofDeltion.add(dirname(d))
+                            self.dirsOfDeletion.discard(d)
+                            self.dirsOfDeletion.add(os.path.dirname(d))
                             logger.info( f"deleted {d}")
                         except Exception as err:
-                            logger.error("could not unlink {}: {}".format(f, err))
+                            logger.error(f"could not unlink {d}: {err}")
                             logger.debug("Exception details:", exc_info=True)
                     else:
                         logger.info( f"but not for long enough yet.")

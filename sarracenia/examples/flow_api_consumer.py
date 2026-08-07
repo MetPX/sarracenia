@@ -14,8 +14,7 @@ cfg.topicPrefix = ['v02', 'post']
 cfg.component = 'subscribe'
 cfg.config = 'flow_demo'
 cfg.action = 'foreground'
-bindings = [ {'exchange':'xpublic', 'prefix':['v02', 'post'],
-                'sub':['*.WXO-DD.observations.swob-ml.#']}]
+bindings = [ {'exchange':'xpublic', 'topic':'v02.post.*.WXO-DD.observations.swob-ml.#'}]
 cfg.queueName = 'q_${BROKER_USER}_${HOSTNAME}_${QUEUESHARE}'
 cfg.download = True
 cfg.batch = 1
@@ -48,6 +47,7 @@ queue = {'name': 'q_anonymous_' + socket.getfqdn() + '_' + cfg.queueShare,
 cfg.subscriptions = sarracenia.config.subscription.Subscriptions( [ {
    'broker': cfg.broker,
    'bindings': bindings,
+   'bindings_to_remove': [],
    'queue' : queue
       } ] )
 

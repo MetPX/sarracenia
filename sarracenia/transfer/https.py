@@ -26,7 +26,6 @@ import logging
 import os
 import sarracenia
 import ssl
-import subprocess
 import sys
 
 from sarracenia.transfer import Transfer
@@ -48,8 +47,7 @@ class HTTPRedirectHandlerSameMethod(HTTPRedirectHandler):
         orig_method = req.get_method()
         new_req = super().redirect_request(req, fp, code, msg, headers, newurl)
         new_req.method = orig_method
-        logger.debug(f"redirect from {req.get_method()} {req.get_full_url()} "
-                     + f"to {new_req.get_method()} {new_req.get_full_url()}")
+        logger.debug('redirect from %s %s to %s %s', req.get_method(), req.get_full_url(), new_req.get_method(), new_req.get_full_url())
         return new_req
 
 class Https(Transfer):
@@ -103,7 +101,7 @@ class Https(Transfer):
 
     # cd
     def cd(self, path):
-        logger.debug("sr_http cd %s" % path)
+        logger.debug('sr_http cd %s', path)
         self.cwd = os.path.dirname(path)
         self.path = path
 
@@ -127,7 +125,7 @@ class Https(Transfer):
 
     # connect...
     def connect(self):
-        logger.debug("sr_http connect %s" % self.o.sendTo)
+        logger.debug('sr_http connect %s', self.o.sendTo)
 
         if self.connected: self.close()
 
@@ -167,7 +165,7 @@ class Https(Transfer):
 
     # credentials...
     def credentials(self):
-        logger.debug("sr_http credentials %s" % self.sendTo)
+        logger.debug('sr_http credentials %s', self.sendTo)
 
         try:
             ok, details = self.o.credentials.get(self.sendTo)
@@ -181,12 +179,12 @@ class Https(Transfer):
              # username and password credentials
             if self.user != None:
                 # continue with authentication
-                self.password_mgr.add_password(None, self.sendTo, self.user, unquote(self.password))
+                self.password_mgr.add_password(None, self.sendTo, self.user, self.password)
 
             return True
 
         except:
-            logger.error("sr_http/credentials: unable to get credentials for %s" % self.sendTo)
+            logger.error(f"sr_http/credentials: unable to get credentials for {self.sendTo}")
             logger.debug('Exception details: ', exc_info=True)
 
         return False
@@ -199,8 +197,8 @@ class Https(Transfer):
             remote_offset=0,
             local_offset=0,
             length=0, exactLength=False):
-        logger.debug("get %s %s %d" % (remote_file, local_file, local_offset))
-        logger.debug("sr_http self.path %s" % self.path)
+        logger.debug('get %s %s %d', remote_file, local_file, local_offset)
+        logger.debug('sr_http self.path %s', self.path)
 
         # open self.http
 
@@ -237,11 +235,11 @@ class Https(Transfer):
         else:
             cmd = [cmd[0]] + cmd[1:]
 
-        logger.info("accel_wget: %s" % ' '.join(cmd))
-        p = subprocess.Popen(cmd)
-        p.wait()
-        if p.returncode != 0:
-            logger.warning("binary accelerator %s returned: %d" % ( cmd, p.returncode ) )
+        logger.info(f"accel_wget: {' '.join(cmd)}")
+        try:
+            self.runAccelCommand(cmd)
+        except Exception as e:
+            logger.error(e)
             return -1
         # FIXME: length is not validated.
         return length
@@ -252,6 +250,11 @@ class Https(Transfer):
 
         logger.debug("sr_http init")
         self.connected = False
+        if hasattr(self, 'http') and self.http is not None:
+            try:
+                self.http.close()
+            except Exception:
+                pass
         self.http = None
         self.details = None
         self.seek = True
@@ -305,7 +308,7 @@ class Https(Transfer):
             #        return self.entries
 
         except:
-            logger.warning("sr_http/ls: unable to open %s" % self.urlstr)
+            logger.warning(f"sr_http/ls: unable to open {self.urlstr}")
             logger.debug('Exception details: ', exc_info=True)
 
         return dbuf
@@ -332,6 +335,11 @@ class Https(Transfer):
         """
         logger.debug( f"{path} " + (method if method else ''))
 
+        if self.http is not None:
+            try:
+                self.http.close()
+            except Exception:
+                logger.debug('failed to close previous http response', exc_info=True)
         self.http = None
         self.req = None
         self.urlstr = path
@@ -349,11 +357,11 @@ class Https(Transfer):
         alarm_set(self.o.timeout)
 
         try:
-            headers = {'user-agent': 'Sarracenia ' + sarracenia.__version__}
-            
+            headers = {'user-agent': self.o.httpUserAgent}
+
             # Bearer token credential is passed as a header
             if self.bearer_token:
-                logger.debug('bearer_token: %s' % self.bearer_token)
+                logger.debug('bearer_token: %s', self.bearer_token)
                 headers['Authorization'] = 'Bearer ' + self.bearer_token
 
             # set range in byte if needed
@@ -391,7 +399,7 @@ class Https(Transfer):
             try:
                 actual_url = self.http.geturl()
                 if actual_url != self.urlstr:
-                    logger.debug(f"{self.urlstr} redirected to {actual_url}")
+                    logger.debug('%s redirected to %s', self.urlstr, actual_url)
             except:
                 pass
 
@@ -401,13 +409,12 @@ class Https(Transfer):
         except urllib.error.HTTPError as e:
             logger.error(f'failed 4 {self.__url_redir_str()}')
             logger.error(
-                'Server couldn\'t fulfill the request. Error code: %s, %s' %
-                (e.code, e.reason))
+                f'Server couldn\'t fulfill the request. Error code: {e.code}, {e.reason}')
             self.connected = False
             raise
         except urllib.error.URLError as e:
             logger.error(f'failed 5 {self.__url_redir_str()}')
-            logger.error('Failed to reach server. Reason: %s' % e.reason)
+            logger.error(f'Failed to reach server. Reason: {e.reason}')
             self.connected = False
             raise
         except:
@@ -434,11 +441,11 @@ class Https(Transfer):
 
         ok = self.__open__(url, method='HEAD', add_headers={'Accept-Encoding': 'identity'})
         if not ok:
-            logger.debug(f"failed")
+            logger.debug('failed')
             return None
         status_code = self.http.getcode()
         if status_code != 200:
-            logger.debug(f"status code {status_code}")
+            logger.debug('status code %s', status_code)
             return None
         
         have_metadata = False
@@ -467,6 +474,6 @@ class Https(Transfer):
                 result = str(self.http.info()).replace('\n', ' , ').strip()
             except Exception as e:
                 result = e
-            logger.debug(f"HEAD request for {self.__url_redir_str()} result: {result}")
+            logger.debug('HEAD request for %s result: %s', self.__url_redir_str(), result)
 
         return None

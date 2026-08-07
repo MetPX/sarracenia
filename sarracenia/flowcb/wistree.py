@@ -73,8 +73,7 @@ class Wistree(FlowCB):
                 msg.updatePaths(self.o, new_baseDir + os.sep + new_relDir, new_file)
 
             except Exception as ex:
-                logger.error("failed to map %s to a topic, skipped." %
-                             msg['new_file'],
+                logger.error(f"failed to map {msg['new_file']} to a topic, skipped.",
                              exc_info=True)
                 worklist.failed.append(msg)
                 continue
