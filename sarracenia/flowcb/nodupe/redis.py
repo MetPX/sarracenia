@@ -151,8 +151,6 @@ class Redis(NoDupe):
 
         if self.o.fileAgeMin > 0:
             max_mtime = self.now - self.o.fileAgeMin
-        elif type(self.o.inflight) in [ int, float ] and self.o.inflight > 0:
-            max_mtime = self.now - self.o.inflight
         else:
             # FIXME: should we add some time here to allow for different clocks?
             #        100 seconds in the future? hmm...
@@ -167,11 +165,21 @@ class Redis(NoDupe):
                     m.setReport(406,  f"{m['mtime']} too old (nodupe check), oldest allowed {timeflt2str(min_mtime)}" )
                     worklist.rejected.append(m)
                     continue
-                elif mtime > max_mtime:
+                # too new messages should only be *rejected* in polls.
+                elif mtime > max_mtime and self.o.component in [ 'poll' ]:
                     m['_deleteOnPost'] |= set(['reject'])
                     m['reject'] = f"{m['mtime']} too new (nodupe check), newest allowed {timeflt2str(max_mtime)}"
                     m.setReport(425,  f"{m['mtime']} too new (nodupe check), newest allowed {timeflt2str(max_mtime)}" )
                     worklist.rejected.append(m)
+                    continue
+                # in non-poll components, files that are too new are put into the work retry list and get retried
+                # until they become old enough to be processed. The logic in Flow normally handles that, except it
+                # gets bypassed when a message is being retried with retry_refilter=False, so check again here.
+                # (the fileAgeMin check in Flow is a bit redundant and could be deleted, except then the fileAgeMin
+                #  check wouldn't work when nodupe is disabled, so we're keeping it in both places.)
+                elif mtime > max_mtime:
+                    logger.warning( f"file {m['relPath']} too young: queueing for retry later")
+                    worklist.failed.append(m)
                     continue
 
             if m.isRetry() or self._is_new(m):

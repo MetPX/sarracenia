@@ -21,7 +21,7 @@
 #
 #
 
-import logging, paramiko, os, subprocess, sys, time
+import logging, paramiko, os, sys, time
 from paramiko import *
 from stat import *
 
@@ -399,9 +399,10 @@ class Sftp(Transfer):
         cmd = self.o.accelScpCommand.replace('%s', arg1)
         cmd = cmd.replace('%d', arg2).split()
         logger.info(f"accel_sftp:  {' '.join(cmd)}")
-        p = subprocess.Popen(cmd)
-        p.wait()
-        if p.returncode != 0:
+        try:
+            self.runAccelCommand(cmd)
+        except Exception as e:
+            logger.error(e)
             return -1
         sz = os.stat(arg2).st_size
         return sz
@@ -482,13 +483,19 @@ class Sftp(Transfer):
             length=0):
         logger.debug(' local_file=%s remote_file=%s local_offset=%s remote_offset=%s length=%s', local_file, remote_file, local_offset, remote_offset, length)
 
+        # do not use a Paramiko buffered file when using pipelined uploads. It seems to sometimes cause hangs.
+        if self.compat_mode:
+            bufSize = self.o.bufSize
+        else:
+            bufSize = 0
+
         # simple file
 
         alarm_set(2 * self.o.timeout)
 
         try:
            if length == 0:
-               rfp = self.sftp.file(remote_file, 'wb', self.o.bufSize)
+               rfp = self.sftp.file(remote_file, 'wb', bufSize)
                rfp.settimeout(1.0 * self.o.timeout)
 
            # parts
@@ -496,10 +503,10 @@ class Sftp(Transfer):
                try:
                    self.sftp.stat(remote_file)
                except:
-                   rfp = self.sftp.file(remote_file, 'wb', self.o.bufSize)
+                   rfp = self.sftp.file(remote_file, 'wb', bufSize)
                    rfp.close()
 
-               rfp = self.sftp.file(remote_file, 'r+b', self.o.bufSize)
+               rfp = self.sftp.file(remote_file, 'r+b', bufSize)
                rfp.settimeout(1.0 * self.o.timeout)
                if remote_offset != 0: rfp.seek(remote_offset, 0)
 
@@ -548,10 +555,7 @@ class Sftp(Transfer):
         cmd = cmd.replace('%d', arg2).split()
 
         logger.info(f"accel_sftp:  {' '.join(cmd)}")
-        p = subprocess.Popen(cmd)
-        p.wait()
-        if p.returncode != 0:
-            return -1
+        self.runAccelCommand(cmd, 'putAccelerated')
         # FIXME: faking success... not sure how to check really.
         sz = int(msg['size'])
         return sz
@@ -599,5 +603,5 @@ class Sftp(Transfer):
             except Exception as ex:
                 logger.warning( f"utime {path} failed: {ex}")
                 logging.debug("Exception details:", exc_info=True)
-            finally:
-                alarm_cancel()
+
+        alarm_cancel()

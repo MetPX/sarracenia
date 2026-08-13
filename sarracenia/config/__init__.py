@@ -864,8 +864,9 @@ class Config:
             Config.credentials.read(get_user_config_dir() + os.sep +
                                     "credentials.conf")
         self.directory = None
-
-        self.env = copy.deepcopy(os.environ)
+        
+        # dict is required, deepcopy won't work, see issue #1703
+        self.env = dict(os.environ)
 
         egdir = os.path.dirname(inspect.getfile(sarracenia)) + os.sep + 'examples' 
 

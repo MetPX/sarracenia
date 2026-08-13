@@ -20,7 +20,7 @@
 #  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307  USA
 #
 
-import ftplib, os, subprocess, sys, time, ssl
+import ftplib, os, sys, time, ssl
 import logging
 from sarracenia.transfer import Transfer
 from sarracenia.transfer import alarm_cancel, alarm_set, alarm_raise
@@ -364,9 +364,10 @@ class Ftp(Transfer):
         cmd = cmd.replace('%d', arg2).split()
 
         logger.info(f"accel_ftp:  {' '.join(cmd)}")
-        p = subprocess.Popen(cmd)
-        p.wait()
-        if p.returncode != 0:
+        try:
+            self.runAccelCommand(cmd)
+        except Exception as e:
+            logger.error(e)
             return -1
         sz = os.stat(arg2).st_size
         return sz
@@ -487,10 +488,7 @@ class Ftp(Transfer):
         cmd = cmd.replace('%d', arg2).split()
 
         logger.info(f"accel_ftp:  {' '.join(cmd)}")
-        p = subprocess.Popen(cmd)
-        p.wait()
-        if p.returncode != 0:
-            return -1
+        self.runAccelCommand(cmd, 'putAccelerated')
         # FIXME: faking success... not sure how to check really.
         sz = int(msg['size'])
         return sz

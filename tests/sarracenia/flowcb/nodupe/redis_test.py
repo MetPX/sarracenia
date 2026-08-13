@@ -264,8 +264,44 @@ def test_after_accept__WithFileAges(tmp_path, capsys):
         message_old = make_message()
         message_old['mtime'] = timeflt2str(nodupe.now - 10000)
         message_new = make_message()
-        message_new['mtime'] = nowstr()
+        message_new['mtime'] = timeflt2str(nodupe.now + 10000)
         
+        test_after_accept__WithFileAges_worklist = copy.deepcopy(WorkList)
+        test_after_accept__WithFileAges_worklist.incoming = [message_old, message_new]
+
+        nodupe.after_accept(test_after_accept__WithFileAges_worklist)
+
+        assert len(test_after_accept__WithFileAges_worklist.rejected) == 1
+        assert test_after_accept__WithFileAges_worklist.rejected[0]['reject'].count(message_old['mtime'] + " too old (nodupe check), oldest allowed")
+        # when component is not poll, messages that are too new (fileAgeMin) should get queued for retry
+        assert len(test_after_accept__WithFileAges_worklist.failed) == 1
+
+@pytest.mark.depends(on=['test__is_new'])
+def test_after_accept__WithFileAges_poll(tmp_path, capsys):
+    with patch(target="redis.from_url", new=fakeredis.FakeStrictRedis.from_url, ):
+        from sarracenia import nowflt, nowstr, timeflt2str
+
+        BaseOptions = Options()
+        BaseOptions.pid_filename = str(tmp_path) + os.sep + "pidfilename.txt"
+        BaseOptions.config = "test_after_accept__WithFileAges.conf"
+        BaseOptions.nodupe_redis_keybase = "redis_test__" + BaseOptions.config.split(".")[0]
+        BaseOptions.cfg_run_dir = str(tmp_path)
+        BaseOptions.no = 5
+        BaseOptions.inflight = 0
+        BaseOptions.component = 'poll'
+
+        nodupe = Redis(BaseOptions)
+        nodupe.o.nodupe_ttl = 100000
+        nodupe.o.fileAgeMin = 1000
+        nodupe.o.fileAgeMax = 1000
+
+        nodupe.now = nowflt() + 10
+
+        message_old = make_message()
+        message_old['mtime'] = timeflt2str(nodupe.now - 10000)
+        message_new = make_message()
+        message_new['mtime'] = timeflt2str(nodupe.now + 10000)
+
         test_after_accept__WithFileAges_worklist = copy.deepcopy(WorkList)
         test_after_accept__WithFileAges_worklist.incoming = [message_old, message_new]
 
@@ -273,37 +309,6 @@ def test_after_accept__WithFileAges(tmp_path, capsys):
 
         assert len(test_after_accept__WithFileAges_worklist.rejected) == 2
         assert test_after_accept__WithFileAges_worklist.rejected[0]['reject'].count(message_old['mtime'] + " too old (nodupe check), oldest allowed")
+        # when component is poll, both messages should be rejected, none should be put in failed
+        assert len(test_after_accept__WithFileAges_worklist.failed) == 0
         assert test_after_accept__WithFileAges_worklist.rejected[1]['reject'].count(message_new['mtime'] + " too new (nodupe check), newest allowed")
-
-@pytest.mark.depends(on=['test__is_new'])
-def test_after_accept__InFlight(tmp_path, capsys):
-    with patch(target="redis.from_url", new=fakeredis.FakeStrictRedis.from_url, ):
-        from sarracenia import nowflt, nowstr, timeflt2str
-
-        BaseOptions = Options()
-        BaseOptions.pid_filename = str(tmp_path) + os.sep + "pidfilename.txt"
-        BaseOptions.config = "test_after_accept__InFlight.conf"
-        BaseOptions.nodupe_redis_keybase = "redis_test__" + BaseOptions.config.split(".")[0] 
-        BaseOptions.cfg_run_dir = str(tmp_path)
-        BaseOptions.no = 5
-        BaseOptions.inflight = 1000
-
-        nodupe = Redis(BaseOptions)
-        nodupe.o.nodupe_ttl = 100000
-
-        nodupe.now = nowflt() + 10
-
-        message_old = make_message()
-        message_old['mtime'] = timeflt2str(nodupe.now - 10000)
-        message_new = make_message()
-        message_new['mtime'] = nowstr()
-        
-        test_after_accept__InFlight_worklist = copy.deepcopy(WorkList)
-        test_after_accept__InFlight_worklist.incoming = [message_old, message_new]
-
-        nodupe.after_accept(test_after_accept__InFlight_worklist)
-
-        assert len(test_after_accept__InFlight_worklist.rejected) == 1
-        assert len(test_after_accept__InFlight_worklist.incoming) == 1
-        assert test_after_accept__InFlight_worklist.incoming[0]['mtime'] == message_old['mtime']
-        assert test_after_accept__InFlight_worklist.rejected[0]['reject'].count(message_new['mtime'] + " too new (nodupe check), newest allowed")
