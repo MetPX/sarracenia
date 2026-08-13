@@ -29,7 +29,8 @@ class NavCanada(PostFormat):
                 data from the headers to determine if we've received a SWIM format message.
             content_type is the content type of payload/data itself, also useless here
         """
-        return ('MSG_TYPE' in headers and headers['MSG_TYPE'] in ['NCFILESHARE', NavCanada.MSG_TYPE])
+        return ('MSG_TYPE' in headers and (headers['MSG_TYPE'] in ['NCFILESHARE', NavCanada.MSG_TYPE] 
+                                            or headers['MSG_TYPE'].startswith("TAC-") )
 
     @staticmethod
     def importMine(body, headers, options) -> sarracenia.Message:
@@ -73,9 +74,8 @@ class NavCanada(PostFormat):
 
         # NOTE: we currently do not expect to receive messages with URLs from NC, inline data only
         msg['relPath'] = ''
-
         # build relPath from DESTINATION and NCFILESHARE_FILE_NAME, so we can at least have a file path and
-        # name to work (mirror) with when writing the data from the message.
+        # name to work with (mirror) when writing the data from the message.
         if 'DESTINATION' in headers:
             msg['relPath'] += headers['DESTINATION']
         if msg['relPath'][-1] != '/':
@@ -85,7 +85,7 @@ class NavCanada(PostFormat):
         elif 'FILE_NAME' in headers:
             msg['relPath'] += headers['FILE_NAME']
 
-
+        # File mtime, have seen both '1772657588' and '2026-06-22T18:49:40.445Z' format.
         if 'NCFILESHARE_FILE_MTIME' in headers or 'FILE_MTIME' in headers:
             mt = headers['NCFILESHARE_FILE_MTIME'] if 'NCFILESHARE_FILE_MTIME' in headers else headers['FILE_MTIME']
             mt = mt.replace('Z', '')
@@ -95,7 +95,7 @@ class NavCanada(PostFormat):
                 dt = datetime.fromtimestamp(int(mt), tz=timezone.utc)
             msg['mtime'] = dt.strftime("%Y%m%dT%H%M%S.%f")[:-3]
 
-        # handle inline content
+        # handle inline content from AMQP1.0
         # based on https://github.com/iblsoft/swimdemo/blob/main/amqp_client_example.py
         if body:
             if 'amqp1_content_type' in headers:
@@ -133,9 +133,9 @@ class NavCanada(PostFormat):
                     'encoding': 'utf-8',
                     'value': decoded_payload
                 }
-                # FIXME: sr3 bug:   File "/net/local/home/sunderlandr/sr3/sarracenia/flow/__init__.py", line 1424, in write_inline_file
-                #                   if ((msg['size'] > 0) and len(data) != msg['size']):
-                #                   KeyError: 'size'
+                # FIXME: sr3 bug: File "sarracenia/flow/__init__.py", line 1424, in write_inline_file
+                #                 if ((msg['size'] > 0) and len(data) != msg['size']):
+                #                 KeyError: 'size'
                 # inline data download does not work when size is not set
                 msg['size'] = len(decoded_payload)
 
@@ -165,10 +165,29 @@ class NavCanada(PostFormat):
 
         # Static:
         headers = {
-            'MSG_TYPE':             'METPX-SR3-NAVCAN',
-            'MSG_ORIGINATOR':       clean_topicPrefix, # TODO
-            'DESTINATION_TYPE':     'Topic',
+            'MSG_TYPE':         MSG_TYPE, # default, normally overridden by a plugin, see below
+            'MSG_ORIGINATOR':   clean_topicPrefix, # should be ECCC when publishing to NC
+            'DESTINATION_TYPE': 'Topic',
         }
+
+        # A plugin is used to set the message type to one of the following:
+        # TAC-FA - Aviation Area Forecasts
+        # TAC-FB - Forecast upper winds and temperatures
+        # TAC-FD - Wind and temperatures aloft forecasts
+        # TAC-FN - Space Weather Advisories
+        # TAC-FT - Aviation Terminal Forecasts
+        # TAC-SA - Hourly aviation weather reports
+        # TAC-SM - Main hour synoptic reports
+        # TAC-SP - Special aviation weather reports
+        # TAC-UA - Pilot weather reports
+        # TAC-WA - AIRMET messages and/or US flight advisories
+        # TAC-WS - SIGMET messages - WSCNxx, WCCNxx (tropical cyclone)
+        # TAC-WC - Tropical Cyclone messages
+        # TAC-WV - VA SIGMET messages
+        # This is so we can just change the plugin if we need to support different msg types, without needing
+        # to release a whole new version of sr3.
+        if 'navcan_msg_type' in msg:
+            headers['MSG_TYPE'] = msg['navcan_msg_type']
 
         # Set topic / DESTINATION
         # Normally, this message format will be used in combination with a plugin that sets msg['topic']
