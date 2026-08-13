@@ -30,7 +30,7 @@ class NavCanada(PostFormat):
             content_type is the content type of payload/data itself, also useless here
         """
         return ('MSG_TYPE' in headers and (headers['MSG_TYPE'] in ['NCFILESHARE', NavCanada.MSG_TYPE] 
-                                            or headers['MSG_TYPE'].startswith("TAC-") )
+                                            or headers['MSG_TYPE'].startswith("TAC-") ) )
 
     @staticmethod
     def importMine(body, headers, options) -> sarracenia.Message:
@@ -166,7 +166,7 @@ class NavCanada(PostFormat):
         # Static:
         headers = {
             'MSG_TYPE':         MSG_TYPE, # default, normally overridden by a plugin, see below
-            'MSG_ORIGINATOR':   clean_topicPrefix, # should be ECCC when publishing to NC
+            'MSG_ORIGINATOR':   clean_topicPrefix.split('/')[0], # should be ECCC when publishing to NC
             'DESTINATION_TYPE': 'Topic',
         }
 
