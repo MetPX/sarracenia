@@ -165,7 +165,7 @@ class NavCanada(PostFormat):
 
         # Static:
         headers = {
-            'MSG_TYPE':         MSG_TYPE, # default, normally overridden by a plugin, see below
+            'MSG_TYPE':         NavCanada.MSG_TYPE, # default, normally overridden by a plugin, see below
             'MSG_ORIGINATOR':   clean_topicPrefix.split('/')[0], # should be ECCC when publishing to NC
             'DESTINATION_TYPE': 'Topic',
         }
@@ -186,8 +186,8 @@ class NavCanada(PostFormat):
         # TAC-WV - VA SIGMET messages
         # This is so we can just change the plugin if we need to support different msg types, without needing
         # to release a whole new version of sr3.
-        if 'navcan_msg_type' in msg:
-            headers['MSG_TYPE'] = msg['navcan_msg_type']
+        if 'navcan_msg_type' in sr3_msg:
+            headers['MSG_TYPE'] = sr3_msg['navcan_msg_type']
 
         # Set topic / DESTINATION
         # Normally, this message format will be used in combination with a plugin that sets msg['topic']
@@ -222,7 +222,7 @@ class NavCanada(PostFormat):
         if 'mtime' in sr3_msg:
             mtime = NavCanada.__sarra_timestr_to_dt(sr3_msg['mtime'])
             try:
-                headers['FILE_MTIME'] = mtime.isoformat[:-3] + 'Z'
+                headers['FILE_MTIME'] = mtime.isoformat()[:-3] + 'Z'
             except Exception as e:
                 logger.warning(f"failed to parse mtime {sr3_msg['mtime']} {e}")
 
@@ -234,7 +234,7 @@ class NavCanada(PostFormat):
                 pubTime = datetime.now()
         else:
             pubTime = datetime.now()
-        headers['MSG_PUBLISH_TIME'] = pubTime.isoformat[:-3] + 'Z'
+        headers['MSG_PUBLISH_TIME'] = pubTime.isoformat()[:-3] + 'Z'
 
         headers['UUID'] = str(uuid.uuid4())
 
