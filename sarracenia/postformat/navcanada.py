@@ -31,6 +31,32 @@ class NavCanada(PostFormat):
         """
         return ('MSG_TYPE' in headers and (headers['MSG_TYPE'] in ['NCFILESHARE', NavCanada.MSG_TYPE] 
                                             or headers['MSG_TYPE'].startswith("TAC-") ) )
+    @staticmethod
+    def parseNavCanTime(time):
+        """ parse any NAV CANADA time format into an sr3 time string (YYYYmmddTHHMMSS.sss)
+            Example inputs:
+                epoch: 1772657588 (string or int)
+                ISO:   2026-08-18T08:13:08.399Z or # 2026-08-18T08:13:08.399
+        """
+        if isinstance(time, str):
+            time = time.replace('Z', '')
+            if 'T' in time and ':' in time and '-' in time:
+                dt = datetime.strptime(time, '%Y-%m-%dT%H:%M:%S.%f')
+                return dt.strftime("%Y%m%dT%H%M%S.%f")[:-3]
+            else:
+                try:
+                    dt = datetime.fromtimestamp(int(mt), tz=timezone.utc)
+                    return dt.strftime("%Y%m%dT%H%M%S.%f")[:-3]
+                except Exception as e:
+                    # ERROR message below will be logged
+                    logger.debug(f"{e}", exc_info=True)
+
+        elif isinstance(time, int):
+            dt = datetime.fromtimestamp(int(mt), tz=timezone.utc)
+            return dt.strftime("%Y%m%dT%H%M%S.%f")[:-3]
+
+        logger.error(f"unsupported time format: {time}, USING CURRENT TIME")
+        return sarracenia.nowstr()
 
     @staticmethod
     def importMine(body, headers, options) -> sarracenia.Message:
@@ -66,8 +92,7 @@ class NavCanada(PostFormat):
         # MSG_PUBLISH_TIME -> pubTime: mandatory in sr3
         # YYYYMMDDTHHMMSS.s
         if 'MSG_PUBLISH_TIME' in headers:
-            dt = datetime.fromisoformat(headers['MSG_PUBLISH_TIME'].replace('Z', ''))
-            msg['pubTime'] = dt.strftime("%Y%m%dT%H%M%S.%f")[:-3]
+            msg['pubTime'] = NavCanada.parseNavCanTime(headers['MSG_PUBLISH_TIME'])
         else:
             logger.error("message missing MSG_PUBLISH_TIME, using current time")
             msg['pubTime'] = sarracenia.nowstr()
@@ -88,12 +113,7 @@ class NavCanada(PostFormat):
         # File mtime, have seen both '1772657588' and '2026-06-22T18:49:40.445Z' format.
         if 'NCFILESHARE_FILE_MTIME' in headers or 'FILE_MTIME' in headers:
             mt = headers['NCFILESHARE_FILE_MTIME'] if 'NCFILESHARE_FILE_MTIME' in headers else headers['FILE_MTIME']
-            mt = mt.replace('Z', '')
-            if 'T' in mt:
-                dt = datetime.fromisoformat(mt)
-            else:
-                dt = datetime.fromtimestamp(int(mt), tz=timezone.utc)
-            msg['mtime'] = dt.strftime("%Y%m%dT%H%M%S.%f")[:-3]
+            msg['mtime'] = NavCanada.parseNavCanTime(mt)
 
         # handle inline content from AMQP1.0
         # based on https://github.com/iblsoft/swimdemo/blob/main/amqp_client_example.py
@@ -263,9 +283,13 @@ class NavCanada(PostFormat):
                     schema_ns = raw_body[ns_start:].split('"')[1]
                     schema_ver = schema_ns.split('/')[-1]
                     headers['MSG_NAMESPACE'] = schema_ns
-                    headers['MSG_VERSION'] = schema_ver
+                    if schema_ver.count('.') < 2:
+                        schema_ver += '.0'
+                    headers['MSG_SCHEMA_VERSION'] = schema_ver
                 except Exception as e:
                     logger.debug(f"Could not set schema namespace {e}")
+        else:
+            headers['MSG_VERSION'] = 'V1'
 
         return raw_body, headers, contentType
 
