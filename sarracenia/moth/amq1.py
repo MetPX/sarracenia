@@ -53,7 +53,7 @@ class Amqp1ClientBase:
         self.anonymous = (self.username == 'anonymous' and self.password == 'anonymous')
 
         self.connection_name = f"sr3_v{sarracenia.__version__}-{self.o['component']}_"
-        self.connection_name += f"{self.o['config']}_i{self.o['no']}_{self.o['hostname']}"
+        self.connection_name += f"{self.o['config']}_i{self.o['no']}"
         self.connection_name += "-SUB" if is_subscriber else "-PUB"
         logger.debug(f"connection name: {self.connection_name}")
 
