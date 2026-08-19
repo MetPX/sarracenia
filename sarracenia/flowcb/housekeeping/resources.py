@@ -137,20 +137,21 @@ class Resources(FlowCB):
 
 
         if sys.platform.startswith(('linux', 'cygwin', 'darwin', 'aix')):
-            # Flush buffered output before exec replaces the process.
-            sys.stdout.flush()
-            sys.stderr.flush()
+            if resource is not None:
+                # Flush buffered output before exec replaces the process.
+                sys.stdout.flush()
+                sys.stderr.flush()
 
-            # Close inherited file descriptors (sockets, pipes, open files) that
-            # os.execl would otherwise leak into the new process image.
-            # Keep stdin/stdout/stderr (0-2) open.
-            try:
-                max_fd = resource.getrlimit(resource.RLIMIT_NOFILE)[1]
-                if max_fd == resource.RLIM_INFINITY:
-                    max_fd = 1024
-                os.closerange(3, max_fd)
-            except Exception:
-                logger.debug('fd cleanup before execl failed', exc_info=True)
+                # Close inherited file descriptors (sockets, pipes, open files) that
+                # os.execl would otherwise leak into the new process image.
+                # Keep stdin/stdout/stderr (0-2) open.
+                try:
+                    max_fd = resource.getrlimit(resource.RLIMIT_NOFILE)[1]
+                    if max_fd == resource.RLIM_INFINITY:
+                        max_fd = 1024
+                    os.closerange(3, max_fd)
+                except Exception:
+                    logger.debug('fd cleanup before execl failed', exc_info=True)
 
             # Unix* (Linux / Windows/Cygwin / MacOS / AIX) Specific restart
             os.execl(sys.executable, sys.executable, *sys.argv)
