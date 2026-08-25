@@ -336,6 +336,11 @@ class sr_GlobalState:
                         })
                         cfgbody.applyComponentDefaults( c )
                         cfgbody.parse_file(cfg,c)
+
+                        # Added from issue 1196
+                        # Parse component/default.inc if it exists
+                        if os.path.exists(self.user_config_dir + os.sep + c + os.sep + 'default.inc'):
+                            cfgbody.parse_file(self.user_config_dir + os.sep + c + os.sep + 'default.inc')
                         cfgbody.finalize(c, cfg)
                         self.configs[c][cbase]['options'] = cfgbody
 
