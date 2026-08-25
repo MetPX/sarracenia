@@ -170,6 +170,33 @@ def test_component_default_inc_only_applies_to_its_component():
         _remove_config_tree(tmp_path, "poll")
         _remove_config_tree(tmp_path, "sarra")
 
+def test_component_default_inc_with_two_of_same_component():
+    """
+    A component's default.inc must not leak into another component.
+    """
+    tmp_path = '/tmp/'
+    _make_config_tree(
+        tmp_path,
+        "sarra",
+        default_content="retry_ttl 1h\n",
+        config_content="exchange sarra_exchange1\n",
+    )
+
+    Path(tmp_path + "sarra/test1.conf").write_text("exchange sarra_exchange2\n")
+
+    try:
+        state = _make_global_state(tmp_path, ["sarra"])
+
+        state._read_configs()
+
+        assert state.configs["sarra"]["test"]["options"].retry_ttl == 3600
+        assert state.configs["sarra"]["test"]["options"].exchange == 'sarra_exchange1'
+        assert state.configs["sarra"]["test1"]["options"].retry_ttl == 3600
+        assert state.configs["sarra"]["test1"]["options"].exchange == 'sarra_exchange2'
+    finally:
+        Path(tmp_path + "sarra/test1.conf").unlink()
+        _remove_config_tree(tmp_path, "sarra")
+
 
 def test_default_inc_is_not_a_configuration():
     """
