@@ -54,7 +54,7 @@ class Mail(FlowCB):
     def __init__(self, options):
 
         super().__init__(options,logger)
-        logger.info("poll_email_ingest init")
+        logger.info("init")
 
         self.o.add_option('poll_mail_filename_option', kind='str', default_value='subject')
 
@@ -103,7 +103,7 @@ class Mail(FlowCB):
                     mailman.login(user, password)
                 except imaplib.IMAP4.error as e:
                     logger.error(
-                        f"poll_email_ingest imaplib connection error: {e}")
+                        f"imaplib connection error: {e}")
                     return []
 
             elif protocol == "imap":
@@ -112,7 +112,7 @@ class Mail(FlowCB):
                     mailman.login(user, password)
                 except imaplib.IMAP4.error as e:
                     logger.error(
-                        f"poll_email_ingest imaplib connection error: {e}")
+                        f"imaplib connection error: {e}")
                     return []
             else:
                 logger.error(f"unknown protocol: {protocol}")
@@ -138,10 +138,10 @@ class Mail(FlowCB):
                     mailman = poplib.POP3_SSL(server, port=port)
                     mailman.user(user)
                     mailman.pass_(password)
-                    logger.debug("poll_email_ingest connection started")
+                    logger.debug("connection started")
                 except poplib.error_proto as e:
                     logger.error(
-                        f"poll_email_ingest pop3 connection error: {e}")
+                        f"pop3 connection error: {e}")
                     return []
 
             elif protocol == "pop":
@@ -151,7 +151,7 @@ class Mail(FlowCB):
                     mailman.pass_(password)
                 except poplib.error_proto as e:
                     logger.error(
-                        f"poll_email_ingest pop3 connection error: {e}")
+                        f"pop3 connection error: {e}")
                     return []
             else:
                 return []
@@ -170,6 +170,6 @@ class Mail(FlowCB):
 
         else:
             logger.error(
-                "poll_email_ingest pollUrl protocol must be one of 'imap/imaps' or 'pop/pops'."
+                "pollUrl protocol must be one of 'imap/imaps' or 'pop/pops'."
             )
         return gathered_messages
