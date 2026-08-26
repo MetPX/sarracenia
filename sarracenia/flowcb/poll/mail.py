@@ -45,8 +45,6 @@ import poplib
 import sarracenia
 from sarracenia.flowcb import FlowCB
 
-from urllib.parse import unquote
-
 logger = logging.getLogger(__name__)
 
 
