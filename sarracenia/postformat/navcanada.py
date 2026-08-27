@@ -103,12 +103,17 @@ class NavCanada(PostFormat):
         # name to work with (mirror) when writing the data from the message.
         if 'DESTINATION' in headers:
             msg['relPath'] += headers['DESTINATION']
-        if msg['relPath'][-1] != '/':
+        if len(msg['relPath']) > 0 and msg['relPath'][-1] != '/':
             msg['relPath'] += '/'
         if 'NCFILESHARE_FILE_NAME' in headers:
             msg['relPath'] += headers['NCFILESHARE_FILE_NAME']
         elif 'FILE_NAME' in headers:
             msg['relPath'] += headers['FILE_NAME']
+
+        # if we can't get a useful relPath then we can't download the data
+        if len(msg['relPath']) == 0:
+            logger.error("could not derive relPath from incoming message")
+            return None
 
         # File mtime, have seen both '1772657588' and '2026-06-22T18:49:40.445Z' format.
         if 'NCFILESHARE_FILE_MTIME' in headers or 'FILE_MTIME' in headers:
@@ -128,6 +133,8 @@ class NavCanada(PostFormat):
             else:
                 payload = str(body).encode()
 
+            msg['size'] = len(payload)
+
             decompressed_payload = payload
             decoded_payload = None
             # Detect if the payload is gzipped
@@ -138,9 +145,10 @@ class NavCanada(PostFormat):
                 if 'amqp1_content_encoding' in headers and headers['amqp1_content_encoding'] == "gzip":
                     if payload[:2] == b'\x1f\x8b':  # GZIP magic number
                         decompressed_payload = gzip.decompress(payload)
+                        msg['size'] = len(decompressed_payload)  # size should be the size in bytes of the content
                         decoded_payload = decompressed_payload.decode('utf-8')
                     else:
-                        print("Payload does not appear to be gzipped, but content encoding is set to gzip!")
+                        logger.warning("Payload does not appear to be gzipped, but content encoding is set to gzip!")
                         decoded_payload = payload.decode('utf-8')
                 else:
                     decoded_payload = payload.decode('utf-8')
@@ -153,11 +161,6 @@ class NavCanada(PostFormat):
                     'encoding': 'utf-8',
                     'value': decoded_payload
                 }
-                # FIXME: sr3 bug: File "sarracenia/flow/__init__.py", line 1424, in write_inline_file
-                #                 if ((msg['size'] > 0) and len(data) != msg['size']):
-                #                 KeyError: 'size'
-                # inline data download does not work when size is not set
-                msg['size'] = len(decoded_payload)
 
         # baseUrl is mandatory and sr3 will crash without it
         msg['baseUrl'] = "none://"
