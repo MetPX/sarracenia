@@ -1,12 +1,12 @@
 =====
- SR3 
+ SR3
 =====
 
 ------------------
 sr3 Sarracenia CLI
 ------------------
 
-:Manual section: 1 
+:Manual section: 1
 :Date: |today|
 :Version: |release|
 :Manual group: MetPX-Sarracenia
@@ -112,7 +112,7 @@ la configuration se fait construire a partir de:
 
  2. admin.conf
 
- 3. <component>.conf (subscribe.conf, audit.conf, etc...)
+ 3. <component>/default.inc
 
  4. <component>/<config>.conf
 

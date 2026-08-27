@@ -26,7 +26,7 @@ def _make_config_tree(tmp_path, component, default_content=None, config_content=
     Returns the component directory.
     """
     component_dir = tmp_path + '/' + component
-    
+
     Path(component_dir).mkdir(parents=True, exist_ok=True)
 
     if default_content is not None:
@@ -64,6 +64,7 @@ def _make_global_state(tmp_path, components):
     )
 
     state.user_config_dir = str(tmp_path)
+
     state.components = components
 
     # _read_configs() uses options.action when building each cfgbody.
@@ -75,28 +76,36 @@ def _make_global_state(tmp_path, components):
 @pytest.mark.parametrize(
     "component",
     [
+        "cpost",
+        "cpump",
         "flow",
         "poll",
         "post",
         "sarra",
-        "watch",
         "sender",
         "subscribe",
         "shovel",
         "watch",
-        "winnow",
+        "winnow"
     ],
 )
-def test_component_default_inc(component):
+def test_component_default_inc(component, monkeypatch):
     """
     default.inc should be loaded for every supported flow component.
     """
+
     tmp_path = '/tmp/'
+    monkeypatch.setattr(
+        sarracenia.config,
+        "get_user_config_dir",
+        lambda: str(tmp_path)
+    )
+
     _make_config_tree(
         tmp_path,
         component,
-        default_content="exchange default_exchange\n",
-        config_content="fileEvents create,modify\n",
+        default_content="fileEvents create,modify\n",
+        config_content="exchange xs_Something\n",
     )
 
     try:
@@ -109,18 +118,24 @@ def test_component_default_inc(component):
 
         options = state.configs[component]["test"]["options"]
 
-        assert options.exchange == "default_exchange"
+        assert options.exchange == "xs_Something"
         assert options.fileEvents == {'modify', 'create'}
     finally:
         _remove_config_tree(tmp_path, component)
 
 
-def test_component_default_inc_can_be_overridden_by_config():
+def test_component_default_inc_can_be_overridden_by_config(monkeypatch):
     """
     Values from <component>/default.inc are defaults and must be overridden
     by values explicitly specified in the component configuration.
     """
     tmp_path = '/tmp/'
+    monkeypatch.setattr(
+        sarracenia.config,
+        "get_user_config_dir",
+        lambda: str(tmp_path)
+    )
+
     _make_config_tree(
         tmp_path,
         "poll",
@@ -140,11 +155,17 @@ def test_component_default_inc_can_be_overridden_by_config():
         _remove_config_tree(tmp_path, "poll")
 
 
-def test_component_default_inc_only_applies_to_its_component():
+def test_component_default_inc_only_applies_to_its_component(monkeypatch):
     """
     A component's default.inc must not leak into another component.
     """
     tmp_path = '/tmp/'
+    monkeypatch.setattr(
+        sarracenia.config,
+        "get_user_config_dir",
+        lambda: str(tmp_path)
+    )
+
     _make_config_tree(
         tmp_path,
         "poll",
@@ -170,11 +191,17 @@ def test_component_default_inc_only_applies_to_its_component():
         _remove_config_tree(tmp_path, "poll")
         _remove_config_tree(tmp_path, "sarra")
 
-def test_component_default_inc_with_two_of_same_component():
+def test_component_default_inc_with_two_of_same_component(monkeypatch):
     """
     A component's default.inc must not leak into another component.
     """
     tmp_path = '/tmp/'
+    monkeypatch.setattr(
+        sarracenia.config,
+        "get_user_config_dir",
+        lambda: str(tmp_path)
+    )
+
     _make_config_tree(
         tmp_path,
         "sarra",
@@ -198,16 +225,22 @@ def test_component_default_inc_with_two_of_same_component():
         _remove_config_tree(tmp_path, "sarra")
 
 
-def test_default_inc_is_not_a_configuration():
+def test_default_inc_is_not_a_configuration(monkeypatch):
     """
     default.inc is an include/default file and must not itself appear as a
     configuration.
     """
     tmp_path = '/tmp/'
+    monkeypatch.setattr(
+        sarracenia.config,
+        "get_user_config_dir",
+        lambda: str(tmp_path)
+    )
+
     _make_config_tree(
         tmp_path,
         "poll",
-        default_content="exchange default_exchange\n",
+        default_content="exchange xs_Something\n",
         config_content="accept .*\n",
     )
 
@@ -222,11 +255,17 @@ def test_default_inc_is_not_a_configuration():
         _remove_config_tree(tmp_path, "poll")
 
 
-def test_default_inc_is_optional():
+def test_default_inc_is_optional(monkeypatch):
     """
     A component without a default.inc must continue to load normally.
     """
     tmp_path = '/tmp/'
+    monkeypatch.setattr(
+        sarracenia.config,
+        "get_user_config_dir",
+        lambda: str(tmp_path)
+    )
+
     _make_config_tree(
         tmp_path,
         "poll",
