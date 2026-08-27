@@ -45,14 +45,14 @@ class NavCanada(PostFormat):
                 return dt.strftime("%Y%m%dT%H%M%S.%f")[:-3]
             else:
                 try:
-                    dt = datetime.fromtimestamp(int(mt), tz=timezone.utc)
+                    dt = datetime.fromtimestamp(int(time), tz=timezone.utc)
                     return dt.strftime("%Y%m%dT%H%M%S.%f")[:-3]
                 except Exception as e:
                     # ERROR message below will be logged
                     logger.debug(f"{e}", exc_info=True)
 
         elif isinstance(time, int):
-            dt = datetime.fromtimestamp(int(mt), tz=timezone.utc)
+            dt = datetime.fromtimestamp(time, tz=timezone.utc)
             return dt.strftime("%Y%m%dT%H%M%S.%f")[:-3]
 
         logger.error(f"unsupported time format: {time}, USING CURRENT TIME")
