@@ -336,10 +336,7 @@ class sr_GlobalState:
                         })
                         # Apply component defaults from source
                         cfgbody.applyComponentDefaults( c )
-                        # Added from issue 1196
-                        # Parse and add component/default.inc options if it exists.
-                        if os.path.exists(self.user_config_dir + os.sep + c + os.sep + 'default.inc'):
-                            cfgbody.parse_file(self.user_config_dir + os.sep + c + os.sep + 'default.inc')
+                        cfgbody.addComponentDefaultInc( c )
                         cfgbody.parse_file(cfg,c)
                         cfgbody.finalize(c, cfg)
                         self.configs[c][cbase]['options'] = cfgbody
