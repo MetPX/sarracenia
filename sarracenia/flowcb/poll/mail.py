@@ -78,7 +78,6 @@ class Mail(FlowCB):
             protocol = setting.scheme.lower()
             port = setting.port
             logger.debug("pollUrl valid")
-            logger.warning(f"{setting} {user} {password} {server} {protocol} {port}")
         else:
             logger.error("pollUrl: invalid credentials")
             return []
