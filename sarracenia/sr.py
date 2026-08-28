@@ -2461,6 +2461,7 @@ class sr_GlobalState:
             signal_pid(pid, signal.SIGTERM)
             pids_signalled |= set([pid])
 
+        max_wait=1
         for f in self.filtered_configurations:
             (c, cfg) = f.split(os.sep)
 
@@ -2469,6 +2470,11 @@ class sr_GlobalState:
                 fg_instances.add(f"{c}/{cfg}")
                 logger.warning( f"skipping foreground flow: {c}/{cfg}")
                 continue
+
+            if hasattr(self.configs[c][cfg]['options'],'batch'):
+                batch=self.configs[c][cfg]['options'].batch
+            else:
+                batch=1
 
             if self.configs[c][cfg]['status'] in self.status_active:
 
@@ -2479,6 +2485,17 @@ class sr_GlobalState:
                 for i in self.states[c][cfg]['instance_pids']:
                     #print( "for %s/%s - %s signal_pid( %s, SIGTERM )" % \
                     #    ( c, cfg, i, self.states[c][cfg]['instance_pids'][i] ) )
+                    if 'instance_metrics' in self.states[c][cfg] and \
+                       'flow' in self.states[c][cfg]['instance_metrics'][i]:
+                        flow_metric=self.states[c][cfg]['instance_metrics'][i]['flow']
+                        if 'msgRate' in flow_metric and 'meanBatch' in flow_metric:
+                           batch=flow_metric['meanBatch']
+                           rate=flow_metric['msgRate']
+                           wait=batch/(2*rate)
+                           if wait > max_wait:
+                               max_wait = wait
+                               print( f"wait longer after SIGTERM based on mean batch/message rate *2: {batch:.2f}/{rate:.2f}*2 = {max_wait:.2f} seconds" )
+ 
                     p=self.states[c][cfg]['instance_pids'][i]
                     if p in self.procs:
                         if self.options.dry_run:
@@ -2494,7 +2511,7 @@ class sr_GlobalState:
             print('dry_run assumes everything works the first time')
             return 0
 
-        attempts = 0
+        attempts = 1
         attempts_max = 5
         now = time.time()
 
@@ -2507,8 +2524,8 @@ class sr_GlobalState:
                     signal_pid(pid, signal.SIGTERM)
                     pids_signalled |= set([pid])
 
-            ttw = 1 << attempts
-            print( f"Waiting {ttw} sec. to check if {running_pids} processes stopped (try: {attempts})" )
+            ttw = max_wait
+            print( f"Waiting {ttw:.2f} sec. to check if {running_pids} processes stopped (try: {attempts})" )
             time.sleep(ttw)
             # update to reflect killed processes.
             self._read_procs()
