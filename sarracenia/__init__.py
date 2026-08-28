@@ -105,8 +105,12 @@ else:
         return "%d" % value
 
 
-if features['appdirs']['present']:
+if features['platformdirs']['present']:
+    import platformdirs as appdirs
+elif features['appdirs']['present']:
     import appdirs
+
+if features['platformdirs']['present'] or features['appdirs']['present']:
 
     def site_config_dir( app, author ):
         return appdirs.site_config_dir( app, author )
@@ -117,7 +121,7 @@ if features['appdirs']['present']:
     def user_cache_dir( app, author ):
         return appdirs.user_cache_dir( app, author )
 else:
-    # if appdirs is missing, pretend we're on Linux.
+    # if appdirs/platformdirs is missing, pretend we're on Linux.
     import pathlib
 
     def site_config_dir( app, author ):
