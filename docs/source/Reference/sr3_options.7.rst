@@ -93,8 +93,11 @@ sequence #2::
 
 
 .. note::
-   FIXME: does this match only files ending in 'gif' or should we add a $ to it?
-   will it match something like .gif2 ? is there an assumed .* at the end?
+   Patterns are Python regular expressions applied with ``re.match``. There is
+   no implicit ``.*`` at the end of a pattern, but a pattern that is not anchored
+   with ``$`` can still match the beginning of a longer string. For example,
+   ``.*\.gif`` matches both ``image.gif`` and ``image.gif2``. Use ``.*\.gif$``
+   when the URL must end with ``.gif``.
 
 
 In sequence #1, all files ending in 'gif' are rejected. In sequence #2, the
@@ -308,7 +311,8 @@ accept, reject and acceptUnmatched
 - **acceptUnmatched   <boolean> (default: True)**
 
 The  **accept**  and  **reject**  options process regular expressions (regexp).
-The regexp is applied to the the notification message's URL for a match.
+The regexp is applied to the notification message's URL using Python's
+``re.match``.
 
 If the notification message's URL of a file matches a **reject**  pattern, the notification message
 is acknowledged as consumed to the broker and skipped.
@@ -338,6 +342,22 @@ sequence #2::
 
 In sequence #1, all files ending in 'gif' are rejected.  In sequence #2, the accept .* (which
 accepts everything) is encountered before the reject statement, so the reject has no effect.
+
+Because ``re.match`` starts matching at the beginning of the URL, filters that
+look for text anywhere in the URL usually begin with ``.*``. There is no
+implicit ``.*`` at the end of the pattern. If the pattern is not anchored with
+``$``, it can still match a longer URL prefix. For example::
+
+  accept .*csv
+  # matches a URL containing csv, including .../file.csv:EXTENSION:...
+
+  accept .*csv$
+  # matches only a URL ending in csv
+
+Sundew extensions are included in the URL that is filtered. A pattern such as
+``accept .*\.csv$`` will not match a notification whose URL ends with a Sundew
+extension, for example ``.../file.csv:EXTENSION:...``. Use an unanchored pattern
+such as ``accept .*\.csv`` when those extended URLs should be accepted.
 
 It is best practice to use server side filtering to reduce the number of notification messages sent
 to the component to a small superset of what is relevant, and perform only a fine-tuning with the
