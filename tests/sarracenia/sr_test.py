@@ -81,6 +81,7 @@ def _make_global_state(tmp_path, components):
         "flow",
         "poll",
         "post",
+        "report",
         "sarra",
         "sender",
         "subscribe",
@@ -285,3 +286,75 @@ def test_default_inc_is_optional(monkeypatch):
         )
     finally:
         _remove_config_tree(tmp_path, "poll")
+
+
+def test_default_inc_nested_include(monkeypatch):
+    """
+    A nested include file inside default.inc should parse properly
+    """
+    tmp_path = '/tmp/'
+    monkeypatch.setattr(
+        sarracenia.config,
+        "get_user_config_dir",
+        lambda: str(tmp_path)
+    )
+
+    component_dir = tmp_path + "/poll"
+    Path(component_dir).mkdir()
+
+    Path(component_dir + "/default.inc").write_text(
+        "include nested.inc\n"
+    )
+
+    Path(component_dir + "/nested.inc").write_text(
+        "retry_ttl 3h\n"
+    )
+
+    Path(component_dir + "/test.conf").write_text(
+        "exchange my_exchange\n"
+    )
+
+    try:
+        state = _make_global_state(tmp_path, ["poll"])
+        state._read_configs()
+
+        options = state.configs["poll"]["test"]["options"]
+
+        assert options.retry_ttl == 10800
+        assert options.exchange == "my_exchange"
+    finally:
+        Path(component_dir + "/nested.inc").unlink()
+        _remove_config_tree(tmp_path, "poll")
+
+
+def test_default_inc_nested_include_can_be_overridden():
+    """
+    A nested include file inside default.inc should have its values ignored if the configuration overrides that value
+    """
+    tmp_path = '/tmp'
+    component_dir = tmp_path + "/poll"
+    Path(component_dir).mkdir()
+
+    Path(component_dir + "/default.inc").write_text(
+        "include nested.inc\n"
+    )
+
+    Path(component_dir + "/nested.inc").write_text(
+        "retry_ttl 3h\n"
+    )
+
+    Path(component_dir + "/test.conf").write_text(
+        "retry_ttl 30m\n"
+    )
+
+    try:
+        state = _make_global_state(tmp_path, ["poll"])
+        state._read_configs()
+
+        options = state.configs["poll"]["test"]["options"]
+
+        assert options.retry_ttl == 1800
+    finally:
+        Path(component_dir + "/nested.inc").unlink()
+        _remove_config_tree(tmp_path, "poll")
+

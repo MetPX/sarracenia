@@ -2893,12 +2893,12 @@ def one_config(component, config, action, isPost=False, hostDir=None):
 
     cfg.applyComponentDefaults( component )
 
-    cfg.addComponentDefaultInc( component )
-
     store_pwd = os.getcwd()
 
     os.chdir(get_user_config_dir())
     os.chdir(component)
+
+    cfg.addComponentDefaultInc( component )
 
     if config[-5:] != '.conf':
         fname = os.path.expanduser(config + '.conf')
