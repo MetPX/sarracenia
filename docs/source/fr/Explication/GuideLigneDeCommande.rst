@@ -975,7 +975,8 @@ accept, reject and accept_unmatch
 - **baseUrl_relPath   <booléen> (par défaut: False)**
 
 Les options **accept** et **reject** traitent des expressions régulières (regexp).
-La regexp est appliquée à l'URL du message pour détecter une correspondance.
+Elles sont interprétées dans l'ordre, et la première règle **accept** ou
+**reject** qui correspond est appliquée.
 
 Si l'URL du message d'un fichier correspond à un motif **reject**, on informe
 le courtier que le message a été consommé et on abandonne son traitement.
@@ -1006,9 +1007,36 @@ sequence #2::
   reject .*\.gif
 
 
-Dans la séquence #1, tous les fichiers se terminant par 'gif' sont rejetés.
-Dans la séquence #2, l'option accept .* (regexp qui veut dire accepte tout) est
-rencontré avant la déclaration de rejet, de sorte que le rejet n'a aucun effet.
+Dans la séquence #1, tous les fichiers dont la valeur filtrée correspond à ``.*\.gif`` sont rejetés.
+Dans la séquence #2, la règle ``accept .*`` est rencontrée en premier et accepte tout,
+de sorte que le rejet n'a aucun effet.
+
+Les flux Python construisent une chaîne de filtrage temporaire à partir de
+``baseUrl + relPath``. Lorsqu'un en-tête ``sundew_extension`` est présent, et
+que l'URL contient moins de trois deux-points, cette chaîne de filtrage
+temporaire peut recevoir ``:<sundew_extension>`` à la fin pour compatibilité
+ancienne. L'URL du message d'annonce elle-même n'est pas modifiée. Les
+composants C n'ajoutent pas l'en-tête séparé ``sundew_extension``: ``cpost``
+filtre le nom de chemin et ``cpump`` filtre ``relPath``.
+
+Comme la correspondance des flux Python commence au début de la chaîne de
+filtrage, les filtres qui cherchent du texte n'importe où dans cette chaîne
+commencent généralement par ``.*``. Il n'y a pas de ``.*`` implicite à la fin
+du modèle. Par exemple::
+
+  accept .*\.csv$
+  # correspond seulement à une valeur filtrée se terminant par .csv
+
+  accept .*\.csv:.*
+  # correspond à une chaîne de filtrage Python avec une extension Sundew après .csv
+
+  accept .*\.csv$|.*\.csv:
+  # correspond soit à une fin .csv simple, soit à .csv suivi d'une limite d'extension
+
+Préférez filtrer sur le chemin lorsque c'est possible. Traitez
+``sundew_extension`` comme une métadonnée de compatibilité ancienne et
+incluez-la dans les filtres seulement lorsque le chemin seul n'est pas assez
+spécifique.
 
 Il est préférable d'utiliser le filtrage côté serveur pour réduire le nombre
 de avis envoyées au composant à un petit sur-ensemble de ce qui est
@@ -1846,11 +1874,15 @@ sequence #2::
 
 
 .. Note:
-   FIXME : est-ce que cela ne correspond qu'aux fichiers se terminant par'gif' ou devrions-nous y ajouter un $ ?
-   correspondra-t-il à quelque chose comme.gif2 ? y a-t-il un .* supposé à la fin ?
+   Les modèles sont des expressions régulières. Les flux Python utilisent les
+   expressions régulières Python ``re`` et appellent ``Pattern.match()`` sur la
+   chaîne de filtrage. Les composants C utilisent les expressions régulières
+   POSIX avec ``regexec()``. Il n'y a pas de ``.*`` implicite à la fin d'un
+   modèle; utilisez donc ``$`` lorsque la correspondance doit atteindre la fin
+   de la valeur filtrée.
 
 
-Dans la séquence #1, tous les fichiers se terminant par 'gif' sont rejetés. Dans la séquence #2, le
+Dans la séquence #1, tous les fichiers dont la valeur filtrée correspond à ``.*\.gif`` sont rejetés. Dans la séquence #2, le
 accept .* (qui accepte tout) est lu avant la déclaration du rejet,
 donc le rejet n’a aucun effet. Certaines options ont une portée globale, plutôt que d’être
 interprété dans l’ordre. Dans ces cas, la dernière déclaration remplace celle qu'il y avait plus tôt dans le fichier..

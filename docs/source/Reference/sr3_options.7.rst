@@ -93,14 +93,14 @@ sequence #2::
 
 
 .. note::
-   Patterns are Python regular expressions applied with ``re.match``. There is
-   no implicit ``.*`` at the end of a pattern, but a pattern that is not anchored
-   with ``$`` can still match the beginning of a longer string. For example,
-   ``.*\.gif`` matches both ``image.gif`` and ``image.gif2``. Use ``.*\.gif$``
-   when the URL must end with ``.gif``.
+   Patterns are regular expressions. Python flows use Python ``re`` patterns
+   and call ``Pattern.match()`` against the filtering string. The C components
+   use POSIX regular expressions with ``regexec()``. There is no implicit
+   ``.*`` at the end of a pattern, so use ``$`` when the match must reach the
+   end of the filtered value.
 
 
-In sequence #1, all files ending in 'gif' are rejected. In sequence #2, the
+In sequence #1, all files whose filtered value matches ``.*\.gif`` are rejected. In sequence #2, the
 accept .* (which accepts everything) is encountered before the reject statement,
 so the reject has no effect. Some options have global scope, rather than being
 interpreted in order. For thoses cases, the last declaration overrides the
@@ -311,8 +311,8 @@ accept, reject and acceptUnmatched
 - **acceptUnmatched   <boolean> (default: True)**
 
 The  **accept**  and  **reject**  options process regular expressions (regexp).
-The regexp is applied to the notification message's URL using Python's
-``re.match``.
+They are interpreted in order, and the first matching **accept** or **reject**
+rule wins.
 
 If the notification message's URL of a file matches a **reject**  pattern, the notification message
 is acknowledged as consumed to the broker and skipped.
@@ -340,24 +340,33 @@ sequence #2::
   reject .*\.gif
 
 
-In sequence #1, all files ending in 'gif' are rejected.  In sequence #2, the accept .* (which
-accepts everything) is encountered before the reject statement, so the reject has no effect.
+In sequence #1, all files whose filtered value matches ``.*\.gif`` are rejected.
+In sequence #2, the ``accept .*`` rule is encountered first and accepts
+everything, so the later reject statement has no effect.
 
-Because ``re.match`` starts matching at the beginning of the URL, filters that
-look for text anywhere in the URL usually begin with ``.*``. There is no
-implicit ``.*`` at the end of the pattern. If the pattern is not anchored with
-``$``, it can still match a longer URL prefix. For example::
+Python flows build a temporary filtering string from ``baseUrl + relPath``. When
+a ``sundew_extension`` header is present, and the URL has fewer than three
+colons, that temporary filtering string may have ``:<sundew_extension>``
+appended for legacy compatibility. The notification URL itself is not modified.
+The C components do not append the separate ``sundew_extension`` header:
+``cpost`` filters the pathname and ``cpump`` filters ``relPath``.
 
-  accept .*csv
-  # matches a URL containing csv, including .../file.csv:EXTENSION:...
+Because Python flow matching starts at the beginning of the filtering string,
+filters that look for text anywhere in that string usually begin with ``.*``.
+There is no implicit ``.*`` at the end of the pattern. For example::
 
-  accept .*csv$
-  # matches only a URL ending in csv
+  accept .*\.csv$
+  # matches only a filtered value ending in .csv
 
-Sundew extensions are included in the URL that is filtered. A pattern such as
-``accept .*\.csv$`` will not match a notification whose URL ends with a Sundew
-extension, for example ``.../file.csv:EXTENSION:...``. Use an unanchored pattern
-such as ``accept .*\.csv`` when those extended URLs should be accepted.
+  accept .*\.csv:.*
+  # matches a Python flow filtering string with a Sundew extension after .csv
+
+  accept .*\.csv$|.*\.csv:
+  # matches either a plain .csv ending or a .csv followed by an extension boundary
+
+Prefer filtering on the path when possible. Treat ``sundew_extension`` as legacy
+compatibility metadata and include it in filters only when the path alone is not
+specific enough.
 
 It is best practice to use server side filtering to reduce the number of notification messages sent
 to the component to a small superset of what is relevant, and perform only a fine-tuning with the
