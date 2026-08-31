@@ -311,7 +311,7 @@ Les options **accept** et **reject** traitent les expressions régulières (rege
 Elles sont interprétées dans l'ordre, et la première règle **accept** ou
 **reject** qui correspond est appliquée.
 
-Si l’URL d’un fichier correspond à un modèle **reject**, le message d'annonce
+Si la valeur filtrée d'un message d'annonce correspond à un modèle **reject**, le message d'annonce
 est reconnu comme consommé par le courtier et est ignoré.
 
 Celui qui correspond à un modèle **accept** est traité par le composant.
@@ -372,10 +372,10 @@ et a la place, envoyer un sur ensemble de ce qui est pertinent, et de seulement 
 économisant du bandwidth et du traitement pour tous. Plus de détails sur les directives:
 
 Les options **accept** et **reject** utilisent des expressions régulières (regexp) pour trouver
-une correspondance avec l’URL.
+une correspondance avec la valeur filtrée.
 Ces options sont traitées séquentiellement.
-L’URL d’un fichier qui correspond à un modèle **reject** n’est pas publiée.
-Les fichiers correspondant à un modèle **accept** sont publiés.
+Les fichiers dont la valeur filtrée correspond à un modèle **reject** ne sont pas publiés.
+Les fichiers dont la valeur filtrée correspond à un modèle **accept** sont publiés.
 Encore une fois, un *rename* peut être ajouté à l’option *accept*... les produits qui correspondent
 a l'option *accept* seront renommé comme décrit... à moins que le *accept* corresponde à
 un fichier, l’option *rename* doit décrire un répertoire dans lequel les fichiers
@@ -762,10 +762,10 @@ Combiné avec les options **accept** / **reject**, l’utilisateur peut sélecti
 les fichiers d’intérêt et leurs répertoires de résidence (voir le **mirror**
 pour plus de paramètres de répertoire).
 
-Les options **accept** et **reject** utilisent des expressions régulières (regexp) pour trouver une correspondance avec l’URL.
+Les options **accept** et **reject** utilisent des expressions régulières (regexp) pour trouver une correspondance avec la valeur filtrée.
 Ces options sont traitées séquentiellement.
-L’URL d’un fichier qui correspond à un modèle **reject** n’est jamais téléchargée.
-Celui qui correspond à un modèle **accept** est téléchargé dans le répertoire
+Les fichiers dont la valeur filtrée correspond à un modèle **reject** ne sont jamais téléchargés.
+Celui dont la valeur filtrée correspond à un modèle **accept** est téléchargé dans le répertoire
 déclaré par l’option **directory** la plus proche au-dessus de l’option **accept** correspondante.
 **acceptUnmatched** est utilisé pour décider quoi faire lorsque aucune clause de rejet ou d’acceptation corresponde.
 

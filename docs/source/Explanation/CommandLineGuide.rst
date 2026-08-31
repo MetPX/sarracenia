@@ -949,7 +949,7 @@ So:
 
  - .*CAP.* means any sequence of characters with CAP somewhere in it. 
 
- - .*cap means any sequence of characters that ends with CAP.  In the case 
+ - .*cap$ means any sequence of characters that ends with CAP.  In the case
    where multiple portions of the string could match, the longest one is selected.
 
  - .*?cap same as above, but *non-greedy*, meaning the shortest match is chosen.
@@ -974,7 +974,7 @@ The  **accept**  and  **reject**  options process regular expressions (regexp).
 They are interpreted in order, and the first matching **accept** or **reject**
 rule wins.
 
-If the notification message's URL of a file matches a **reject**  pattern, the notification message
+If the filtered value for a notification message matches a **reject**  pattern, the notification message
 is acknowledged as consumed to the broker and skipped.
 
 One that matches an **accept** pattern is processed by the component.
@@ -1161,10 +1161,10 @@ The option *path*  defines where to get the files on the server.
 Combined with  **accept** / **reject**  options, the user can select the
 files of interest and their directories of residence.
 
-The  **accept**  and  **reject**  options use regular expressions (regexp) to match URL.
+The  **accept**  and  **reject**  options use regular expressions (regexp) to match the filtered value.
 These options are processed sequentially.
-The URL of a file that matches a  **reject**  pattern is not published.
-Files matching an  **accept**  pattern are published.
+Files whose filtered value matches a  **reject**  pattern are not published.
+Files whose filtered value matches an  **accept**  pattern are published.
 
 The path can have some patterns. These supported patterns concern date/time .
 They are fixed...
@@ -1598,7 +1598,7 @@ at its sendTo.  It is tagged to the **accept** options defined after it.
 If another sequence of **directory**/**accept** follows in the configuration file,
 the second directory is tagged to the following accepts and so on.
 
-The  **accept/reject**  patterns apply to notification message notice url as above.
+The  **accept/reject**  patterns apply to the notification message filtering string as above.
 Here is an example, here some ordered configuration options :
 
 ::

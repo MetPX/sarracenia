@@ -314,7 +314,7 @@ The  **accept**  and  **reject**  options process regular expressions (regexp).
 They are interpreted in order, and the first matching **accept** or **reject**
 rule wins.
 
-If the notification message's URL of a file matches a **reject**  pattern, the notification message
+If the filtered value for a notification message matches a **reject**  pattern, the notification message
 is acknowledged as consumed to the broker and skipped.
 
 One that matches an **accept** pattern is processed by the component.
@@ -373,10 +373,10 @@ to the component to a small superset of what is relevant, and perform only a fin
 client side mechanisms, saving bandwidth and processing for all. More details on how
 to apply the directives follow:
 
-The  **accept**  and  **reject**  options use regular expressions (regexp) to match URL.
+The  **accept**  and  **reject**  options use regular expressions (regexp) to match the filtered value.
 These options are processed sequentially.
-The URL of a file that matches a  **reject**  pattern is not published.
-Files matching an  **accept**  pattern are published.
+Files whose filtered value matches a  **reject**  pattern are not published.
+Files whose filtered value matches an  **accept**  pattern are published.
 Again a *rename*  can be added to the *accept* option... matching products
 for that *accept* option would get renamed as described... unless the *accept* matches
 one file, the *rename* option should describe a directory into which the files
@@ -764,10 +764,10 @@ Combined with  **accept** / **reject**  options, the user can select the
 files of interest and their directories of residence (see the  **mirror**
 option for more directory settings).
 
-The  **accept**  and  **reject**  options use regular expressions (regexp) to match URL.
+The  **accept**  and  **reject**  options use regular expressions (regexp) to match the filtered value.
 These options are processed sequentially.
-The URL of a file that matches a  **reject**  pattern is never downloaded.
-One that matches an  **accept**  pattern is downloaded into the directory
+Files whose filtered value matches a  **reject**  pattern are never downloaded.
+One whose filtered value matches an  **accept**  pattern is downloaded into the directory
 declared by the closest  **directory**  option above the matching  **accept** option.
 **acceptUnmatched** is used to decide what to do when no reject or accept clauses matched.
 
