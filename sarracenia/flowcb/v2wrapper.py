@@ -78,7 +78,7 @@ def sumstrFromMessage( msg ) -> str:
                 sumstr = f'r,{hash.hexdigest()}'
             else:
                 sumstr = f'm,{hash.hexdigest()}'
-        else:
+        elif 'rename' not in msg:
             logger.error(f"unknown fileOp: {msg['fileOp']}" )
     return sumstr
 
