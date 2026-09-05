@@ -1376,7 +1376,8 @@ class Flow:
     def write_inline_file(self, msg) -> bool:
         """
            write local file based on a message with inlined content.
-
+           
+           side effect: msg['size'] will be set to the correct size of the downloaded file.
         """
         # make sure directory exists, create it if not
         if not os.path.isdir(msg['new_dir']):
@@ -1401,6 +1402,7 @@ class Flow:
             data = b64decode(msg['content']['value'])
         else:
             data = msg['content']['value'].encode(msg['content']['encoding'])
+
 
         if self.o.identity_method.startswith('cod,'):
             algo_method = self.o.identity_method[4:]
@@ -1427,16 +1429,22 @@ class Flow:
             'value': onfly_algo.value
         }
 
-        if ((msg['size'] > 0) and len(data) != msg['size']):
+        if ('size' in msg) and (msg['size'] > 0) and len(data) != msg['size']:
             if self.o.acceptSizeWrong:
                 logger.warning(
                     "acceptSizeWrong data size is (%d bytes) vs. expected: (%d bytes)"
                     % (len(data), msg['size']))
+                # size mismatches should not be propagated downstream. Downstream should see the correct size.
+                msg['size'] = len(data)
             else:
                 logger.warning(
                     "decoded data size (%d bytes) does not have expected size: (%d bytes)"
                     % (len(data), msg['size']))
                 return False
+        else:
+            # If there is not size in the message, then it cannot mismatch? Alternative would be it always mismatches, which would be useless.
+            # so need to assume that if the size field is missing, then whatever size is received is correct.
+            msg['size'] = len(data)
 
         data_algo.update(data)
 
@@ -1984,7 +1992,7 @@ class Flow:
 
             # all non-files taken care of above... rest of routine is normal file download.
 
-            if self.o.fileSizeMax > 0 and msg['size'] > self.o.fileSizeMax:
+            if self.o.fileSizeMax > 0 and 'size' in msg and msg['size'] > self.o.fileSizeMax:
                 self.reject(msg, 413, f"Payload Too Large {msg.getIDStr()}")
                 continue
 
@@ -2021,12 +2029,12 @@ class Flow:
 
             # assert new_inflight_path is set.
 
-            if os.path.exists(msg['new_inflight_path']):
+            if self.o.inflight and os.path.exists(msg['new_inflight_path']):
 
-                if self.o.inflight:
+                try:
                     how_old = time.time() - os.path.getmtime(msg['new_inflight_path'])
-                    #FIXME: if mtime > 5 minutes, perhaps rm it, and continue? what if transfer crashed?
-                    #       Added this with fixed value, should it be a setting?
+                    # if file exists and mtime > 5 minutes, rm it, and continue. previous transfer likely crashed
+                    #FIXME: Added this with fixed value, should it be a setting?
                     if how_old > 300:
                         os.unlink( msg['new_inflight_path'] )
                         logger.info(
@@ -2034,8 +2042,13 @@ class Flow:
                     else:
                         logger.warning(
                             f"inflight file already exists. race condition, deferring transfer of {msg['new_path']}" )
-                    self.worklist.failed.append(msg)
-                    continue
+                # in case file gets deleted after the exists check but before the getmtime or unlink calls
+                except FileNotFoundError:
+                    logger.warning(
+                        f"inflight file already existed. race condition, deferring transfer of {msg['new_path']}")
+
+                self.worklist.failed.append(msg)
+                continue
                 # overwriting existing file.
 
             # FIXME: decision of whether to download, goes here.
@@ -3059,7 +3072,7 @@ class Flow:
                 self.reject(msg, 422, f"new_file message field missing, do not know name of file to write. skipping." )
                 continue
 
-            if self.o.fileSizeMax > 0 and msg['size'] > self.o.fileSizeMax: 
+            if 'size' in msg and self.o.fileSizeMax > 0 and msg['size'] > self.o.fileSizeMax: 
                 self.reject(msg, 413, f"Payload Too Large {msg.getIDStr()}") 
                 continue
 

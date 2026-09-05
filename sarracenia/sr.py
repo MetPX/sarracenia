@@ -516,12 +516,7 @@ class sr_GlobalState:
                             p = pathlib.Path(pathname)
                             if p.suffix in ['.pid', '.qname', '.state', '.noVip']:
                                 try:
-                                    if sys.version_info[0] > 3 or sys.version_info[
-                                            1] > 4:
-                                        t = p.read_text().strip()
-                                    else:
-                                        with p.open() as f:
-                                            t = f.read().strip()
+                                    t = p.read_text().strip()
                                 except FileNotFoundError:
                                     logger.error( f"state file {pathname} disappeared (race condition, see #1571), skipping" )
                                     continue
@@ -645,12 +640,7 @@ class sr_GlobalState:
                                 if i != 0:
                                     p = pathlib.Path(filename)
                                     try:
-                                        if sys.version_info[0] > 3 or sys.version_info[
-                                                1] > 4:
-                                            t = p.read_text().strip()
-                                        else:
-                                            with p.open() as f:
-                                                t = f.read().strip()
+                                        t = p.read_text().strip()
                                     except FileNotFoundError:
                                         logger.error( f"pid file {filename} disappeared (race condition, see #1571), skipping." )
                                         continue
@@ -698,12 +688,7 @@ class sr_GlobalState:
                             if filename[-4:] == '.pid':
                                 p = pathlib.Path(filename)
                                 try:
-                                    if sys.version_info[0] > 3 or sys.version_info[
-                                            1] > 4:
-                                        t = p.read_text().strip()
-                                    else:
-                                        with p.open() as f:
-                                            t = f.read().strip()
+                                    t = p.read_text().strip()
                                 except FileNotFoundError:
                                     logger.error( f"pid file {filename} disappeared (race condition, see #1571), skipping cleanup" )
                                     continue

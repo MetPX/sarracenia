@@ -1,4 +1,11 @@
-metpx-sr3 (3.03.00rc1) UNRELEASED; urgency=medium
+metpx-sr3 (3.03.01) unstable; urgency=medium
+
+  * fix #1760 prevent resource library from running on Windows
+  * fix #1762 AMQP prefetch is not invariant
+
+ -- Andre LeBlanc <andre.leblanc@ssc-spc.gc.ca>  Fri, 21 Aug 2026 17:56:11 +0000
+
+metpx-sr3 (3.03.00) unstable; urgency=medium
 
   * increment version number
   * lots of changes, changelog to be completed. old bindings get removed now.
@@ -38,6 +45,8 @@ metpx-sr3 (3.03.00rc1) UNRELEASED; urgency=medium
   * fix #1714 putAccelerated errors not being caught
   * perf #1717,#1719,#1722,#1723,#1725,#1726,#1727 flow test improvements
   * fix #1590,#1729 no log messages for failed posts
+  * fix #1749 handle race conditions in check for existing inflight file
+  * fix #1732 alarms getting triggered in random places
 
  -- Reid Sunderland <reid.sunderland@ssc-spc.gc.ca>  Mon, 03 Jul 2026 17:55:18 +0000
 

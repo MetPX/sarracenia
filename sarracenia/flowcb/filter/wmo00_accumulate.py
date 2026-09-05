@@ -229,7 +229,7 @@ class Wmo00_accumulate(FlowCB):
         output_file.close()
         msg = sarracenia.Message.fromFileData(self.accumulated_file, self.o, os.stat(self.accumulated_file))
 
-        if msg['size'] > 0 : 
+        if 'size' in msg and msg['size'] > 0 : 
             logger.info( f"accumulated file {self.accumulated_file} written {msg['size']} bytes, {record_no-1} records" )
             worklist.incoming.append(msg)
         else:
