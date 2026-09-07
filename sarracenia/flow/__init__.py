@@ -1280,6 +1280,14 @@ class Flow:
 
     def work(self) -> None:
 
+        work_dir = os.getcwd()
+        try:
+            self._work()
+        finally:
+            os.chdir(work_dir)
+
+    def _work(self) -> None:
+
         self.do()
 
         # need to acknowledge here, because posting will delete message-id
