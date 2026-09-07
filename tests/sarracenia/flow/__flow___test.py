@@ -118,6 +118,7 @@ def test_work_restores_cwd_when_work_raises(tmp_path, monkeypatch):
     assert os.getcwd() == str(runtime_dir)
 
 
+@pytest.mark.skipif(os.name == "nt", reason="Windows does not permit removing the process cwd")
 def test_work_recovers_when_cwd_is_unavailable_at_entry(tmp_path, monkeypatch):
     options = __make_fake_config()
     fallback_dir = tmp_path / "cache" / "subscribe" / "flow_class_test"
@@ -159,8 +160,8 @@ def test_work_uses_fallback_when_saved_cwd_is_renamed(tmp_path, monkeypatch):
     flow = sarracenia.flow.Flow(options)
 
     def rename_saved_cwd():
-        runtime_dir.rename(renamed_runtime_dir)
         os.chdir(payload_dir)
+        runtime_dir.rename(renamed_runtime_dir)
 
     monkeypatch.setattr(flow, "do", rename_saved_cwd)
     monkeypatch.chdir(runtime_dir)
