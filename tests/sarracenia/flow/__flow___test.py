@@ -1,9 +1,11 @@
+import copy
+import os
+
 import pytest
-from tests.conftest import *
 
 import sarracenia.config
 import sarracenia.flow
-import copy
+from tests.conftest import *
 
 __COMPONENT="subscribe"
 __CONFIG="flow_class_test"
@@ -71,3 +73,46 @@ def test_msg_rejected_when_sundew_extension_already_present():
     assert(len(flow.worklist.incoming) == 0)
     assert(len(flow.worklist.rejected) == 0)
     assert(msg not in flow.worklist.incoming)
+
+
+def test_work_restores_cwd_after_inline_download(tmp_path, monkeypatch):
+    options = __make_fake_config(lines=["download True"])
+    flow = sarracenia.flow.Flow(options)
+    runtime_dir = tmp_path / "runtime"
+    payload_dir = tmp_path / "public_data" / "20260904" / "product" / "19"
+    runtime_dir.mkdir()
+
+    message = sarracenia.Message()
+    message["new_dir"] = str(payload_dir)
+    message["new_file"] = "payload.txt"
+    message["content"] = {"encoding": "utf-8", "value": "test payload\n"}
+    message["identity"] = {"method": "arbitrary", "value": "test"}
+    flow.worklist.incoming.append(message)
+
+    monkeypatch.chdir(runtime_dir)
+    flow.work()
+
+    assert os.getcwd() == str(runtime_dir)
+    assert (payload_dir / "payload.txt").read_text() == "test payload\n"
+
+
+def test_work_restores_cwd_when_work_raises(tmp_path, monkeypatch):
+    options = __make_fake_config()
+    flow = sarracenia.flow.Flow(options)
+    runtime_dir = tmp_path / "runtime"
+    payload_dir = tmp_path / "public_data" / "20260904"
+    runtime_dir.mkdir()
+    payload_dir.mkdir(parents=True)
+
+    def fail_inside_payload_dir():
+        error = "test failure"
+        os.chdir(payload_dir)
+        raise RuntimeError(error)
+
+    monkeypatch.setattr(flow, "do", fail_inside_payload_dir)
+    monkeypatch.chdir(runtime_dir)
+
+    with pytest.raises(RuntimeError, match="test failure"):
+        flow.work()
+
+    assert os.getcwd() == str(runtime_dir)
