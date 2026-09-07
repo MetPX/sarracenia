@@ -136,7 +136,7 @@ def test_work_recovers_when_cwd_is_unavailable_at_entry(tmp_path, monkeypatch):
 
     monkeypatch.setattr(flow, "do", work_in_payload_dir)
 
-    os.chdir(unavailable_dir)
+    monkeypatch.chdir(unavailable_dir)
     unavailable_dir.rmdir()
     try:
         flow.work()
