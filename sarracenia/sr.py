@@ -1655,7 +1655,9 @@ class sr_GlobalState:
                 logging.error(f"cannot disable {f} while it is running! ")
                 continue
 
-            self._tag_progress( c, cfg, 'disabled', ending=False )
+            if self._tag_progress( c, cfg, 'disabled', ending=False ):
+                logging.info("%s disabled", f)
+                
 
     def edit(self):
 
@@ -3335,16 +3337,19 @@ class sr_GlobalState:
         if ending:
             if os.path.exists(fname):
                 os.unlink( fname )
+                return True
+            return False
         else:
             if not os.path.exists(state_dir):
                  os.makedirs(state_dir, exist_ok=True)
 
             if os.path.exists( fname ):
                  logger.error( f" {c}/{cfg} already tagged: {what_is_in_progress}" )
-                 return
+                 return False
 
             with open(fname, "w") as f:
                 f.write(nowstr())
+            return True
 
 
 
