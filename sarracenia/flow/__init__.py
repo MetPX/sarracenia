@@ -1298,7 +1298,6 @@ class Flow:
                                fallback_dir)
                 os.chdir(fallback_dir)
 
-        work_succeeded = False
         try:
             self.do()
 
@@ -1334,22 +1333,25 @@ class Flow:
             self.ack(self.worklist.rejected)
             self.worklist.rejected = []
             self.ack(self.worklist.failed)
-            work_succeeded = True
         finally:
+            restored = False
             restore_error = None
             for restore_dir in [work_dir, fallback_dir, os.path.abspath(os.sep)]:
                 if restore_dir is None:
                     continue
                 try:
                     os.chdir(restore_dir)
+                    restored = True
                     break
                 except OSError as ex:
                     restore_error = ex
                     logger.warning("failed to restore working directory to %s: %s", restore_dir, ex)
-            else:
-                if work_succeeded:
-                    raise restore_error
-                logger.error("failed to restore working directory after work failed: %s", restore_error)
+            if not restored:
+                # Raising here would escape a finally, and run() does not catch
+                # it, so the instance would die without close() and leave its
+                # pidfile behind. Ask for an orderly stop instead.
+                logger.error("failed to restore working directory: %s", restore_error)
+                self.runCallbacksTime('please_stop')
 
 
 
