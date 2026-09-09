@@ -794,7 +794,12 @@ class AMQ1(Moth):
 
             # convert sr3 message to desired raw format (e.g. SWIM, NAVCANADA)
             # (NOTE: set post_format swim or post_format navcanada in config file)
-            raw_body, properties, content_type = PostFormat.exportAny(sr3_msg, version, self.o['topicPrefix'], self.o)
+            raw_body, properties, content_type = rval = PostFormat.exportAny(sr3_msg, version,
+                                                                                self.o['topicPrefix'], self.o)
+
+            if None in rval:
+                logger.error(f"Failed to export message to format: {version}, cannot publish")
+                return False
 
             if raw_body is not None and len(raw_body) <= 0:
                 logger.warning(f"message body is empty (properties: {properties})")
