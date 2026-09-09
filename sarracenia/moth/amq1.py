@@ -435,7 +435,7 @@ class AMQ1(Moth):
         self._raw_msg_q = None
         self._ack_q = None
 
-    def _msgRawToDict(self, raw_msg) -> sarracenia.Message:
+    def _msgRawToDict(self, raw_msg, ack_id=-1) -> sarracenia.Message:
         """ Convert AMQP1.0 raw message to sr3 message (dictionary)
         """
         # convert memory view where possible
@@ -496,6 +496,11 @@ class AMQ1(Moth):
         # for decoding AMQP1 messages, we map the Application Properties to "headers"
         # the data (Message Payload/body), if present, is mapped to "payload"
         message = PostFormat.importAny(raw_msg.body, app_properties, content_type, self.o)
+        if not message:
+            logger.error('Decode failed, discarding message')
+            if ack_id is not None and ack_id >= 0:
+                self.__ack_id(ack_id)
+            return None
 
         # FIXME: don't really understand why we do this in every moth implementation and not somewhere else.
         message['local_offset'] = 0
@@ -671,7 +676,7 @@ class AMQ1(Moth):
             else:
                 # self.metrics['rxByteCount'] += len(raw_msg.body)
                 try:
-                    msg = self._msgRawToDict(raw_msg)
+                    msg = self._msgRawToDict(raw_msg, ack_id=ack_id)
                     # ack_id can be 0, need to specifically check that it's not None
                     if ack_id is not None and msg is not None:
                         msg['ack_id'] = { 'tag': ack_id,
