@@ -257,7 +257,7 @@ class NavCanada(PostFormat):
         # inline content (AMQP1.0 body) must be UTF-8
         if 'content' in sr3_msg and sr3_msg['content'] and sr3_msg['content']['encoding'] == 'utf-8':
             raw_body = sr3_msg['content']['value']
-        elif 'content' in sr3_msg and sr3_msg['content'] and sr3_msg['content']['encoding'] != 'utf-8'
+        elif 'content' in sr3_msg and sr3_msg['content'] and sr3_msg['content']['encoding'] != 'utf-8':
             logger.error(f"cannot export to NAV CANADA format; content is not UTF-8 encoded for {sr3_msg.getIDStr()}")
             return None, None, None
         else:
