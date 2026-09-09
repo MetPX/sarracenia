@@ -251,9 +251,6 @@ class NavCanada(PostFormat):
 
         headers['UUID'] = str(uuid.uuid4())
 
-        # if content is already in msg, this won't do anything
-        sr3_msg.putContentInline()
-
         # inline content (AMQP1.0 body) must be UTF-8
         if 'content' in sr3_msg and sr3_msg['content'] and sr3_msg['content']['encoding'] == 'utf-8':
             raw_body = sr3_msg['content']['value']
