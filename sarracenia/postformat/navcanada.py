@@ -251,11 +251,18 @@ class NavCanada(PostFormat):
 
         headers['UUID'] = str(uuid.uuid4())
 
-        if 'content' in sr3_msg and sr3_msg['content']:
+        # if content is already in msg, this won't do anything
+        sr3_msg.putContentInline()
+
+        # inline content (AMQP1.0 body) must be UTF-8
+        if 'content' in sr3_msg and sr3_msg['content'] and sr3_msg['content']['encoding'] == 'utf-8':
             raw_body = sr3_msg['content']['value']
-            # TODO content encoding (and contentType below)
+        elif 'content' in sr3_msg and sr3_msg['content'] and sr3_msg['content']['encoding'] != 'utf-8'
+            logger.error(f"cannot export to NAV CANADA format; content is not UTF-8 encoded for {sr3_msg.getIDStr()}")
+            return None, None, None
         else:
-            raw_body = ''
+            logger.error(f"inline content missing from {sr3_msg.getIDStr()}")
+            return None, None, None
 
         # NAV CANADA requires that embedded content is <30 MB but leave it up to the person
         # writing the config to enforce that with fileSizeMax.
