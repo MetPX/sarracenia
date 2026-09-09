@@ -135,32 +135,22 @@ class NavCanada(PostFormat):
 
             msg['size'] = len(payload)
 
-            decompressed_payload = payload
             decoded_payload = None
-            # Detect if the payload is gzipped
+            # Only expecting to receive UTF-8 encoded data from NC
             try:
-                # FIXME: i think we should support gzip as an inline content encoding and unzip somewhere else
-                # in the code, but leaving this here for now. (Derived from the SWIM code).
-                # content_encoding is only mandatory when compression is used
-                if 'amqp1_content_encoding' in headers and headers['amqp1_content_encoding'] == "gzip":
-                    if payload[:2] == b'\x1f\x8b':  # GZIP magic number
-                        decompressed_payload = gzip.decompress(payload)
-                        msg['size'] = len(decompressed_payload)  # size should be the size in bytes of the content
-                        decoded_payload = decompressed_payload.decode('utf-8')
-                    else:
-                        logger.warning("Payload does not appear to be gzipped, but content encoding is set to gzip!")
-                        decoded_payload = payload.decode('utf-8')
-                else:
-                    decoded_payload = payload.decode('utf-8')
-            except Exception as e:
-                logger.error(f"failed to read inline content in NAV CANADA message")
-                logger.debug("Exception Details", exc_info=True)
-
-            if decoded_payload:
+                decoded_payload = payload.decode('utf-8')
                 msg['content'] = {
                     'encoding': 'utf-8',
                     'value': decoded_payload
                 }
+            except Exception as e:
+                logger.error(f"failed to decode inline content in message: {e}")
+                logger.debug("Exception Details", exc_info=True)
+                return None
+
+        else:
+            logger.error(f"inline content missing from message, message is invalid, cannot import")
+            return None
 
         # baseUrl is mandatory and sr3 will crash without it
         msg['baseUrl'] = "none://"
