@@ -1,4 +1,5 @@
 import pytest
+import sys
 from tests.conftest import *
 #from unittest.mock import Mock
 
@@ -358,3 +359,36 @@ def test_default_inc_nested_include_can_be_overridden():
         Path(component_dir + "/nested.inc").unlink()
         _remove_config_tree(tmp_path, "poll")
 
+def test_one_config_applies_component_default_inc(monkeypatch):
+    """
+    one_config() should apply the component's default.inc when a
+    configuration is loaded directly at runtime.
+    """
+    monkeypatch.setattr(sys, "argv", ["sr3 start poll/test"])
+    tmp_path = "/tmp/"
+
+    monkeypatch.setattr(
+        sarracenia.config,
+        "get_user_config_dir",
+        lambda: str(tmp_path)
+    )
+
+    _make_config_tree(
+        tmp_path,
+        "poll",
+        default_content="retry_ttl 3h\n",
+        config_content="exchange my_exchange\n",
+    )
+
+    try:
+        config = sarracenia.config.one_config(
+            "poll",
+            "test",
+            "start"
+        )
+
+        assert config.retry_ttl == 10800
+        assert config.exchange == "my_exchange"
+
+    finally:
+        _remove_config_tree(tmp_path, "poll")
