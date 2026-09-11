@@ -334,7 +334,9 @@ class sr_GlobalState:
                             'action': self.options.action,
                             'directory': '${PWD}'
                         })
+                        # Apply component defaults from source
                         cfgbody.applyComponentDefaults( c )
+                        cfgbody.addComponentDefaultInc( c )
                         cfgbody.parse_file(cfg,c)
                         cfgbody.finalize(c, cfg)
                         self.configs[c][cbase]['options'] = cfgbody

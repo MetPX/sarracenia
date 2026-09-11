@@ -1,12 +1,12 @@
 =====
- SR3 
+ SR3
 =====
 
 ------------------
 sr3 Sarracenia CLI
 ------------------
 
-:Manual section: 1 
+:Manual section: 1
 :Date: |today|
 :Version: |release|
 :Manual group: MetPX-Sarracenia
@@ -112,14 +112,16 @@ la configuration se fait construire a partir de:
 
  2. admin.conf
 
- 3. <component>.conf (subscribe.conf, audit.conf, etc...)
+ 3. <component>/default.inc
 
  4. <component>/<config>.conf
 
-Les paramètres d'un fichier .conf sont lu après le fichier default.conf,
-et les valeurs initiales choisi par défaut peuvent éventuellement être replacer.
-Les options spécifiées sur la ligne de commande remplacent les options spécifiées dans le
-fichier de configuration.
+
+Les paramètres du fichier d'inclusion default.inc (situé dans le répertoire parent <component>)
+sont lus après default.conf et avant <component>/<config>.conf.
+Cela permet donc de remplacer les valeurs par défaut du component sélectionné.
+Les options spécifiées dans le fichier de configuration remplacent les valeurs du fichier default.inc du component.
+Les options spécifiées en ligne de commande remplacent ceux des fichiers de configuration.
 
 Les fichiers de configurations peuvent être gérer en utilisant les actions *add*, *remove*,
 *list*, *edit*, *disable*, et *enable*. Il est également possible de faire

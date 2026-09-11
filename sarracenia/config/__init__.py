@@ -976,6 +976,14 @@ class Config:
             if hasattr(component_module, 'default_options'):
                 self.override(component_module.default_options)
 
+    def addComponentDefaultInc( self , component ):
+        """
+        Added from issue 1196
+        Parse and add component/default.inc options if the file exists.
+        """
+        if os.path.exists(get_user_config_dir() + os.sep + component + os.sep + 'default.inc'):
+            self.parse_file(get_user_config_dir() + os.sep + component + os.sep + 'default.inc', component)
+
     @property
     def admin(self):
         return self.__admin
@@ -2889,6 +2897,8 @@ def one_config(component, config, action, isPost=False, hostDir=None):
 
     os.chdir(get_user_config_dir())
     os.chdir(component)
+
+    cfg.addComponentDefaultInc( component )
 
     if config[-5:] != '.conf':
         fname = os.path.expanduser(config + '.conf')

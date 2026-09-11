@@ -112,13 +112,16 @@ It is actually building the effective configuration from:
 
  2. admin.conf
 
- 3. <component>.conf (subscribe.conf, audit.conf, etc...)
+ 3. <component>/default.inc
 
  4. <component>/<config>.conf
 
-Settings in an individual .conf file are read in after the default.conf
-file, and so can override defaults. Options specified on
-the command line override configuration files.
+Settings in a default.inc include file (from the parent <component> directory)
+are read in after the default.conf and prior to <component>/<config>.conf.
+So this allows to override the values for the component chosen.
+Options specified in the configuration file override values in the components' default.inc.
+
+Options specified on the command line override configuration files.
 
 While one can manage configuration files using the *add*, *remove*,
 *list*, *edit*, *disable*, and *enable* actions, one can also do all
