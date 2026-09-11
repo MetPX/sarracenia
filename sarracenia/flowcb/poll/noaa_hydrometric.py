@@ -77,8 +77,9 @@ class Noaa_hydrometric(FlowCB):
 
         else:
             # Grab station site codes from https://opendap.co-ops.nos.noaa.gov/stations/stationsXML.jsp
-            tree = ET.parse(urllib.request.urlopen\
-               ('https://opendap.co-ops.nos.noaa.gov/stations/stationsXML.jsp'))
+            tree = ET.parse(urllib.request.urlopen(
+               'https://opendap.co-ops.nos.noaa.gov/stations/stationsXML.jsp',
+               timeout=self.o.timeout))
             root = tree.getroot()
             for child in root:
                 sitecodes.append(child.attrib['ID'])
@@ -91,7 +92,7 @@ class Noaa_hydrometric(FlowCB):
             url = self.o.pollUrl + retrievePath
             logger.info(f'polling {site}, polling: {url}')
             # Water temp request
-            resp = urllib.request.urlopen(url).getcode()
+            resp = urllib.request.urlopen(url, timeout=self.o.timeout).getcode()
             logger.info(f"poll_noaa file posted: {url} %s")
             mtime = datetime.datetime.utcnow().strftime('%Y%m%d_%H%M')
 
@@ -107,7 +108,7 @@ class Noaa_hydrometric(FlowCB):
             retrievePath = self.o.retrievePathPattern.format(
                 site, 'water_level') + '&datum=STND'
             url = self.o.pollUrl + retrievePath
-            resp = urllib.request.urlopen(url).getcode()
+            resp = urllib.request.urlopen(url, timeout=self.o.timeout).getcode()
             logger.info(f"poll_noaa file posted: {url}")
 
             fname = f'noaa_{mtime}_{site}_WL.csv'

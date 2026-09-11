@@ -190,7 +190,7 @@ class Odata(sarracenia.flowcb.FlowCB):
         while url:
             logger.info(f"Polling URL: {url}")
             try:
-                r = requests.get(url)
+                r = requests.get(url, timeout=self.o.timeout)
                 data = r.json()
 
                 # https://documentation.dataspace.copernicus.eu/APIs/ReleaseNotes.html#odata-catalog-api-updates
