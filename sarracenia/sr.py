@@ -3312,8 +3312,8 @@ class sr_GlobalState:
                     
             
     def _tag_progress( self, c: str, cfg: str, what_is_in_progress: str, ending: bool ):
-        """ mark a configuration as being in flux, to disable sr3 sanity.
-            Do that by creating a file in the state directory. 
+        """Mark a configuration as being in flux to disable sr3 sanity checks.
+            This is done by creating a progress marker in the state directory.
 
             sample call: 
                  self._tag_progress( \
@@ -3327,6 +3327,8 @@ class sr_GlobalState:
 
             if the *ending* argument is true, then the corresponding state file is removed
             to indicate that the operation completed.
+            
+            Return: True if the operation was successful, False otherwise
         """
         if 'options' in self.configs[c][cfg] and self.configs[c][cfg]['options'].statehost:
             state_dir=self.user_cache_dir + os.sep + self.hostdir + os.sep + c + os.sep + cfg
