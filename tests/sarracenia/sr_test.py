@@ -108,7 +108,7 @@ def make_disable_sr():
 
 def test_disable_tags_stopped_configuration():
     sr = make_disable_sr()
-    sr.filtered_configurations = ["subscribe\\amis"]
+    sr.filtered_configurations = ["subscribe/amis"]
     sr.configs = {
         "subscribe": {
             "amis": {
@@ -135,7 +135,7 @@ def test_disable_tags_stopped_configuration():
 
 def test_disable_skips_running_configuration():
     sr = make_disable_sr()
-    sr.filtered_configurations = ["subscribe\\amis"]
+    sr.filtered_configurations = ["subscribe/amis"]
     sr.configs = {
         "subscribe": {
             "amis": {
