@@ -1655,7 +1655,9 @@ class sr_GlobalState:
                 logging.error(f"cannot disable {f} while it is running! ")
                 continue
 
-            self._tag_progress( c, cfg, 'disabled', ending=False )
+            if self._tag_progress( c, cfg, 'disabled', ending=False ):
+                logging.info("%s disabled", f)
+                
 
     def edit(self):
 
@@ -3310,8 +3312,8 @@ class sr_GlobalState:
                     
             
     def _tag_progress( self, c: str, cfg: str, what_is_in_progress: str, ending: bool ):
-        """ mark a configuration as being in flux, to disable sr3 sanity.
-            Do that by creating a file in the state directory. 
+        """Mark a configuration as being in flux to disable sr3 sanity checks.
+            This is done by creating a progress marker in the state directory.
 
             sample call: 
                  self._tag_progress( \
@@ -3325,6 +3327,8 @@ class sr_GlobalState:
 
             if the *ending* argument is true, then the corresponding state file is removed
             to indicate that the operation completed.
+            
+            Return: True if the operation was successful, False otherwise
         """
         if 'options' in self.configs[c][cfg] and self.configs[c][cfg]['options'].statehost:
             state_dir=self.user_cache_dir + os.sep + self.hostdir + os.sep + c + os.sep + cfg
@@ -3335,16 +3339,19 @@ class sr_GlobalState:
         if ending:
             if os.path.exists(fname):
                 os.unlink( fname )
+                return True
+            return False
         else:
             if not os.path.exists(state_dir):
                  os.makedirs(state_dir, exist_ok=True)
 
             if os.path.exists( fname ):
                  logger.error( f" {c}/{cfg} already tagged: {what_is_in_progress}" )
-                 return
+                 return False
 
             with open(fname, "w") as f:
                 f.write(nowstr())
+            return True
 
 
 
