@@ -1707,7 +1707,10 @@ class sr_GlobalState:
                 break
             (c, cfg) = f.split(os.sep)
 
-            state_file_cfg = self.user_cache_dir + os.sep + c + os.sep + cfg
+            if 'options' in self.configs[c][cfg] and self.configs[c][cfg]['options'].statehost:
+                state_file_cfg = self.user_cache_dir + os.sep + self.hostdir + os.sep + c + os.sep + cfg
+            else:
+                state_file_cfg = self.user_cache_dir + os.sep + c + os.sep + cfg
             state_file_cfg_disabled = state_file_cfg + os.sep + 'disabled'
             if os.path.exists(state_file_cfg):
                 if not os.path.exists(state_file_cfg_disabled):

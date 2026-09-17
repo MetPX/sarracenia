@@ -1,11 +1,13 @@
 from types import SimpleNamespace
 from unittest.mock import Mock
 
+
 import pytest
 from tests.conftest import *
 
 import sarracenia.config
 import sarracenia.sr
+
 
 # =========================================================================== #
 # ============= Unit tests for sarracenia.sr.SR._tag_progress() ============= #
@@ -167,3 +169,45 @@ def test_disable_returns_when_leftovers_exist():
 # =========================================================================== #
 # ============================== End of Tests =============================== #
 # =========================================================================== #
+
+def _make_sr(tmp_path, statehost):
+    sr = sarracenia.sr.sr_GlobalState.__new__(sarracenia.sr.sr_GlobalState)
+    sr.leftovers = []
+    sr._action_all_configs = False
+    sr.please_stop = False
+    sr.filtered_configurations = ['sarra/download_f20']
+    sr.user_cache_dir = str(tmp_path)
+    sr.hostdir = 'my-host'
+    sr.configs = {
+        'sarra': {
+            'download_f20': {
+                'options': SimpleNamespace(statehost=statehost)
+            }
+        }
+    }
+    return sr
+
+
+def test_enable_honours_statehost_true(tmp_path):
+    """Regression test for #1782: enable() must look under hostdir when statehost is set."""
+    sr = _make_sr(tmp_path, True)
+    state_dir = tmp_path / 'my-host' / 'sarra' / 'download_f20'
+    state_dir.mkdir(parents=True)
+    disabled = state_dir / 'disabled'
+    disabled.write_text('disabled')
+
+    sr.enable()
+
+    assert not disabled.exists()
+
+
+def test_enable_without_statehost_uses_plain_path(tmp_path):
+    sr = _make_sr(tmp_path, False)
+    state_dir = tmp_path / 'sarra' / 'download_f20'
+    state_dir.mkdir(parents=True)
+    disabled = state_dir / 'disabled'
+    disabled.write_text('disabled')
+
+    sr.enable()
+
+    assert not disabled.exists()
