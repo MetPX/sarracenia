@@ -65,7 +65,8 @@ class Nexrad(FlowCB):
         # from Canada/worldwide sites.
         ICAOs = set()
         with urllib.request.urlopen(
-                'https://www.aviationweather.gov/docs/metar/stations.txt'
+                'https://www.aviationweather.gov/docs/metar/stations.txt',
+                timeout=self.o.timeout
         ) as f:
             lines = f.readlines()
             self.metrics['transferRxBytes'] += len(lines)

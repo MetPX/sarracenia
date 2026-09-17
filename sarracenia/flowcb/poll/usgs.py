@@ -92,7 +92,8 @@ class Usgs(FlowCB):
                 logger.debug('getting: %s', self.o.pollUrl.format(stns))
 
                 status_code = urllib.request.urlopen(
-                    self.o.pollUrl.format(stns)).getcode()
+                    self.o.pollUrl.format(stns),
+                    timeout=self.o.timeout).getcode()
                 if status_code == 200:
                     logger.info(f"poll_usgs file updated {self.o.pollUrl.format(stns)}")
 
@@ -113,7 +114,8 @@ class Usgs(FlowCB):
             for site in self.sitecodes:
                 logger.debug('getting: %s', self.o.pollUrl.format(site))
                 status_code = urllib.request.urlopen(
-                    self.o.pollUrl.format(site)).getcode()
+                    self.o.pollUrl.format(site),
+                    timeout=self.o.timeout).getcode()
                 if status_code == 200:
                     logger.info(f"poll_usgs file updated {self.o.pollUrl.format(site)}")
                     self.o.msg.new_baseurl = self.o.pollUrl.format(site)

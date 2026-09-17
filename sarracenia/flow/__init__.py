@@ -1280,40 +1280,76 @@ class Flow:
 
     def work(self) -> None:
 
-        self.do()
+        fallback_dir = getattr(self.o, 'cfg_run_dir', None)
+        if not isinstance(fallback_dir, str) or not os.path.isabs(fallback_dir) \
+                or not os.path.isdir(fallback_dir):
+            fallback_dir = os.path.abspath(os.sep)
 
-        # need to acknowledge here, because posting will delete message-id
-        self.ack(self.worklist.ok)
-        self.ack(self.worklist.rejected)
-        self.ack(self.worklist.failed)
+        try:
+            work_dir = os.getcwd()
+        except OSError as ex:
+            work_dir = None
+            logger.warning("working directory is unavailable before work: %s; using %s", ex, fallback_dir)
+            try:
+                os.chdir(fallback_dir)
+            except OSError as fallback_error:
+                fallback_dir = os.path.abspath(os.sep)
+                logger.warning("failed to use configured working directory: %s; using %s", fallback_error,
+                               fallback_dir)
+                os.chdir(fallback_dir)
 
-        # adjust message after action is done, but before 'after_work' so adjustment is possible.
-        post_messages=[]
+        work_succeeded = False
+        try:
+            self.do()
 
-        for m in self.worklist.ok:
-            if len(self.o.publishers) <= 1: # save creation of new messages (a lot of space & time savings.)
-                self.work_message_adjust(m)
-                m['publisher_index'] = 0
-            else: # replace output messages with 1 per publishing destination.
-                i=0
-                for p in self.o.publishers:
-                    new_m=sarracenia.Message()
-                    new_m.copyDict(m)
-                    new_m['publisher_index'] = i
-                    new_m.updatePaths( self.o, m['new_dir'], m['new_file'], i )
-                    self.work_message_adjust(new_m)
-                    post_messages.append(new_m) 
-                    i += 1
-            m['_deleteOnPost'] |= set(['publisher_index'])
-                    
-        if len(self.o.publishers) > 1:
-            self.worklist.ok=post_messages
-    
-        self._runCallbacksWorklist('after_work')
+            # need to acknowledge here, because posting will delete message-id
+            self.ack(self.worklist.ok)
+            self.ack(self.worklist.rejected)
+            self.ack(self.worklist.failed)
 
-        self.ack(self.worklist.rejected)
-        self.worklist.rejected = []
-        self.ack(self.worklist.failed)
+            # adjust message after action is done, but before 'after_work' so adjustment is possible.
+            post_messages=[]
+
+            for m in self.worklist.ok:
+                if len(self.o.publishers) <= 1: # save creation of new messages (a lot of space & time savings.)
+                    self.work_message_adjust(m)
+                    m['publisher_index'] = 0
+                else: # replace output messages with 1 per publishing destination.
+                    i=0
+                    for p in self.o.publishers:
+                        new_m=sarracenia.Message()
+                        new_m.copyDict(m)
+                        new_m['publisher_index'] = i
+                        new_m.updatePaths( self.o, m['new_dir'], m['new_file'], i )
+                        self.work_message_adjust(new_m)
+                        post_messages.append(new_m)
+                        i += 1
+                m['_deleteOnPost'] |= set(['publisher_index'])
+
+            if len(self.o.publishers) > 1:
+                self.worklist.ok=post_messages
+
+            self._runCallbacksWorklist('after_work')
+
+            self.ack(self.worklist.rejected)
+            self.worklist.rejected = []
+            self.ack(self.worklist.failed)
+            work_succeeded = True
+        finally:
+            restore_error = None
+            for restore_dir in [work_dir, fallback_dir, os.path.abspath(os.sep)]:
+                if restore_dir is None:
+                    continue
+                try:
+                    os.chdir(restore_dir)
+                    break
+                except OSError as ex:
+                    restore_error = ex
+                    logger.warning("failed to restore working directory to %s: %s", restore_dir, ex)
+            else:
+                if work_succeeded:
+                    raise restore_error
+                logger.error("failed to restore working directory after work failed: %s", restore_error)
 
 
 

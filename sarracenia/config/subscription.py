@@ -102,8 +102,72 @@ class Subscription(dict):
         self['baseDir'] = options.baseDir
 
 
+def _broker_proto(broker):
+    """Return 'mqtt' or 'amqp' from a broker that may be a Credential or a URL string."""
+    if broker is None:
+        return 'amqp'
+    scheme = ''
+    if hasattr(broker, 'url') and hasattr(broker.url, 'scheme'):
+        scheme = broker.url.scheme or ''
+    else:
+        scheme = str(broker)
+    return 'mqtt' if 'mqtt' in scheme.lower() else 'amqp'
+
+
+def normalize_subscription(subscription):
+    """Convert any pre-3.02 bindings (carrying 'prefix' and 'sub') into the
+    post-3.02 form (carrying a single 'topic' string).
+
+    Idempotent: bindings already in post-3.02 form are left alone.
+
+    Mutates `subscription` in place.
+
+    Previously this conversion only ran inside `Subscriptions.read()` (the
+    JSON-on-disk path). Callers that build `Subscriptions` in memory -- e.g.
+    `sr_insects/static_flow/moth_api_consumer.py` -- left bindings with raw
+    `prefix`+`sub`, and `moth/amqp.py` / `moth/mqtt.py` then raised
+    `KeyError: 'topic'`. See issue #5.
+    """
+    if not isinstance(subscription, dict):
+        return subscription
+    # `bindings_to_remove` is populated by finalize() when diffing against
+    # persisted state. In-memory-constructed subscriptions never get it,
+    # which trips the same KeyError class in moth/amqp.py:432 and
+    # moth/mqtt.py:239. Default to empty.
+    subscription.setdefault('bindings_to_remove', [])
+    proto = _broker_proto(subscription.get('broker'))
+    sep = '/' if proto == 'mqtt' else '.'
+    queue_name = subscription.get('queue', {}).get('name') if isinstance(subscription.get('queue'), dict) else None
+    for b in subscription.get('bindings', []):
+        if 'topic' in b:
+            # Already normalized; strip leftover sub/prefix if present.
+            b.pop('sub', None)
+            b.pop('prefix', None)
+            continue
+        if 'sub' not in b:
+            continue
+        pfx = b.get('prefix', [])
+        sub = b['sub']
+        if not isinstance(pfx, list):
+            pfx = [pfx] if pfx else []
+        if not isinstance(sub, list):
+            sub = [sub]
+        if proto == 'mqtt' and queue_name:
+            b['topic'] = sep.join(['$share', queue_name] + pfx + sub)
+        else:
+            b['topic'] = sep.join(pfx + sub)
+        b.pop('sub', None)
+        b.pop('prefix', None)
+    return subscription
+
+
 class Subscriptions(list):
     # list of subscription
+
+    def __init__(self, iterable=None):
+        super().__init__(iterable if iterable is not None else [])
+        for s in self:
+            normalize_subscription(s)
 
     def read(self,options,fn):
 
@@ -121,33 +185,8 @@ class Subscriptions(list):
                     if ok:
                         s['broker'] = broker
 
-                # old subscriptions (pre 3.02) that have "sub" fields in them need conversion.
-                if 'mqtt' in s['broker'].url.scheme.lower(): 
-                    proto='mqtt'
-                    sep = '/' 
-                else:
-                    proto= 'amqp'
-                    sep = '.'
-
                 # subscription format change, recover for version before 3.02
-
-                for b in s['bindings']:
-                    if 'sub' in b:
-                         pfx=b.get('prefix',[])
-                         sub=b['sub']
-                         if not type(pfx) == list:
-                             pfx=list(pfx)
-                         if not type(sub) == list:
-                             sub=list(sub)
-                         if proto in ['mqtt']:
-                             b['topic'] =  sep.join( [ '$share', s['queue']['name'] ] + pfx + sub )
-                         else:
-                             b['topic'] =  sep.join(pfx+sub)
-
-                    if 'sub' in b:
-                        del b['sub']
-                    if 'prefix' in b:
-                        del b['prefix']
+                normalize_subscription(s)
 
                 if 'queue' in s:
                     if not 'tlsRigour' in s['queue']:
@@ -188,6 +227,8 @@ class Subscriptions(list):
             logger.debug('Exception details: ', exc_info=True)
 
     def add(self, new_subscription):
+
+        normalize_subscription(new_subscription)
 
         found=False
         for s in self:

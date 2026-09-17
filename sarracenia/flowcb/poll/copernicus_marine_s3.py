@@ -91,7 +91,7 @@ class Copernicus_marine_s3(sarracenia.flowcb.FlowCB):
         s3_urls = {}
         for id in productIDs:
             try:
-                resp = requests.get(self.stac_base_url + id + '/product.stac.json')
+                resp = requests.get(self.stac_base_url + id + '/product.stac.json', timeout=self.o.timeout)
                 resp.raise_for_status()
 
                 product_page = resp.json()
@@ -111,7 +111,7 @@ class Copernicus_marine_s3(sarracenia.flowcb.FlowCB):
                     continue # keep trying other productIDs
                 
                 for dataset in datasets:
-                    resp = requests.get(self.stac_base_url + id + '/' + dataset)
+                    resp = requests.get(self.stac_base_url + id + '/' + dataset, timeout=self.o.timeout)
                     if not resp:
                         logger.error(f"Failed to get info for {dataset}")
                         continue
