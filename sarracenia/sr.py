@@ -3354,6 +3354,13 @@ class sr_GlobalState:
             return True
 
 
+    def _statehost_dir(self, c, cfg):
+        """Return the statehost directory for the current host.
+        """
+        if 'options' in self.configs[c][cfg] and self.configs[c][cfg]['options'].statehost:
+            return self.user_cache_dir + os.sep + self.hostdir + os.sep + c + os.sep + cfg
+        return self.user_cache_dir + os.sep + c + os.sep + cfg
+
 
 def main():
     """ Main thread for sr dealing with parsing and action switch
