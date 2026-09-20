@@ -72,7 +72,9 @@ You may need to specify additional options for specific credential entries. Thes
 
 Supported details:
 
-- ``ssh_keyfile=<path>`` - (SFTP) Path to SSH keyfile
+- ``ssh_keyfile=<path>`` - (SFTP) Path to SSH keyfile. For SFTP, prefer an entry in
+  ``~/.ssh/config`` instead, see `SFTP and ~/.ssh/config`_ below. ``ssh_keyfile`` is not
+  seen by the ``scp`` command used for accelerated transfers.
 - ``passive`` - (FTP) Use passive mode
 - ``active`` - (FTP) Use active mode
 - ``binary`` - (FTP) Use binary mode
@@ -99,6 +101,61 @@ Note::
  character, its URL encoded equivalent can be supplied.  In the last example above, 
  **%2f** means that the actual password is: **/dot8**
  The next to last password is:  **De:olonize**. ( %3a being the url encoded value for a colon character. )
+
+
+SFTP and ~/.ssh/config
+----------------------
+
+For SFTP, put the connection settings in ``~/.ssh/config`` rather than in
+``credentials.conf``, and leave out the ``credentials.conf`` entry entirely.
+
+Sarracenia has two ways of moving a file over SFTP. Ordinary transfers use the paramiko
+library, which Sarracenia configures from ``credentials.conf``. Transfers larger than
+``accelThreshold`` are handed to the ``scp`` command instead (see ``accelScpCommand``).
+``scp`` reads ``~/.ssh/config`` and knows nothing about ``credentials.conf``, so anything
+recorded only there is invisible to it. A key named by ``ssh_keyfile`` works for ordinary
+transfers and is silently missing from accelerated ones, which shows up as a configuration
+that works until a file crosses ``accelThreshold``.
+
+Settings in ``~/.ssh/config`` avoid that, because both paths read them: ``scp`` natively,
+and paramiko because Sarracenia looks the host up in ``~/.ssh/config`` itself and picks up
+``HostName``, ``User``, ``Port`` and ``IdentityFile``.
+
+Define a stanza naming the host, the account and the key::
+
+    Host weather-pump
+        HostName sftp.example.com
+        User sarra
+        IdentityFile ~/.ssh/id_ecdsa_weather_pump
+        IdentitiesOnly yes
+
+Then use the alias as the host name wherever the server appears::
+
+    sendTo sftp://weather-pump/
+
+and add nothing to ``credentials.conf`` for it.
+
+The alias is a label, not a host name, so a server reachable several ways can have one
+stanza per way, each with its own alias, and a server that moves only needs its stanza
+edited.
+
+Do not put a port number in the URL. Give the port in the stanza instead::
+
+    Host weather-pump-alt
+        HostName sftp.example.com
+        Port 2222
+        User sarra
+        IdentityFile ~/.ssh/id_ecdsa_weather_pump
+
+A port in the URL is not passed on to ``scp`` correctly, so an accelerated transfer to
+``sftp://sarra@host:2222/`` fails while an ordinary transfer to the same URL succeeds.
+
+Note::
+ Sarracenia only consults ``~/.ssh/config`` when the credential does not already answer
+ the question: when no user is known, or when neither a key nor a password was supplied.
+ A ``credentials.conf`` entry carrying a user and a password takes precedence and the
+ stanza is not read. Omitting the entry is the reliable way to have ``~/.ssh/config``
+ apply.
 
 
 SEE ALSO
