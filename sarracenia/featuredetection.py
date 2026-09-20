@@ -60,8 +60,11 @@ features = {
     'azurestorage' : { 'modules_needed': [ 'azure.storage.blob' ], 'present': False, 
             'lament' : 'cannot connect natively to Azure Stoarge accounts', 
             'rejoice' : 'can connect natively to Azure Stoarge accounts' },
-   'appdirs' : { 'modules_needed': [ 'appdirs' ], 'present': False, 
-           'lament' : 'assume linux file placement under home dir', 
+   'appdirs' : { 'modules_needed': [ 'appdirs' ], 'present': False,
+           'lament' : 'assume linux file placement under home dir',
+           'rejoice': 'place configuration and state files appropriately for platform (windows/mac/linux)', },
+   'platformdirs' : { 'modules_needed': [ 'platformdirs' ], 'present': False,
+           'lament' : 'assume linux file placement under home dir',
            'rejoice': 'place configuration and state files appropriately for platform (windows/mac/linux)', },
    'filetypes' : { 'modules_needed': ['magic'], 'present': False, 
            'lament': '(pip package python-magic, on windows python-magic-bin) will not be able to set content headers' ,
@@ -142,5 +145,4 @@ if features['mqtt']['present']:
     if not paho.mqtt.__version__ >= '2.1.0' :
         features['mqtt']['present'] = False
         logger.debug('paho-mqtt minimum version needed is 2.1.0')
-
 
