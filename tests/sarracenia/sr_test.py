@@ -185,7 +185,7 @@ def test_statehost_dir_uses_host_directory_when_enabled(tmp_path):
         }
     }
 
-    assert sr._statehost_dir("subscribe", "amis") == str(tmp_path / "my-host" / "subscribe" / "amis")
+    assert sr._set_state_dir("subscribe", "amis") == str(tmp_path / "my-host" / "subscribe" / "amis")
 
 
 def test_statehost_dir_uses_standard_cache_dir_when_disabled(tmp_path):
@@ -198,7 +198,7 @@ def test_statehost_dir_uses_standard_cache_dir_when_disabled(tmp_path):
         }
     }
 
-    assert sr._statehost_dir("subscribe", "amis") == str(tmp_path / "subscribe" / "amis")
+    assert sr._set_state_dir("subscribe", "amis") == str(tmp_path / "subscribe" / "amis")
 
 
 def test_enable_and_disable_use_statehost_directory(tmp_path):

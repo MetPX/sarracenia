@@ -470,7 +470,7 @@ class sr_GlobalState:
                     #     state_dir=self.user_cache_dir + os.sep + self.hostdir + os.sep + c + os.sep + cfg
                     # else:
                     #     state_dir=self.user_cache_dir + os.sep + c + os.sep + cfg
-                    state_dir=self._statehost_dir(c, cfg)
+                    state_dir=self._set_state_dir(c, cfg)
 
                     if not os.path.isdir(state_dir):
                         if c in self.configs and cfg in self.configs[c]:
@@ -1709,7 +1709,7 @@ class sr_GlobalState:
             (c, cfg) = f.split(os.sep)
 
             # state_file_cfg = self.user_cache_dir + os.sep + c + os.sep + cfg
-            state_file_cfg = self._statehost_dir(c, cfg)
+            state_file_cfg = self._set_state_dir(c, cfg)
             state_file_cfg_disabled = state_file_cfg + os.sep + 'disabled'
 
             if os.path.exists(state_file_cfg):
@@ -1957,7 +1957,7 @@ class sr_GlobalState:
             #     cache_dir = self.user_cache_dir + os.sep + self.hostdir + os.sep + f.replace('/', os.sep)
             # else:
             #     cache_dir = self.user_cache_dir + os.sep + f.replace('/', os.sep)
-            cache_dir=self._statehost_dir(c, cfg)
+            cache_dir=self._set_state_dir(c, cfg)
 
             if os.path.isdir(cache_dir):
                 for state_file in os.listdir(cache_dir):
@@ -2306,7 +2306,7 @@ class sr_GlobalState:
         # if self.configs[c][cfg]['options'].statehost:
         #     d += os.sep + self.hostdir
         # d += os.sep + c + os.sep + cfg
-        d=self._statehost_dir(c, cfg)
+        d=self._set_state_dir(c, cfg)
 
         if os.path.exists(d):
             return sum( [ i[-4:] == '.pid' for i in os.listdir(d) ] )
@@ -3340,7 +3340,7 @@ class sr_GlobalState:
         #     state_dir=self.user_cache_dir + os.sep + self.hostdir + os.sep + c + os.sep + cfg
         # else:
         #     state_dir=self.user_cache_dir + os.sep + c + os.sep + cfg
-        state_dir=self._statehost_dir(c, cfg)
+        state_dir=self._set_state_dir(c, cfg)
 
         fname =  f"{state_dir}{os.sep}{what_is_in_progress}"
         if ending:
@@ -3361,7 +3361,7 @@ class sr_GlobalState:
             return True
 
 
-    def _statehost_dir(self, c, cfg):
+    def _set_state_dir(self, c, cfg):
         """Return the statehost directory for the current host.
         """
         if 'options' in self.configs[c][cfg] and self.configs[c][cfg]['options'].statehost:
