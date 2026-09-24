@@ -524,15 +524,7 @@ class Sftp(Transfer):
             rw_length = self.readlocal_write(local_file, local_offset,
                                              length, rfp)
 
-            # no sparse file... truncate where we are at
-
             self.fpos = remote_offset + rw_length
-            if not self.o.nofsetstat and length != 0:
-                try:
-                    rfp.truncate(self.fpos)
-                except Exception as ex:
-                    logger.warning(f"truncate {remote_file} failed: {ex}")
-                    logging.debug("Exception details:", exc_info=True)
         finally:
             alarm_set(self.o.timeout)
             try:

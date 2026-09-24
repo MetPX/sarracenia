@@ -3,6 +3,7 @@ import glob
 import importlib
 import logging
 import os
+import posixpath
 import re
 
 # v3 plugin architecture...
@@ -2531,11 +2532,11 @@ class Flow:
         """
 
         self.o = options
-        sendTo=self.o.sendTo 
-        start_time=time.perf_counter()
+        sendTo = self.o.sendTo
+        start_time = time.perf_counter()
         logger.debug('%s_transport sendTo: %s', self.scheme, sendTo)
         logger.debug('%s_transport send %s %s', self.scheme, msg['new_dir'], msg['new_file'])
- 
+
         if len(self.plugins['send']) > 0:
             ok = False
             for plugin in self.plugins['send']:
@@ -2553,37 +2554,87 @@ class Flow:
             return 1
 
         if self.o.baseDir:
-            local_path = self.o.variableExpansion(self.o.baseDir,
-                                                msg) + '/' + msg['relPath']
+            base_dir = os.path.realpath(self.o.variableExpansion(self.o.baseDir, msg))
+            candidate = os.path.join(base_dir, msg['relPath'].lstrip('/'))
+            if 'fileOp' in msg:
+                local_path = os.path.join(
+                    os.path.realpath(os.path.dirname(candidate)),
+                    os.path.basename(candidate)
+                )
+            else:
+                local_path = os.path.realpath(candidate)
+            try:
+                if os.path.commonpath([base_dir, local_path]) != base_dir:
+                    logger.error(
+                        "path traversal detected: %s escapes baseDir %s",
+                        msg['relPath'], base_dir
+                    )
+                    return -1
+            except ValueError:
+                logger.error(
+                    "path traversal detected: %s escapes baseDir %s",
+                    msg['relPath'], base_dir
+                )
+                return -1
         else:
-            local_path = '/' + msg['relPath']
+            if 'fileOp' in msg:
+                candidate = '/' + msg['relPath']
+                local_path = os.path.join(
+                    os.path.realpath(os.path.dirname(candidate)),
+                    os.path.basename(candidate)
+                )
+            else:
+                local_path = os.path.realpath('/' + msg['relPath'])
 
         # older versions don't include the contentType, so patch it here.
         if features['filetypes']['present'] and \
-           ('contentType' not in msg) and (not 'fileOp' in msg):
+           ('contentType' not in msg) and ('fileOp' not in msg):
             try:
-                msg['contentType'] = magic.from_file(local_path,mime=True)
+                msg['contentType'] = magic.from_file(local_path, mime=True)
             except Exception as e:
                 logger.warning(f"could not set contentType from local file {local_path} because {e}")
 
-        local_dir = os.path.dirname(local_path).replace('\\', '/')
-        local_file = os.path.basename(local_path).replace('\\', '/')
+        local_dir = os.path.dirname(local_path)
+        local_file = os.path.basename(local_path)
         new_dir = msg['new_dir'].replace('\\', '/')
         new_file = msg['new_file'].replace('\\', '/')
 
-        new_inflight_path = None
+        if 'fileOp' not in msg and not os.path.exists(local_path):
+            logger.error(
+                f"file {local_file} does not exist in local dir {local_dir}, can't send (baseDir not set?)"
+            )
+            time.sleep(0.01)
+            return 0
 
+        new_inflight_path = None
+        upload_started = False
+
+        curdir = None
+        saved_cwd_fd = None
+        cwd_changed = False
         try:
             curdir = os.getcwd()
-        except:
-            curdir = None
+        except Exception:
+            pass
 
-        if (curdir != local_dir) and not self.o.dry_run:
+        if not self.o.dry_run:
+            try:
+                saved_cwd_fd = os.open('.', os.O_RDONLY | os.O_DIRECTORY)
+            except (OSError, AttributeError):
+                saved_cwd_fd = None
+
+        if ('fileOp' not in msg) and (curdir != local_dir) and not self.o.dry_run:
             try:
                 os.chdir(local_dir)
+                cwd_changed = True
             except Exception as ex:
                 logger.error(f"could not chdir locally to {local_dir}: {ex}")
-                return -1
+                if saved_cwd_fd is not None:
+                    try:
+                        os.close(saved_cwd_fd)
+                    except Exception:
+                        pass
+                return 0
         try:
 
             if not self.o.dry_run:
@@ -2607,42 +2658,77 @@ class Flow:
 
             elif not (self.scheme in self.proto) or self.proto[self.scheme] is None:
                 logger.debug('dry_run %s_transport send connects', self.scheme)
-                self.proto[self.scheme] = sarracenia.transfer.Transfer.factory( self.scheme, options)
+                self.proto[self.scheme] = sarracenia.transfer.Transfer.factory(self.scheme, options)
                 self.cdir = None
                 self.metrics['flow']['transferConnected'] = True
-                self.metrics['flow']['transferConnectStart'] = time.time() 
+                self.metrics['flow']['transferConnectStart'] = time.time()
 
-            #=================================
+            # =================================
             # if parts, check that the protocol supports it
-            #=================================
+            # =================================
 
-            if not self.o.dry_run and not hasattr(self.proto[self.scheme],
-                           'seek') and ('blocks' in msg) and (
-                               msg['blocks']['method'] == 'inplace'):
+            if not hasattr(self.proto[self.scheme], 'seek') and ('blocks' in msg) and (
+                    msg['blocks']['method'] == 'inplace'):
                 logger.error(f"{self.scheme}, inplace part file not supported")
                 return -1
 
-            #=================================
-            # if umask, check that the protocol supports it ...
-            #=================================
+            # =================================
+            # inflight mode classification and capability checks
+            # =================================
 
             inflight = options.inflight
-            if not hasattr(self.proto[self.scheme],
-                           'umask') and options.inflight == 'umask':
-                logger.warning(f"{self.scheme}, umask not supported")
-                inflight = None
+            requires_rename = False
+            inflight_dir = None
 
-            #=================================
-            # if renaming used, check that the protocol supports it ...
-            #=================================
+            if inflight is not None and not isinstance(inflight, str):
+                logger.error("unsupported sender inflight mode: %r", inflight)
+                return -1
 
-            if not hasattr(self.proto[self.scheme], 'rename') and options.inflight:
-                logger.warning(f"{self.scheme}, rename not supported")
-                inflight = None
+            if inflight is None:
+                pass
+            elif inflight == 'umask':
+                if not hasattr(self.proto[self.scheme], 'umask'):
+                    logger.warning("%s, umask not supported", self.scheme)
+                    inflight = None
+            elif inflight == '.':
+                requires_rename = True
+                new_inflight_path = '.' + new_file
+            elif inflight.endswith('/') or inflight.startswith('/'):
+                requires_rename = True
+                inflight_dir = inflight.rstrip('/') or '/'
+                new_inflight_path = posixpath.join(inflight_dir, new_file)
+            elif inflight.startswith('.'):
+                requires_rename = True
+                new_inflight_path = new_file + inflight
+            else:
+                logger.error("unsupported inflight mode: %r", inflight)
+                return -1
 
-            #=================================
+            if (
+                inflight_dir is not None
+                and posixpath.isabs(inflight_dir)
+                and self.scheme in {'s3', 'azure', 'azblob'}
+            ):
+                logger.error(
+                    "%s does not implement absolute inflight paths", self.scheme
+                )
+                return -1
+
+            if 'blocks' in msg:
+                requires_rename = False
+                inflight_dir = None
+                new_inflight_path = None
+
+            if requires_rename and (new_inflight_path == new_file):
+                logger.error(
+                    "inflight staging path %r aliases destination file %r",
+                    new_inflight_path, new_file
+                )
+                return -1
+
+            # =================================
             # remote set to new_dir
-            #=================================
+            # =================================
 
             cwd = None
             if hasattr(self.proto[self.scheme], 'getcwd'):
@@ -2763,157 +2849,171 @@ class Flow:
                     logger.error(f"{self.scheme}, symlink not supported")
                     return -1
 
-            #=================================
+            # =================================
             # send event
-            #=================================
+            # =================================
 
             # the file does not exist... warn, sleep and return false for the next attempt
-            if not os.path.exists(local_file):
+            if not os.path.exists(local_path):
                 logger.error(
                     f"file {local_file} does not exist in local dir {local_dir}, can't send (baseDir not set?)")
                 time.sleep(0.01)
                 return 0
             elif 'size' not in msg:
-                msg['size'] = os.path.getsize(local_file)
+                msg['size'] = os.path.getsize(local_path)
 
             offset = 0
             if ('blocks' in msg) and (msg['blocks']['method'] == 'inplace'):
-                offset = msg['offset']
+                blk = msg['blocks']
+                if 'offset' in msg:
+                    offset = msg['offset']
+                elif 'number' in blk and 'manifest' in blk:
+                    blkno = blk['number']
+                    offset = sum(blk['manifest'][i]['size'] for i in range(blkno))
+                else:
+                    offset = 0
 
-            new_offset = msg['local_offset']
+            if ('blocks' in msg) and (msg['blocks']['method'] == 'inplace'):
+                new_offset = offset
+            else:
+                new_offset = msg.get('local_offset', 0)
 
-            if 'size' in msg:
+            if ('blocks' in msg) and (msg['blocks']['method'] == 'inplace'):
+                blk = msg['blocks']
+                if 'number' in blk and 'manifest' in blk:
+                    block_length = blk['manifest'][blk['number']]['size']
+                elif 'size' in msg:
+                    block_length = msg['size']
+                elif 'size' in blk:
+                    block_length = blk['size']
+                else:
+                    block_length = 0
+            elif 'size' in msg:
                 block_length = msg['size']
-                str_range = ''
-                if ('blocks' in msg) and (
-                        msg['blocks']['method'] == 'inplace'):
-                    block_length = msg['blocks']['size']
-                    str_range = 'bytes=%d-%d' % (new_offset, new_offset +
-                                                 block_length - 1)
+            else:
+                block_length = 0
 
             str_range = ''
             if ('blocks' in msg) and (msg['blocks']['method'] == 'inplace'):
-                str_range = 'bytes=%d-%d' % (offset, offset + msg['size'] - 1)
+                str_range = 'bytes=%d-%d' % (offset, offset + block_length - 1)
 
-            #upload file
+            if requires_rename and not hasattr(self.proto[self.scheme], 'rename'):
+                logger.error(
+                    "%s does not support rename for configured inflight %r",
+                    self.scheme, inflight
+                )
+                return -1
 
-            logger.debug('hasattr=%s, thresh=%d, len=%d, remote_off=%d, local_off=%d ', hasattr(self.proto[self.scheme], 'putAccelerated'), self.o.accelThreshold, block_length, new_offset, msg['local_offset'])
-
-            accelerated = hasattr( self.proto[self.scheme], 'putAccelerated') and \
-                (self.o.accelThreshold > 0 ) and (block_length > self.o.accelThreshold) and \
-                (new_offset == 0) and ( msg['local_offset'] == 0)
-
-            if inflight == None or (('blocks' in msg) and
-                                    (msg['blocks']['method'] != 'inplace')):
+            if requires_rename and inflight_dir is not None and not self.o.dry_run:
                 try:
-                    if not self.o.dry_run:
-                        if accelerated:
-                            len_written = self.proto[self.scheme].putAccelerated( msg, local_file, new_file)
-                        else:
-                            len_written = self.proto[self.scheme].put( msg, local_file, new_file)
+                    if inflight_dir.startswith('/'):
+                        staging_dir = inflight_dir
+                    else:
+                        staging_dir = posixpath.join(new_dir, inflight_dir)
+                    if posixpath.normpath(staging_dir) == posixpath.normpath(new_dir):
+                        logger.error(
+                            "inflight directory %s must differ from destination directory %s",
+                            staging_dir, new_dir
+                        )
+                        return -1
+                    self.proto[self.scheme].cd_forced(staging_dir)
+                    self.proto[self.scheme].cd_forced(new_dir)
                 except Exception as ex:
-                    logger.error( f"could not send {local_dir}{os.sep}{local_file} to inflight=None {sendTo} {msg['new_dir']} ... {new_file}: {ex}" )
+                    logger.error(
+                        "could not prepare inflight directory %s on %s: %s",
+                        inflight_dir, sendTo, ex
+                    )
                     return 0
-                
-            elif (('blocks' in msg)
-                  and (msg['blocks']['method'] == 'inplace')):
-                if not self.o.dry_run:
-                    try:
-                        self.proto[self.scheme].put(msg, local_file, new_file, offset,
-                                            new_offset, msg['size'])
-                    except Exception as ex:
-                        logger.error( f"could not send {local_dir}{os.sep}{local_file} inplace {sendTo} {msg['new_dir']} ... {new_file}: {ex}" )
-                        return 0
 
-            elif inflight == '.':
-                new_inflight_path = '.' + new_file
-                if not self.o.dry_run:
-                    try:
+            # upload file
+
+            logger.debug(
+                'hasattr=%s, thresh=%d, len=%d, remote_off=%d, local_off=%d ',
+                hasattr(self.proto[self.scheme], 'putAccelerated'), self.o.accelThreshold,
+                block_length, new_offset, msg.get('local_offset', 0))
+
+            accelerated = hasattr(self.proto[self.scheme], 'putAccelerated') and \
+                (self.o.accelThreshold > 0) and (block_length > self.o.accelThreshold) and \
+                (new_offset == 0) and (msg.get('local_offset', 0) == 0) and \
+                (inflight != 'umask') and \
+                not (new_inflight_path and posixpath.isabs(new_inflight_path))
+
+            len_written = 0
+            is_inplace = ('blocks' in msg) and (msg['blocks'].get('method') == 'inplace')
+
+            if not self.o.dry_run:
+                upload_started = True
+                try:
+                    if is_inplace:
+                        len_written = self.proto[self.scheme].put(
+                            msg, local_file, new_file, offset, offset, block_length
+                        )
+
+                    elif inflight is None or ('blocks' in msg):
                         if accelerated:
                             len_written = self.proto[self.scheme].putAccelerated(
-                                msg, local_file, new_inflight_path)
+                                msg, local_file, new_file
+                            )
                         else:
                             len_written = self.proto[self.scheme].put(
-                                msg, local_file, new_inflight_path)
-                    except Exception as ex:
-                        logger.error( f"could not send {local_dir}{os.sep}{local_file} inflight={inflight} {sendTo} {msg['new_dir']}/{new_file}: {ex}" )
-                        return 0
-                    try:
-                        self.proto[self.scheme].rename(new_inflight_path, new_file)
-                    except Exception as ex:
-                        logger.error( f"could not rename inflight={inflight} {sendTo} {msg['new_dir']}/{new_file}: {ex}" )
-                        return 0
-                else:
-                    len_written = msg['size']
+                                msg, local_file, new_file
+                            )
 
-            elif inflight[0] == '.':
-                new_inflight_path = new_file + inflight
-                if not self.o.dry_run:
-                    try:
+                    elif inflight == 'umask':
+                        self.proto[self.scheme].umask()
                         if accelerated:
                             len_written = self.proto[self.scheme].putAccelerated(
-                                msg, local_file, new_inflight_path)
-                        else:
-                            len_written = self.proto[self.scheme].put(msg, local_file, new_inflight_path)
-                    except Exception as ex:
-                        logger.error( f"could not send {local_dir}{os.sep}{local_file} inflight={inflight} {sendTo} {msg['new_dir']}/{new_file}: {ex}" )
-                        return 0
-                    try:
-                        self.proto[self.scheme].rename(new_inflight_path, new_file)
-                    except Exception as ex:
-                        logger.error( f"could not rename inflight={inflight} {sendTo} {msg['new_dir']}/{new_file}: {ex}" )
-                        return 0
-            elif options.inflight[-1] == '/':
-                if not self.o.dry_run:
-                    try:
-                        self.proto[self.scheme].cd_forced(
-                            new_dir + '/' + options.inflight)
-                        self.proto[self.scheme].cd_forced(new_dir)
-                    except:
-                        pass
-                new_inflight_path = options.inflight + new_file
-                if not self.o.dry_run:
-                    try:
-                        if accelerated:
-                            len_written = self.proto[self.scheme].putAccelerated(
-                                msg, local_file, new_inflight_path)
+                                msg, local_file, new_file
+                            )
                         else:
                             len_written = self.proto[self.scheme].put(
-                                msg, local_file, new_inflight_path)
-                    except Exception as ex:
-                        logger.error( f"could not send {local_dir}{os.sep}{local_file} inflight={inflight} {sendTo} {msg['new_dir']}/{new_file}: {ex}" )
-                        return 0
-                    try:
-                        self.proto[self.scheme].rename(new_inflight_path, new_file)
-                    except Exception as ex:
-                        logger.error( f"could not rename inflight={inflight} {sendTo} {msg['new_dir']}/{new_file}: {ex}" )
-                        return 0
-                else:
-                    len_written = msg['size']
-            elif inflight == 'umask':
-                if not self.o.dry_run:
-                    self.proto[self.scheme].umask()
-                    try:
+                                msg, local_file, new_file
+                            )
+
+                    else:
                         if accelerated:
                             len_written = self.proto[self.scheme].putAccelerated(
-                                msg, local_file, new_file)
+                                msg, local_file, new_inflight_path
+                            )
                         else:
                             len_written = self.proto[self.scheme].put(
-                                msg, local_file, new_file)
-                    except Exception as ex:
-                        logger.error( f"could not send {local_dir}{os.sep}{local_file} inflight={inflight} {sendTo} {msg['new_dir']}/{new_file}: {ex}" )
-                        return 0
-                    try:
-                        self.proto[self.scheme].put(msg, local_file, new_file)
-                    except Exception as ex:
-                        logger.error( f"could not rename inflight={inflight} {sendTo} {msg['new_dir']}/{new_file}: {ex}" )
-                        return 0
-                else:
-                    len_written = msg['size']
+                                msg, local_file, new_inflight_path
+                            )
+                except Exception as ex:
+                    logger.error(
+                        "could not send %s inflight=%s %s %s/%s: %s",
+                        local_path, inflight, sendTo, new_dir, new_file, ex
+                    )
+                    return 0
+            else:
+                len_written = block_length if is_inplace else msg['size']
 
-            if msg['size'] > 0 and len_written == 0:
-                logger.error( f"failed to send inflight={inflight} {sendTo} {msg['new_dir']}/{new_file}" )
+            expected_length = block_length if is_inplace else msg['size']
+
+            if not isinstance(len_written, int) or isinstance(len_written, bool) or len_written < 0:
+                logger.error(
+                    "failed to send %s inflight=%s %s %s/%s (invalid bytes written: %r)",
+                    local_path, inflight, sendTo, new_dir, new_file, len_written
+                )
                 return 0
+
+            if expected_length > 0 and len_written < expected_length:
+                logger.error(
+                    "incomplete transfer for %s: wrote %d of %d bytes",
+                    local_path, len_written, expected_length
+                )
+                return 0
+
+            if requires_rename and new_inflight_path is not None:
+                if not self.o.dry_run:
+                    try:
+                        self.proto[self.scheme].rename(new_inflight_path, new_file)
+                    except Exception as ex:
+                        logger.error(
+                            "could not rename inflight=%s %s %s/%s: %s",
+                            inflight, sendTo, new_dir, new_file, ex
+                        )
+                        return 0
 
             msg.setReport(201, 'file sent')
             self.metrics['flow']['transferTxBytes'] += len_written
@@ -2940,26 +3040,26 @@ class Flow:
 
         except Exception as err:
 
-            #removing lock if left over
-            if new_inflight_path != None and hasattr(self.proto[self.scheme],
-                                                     'delete'):
+            # removing lock if left over
+            if upload_started and new_inflight_path is not None and hasattr(
+                    self.proto[self.scheme], 'delete'):
                 if not self.o.dry_run:
                     try:
                         self.proto[self.scheme].delete(new_inflight_path)
-                    except:
+                    except Exception:
                         pass
 
-            #closing on problem
+            # closing on problem
             if not self.o.dry_run:
                 try:
                     self.proto[self.scheme].close()
-                except:
+                except Exception:
                     pass
 
             now = nowflt()
             self.metrics['flow']['transferConnectTime'] += now - self.metrics['flow']['transferConnectStart']
-            self.metrics['flow']['transferConnectStart']=0
-            self.metrics['flow']['transferConnected']=False
+            self.metrics['flow']['transferConnectStart'] = 0
+            self.metrics['flow']['transferConnected'] = False
             self.cdir = None
             self.proto[self.scheme] = None
 
@@ -2968,6 +3068,22 @@ class Flow:
             logger.debug('Exception details: ', exc_info=True)
 
             return 0
+        finally:
+            if saved_cwd_fd is not None:
+                try:
+                    os.fchdir(saved_cwd_fd)
+                except Exception as ex:
+                    logger.error("could not restore local cwd via fd: %s", ex)
+                finally:
+                    try:
+                        os.close(saved_cwd_fd)
+                    except Exception:
+                        pass
+            elif cwd_changed and curdir:
+                try:
+                    os.chdir(curdir)
+                except Exception as ex:
+                    logger.error("could not restore local cwd to %s: %s", curdir, ex)
 
     # set_local_file_attributes
     def set_local_file_attributes(self, local_file, msg):
