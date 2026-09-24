@@ -893,17 +893,18 @@ class sr_GlobalState:
                     self.states[c][cfg]['has_state'] = False
                     continue
 
-                if os.path.exists(self.user_cache_dir + os.sep + c + os.sep + cfg + os.sep + 'disabled'):
+                state_file_cfg = self._set_state_dir(c, cfg)
+                if os.path.exists(state_file_cfg + os.sep + 'disabled'):
                     self.configs[c][cfg]['status'] = 'disabled'
                 if c in ['post', 'cpost'] and not self._post_can_be_daemon(c, cfg): 
                     self.configs[c][cfg]['status'] = 'interactive'
-                if os.path.exists(self.user_cache_dir + os.sep + c + os.sep + cfg + os.sep + 'starting'):
+                if os.path.exists(state_file_cfg + os.sep + 'starting'):
                     self.configs[c][cfg]['status'] = 'starting'
-                if os.path.exists(self.user_cache_dir + os.sep + c + os.sep + cfg + os.sep + 'resources_restart'):
+                if os.path.exists(state_file_cfg + os.sep + 'resources_restart'):
                     self.configs[c][cfg]['status'] = 'resources_restart'
-                if os.path.exists(self.user_cache_dir + os.sep + c + os.sep + cfg + os.sep + 'shutdown'):
+                if os.path.exists(state_file_cfg + os.sep + 'shutdown'):
                     self.configs[c][cfg]['status'] = 'shutdown'
-                if os.path.exists(self.user_cache_dir + os.sep + c + os.sep + cfg + os.sep + 'running'):
+                if os.path.exists(state_file_cfg + os.sep + 'running'):
                     self.configs[c][cfg]['status'] = 'running'
                 if 'instance_metrics' in self.states[c][cfg]:
                     if 'housekeeping' in self.configs[c][cfg]:
@@ -2340,8 +2341,9 @@ class sr_GlobalState:
         if not self._action_all_configs:
             for f in self.filtered_configurations:
                 (c, cfg) = f.split(os.sep)
-            
-                if self.configs[c][cfg]['status'] in ['disabled'] or os.path.exists(self.user_cache_dir + os.sep + c + os.sep + cfg + os.sep + 'disabled'):
+
+                state_file_cfg = self._set_state_dir(c, cfg)
+                if self.configs[c][cfg]['status'] in ['disabled'] or os.path.exists(state_file_cfg + os.sep + 'disabled'):
                     self.has_disabled_config = True
                     logger.error(f"Config {c}/{cfg} is disabled. It must be enabled before starting.")
 
