@@ -466,10 +466,11 @@ class sr_GlobalState:
                 continue
             for cfg in self.configs[c]:
                     #print( f" {self.configs[c][cfg]['statehost']=} " )
-                    if 'options' in self.configs[c][cfg] and self.configs[c][cfg]['options'].statehost:
-                        state_dir=self.user_cache_dir + os.sep + self.hostdir + os.sep + c + os.sep + cfg
-                    else:
-                        state_dir=self.user_cache_dir + os.sep + c + os.sep + cfg
+                    # if 'options' in self.configs[c][cfg] and self.configs[c][cfg]['options'].statehost:
+                    #     state_dir=self.user_cache_dir + os.sep + self.hostdir + os.sep + c + os.sep + cfg
+                    # else:
+                    #     state_dir=self.user_cache_dir + os.sep + c + os.sep + cfg
+                    state_dir=self._set_state_dir(c, cfg)
 
                     if not os.path.isdir(state_dir):
                         if c in self.configs and cfg in self.configs[c]:
@@ -892,17 +893,18 @@ class sr_GlobalState:
                     self.states[c][cfg]['has_state'] = False
                     continue
 
-                if os.path.exists(self.user_cache_dir + os.sep + c + os.sep + cfg + os.sep + 'disabled'):
+                state_file_cfg = self._set_state_dir(c, cfg)
+                if os.path.exists(state_file_cfg + os.sep + 'disabled'):
                     self.configs[c][cfg]['status'] = 'disabled'
                 if c in ['post', 'cpost'] and not self._post_can_be_daemon(c, cfg): 
                     self.configs[c][cfg]['status'] = 'interactive'
-                if os.path.exists(self.user_cache_dir + os.sep + c + os.sep + cfg + os.sep + 'starting'):
+                if os.path.exists(state_file_cfg + os.sep + 'starting'):
                     self.configs[c][cfg]['status'] = 'starting'
-                if os.path.exists(self.user_cache_dir + os.sep + c + os.sep + cfg + os.sep + 'resources_restart'):
+                if os.path.exists(state_file_cfg + os.sep + 'resources_restart'):
                     self.configs[c][cfg]['status'] = 'resources_restart'
-                if os.path.exists(self.user_cache_dir + os.sep + c + os.sep + cfg + os.sep + 'shutdown'):
+                if os.path.exists(state_file_cfg + os.sep + 'shutdown'):
                     self.configs[c][cfg]['status'] = 'shutdown'
-                if os.path.exists(self.user_cache_dir + os.sep + c + os.sep + cfg + os.sep + 'running'):
+                if os.path.exists(state_file_cfg + os.sep + 'running'):
                     self.configs[c][cfg]['status'] = 'running'
                 if 'instance_metrics' in self.states[c][cfg]:
                     if 'housekeeping' in self.configs[c][cfg]:
@@ -1707,8 +1709,10 @@ class sr_GlobalState:
                 break
             (c, cfg) = f.split(os.sep)
 
-            state_file_cfg = self.user_cache_dir + os.sep + c + os.sep + cfg
+            # state_file_cfg = self.user_cache_dir + os.sep + c + os.sep + cfg
+            state_file_cfg = self._set_state_dir(c, cfg)
             state_file_cfg_disabled = state_file_cfg + os.sep + 'disabled'
+
             if os.path.exists(state_file_cfg):
                 if not os.path.exists(state_file_cfg_disabled):
                     logging.error(f'{f} already enabled')
@@ -1950,10 +1954,11 @@ class sr_GlobalState:
                 #logger.warning( f"cannot clean running configuration, skipping {c}/{cfg}")
                 continue
 
-            if self.configs[c][cfg]['options'].statehost:
-                cache_dir = self.user_cache_dir + os.sep + self.hostdir + os.sep + f.replace('/', os.sep)
-            else:
-                cache_dir = self.user_cache_dir + os.sep + f.replace('/', os.sep)
+            # if self.configs[c][cfg]['options'].statehost:
+            #     cache_dir = self.user_cache_dir + os.sep + self.hostdir + os.sep + f.replace('/', os.sep)
+            # else:
+            #     cache_dir = self.user_cache_dir + os.sep + f.replace('/', os.sep)
+            cache_dir=self._set_state_dir(c, cfg)
 
             if os.path.isdir(cache_dir):
                 for state_file in os.listdir(cache_dir):
@@ -2298,10 +2303,12 @@ class sr_GlobalState:
         self._tag_sanity(ending=True)
         
     def _pid_file_count(self,c,cfg) -> int:
-        d = self.user_cache_dir 
-        if self.configs[c][cfg]['options'].statehost:
-            d += os.sep + self.hostdir
-        d += os.sep + c + os.sep + cfg
+        # d = self.user_cache_dir 
+        # if self.configs[c][cfg]['options'].statehost:
+        #     d += os.sep + self.hostdir
+        # d += os.sep + c + os.sep + cfg
+        d=self._set_state_dir(c, cfg)
+
         if os.path.exists(d):
             return sum( [ i[-4:] == '.pid' for i in os.listdir(d) ] )
         else:
@@ -2334,8 +2341,9 @@ class sr_GlobalState:
         if not self._action_all_configs:
             for f in self.filtered_configurations:
                 (c, cfg) = f.split(os.sep)
-            
-                if self.configs[c][cfg]['status'] in ['disabled'] or os.path.exists(self.user_cache_dir + os.sep + c + os.sep + cfg + os.sep + 'disabled'):
+
+                state_file_cfg = self._set_state_dir(c, cfg)
+                if self.configs[c][cfg]['status'] in ['disabled'] or os.path.exists(state_file_cfg + os.sep + 'disabled'):
                     self.has_disabled_config = True
                     logger.error(f"Config {c}/{cfg} is disabled. It must be enabled before starting.")
 
@@ -3330,10 +3338,11 @@ class sr_GlobalState:
             
             Return: True if the operation was successful, False otherwise
         """
-        if 'options' in self.configs[c][cfg] and self.configs[c][cfg]['options'].statehost:
-            state_dir=self.user_cache_dir + os.sep + self.hostdir + os.sep + c + os.sep + cfg
-        else:
-            state_dir=self.user_cache_dir + os.sep + c + os.sep + cfg
+        # if 'options' in self.configs[c][cfg] and self.configs[c][cfg]['options'].statehost:
+        #     state_dir=self.user_cache_dir + os.sep + self.hostdir + os.sep + c + os.sep + cfg
+        # else:
+        #     state_dir=self.user_cache_dir + os.sep + c + os.sep + cfg
+        state_dir=self._set_state_dir(c, cfg)
 
         fname =  f"{state_dir}{os.sep}{what_is_in_progress}"
         if ending:
@@ -3353,6 +3362,13 @@ class sr_GlobalState:
                 f.write(nowstr())
             return True
 
+
+    def _set_state_dir(self, c, cfg):
+        """Return the statehost directory for the current host.
+        """
+        if 'options' in self.configs[c][cfg] and self.configs[c][cfg]['options'].statehost:
+            return self.user_cache_dir + os.sep + self.hostdir + os.sep + c + os.sep + cfg
+        return self.user_cache_dir + os.sep + c + os.sep + cfg
 
 
 def main():
