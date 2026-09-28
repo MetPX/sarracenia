@@ -167,3 +167,75 @@ def test_disable_returns_when_leftovers_exist():
 # =========================================================================== #
 # ============================== End of Tests =============================== #
 # =========================================================================== #
+
+
+
+# =========================================================================== #
+# ================ Unit tests for sarracenia.sr.SR._statehost_dir() ========= #
+# =========================================================================== #
+
+def test_statehost_dir_uses_host_directory_when_enabled(tmp_path):
+    sr = make_sr(tmp_path)
+    sr.hostdir = "my-host"
+    sr.configs = {
+        "subscribe": {
+            "amis": {
+                "options": SimpleNamespace(statehost=True)
+            }
+        }
+    }
+
+    assert sr._set_state_dir("subscribe", "amis") == str(tmp_path / "my-host" / "subscribe" / "amis")
+
+
+def test_statehost_dir_uses_standard_cache_dir_when_disabled(tmp_path):
+    sr = make_sr(tmp_path)
+    sr.configs = {
+        "subscribe": {
+            "amis": {
+                "options": SimpleNamespace(statehost=False)
+            }
+        }
+    }
+
+    assert sr._set_state_dir("subscribe", "amis") == str(tmp_path / "subscribe" / "amis")
+
+
+def test_enable_and_disable_use_statehost_directory(tmp_path):
+    sr = make_sr(tmp_path)
+    sr.hostdir = "my-host"
+    sr.leftovers = []
+    sr._action_all_configs = False
+    sr.filtered_configurations = ["subscribe/amis"]
+    sr.please_stop = False
+    sr.states = {
+        "subscribe": {
+            "amis": {
+                "instance_pids": {}
+            }
+        }
+    }
+    sr.configs = {
+        "subscribe": {
+            "amis": {
+                "options": SimpleNamespace(statehost=True)
+            }
+        }
+    }
+
+    state_dir = tmp_path / "my-host" / "subscribe" / "amis"
+    state_dir.mkdir(parents=True)
+    disabled_marker = state_dir / "disabled"
+    disabled_marker.write_text("disabled")
+
+    sr.enable()
+    assert not disabled_marker.exists()
+
+    sr.disable()
+    marker = state_dir / "disabled"
+    assert marker.exists()
+    assert marker.read_text()
+
+# =========================================================================== #
+# ============================== End of Tests =============================== #
+# =========================================================================== #
