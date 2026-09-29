@@ -120,6 +120,7 @@ Settings in a default.inc include file (from the parent <component> directory)
 are read in after the default.conf and prior to <component>/<config>.conf.
 So this allows to override the values for the component chosen.
 Options specified in the configuration file override values in the components' default.inc.
+NOTE: default.inc feature is currently not supported on C components (cpump,cpost)
 
 Options specified on the command line override configuration files.
 

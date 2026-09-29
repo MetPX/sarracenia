@@ -122,6 +122,7 @@ sont lus après default.conf et avant <component>/<config>.conf.
 Cela permet donc de remplacer les valeurs par défaut du component sélectionné.
 Les options spécifiées dans le fichier de configuration remplacent les valeurs du fichier default.inc du component.
 Les options spécifiées en ligne de commande remplacent ceux des fichiers de configuration.
+NOTE: La fonctionnalité default.inc est présentement non supportée chez les composantes C (cpump,cpost)
 
 Les fichiers de configurations peuvent être gérer en utilisant les actions *add*, *remove*,
 *list*, *edit*, *disable*, et *enable*. Il est également possible de faire
