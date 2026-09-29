@@ -39,6 +39,13 @@ Installation Instructions
 git
 ---
 
+3.04.00
+-------
+
+*CHANGE*: For #1196, we've added the ``default.inc`` functionality where if a ``default.inc`` is defined inside a component
+directory (i.e. ``poll/default.inc``) the settings will get propogated to all of the configurations in that components' directory.
+
+
 3.03.00
 -------
 

@@ -38,6 +38,12 @@ Instructions d’installation
 git
 ---
 
+3.04.00
+-------
+
+*CHANGEMENT* : Pour le ticket #1196, nous avons ajouté la fonctionnalité ``default.inc`` : si un fichier ``default.inc`` est défini dans le répertoire 
+d'un component (par ex. ``poll/default.inc``), ses paramètres sont propagés à toutes les configurations situées dans ce même répertoire.
+
 3.03.00
 -------
 
