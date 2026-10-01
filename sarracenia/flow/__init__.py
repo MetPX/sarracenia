@@ -58,6 +58,7 @@ default_options = {
     'messageRateMax': 0,
     'messageRateMin': 0,
     'sleep': 0.1,
+    'sleepMax': 10.0,
     'topicPrefix': ['v03'],
     'topicCopy': False,
     'vip': []
@@ -651,8 +652,10 @@ class Flow:
                 else:
                     self.runCallbacksTime('please_stop')
 
-            if spamming and (current_sleep < 5):
+            if spamming:
                 current_sleep *= 2
+            if current_sleep > self.o.sleepMax:
+                current_sleep = self.o.sleepMax
 
             self.metrics['flow']['current_sleep'] = current_sleep
 
