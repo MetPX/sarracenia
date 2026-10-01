@@ -689,17 +689,14 @@ class Flow:
             if not self._stop_requested and (stime > 0):
                 # dividing into small sleeps so exit processing happens faster
                 # bug #595, still relatively low cpu usage in increment sized chunks.
-                if 5 < stime:
-                    increment=5
-                else:
-                    increment=stime
                 while (stime > 0):
-                    logger.debug('sleeping for %.2f', increment)
+                    increment = min(5, stime)
+                    logger.debug('sleeping for %.2fs (stime=%.2fs)', increment, stime)
                     time.sleep(increment)
                     if self._stop_requested:
                         break
                     else:
-                        stime -= 5 
+                        stime -= increment
                     # Run housekeeping during long sleeps
                     now_for_hk = nowflt()
                     if now_for_hk > next_housekeeping:
