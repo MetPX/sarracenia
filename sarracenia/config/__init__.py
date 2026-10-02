@@ -163,7 +163,8 @@ float_options = [ 'messageRateMax', 'messageRateMin' ]
 duration_options = [
     'expire', 'housekeeping', 'logRotateInterval', 'fileAgeMax', 'fileAgeMin', 
     'messageAgeMax', 'post_messageAgeMax', 'metrics_writeInterval', \
-    'runStateThreshold_idle', 'runStateThreshold_lag', 'retry_ttl', 'runStateThreshold_hung', 'sleep', 'timeout', 'varTimeOffset'
+    'runStateThreshold_idle', 'runStateThreshold_lag', 'retry_ttl', 'runStateThreshold_hung',
+    'sleep', 'sleepMax', 'timeout', 'varTimeOffset'
 ]
 
 list_options = [ 'amqp_queue_args', 'path', 'vip' ]
@@ -914,6 +915,7 @@ class Config:
         self.hostdir = socket.getfqdn().split('.')[0]
         self.log_flowcb_needed = False
         self.sleep = 0.1
+        self.sleepMax = 10.0
         self.housekeeping = 300
         self.httpUserAgent = 'Sarracenia ' + sarracenia.__version__
         self.inline = False

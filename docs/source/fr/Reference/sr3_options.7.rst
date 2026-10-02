@@ -2151,10 +2151,14 @@ shim_skip_parent_open_files (EXPERIMENTAL)
 L’option shim_skip_ppid_open_files signifie qu’un processus vérifie si le processus parent a le même fichier
 ouvert et ne poste pas si c’est le cas. (défaut: Vrai)
 
-sleep <intervalle>
-------------------
+sleep <intervalle> ( défaut: 0.1s )
+-----------------------------------
 
-Temps d’attente entre la génération d’événements. Lorsqu'on écrit fréquemment à des fichiers, c’est inutile
+Il s'agit de la durée minimale d'attente entre deux exécutions de la boucle de flux lorsqu'aucun message n'est à traiter. sr3
+augmentera automatiquement le temps de pause entre les itérations, jusqu'à la limite ``sleepMax``, afin de réduire la charge CPU
+pendant l'attente de messages. Il est très rare qu'il soit nécessaire de modifier ce paramètre.
+
+Lorsqu'on écrit fréquemment à des fichiers, c’est inutile
 de produire un poste pour chaque changement, car il peut produire un flux continu de changements où les transferts
 ne peut pas être fait assez rapidement pour suivre le rythme.  Dans de telles circonstances, on peut regrouper toutes
 les modifications apportées à un fichier pendant le temps de *sleep*, et produire un seul poste.
@@ -2164,6 +2168,13 @@ définir *scheduled_interval*, pour des raisons de compatibilité.
 Il est préférable que le sonde utilise explicitement les paramètres *scheduled_interval*,
 *scheduled_hour*, et/ou *scheduled_minute* plutôt que *sleep*.
 
+sleepMax <intervalle> ( défaut : 10 s )
+---------------------------------------
+
+Durée maximale de pause avant de vérifier si de nouveaux messages sont disponibles pour l'ingestion. Pour les flux
+extrêmement sensibles au facteur temps et caractérisés par une réception sporadique de messages, on peut réduire
+``sleepMax`` afin de minimiser le délai de traitement des messages, au prix d'une consommation CPU accrue lorsque
+le processus est inactif.
 
 statehost <booléen> ( défaut: False )
 -------------------------------------

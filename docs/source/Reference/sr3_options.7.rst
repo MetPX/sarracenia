@@ -2176,16 +2176,27 @@ shim_skip_parent_open_files (EXPERIMENTAL)
   whether the parent process has the same file open, and does not
   post if that is the case. (default: True)
 
-sleep <time>
-------------
+sleep <time> (default: 0.1s)
+----------------------------
 
-The time to wait between generating events. When files are written frequently, it is counter productive
+The minimum time to wait between runs through the Flow loop when there are no messages to be processed. sr3 will
+automatically increase the sleep time between iterations, up to ``sleepMax`` to minimize CPU usage while it is
+waiting for messages. It is very rare that the sleep time would need to be adjusted.
+
+When files are written frequently, it is counter productive
 to produce a post for every change, as it can produce a continuous stream of changes where the transfers
 cannot be done quickly enough to keep up. In such circumstances, one can group all changes made to a file
 in *sleep* time, and produce a single post.
 
 When sleep is set > 0 for use with a *poll* it has the effect to setting *scheduled_interval*  to that value
 for compatibility reasons.  It is better for poll to use *scheduled* settings explicitly going forward.
+
+sleepMax <time> (default: 10s)
+------------------------------
+
+Maximum amount of time to sleep before checking if new messages are available for ingest. For extremely
+time sensitive flows with sporadic message reception, ``sleepMax`` can be reduced to minimize message lag
+at the cost of increased CPU usage while the process is idle.
 
 statehost <False|True> ( default: False )
 -----------------------------------------
