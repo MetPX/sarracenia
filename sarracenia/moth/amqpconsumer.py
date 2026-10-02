@@ -53,6 +53,10 @@ class AMQPConsumer(AMQP):
         self._request_consumer_tag = '' # TODO set to something useful
         self._active_consumer_tag = None
 
+        # using *2 because when Flow loop is in "spamming" mode, it increases the stime before sleeping
+        self._min_sleep = self.o['sleep'] * 2 if self.o['sleep'] > 0 else 0.1
+        self._drain_timeout = self._min_sleep
+
         # control log level in config file:
         # set sarracenia.moth.amqpconsumer.AMQPConsumer.logLevel debug
         me = f"{__class__.__module__}.{__class__.__name__}"
@@ -107,7 +111,13 @@ class AMQPConsumer(AMQP):
 
             # trigger incoming event processing
             try:
-                self.connection.drain_events(timeout=0.1) # TODO configurable timeout?
+                self.connection.drain_events(timeout=self._drain_timeout)
+                # If we get to this point, we received messages (drain_events returned, did NOT timeout), so reset
+                # timeout back to the minimum sleep value. This effectively overrides the sleep code in Flow, and
+                # it's better to "sleep" here (using timeout) because drain_events will return as soon as a
+                # message is received. Sleeping in Flow can't be interrupted, so we don't want to sleep there
+                # when we can use this timeout instead because sleeping delays message processing.
+                self._drain_timeout = self._min_sleep
             except TimeoutError:
                 pass
             # In newer Python versions, socket.timeout is "a deprecated alias of TimeoutError", but it's not on
@@ -120,6 +130,10 @@ class AMQPConsumer(AMQP):
                 raw_msg = self._raw_msg_q.get_nowait()
             except queue.Empty:
                 raw_msg = None
+                # no messages received, increase timeout for the next time
+                self._drain_timeout *= 2
+                if self._drain_timeout > self.o['sleepMax']:
+                    self._drain_timeout = self.o['sleepMax']
             
             if (raw_msg is None) and (self.connection.connected):
                 return None
