@@ -621,7 +621,7 @@ class Flow:
                     new_ok = [ msg for msg in self.worklist.ok if msg.isRetry() ]
                     self.worklist.ok = new_ok
                     self.post(now)
-            
+
             now = nowflt()
             run_time = now - start_time
             total_messages += after_filter_len
