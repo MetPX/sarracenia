@@ -148,7 +148,7 @@ class Eumetsat(sarracenia.flowcb.FlowCB):
             for i in range(0, n_hours):
                 req_url = url_head.replace(self._cid_placeholder, cid) + t_str[i] + url_tail
                 logger.info(f"polling URL {req_url}")
-                resp = requests.get(req_url)
+                resp = requests.get(req_url, timeout=self.o.timeout)
                 if not resp or "products" not in resp.json().keys():
                     logger.warning(f"Something went wrong: no products found at {req_url}")
                 else:
@@ -168,7 +168,7 @@ class Eumetsat(sarracenia.flowcb.FlowCB):
             if self.stop_requested:
                 logger.info("Stop requested. Stopping.")
                 break
-            details_page = requests.get(details_link)
+            details_page = requests.get(details_link, timeout=self.o.timeout)
             msgs = self.msgs_from_details_page(details_page.json())
             logger.debug('created %s message(s) from 1 details_link %s', len(msgs), details_link)
             gathered_messages += msgs

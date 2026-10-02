@@ -273,7 +273,7 @@ class Nasa_cmr(sarracenia.flowcb.FlowCB):
             url += "&temporal=" + temporal_range
             url += "&pageSize=" + pageSize 
             logger.info(f"Polling URL: {url}")
-            r = requests.get(url)
+            r = requests.get(url, timeout=self.o.timeout)
             response_body = r.json()
 
             # The response contains multiple URLs and other info.
@@ -341,7 +341,7 @@ class Nasa_cmr(sarracenia.flowcb.FlowCB):
                 new_identity = None
                 if md5_url and self.o.dataSource == "podaac":
                     try:
-                        md5_resp = requests.get(md5_url)
+                        md5_resp = requests.get(md5_url, timeout=self.o.timeout)
                         md5 = md5_resp.text.split(" ")[0]
                         logger.debug('MD5 Checksum: %s', md5)
                         new_identity = {"method":"md5", "value":md5}
