@@ -590,7 +590,7 @@ class Flow:
             if (self.o.component == 'poll') or self.have_vip:
 
                 if ( self.o.messageRateMax > 0 ) and (current_rate > 0.8*self.o.messageRateMax ):
-                    logger.debug('current_rate (%.2f) vs. messageRateMax(%.2f)) ', current_rate, self.o.messageRateMax)
+                    logger.debug('current_rate (%.2f) vs. messageRateMax(%.2f) ', current_rate, self.o.messageRateMax)
 
                 if not stopping:
                     self.gather()
@@ -621,7 +621,7 @@ class Flow:
                     new_ok = [ msg for msg in self.worklist.ok if msg.isRetry() ]
                     self.worklist.ok = new_ok
                     self.post(now)
-
+            
             now = nowflt()
             run_time = now - start_time
             total_messages += after_filter_len
@@ -667,19 +667,16 @@ class Flow:
                                                 self.o.messageRateMin):
                 logger.warning("receiving below minimum message rate")
 
-            if (self.o.messageRateMax > 0) and (current_rate >=
-                                                self.o.messageRateMax):
-                stime = 1 + 2 * ((current_rate - self.o.messageRateMax) /
-                                 self.o.messageRateMax)
-                logger.info(
-                    "current_rate/2 (%.2f) above messageRateMax(%.2f): throttling"
-                    % (current_rate, self.o.messageRateMax))
+            if (self.o.messageRateMax > 0) and (current_rate >= self.o.messageRateMax):
+                stime = 1 + 2 * ((current_rate - self.o.messageRateMax) / self.o.messageRateMax)
+                logger.info("current_rate (%.2f) /2  above messageRateMax(%.2f): throttling (stime=%.2f)"
+                    % (current_rate, self.o.messageRateMax, stime))
             else:
-                logger.debug(' not throttling: limit: %s ', self.o.messageRateMax)
+                logger.debug('not throttling: messageRateMax=%.2f current_rate=%.2f', self.o.messageRateMax, current_rate)
                 stime = 0
 
             if (current_sleep > 0):
-                if elapsed < current_sleep:
+                if elapsed < current_sleep+stime:
                     stime += current_sleep - elapsed
                 else:
                     logger.debug('worked too long to sleep!')
