@@ -1278,25 +1278,52 @@ class Flow:
             # retrieve paths do not propagate after download.
             del m['retrievePath'] 
 
-    def work(self) -> None:
+    def _usable_run_dir(self):
+        """ return cfg_run_dir when it is an existing absolute directory, otherwise None.
+        """
+        run_dir = getattr(self.o, 'cfg_run_dir', None)
+        if isinstance(run_dir, str) and os.path.isabs(run_dir) and os.path.isdir(run_dir):
+            return run_dir
+        logger.error(f"cfg_run_dir {run_dir} is not a usable directory, working directory left as is")
+        return None
 
-        fallback_dir = getattr(self.o, 'cfg_run_dir', None)
-        if not isinstance(fallback_dir, str) or not os.path.isabs(fallback_dir) \
-                or not os.path.isdir(fallback_dir):
-            fallback_dir = os.path.abspath(os.sep)
+    def _restore_work_dir(self, work_dir):
+        """ chdir back to work_dir, or to cfg_run_dir if work_dir is gone.
+
+            returns None when restored, or when there was nowhere to go (logged).
+            returns the OSError when every chdir attempted failed.
+        """
+        restore_error = None
+        if work_dir:
+            try:
+                os.chdir(work_dir)
+                return None
+            except OSError as ex:
+                restore_error = ex
+                logger.warning(f"failed to restore working directory to {work_dir}: {ex}")
+
+        if not work_dir:
+            # work() already looked for cfg_run_dir when it had no starting directory.
+            return None
+
+        run_dir = self._usable_run_dir()
+        if run_dir and run_dir != work_dir:
+            try:
+                os.chdir(run_dir)
+                return None
+            except OSError as ex:
+                logger.warning(f"failed to restore working directory to {run_dir}: {ex}")
+        return restore_error
+
+    def work(self) -> None:
 
         try:
             work_dir = os.getcwd()
         except OSError as ex:
-            work_dir = None
-            logger.warning("working directory is unavailable before work: %s; using %s", ex, fallback_dir)
-            try:
-                os.chdir(fallback_dir)
-            except OSError as fallback_error:
-                fallback_dir = os.path.abspath(os.sep)
-                logger.warning("failed to use configured working directory: %s; using %s", fallback_error,
-                               fallback_dir)
-                os.chdir(fallback_dir)
+            logger.error(f"working directory is unavailable before work: {ex}")
+            work_dir = self._usable_run_dir()
+            if work_dir:
+                os.chdir(work_dir)
 
         try:
             self.do()
@@ -1334,24 +1361,14 @@ class Flow:
             self.worklist.rejected = []
             self.ack(self.worklist.failed)
         finally:
-            restored = False
-            restore_error = None
-            for restore_dir in [work_dir, fallback_dir, os.path.abspath(os.sep)]:
-                if restore_dir is None:
-                    continue
-                try:
-                    os.chdir(restore_dir)
-                    restored = True
-                    break
-                except OSError as ex:
-                    restore_error = ex
-                    logger.warning("failed to restore working directory to %s: %s", restore_dir, ex)
-            if not restored:
-                # Raising here would escape a finally, and run() does not catch
-                # it, so the instance would die without close() and leave its
-                # pidfile behind. Ask for an orderly stop instead.
-                logger.error("failed to restore working directory: %s", restore_error)
-                self.runCallbacksTime('please_stop')
+            restore_error = self._restore_work_dir(work_dir)
+            if restore_error:
+                logger.error(f"failed to restore working directory: {restore_error}")
+
+        # only reached when the work itself did not raise, so its exception is never replaced.
+        # an uncaught error leaves the pidfile behind, so sanity restarts the instance.
+        if restore_error:
+            raise restore_error
 
 
 
