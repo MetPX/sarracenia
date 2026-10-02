@@ -1,9 +1,11 @@
+import copy
+import os
+
 import pytest
-from tests.conftest import *
 
 import sarracenia.config
 import sarracenia.flow
-import copy
+from tests.conftest import *
 
 __COMPONENT="subscribe"
 __CONFIG="flow_class_test"
@@ -71,3 +73,197 @@ def test_msg_rejected_when_sundew_extension_already_present():
     assert(len(flow.worklist.incoming) == 0)
     assert(len(flow.worklist.rejected) == 0)
     assert(msg not in flow.worklist.incoming)
+
+
+def test_work_restores_cwd_after_inline_download(tmp_path, monkeypatch):
+    options = __make_fake_config(lines=["download True"])
+    flow = sarracenia.flow.Flow(options)
+    runtime_dir = tmp_path / "runtime"
+    payload_dir = tmp_path / "public_data" / "20260904" / "product" / "19"
+    runtime_dir.mkdir()
+
+    message = sarracenia.Message()
+    message["new_dir"] = str(payload_dir)
+    message["new_file"] = "payload.txt"
+    message["content"] = {"encoding": "utf-8", "value": "test payload\n"}
+    message["identity"] = {"method": "arbitrary", "value": "test"}
+    flow.worklist.incoming.append(message)
+
+    monkeypatch.chdir(runtime_dir)
+    flow.work()
+
+    assert os.getcwd() == str(runtime_dir)
+    assert (payload_dir / "payload.txt").read_text() == "test payload\n"
+
+
+def test_work_restores_cwd_when_work_raises(tmp_path, monkeypatch):
+    options = __make_fake_config()
+    flow = sarracenia.flow.Flow(options)
+    runtime_dir = tmp_path / "runtime"
+    payload_dir = tmp_path / "public_data" / "20260904"
+    runtime_dir.mkdir()
+    payload_dir.mkdir(parents=True)
+
+    def fail_inside_payload_dir():
+        error = "test failure"
+        os.chdir(payload_dir)
+        raise RuntimeError(error)
+
+    monkeypatch.setattr(flow, "do", fail_inside_payload_dir)
+    monkeypatch.chdir(runtime_dir)
+
+    with pytest.raises(RuntimeError, match="test failure"):
+        flow.work()
+
+    assert os.getcwd() == str(runtime_dir)
+
+
+@pytest.mark.skipif(os.name == "nt", reason="Windows does not permit removing the process cwd")
+def test_work_recovers_when_cwd_is_unavailable_at_entry(tmp_path, monkeypatch):
+    options = __make_fake_config()
+    fallback_dir = tmp_path / "cache" / "subscribe" / "flow_class_test"
+    unavailable_dir = tmp_path / "unavailable"
+    payload_dir = tmp_path / "public_data" / "20260904"
+    fallback_dir.mkdir(parents=True)
+    unavailable_dir.mkdir()
+    payload_dir.mkdir(parents=True)
+    options.cfg_run_dir = str(fallback_dir)
+    flow = sarracenia.flow.Flow(options)
+    worked = []
+
+    def work_in_payload_dir():
+        os.chdir(payload_dir)
+        worked.append(True)
+
+    monkeypatch.setattr(flow, "do", work_in_payload_dir)
+
+    monkeypatch.chdir(unavailable_dir)
+    unavailable_dir.rmdir()
+    try:
+        flow.work()
+        assert worked == [True]
+        assert os.getcwd() == str(fallback_dir)
+    finally:
+        os.chdir(fallback_dir)
+
+
+def test_work_uses_fallback_when_saved_cwd_is_renamed(tmp_path, monkeypatch):
+    options = __make_fake_config()
+    fallback_dir = tmp_path / "cache" / "subscribe" / "flow_class_test"
+    runtime_dir = tmp_path / "runtime"
+    renamed_runtime_dir = tmp_path / "runtime-renamed"
+    payload_dir = tmp_path / "public_data" / "20260904"
+    fallback_dir.mkdir(parents=True)
+    runtime_dir.mkdir()
+    payload_dir.mkdir(parents=True)
+    options.cfg_run_dir = str(fallback_dir)
+    flow = sarracenia.flow.Flow(options)
+
+    def rename_saved_cwd():
+        os.chdir(payload_dir)
+        runtime_dir.rename(renamed_runtime_dir)
+
+    monkeypatch.setattr(flow, "do", rename_saved_cwd)
+    monkeypatch.chdir(runtime_dir)
+
+    flow.work()
+
+    assert os.getcwd() == str(fallback_dir)
+
+
+def test_work_preserves_exception_when_saved_cwd_is_removed(tmp_path, monkeypatch):
+    options = __make_fake_config()
+    fallback_dir = tmp_path / "cache" / "subscribe" / "flow_class_test"
+    runtime_dir = tmp_path / "runtime"
+    payload_dir = tmp_path / "public_data" / "20260904"
+    fallback_dir.mkdir(parents=True)
+    runtime_dir.mkdir()
+    payload_dir.mkdir(parents=True)
+    options.cfg_run_dir = str(fallback_dir)
+    flow = sarracenia.flow.Flow(options)
+    work_error = RuntimeError("test failure")
+
+    def fail_after_removing_saved_cwd():
+        os.chdir(payload_dir)
+        runtime_dir.rmdir()
+        raise work_error
+
+    monkeypatch.setattr(flow, "do", fail_after_removing_saved_cwd)
+    monkeypatch.chdir(runtime_dir)
+
+    with pytest.raises(RuntimeError) as exc_info:
+        flow.work()
+
+    assert exc_info.value is work_error
+    assert os.getcwd() == str(fallback_dir)
+
+
+def test_work_raises_when_cwd_cannot_be_restored(tmp_path, monkeypatch):
+    options = __make_fake_config()
+    runtime_dir = tmp_path / "runtime"
+    payload_dir = tmp_path / "public_data" / "20260904"
+    runtime_dir.mkdir()
+    payload_dir.mkdir(parents=True)
+    options.cfg_run_dir = str(tmp_path / "missing_run_dir")
+    flow = sarracenia.flow.Flow(options)
+
+    def remove_saved_cwd():
+        os.chdir(payload_dir)
+        runtime_dir.rmdir()
+
+    monkeypatch.setattr(flow, "do", remove_saved_cwd)
+    monkeypatch.chdir(runtime_dir)
+
+    with pytest.raises(FileNotFoundError):
+        flow.work()
+
+    # no fallback to the filesystem root, the worker is left where the work put it
+    assert os.getcwd() == str(payload_dir)
+
+
+def test_work_keeps_work_exception_when_cwd_cannot_be_restored(tmp_path, monkeypatch):
+    options = __make_fake_config()
+    runtime_dir = tmp_path / "runtime"
+    payload_dir = tmp_path / "public_data" / "20260904"
+    runtime_dir.mkdir()
+    payload_dir.mkdir(parents=True)
+    options.cfg_run_dir = str(tmp_path / "missing_run_dir")
+    flow = sarracenia.flow.Flow(options)
+    work_error = RuntimeError("test failure")
+
+    def fail_after_removing_saved_cwd():
+        os.chdir(payload_dir)
+        runtime_dir.rmdir()
+        raise work_error
+
+    monkeypatch.setattr(flow, "do", fail_after_removing_saved_cwd)
+    monkeypatch.chdir(runtime_dir)
+
+    with pytest.raises(RuntimeError) as exc_info:
+        flow.work()
+
+    assert exc_info.value is work_error
+    assert os.getcwd() == str(payload_dir)
+
+
+@pytest.mark.skipif(os.name == "nt", reason="Windows does not permit removing the process cwd")
+def test_work_does_not_chdir_without_usable_run_dir(tmp_path, monkeypatch, caplog):
+    options = __make_fake_config()
+    unavailable_dir = tmp_path / "unavailable"
+    unavailable_dir.mkdir()
+    options.cfg_run_dir = str(tmp_path / "missing_run_dir")
+    flow = sarracenia.flow.Flow(options)
+    worked = []
+
+    monkeypatch.setattr(flow, "do", lambda: worked.append(True))
+    monkeypatch.chdir(unavailable_dir)
+    unavailable_dir.rmdir()
+    try:
+        flow.work()
+        assert worked == [True]
+        # still in the removed directory: nothing chdir'd, in particular not to the filesystem root
+        with pytest.raises(FileNotFoundError):
+            os.getcwd()
+        assert len([r for r in caplog.records if "not a usable directory" in r.getMessage()]) == 1
+    finally:
+        os.chdir(tmp_path)
