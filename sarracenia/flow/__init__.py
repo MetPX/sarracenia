@@ -681,9 +681,6 @@ class Flow:
             if (current_sleep > 0):
                 if elapsed < current_sleep:
                     stime += current_sleep - elapsed
-                    if stime > 60:  # if sleeping for a long time, debug output is good...
-                        logger.debug(
-                           f"sleeping for more than 60 seconds: {stime:.2f} seconds. Elapsed since wakeup: {elapsed:.2f} Sleep setting: {self.o.sleep:.2f} ")
                 else:
                     logger.debug('worked too long to sleep!')
                     last_time = now
