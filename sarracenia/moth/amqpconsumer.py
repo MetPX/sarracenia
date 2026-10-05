@@ -53,11 +53,21 @@ class AMQPConsumer(AMQP):
         self._request_consumer_tag = '' # TODO set to something useful
         self._active_consumer_tag = None
 
-        # for polls, a large drain_timeout could interfere with scheduling
+        # use sleep and sleepMax options to set the timeout used for drain_events
+        # for polls, a large drain_timeout (relative to scheduled_interval) could interfere with scheduling
         if self.o['component'] == 'poll':
-            # maximum time to sleep inside this code is whichever is lower, sleepMax option or scheduled_interval/2
-            if 'scheduled_interval' in self.o and self.o['scheduled_interval'] and self.o['scheduled_interval'] > 0:
-                self._max_sleep = min(self.o['scheduled_interval']/2 , self.o['sleepMax'])
+            # when scheduled_interval is known, maximum drain_timeout is whichever is lower:
+            # sleepMax option or scheduled_interval/2
+            if 'scheduled_interval' in self.o and self.o['scheduled_interval']:
+                try:
+                    sched_int = float(self.o['scheduled_interval'])
+                        self._max_sleep = min(self.o['scheduled_interval']/2 , self.o['sleepMax'])
+                except Exception:
+                    logger.debug("invalid scheduled_interval: %s", self.o['scheduled_interval'])
+            # if scheduled_interval is not known, use a small timeout and let Flow code handle sleeping/timing    
+            else:
+                self._max_sleep = self.o['sleep']
+
             # polls are usually not in spamming mode
             self._min_sleep = self.o['sleep']
         else:
