@@ -140,7 +140,7 @@ class AMQPConsumer(AMQP):
                 raw_msg = None
                 # no messages received, increase timeout for the next time
                 self._drain_timeout *= 2
-                if self._drain_timeout > self._max_sleep
+                if self._drain_timeout > self._max_sleep:
                     self._drain_timeout = self._max_sleep
             
             if (raw_msg is None) and (self.connection.connected):
