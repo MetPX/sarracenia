@@ -59,7 +59,7 @@ class AMQPConsumer(AMQP):
             if 'scheduled_interval' in self.o and self.o['scheduled_interval'] and self.o['scheduled_interval'] > 0:
                 self._max_sleep = min(self.o['scheduled_interval']/2 , self.o['sleepMax'])
             # polls are usually not in spamming mode
-            self._min_sleep = self.o.['sleep']
+            self._min_sleep = self.o['sleep']
         else:
             self._max_sleep = self.o['sleepMax']
             # using *2 because when Flow loop is in "spamming" mode, it increases the stime before sleeping
