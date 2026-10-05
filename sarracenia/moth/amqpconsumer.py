@@ -64,6 +64,7 @@ class AMQPConsumer(AMQP):
                     self._max_sleep = min(sched_int , self.o['sleepMax'])
                 except Exception:
                     logger.debug("invalid scheduled_interval: %s", self.o['scheduled_interval'])
+                    self._max_sleep = self.o['sleep']
             # if scheduled_interval is not known, use a small timeout and let Flow code handle sleeping/timing    
             else:
                 self._max_sleep = self.o['sleep']
