@@ -53,6 +53,30 @@ class AMQPConsumer(AMQP):
         self._request_consumer_tag = '' # TODO set to something useful
         self._active_consumer_tag = None
 
+        # use sleep and sleepMax options to set the timeout used for drain_events
+        # for polls, a large drain_timeout (relative to scheduled_interval) could interfere with scheduling
+        if self.o['component'] == 'poll':
+            # when scheduled_interval is known, maximum drain_timeout is whichever is lower:
+            # sleepMax option or scheduled_interval/2
+            if 'scheduled_interval' in self.o and self.o['scheduled_interval']:
+                try:
+                    sched_int = float(self.o['scheduled_interval'])
+                    self._max_sleep = min(sched_int/2 , self.o['sleepMax'])
+                except Exception:
+                    logger.debug("invalid scheduled_interval: %s", self.o['scheduled_interval'])
+                    self._max_sleep = self.o['sleep']
+            # if scheduled_interval is not known, use a small timeout and let Flow code handle sleeping/timing    
+            else:
+                self._max_sleep = self.o['sleep']
+
+            # polls are usually not in spamming mode
+            self._min_sleep = self.o['sleep']
+        else:
+            self._max_sleep = self.o['sleepMax']
+            # using *2 because when Flow loop is in "spamming" mode, it increases the stime before sleeping
+            self._min_sleep = self.o['sleep'] * 2 if self.o['sleep'] > 0 else 0.1
+        self._drain_timeout = self._min_sleep
+
         # control log level in config file:
         # set sarracenia.moth.amqpconsumer.AMQPConsumer.logLevel debug
         me = f"{__class__.__module__}.{__class__.__name__}"
@@ -105,25 +129,36 @@ class AMQPConsumer(AMQP):
             if not self.connection:
                 return None
 
-            # trigger incoming event processing
-            try:
-                self.connection.drain_events(timeout=0.1) # TODO configurable timeout?
-            except TimeoutError:
-                pass
-            # In newer Python versions, socket.timeout is "a deprecated alias of TimeoutError", but it's not on
-            # older versions (3.6) and needs to be handled separately
-            except socket.timeout:
-                pass
+            # trigger incoming event processing when we don't already have messages waiting to be processed
+            if self._raw_msg_q.qsize() <= 0:
+                try:
+                    self.connection.drain_events(timeout=self._drain_timeout)
+                    # Using drain_timeout here effectively overrides the sleep code in Flow. It's better to "sleep"
+                    # here (using timeout) because drain_events will return as soon as a message is received.
+                    # Sleeping in Flow can't be interrupted, so we don't want to sleep there when we can use this
+                    # timeout instead because sleeping delays message processing.
+                except TimeoutError:
+                    pass
+                # In newer Python versions, socket.timeout is "a deprecated alias of TimeoutError", but it's not on
+                # older versions (3.6) and needs to be handled separately
+                except socket.timeout:
+                    pass
 
             try:
                 # don't block waiting for the queue to be available, better to just try again later
                 raw_msg = self._raw_msg_q.get_nowait()
             except queue.Empty:
                 raw_msg = None
+                # no messages received, increase timeout for the next time
+                self._drain_timeout *= 2
+                if self._drain_timeout > self._max_sleep:
+                    self._drain_timeout = self._max_sleep
             
             if (raw_msg is None) and (self.connection.connected):
                 return None
             else:
+                # received a message from the AMQP queue, so reset drain timeout
+                self._drain_timeout = self._min_sleep
                 self.metrics['rxByteCount'] += len(raw_msg.body)
                 try: 
                     msg = self._msgRawToDict(raw_msg)
