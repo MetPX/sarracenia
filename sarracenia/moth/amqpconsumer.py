@@ -53,8 +53,14 @@ class AMQPConsumer(AMQP):
         self._request_consumer_tag = '' # TODO set to something useful
         self._active_consumer_tag = None
 
-        # using *2 because when Flow loop is in "spamming" mode, it increases the stime before sleeping
-        self._min_sleep = self.o['sleep'] * 2 if self.o['sleep'] > 0 else 0.1
+        # for polls, a large drain_timeout will interfere with scheduling
+        if self.o['component'] == 'poll':
+            self._max_sleep = self.o.['sleep']
+            self._min_sleep = self.o.['sleep']
+        else:
+            self._max_sleep = self.o['sleepMax']
+            # using *2 because when Flow loop is in "spamming" mode, it increases the stime before sleeping
+            self._min_sleep = self.o['sleep'] * 2 if self.o['sleep'] > 0 else 0.1
         self._drain_timeout = self._min_sleep
 
         # control log level in config file:
@@ -131,8 +137,8 @@ class AMQPConsumer(AMQP):
                 raw_msg = None
                 # no messages received, increase timeout for the next time
                 self._drain_timeout *= 2
-                if self._drain_timeout > self.o['sleepMax']:
-                    self._drain_timeout = self.o['sleepMax']
+                if self._drain_timeout > self._max_sleep
+                    self._drain_timeout = self._max_sleep
             
             if (raw_msg is None) and (self.connection.connected):
                 return None
