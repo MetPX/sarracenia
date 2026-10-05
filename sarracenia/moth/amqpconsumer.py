@@ -56,7 +56,7 @@ class AMQPConsumer(AMQP):
         # for polls, a large drain_timeout could interfere with scheduling
         if self.o['component'] == 'poll':
             # maximum time to sleep inside this code is whichever is lower, sleepMax option or scheduled_interval/2
-            if 'scheduled_interval' in self.o and self.o.['scheduled_interval'] and self.o['scheduled_interval'] > 0:
+            if 'scheduled_interval' in self.o and self.o['scheduled_interval'] and self.o['scheduled_interval'] > 0:
                 self._max_sleep = min(self.o['scheduled_interval']/2 , self.o['sleepMax'])
             # polls are usually not in spamming mode
             self._min_sleep = self.o.['sleep']
