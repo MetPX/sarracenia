@@ -53,9 +53,12 @@ class AMQPConsumer(AMQP):
         self._request_consumer_tag = '' # TODO set to something useful
         self._active_consumer_tag = None
 
-        # for polls, a large drain_timeout will interfere with scheduling
+        # for polls, a large drain_timeout could interfere with scheduling
         if self.o['component'] == 'poll':
-            self._max_sleep = self.o.['sleep']
+            # maximum time to sleep inside this code is whichever is lower, sleepMax option or scheduled_interval/2
+            if 'scheduled_interval' in self.o and self.o.['scheduled_interval'] and self.o['scheduled_interval'] > 0:
+                self._max_sleep = min(self.o['scheduled_interval']/2 , self.o['sleepMax'])
+            # polls are usually not in spamming mode
             self._min_sleep = self.o.['sleep']
         else:
             self._max_sleep = self.o['sleepMax']
