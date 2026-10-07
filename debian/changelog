@@ -1,3 +1,11 @@
+metpx-sarracenia (2.26.10rc1) unstable; urgency=medium
+
+  * Fix #1449 infinite loop after connection to broker is lost
+  * This is almost definitely the last v2 release. All users should be
+    migrating to sr3.
+
+ -- Reid Sunderland <reid.sunderland@ssc-spc.gc.ca>  Wed, 07 Oct 2026 13:33:59 +0000
+
 metpx-sarracenia (2.24.08post2) unstable; urgency=medium
 
   * revert utf-8 ftp charset. #1198 
