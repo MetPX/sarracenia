@@ -997,11 +997,56 @@ class Flow:
             return False
 
         if maskFileOption:
-            msg['new_file'] = self.sundew_getDestInfos(msg, maskFileOption, filename)
+            new_file = self.sundew_getDestInfos(msg, maskFileOption, filename)
+            if not new_file:
+                logger.error(f"rejecting {relPath}: could not derive a file name with filename {maskFileOption}")
+                return False
+            msg['new_file'] = new_file
             msg['new_relPath'] = '/'.join(  msg['new_relPath'].split('/')[0:-1] + [ msg['new_file'] ]  )
 
+        # Anything from the message can end up in new_dir and new_file: the relPath or rename when
+        # mirroring, and the values substituted into the directory and filename options (${0}, ${CCCC},
+        # ${BUP}, ${SOURCE}...) in all cases. A '..' component there can resolve outside the configured
+        # directory. When the flow writes files, check the final result, allowing only the '..' the
+        # configuration itself contains. (issue #1792)
+        if self.o.download and not self.o.acceptPathTraversal:
+            new_path = msg['new_dir'] + '/' + msg['new_file']
+            if self._dotdotCount(new_path) > self._configuredDotdotCount(maskDir):
+                logger.error(f"rejecting {relPath}: {new_path} has more '..' components than the configured "
+                             "directory, set acceptPathTraversal True to allow it")
+                return False
+            # the file name is used as is when writing, after a chdir to new_dir, so an absolute one
+            # (e.g. filename SENDER with a SENDER=/... from the message) would also write elsewhere.
+            if msg['new_file'].startswith(('/', '\\')) or os.path.isabs(msg['new_file']):
+                logger.error(f"rejecting {relPath}: file name {msg['new_file']} is absolute, "
+                             "set acceptPathTraversal True to allow it")
+                return False
 
         return True
+
+    @staticmethod
+    def _dotdotCount(path) -> int:
+        """ number of '..' components in path, with either separator. """
+        return re.split(r'[/\\]', path).count('..')
+
+    def _configuredDotdotCount(self, maskDir) -> int:
+        """ number of '..' components the configuration puts in the base directory: the directory
+            option (or post_baseDir when there is none) with the variables that come from the
+            configuration expanded. Variables that come from the message (${BUP}, ${SOURCE}, ${0}...)
+            are left alone, so a '..' they carry is not allowed by this count.
+        """
+        base = maskDir if maskDir else (self.o.post_baseDir or '')
+        # the options can refer to each other, variableExpansion resolves them on repeated passes.
+        for _ in range(10):
+            expanded = base
+            for var, val in (('${BD}', self.o.baseDir), ('${PBD}', self.o.post_baseDir),
+                             ('${PDR}', self.o.post_baseDir)):
+                if val:
+                    expanded = expanded.replace(var, val)
+            if expanded == base:
+                break
+            base = expanded
+        return self._dotdotCount(base)
 
 
     def filter(self) -> None:

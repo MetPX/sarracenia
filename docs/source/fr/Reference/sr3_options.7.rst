@@ -429,6 +429,23 @@ Un message d'annonce sélectionné par le quatrième *accept* sera remis inalté
 **20150813161959.854 http://this.pump.com/ relative/path/to/20160123_product_RAW_MERGER_GRIB_from_CMC**
 
 
+acceptPathTraversal: <booléen> (défaut: False)
+----------------------------------------------
+
+Le chemin où un fichier est écrit est construit à partir des options
+*directory* et *filename* et du message de notification: le chemin relatif
+lorsque *mirror* est actif, le champ *rename* lors d'un téléchargement, et les
+valeurs substituées à ${0}, ${CCCC}, ${BUP}, ${SOURCE} et autres. Par défaut,
+un message est rejeté lorsque le chemin résultant contient plus de composantes
+*..* que le *directory* configuré, puisqu'elles peuvent mener à un emplacement
+en dehors de celui-ci (ce qui permettrait par exemple d'écraser des fichiers un
+niveau plus haut). Un nom de fichier absolu provenant du message (*filename
+SENDER* avec une extension SENDER=/..., par exemple) est rejeté pour la même
+raison. La vérification s'applique aux composants qui écrivent des fichiers
+(subscribe, sarra, sender). Mettre *acceptPathTraversal True* pour accepter
+quand même ces chemins, lorsque la source est de confiance et en dépend. Les
+chemins dans *fileOp* (rename, link) ne sont pas couverts par cette vérification.
+
 acceptSizeWrong: <booléen> (défaut: False)
 -------------------------------------------
 

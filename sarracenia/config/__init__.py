@@ -79,6 +79,7 @@ class octal_number(int):
 
 
 default_options = {
+    'acceptPathTraversal': False,
     'acceptSizeWrong': False,
     'acceptUnmatched': True,
     'amqp_consumer': False,
@@ -147,7 +148,7 @@ count_options = [
 
 # all the boolean settings.
 
-flag_options = [ 'acceptSizeWrong', 'acceptUnmatched', 'amqp_consumer', 'baseUrl_relPath', 'debug', 
+flag_options = [ 'acceptPathTraversal', 'acceptSizeWrong', 'acceptUnmatched', 'amqp_consumer', 'baseUrl_relPath', 'debug', 
     'delete', 'discard', 'download', 'dry_run', 'durable', 'exchangeDeclare', 'exchangeSplit', 
     'follow_symlinks', 'force_polling', 'inline', 'inlineOnly', 'inplace', 'logJson', 
     'logMetrics', 'logReject', 'logStdout', 'logReject', 'restore', 'messageDebugDump', 
