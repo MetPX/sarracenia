@@ -58,6 +58,7 @@ default_options = {
     'messageRateMax': 0,
     'messageRateMin': 0,
     'sleep': 0.1,
+    'sleepMax': 10.0,
     'topicPrefix': ['v03'],
     'topicCopy': False,
     'vip': []
@@ -651,8 +652,10 @@ class Flow:
                 else:
                     self.runCallbacksTime('please_stop')
 
-            if spamming and (current_sleep < 5):
+            if spamming:
                 current_sleep *= 2
+            if current_sleep > self.o.sleepMax:
+                current_sleep = self.o.sleepMax
 
             self.metrics['flow']['current_sleep'] = current_sleep
 
@@ -678,9 +681,6 @@ class Flow:
             if (current_sleep > 0):
                 if elapsed < current_sleep:
                     stime += current_sleep - elapsed
-                    if stime > 60:  # if sleeping for a long time, debug output is good...
-                        logger.debug(
-                           f"sleeping for more than 60 seconds: {stime:.2f} seconds. Elapsed since wakeup: {elapsed:.2f} Sleep setting: {self.o.sleep:.2f} ")
                 else:
                     logger.debug('worked too long to sleep!')
                     last_time = now
@@ -689,17 +689,14 @@ class Flow:
             if not self._stop_requested and (stime > 0):
                 # dividing into small sleeps so exit processing happens faster
                 # bug #595, still relatively low cpu usage in increment sized chunks.
-                if 5 < stime:
-                    increment=5
-                else:
-                    increment=stime
                 while (stime > 0):
-                    logger.debug('sleeping for %.2f', increment)
+                    increment = min(5, stime)
+                    logger.debug('sleeping for %.2fs (stime=%.2fs)', increment, stime)
                     time.sleep(increment)
                     if self._stop_requested:
                         break
                     else:
-                        stime -= 5 
+                        stime -= increment
                     # Run housekeeping during long sleeps
                     now_for_hk = nowflt()
                     if now_for_hk > next_housekeeping:

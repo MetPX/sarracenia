@@ -163,7 +163,8 @@ float_options = [ 'messageRateMax', 'messageRateMin' ]
 duration_options = [
     'expire', 'housekeeping', 'logRotateInterval', 'fileAgeMax', 'fileAgeMin', 
     'messageAgeMax', 'post_messageAgeMax', 'metrics_writeInterval', \
-    'runStateThreshold_idle', 'runStateThreshold_lag', 'retry_ttl', 'runStateThreshold_hung', 'sleep', 'timeout', 'varTimeOffset'
+    'runStateThreshold_idle', 'runStateThreshold_lag', 'retry_ttl', 'runStateThreshold_hung',
+    'sleep', 'sleepMax', 'timeout', 'varTimeOffset'
 ]
 
 list_options = [ 'amqp_queue_args', 'path', 'vip' ]
@@ -914,6 +915,7 @@ class Config:
         self.hostdir = socket.getfqdn().split('.')[0]
         self.log_flowcb_needed = False
         self.sleep = 0.1
+        self.sleepMax = 10.0
         self.housekeeping = 300
         self.httpUserAgent = 'Sarracenia ' + sarracenia.__version__
         self.inline = False
@@ -975,6 +977,14 @@ class Config:
             component_module = getattr(sarracenia.flow, component)
             if hasattr(component_module, 'default_options'):
                 self.override(component_module.default_options)
+
+    def addComponentDefaultInc( self , component ):
+        """
+        Added from issue 1196
+        Parse and add component/default.inc options if the file exists.
+        """
+        if os.path.exists(get_user_config_dir() + os.sep + component + os.sep + 'default.inc'):
+            self.parse_file(get_user_config_dir() + os.sep + component + os.sep + 'default.inc', component)
 
     @property
     def admin(self):
@@ -2889,6 +2899,8 @@ def one_config(component, config, action, isPost=False, hostDir=None):
 
     os.chdir(get_user_config_dir())
     os.chdir(component)
+
+    cfg.addComponentDefaultInc( component )
 
     if config[-5:] != '.conf':
         fname = os.path.expanduser(config + '.conf')
