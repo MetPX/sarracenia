@@ -1321,9 +1321,8 @@ class Flow:
             work_dir = os.getcwd()
         except OSError as ex:
             logger.error(f"working directory is unavailable before work: {ex}")
+            # no chdir here, the work changes directory anyway. Only remember where to go back to.
             work_dir = self._usable_run_dir()
-            if work_dir:
-                os.chdir(work_dir)
 
         try:
             self.do()
@@ -1368,6 +1367,8 @@ class Flow:
         # only reached when the work itself did not raise, so its exception is never replaced.
         # an uncaught error leaves the pidfile behind, so sanity restarts the instance.
         if restore_error:
+            logger.critical(f"no usable working directory after work ({restore_error}), "
+                            "crashing this instance on purpose so sr3 sanity can restart it")
             raise restore_error
 
 

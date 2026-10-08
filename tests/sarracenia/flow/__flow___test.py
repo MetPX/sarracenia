@@ -132,6 +132,9 @@ def test_work_recovers_when_cwd_is_unavailable_at_entry(tmp_path, monkeypatch):
     worked = []
 
     def work_in_payload_dir():
+        # nothing chdir'd before the work, still in the removed directory
+        with pytest.raises(FileNotFoundError):
+            os.getcwd()
         os.chdir(payload_dir)
         worked.append(True)
 
@@ -198,7 +201,7 @@ def test_work_preserves_exception_when_saved_cwd_is_removed(tmp_path, monkeypatc
     assert os.getcwd() == str(fallback_dir)
 
 
-def test_work_raises_when_cwd_cannot_be_restored(tmp_path, monkeypatch):
+def test_work_raises_when_cwd_cannot_be_restored(tmp_path, monkeypatch, caplog):
     options = __make_fake_config()
     runtime_dir = tmp_path / "runtime"
     payload_dir = tmp_path / "public_data" / "20260904"
@@ -219,6 +222,7 @@ def test_work_raises_when_cwd_cannot_be_restored(tmp_path, monkeypatch):
 
     # no fallback to the filesystem root, the worker is left where the work put it
     assert os.getcwd() == str(payload_dir)
+    assert len([r for r in caplog.records if "crashing this instance on purpose" in r.getMessage()]) == 1
 
 
 def test_work_keeps_work_exception_when_cwd_cannot_be_restored(tmp_path, monkeypatch):
