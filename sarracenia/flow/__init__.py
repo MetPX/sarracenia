@@ -1275,42 +1275,98 @@ class Flow:
             # retrieve paths do not propagate after download.
             del m['retrievePath'] 
 
+    def _usable_run_dir(self):
+        """ return cfg_run_dir when it is an existing absolute directory, otherwise None.
+        """
+        run_dir = getattr(self.o, 'cfg_run_dir', None)
+        if isinstance(run_dir, str) and os.path.isabs(run_dir) and os.path.isdir(run_dir):
+            return run_dir
+        logger.error(f"cfg_run_dir {run_dir} is not a usable directory, working directory left as is")
+        return None
+
+    def _restore_work_dir(self, work_dir):
+        """ chdir back to work_dir, or to cfg_run_dir if work_dir is gone.
+
+            returns None when restored, or when there was nowhere to go (logged).
+            returns the OSError when every chdir attempted failed.
+        """
+        restore_error = None
+        if work_dir:
+            try:
+                os.chdir(work_dir)
+                return None
+            except OSError as ex:
+                restore_error = ex
+                logger.warning(f"failed to restore working directory to {work_dir}: {ex}")
+
+        if not work_dir:
+            # work() already looked for cfg_run_dir when it had no starting directory.
+            return None
+
+        run_dir = self._usable_run_dir()
+        if run_dir and run_dir != work_dir:
+            try:
+                os.chdir(run_dir)
+                return None
+            except OSError as ex:
+                logger.warning(f"failed to restore working directory to {run_dir}: {ex}")
+        return restore_error
+
     def work(self) -> None:
 
-        self.do()
+        try:
+            work_dir = os.getcwd()
+        except OSError as ex:
+            logger.error(f"working directory is unavailable before work: {ex}")
+            # no chdir here, the work changes directory anyway. Only remember where to go back to.
+            work_dir = self._usable_run_dir()
 
-        # need to acknowledge here, because posting will delete message-id
-        self.ack(self.worklist.ok)
-        self.ack(self.worklist.rejected)
-        self.ack(self.worklist.failed)
+        try:
+            self.do()
 
-        # adjust message after action is done, but before 'after_work' so adjustment is possible.
-        post_messages=[]
+            # need to acknowledge here, because posting will delete message-id
+            self.ack(self.worklist.ok)
+            self.ack(self.worklist.rejected)
+            self.ack(self.worklist.failed)
 
-        for m in self.worklist.ok:
-            if len(self.o.publishers) <= 1: # save creation of new messages (a lot of space & time savings.)
-                self.work_message_adjust(m)
-                m['publisher_index'] = 0
-            else: # replace output messages with 1 per publishing destination.
-                i=0
-                for p in self.o.publishers:
-                    new_m=sarracenia.Message()
-                    new_m.copyDict(m)
-                    new_m['publisher_index'] = i
-                    new_m.updatePaths( self.o, m['new_dir'], m['new_file'], i )
-                    self.work_message_adjust(new_m)
-                    post_messages.append(new_m) 
-                    i += 1
-            m['_deleteOnPost'] |= set(['publisher_index'])
-                    
-        if len(self.o.publishers) > 1:
-            self.worklist.ok=post_messages
-    
-        self._runCallbacksWorklist('after_work')
+            # adjust message after action is done, but before 'after_work' so adjustment is possible.
+            post_messages=[]
 
-        self.ack(self.worklist.rejected)
-        self.worklist.rejected = []
-        self.ack(self.worklist.failed)
+            for m in self.worklist.ok:
+                if len(self.o.publishers) <= 1: # save creation of new messages (a lot of space & time savings.)
+                    self.work_message_adjust(m)
+                    m['publisher_index'] = 0
+                else: # replace output messages with 1 per publishing destination.
+                    i=0
+                    for p in self.o.publishers:
+                        new_m=sarracenia.Message()
+                        new_m.copyDict(m)
+                        new_m['publisher_index'] = i
+                        new_m.updatePaths( self.o, m['new_dir'], m['new_file'], i )
+                        self.work_message_adjust(new_m)
+                        post_messages.append(new_m)
+                        i += 1
+                m['_deleteOnPost'] |= set(['publisher_index'])
+
+            if len(self.o.publishers) > 1:
+                self.worklist.ok=post_messages
+
+            self._runCallbacksWorklist('after_work')
+
+            self.ack(self.worklist.rejected)
+            self.worklist.rejected = []
+            self.ack(self.worklist.failed)
+        finally:
+            restore_error = self._restore_work_dir(work_dir)
+            if restore_error:
+                logger.error(f"failed to restore working directory: {restore_error}")
+
+        # only reached when the work itself did not raise, so its exception is never replaced.
+        # an uncaught error leaves the pidfile behind, so sanity restarts the instance.
+        if restore_error:
+            logger.critical(f"no usable working directory after work ({restore_error}), "
+                            "crashing this instance on purpose so sr3 sanity can restart it")
+            raise restore_error
 
 
 
