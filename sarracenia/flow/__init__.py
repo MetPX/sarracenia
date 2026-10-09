@@ -998,7 +998,8 @@ class Flow:
 
         if maskFileOption:
             new_file = self.sundew_getDestInfos(msg, maskFileOption, filename)
-            if not new_file:
+            # an empty name is fine here, it comes from a relPath ending in '/' and do_download fixes it (#1503)
+            if new_file is None:
                 logger.error(f"rejecting {relPath}: could not derive a file name with filename {maskFileOption}")
                 return False
             msg['new_file'] = new_file
@@ -1027,7 +1028,7 @@ class Flow:
     @staticmethod
     def _dotdotCount(path) -> int:
         """ number of '..' components in path, with either separator. """
-        return re.split(r'[/\\]', path).count('..')
+        return path.replace('\\', '/').split('/').count('..')
 
     def _configuredDotdotCount(self, maskDir) -> int:
         """ number of '..' components the configuration puts in the base directory: the directory

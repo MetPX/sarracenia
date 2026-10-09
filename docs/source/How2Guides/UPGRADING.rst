@@ -39,6 +39,11 @@ Installation Instructions
 git
 ---
 
+*CHANGE*: For #1792, a component that writes files (subscribe, sarra, sender) now rejects a message when the
+path it would write to has more ``..`` components than the configured ``directory``, or when the file name
+derived from the message is absolute. Such paths can write outside of the configured directory. Set
+``acceptPathTraversal True`` in configurations that receive these paths from a trusted source and rely on them.
+
 3.04.00
 -------
 

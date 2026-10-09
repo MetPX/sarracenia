@@ -247,3 +247,17 @@ def test_filter_rejects_when_no_file_name_can_be_derived(tmp_path, caplog):
 
     assert flow.worklist.incoming == []
     assert len([r for r in caplog.records if "could not derive a file name" in r.getMessage()]) == 1
+
+
+def test_filter_keeps_relpath_ending_in_slash_with_filename_option(tmp_path):
+    # issue #1503: a relPath ending in '/' gives an empty file name, do_download fixes it later
+    root = tmp_path / "data" / "root"
+    root.mkdir(parents=True)
+    flow = __traversal_flow(["download True", "mirror True", f"directory {root}", "filename WHATFN", "accept .*"])
+    flow.worklist.incoming.append(__inline_message("sub/name/"))
+    flow.worklist.incoming.append(__inline_message("sub/../../escape/"))
+
+    flow.filter()
+
+    assert [m["new_file"] for m in flow.worklist.incoming] == [""]
+    assert flow.worklist.incoming[0]["new_dir"] == f"{root}/sub/name"

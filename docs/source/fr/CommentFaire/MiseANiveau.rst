@@ -38,6 +38,12 @@ Instructions d’installation
 git
 ---
 
+*CHANGEMENT* : Pour le ticket #1792, un composant qui écrit des fichiers (subscribe, sarra, sender) rejette
+maintenant un message lorsque le chemin où il écrirait contient plus de composantes ``..`` que le ``directory``
+configuré, ou lorsque le nom de fichier dérivé du message est absolu. De tels chemins peuvent écrire en dehors du
+répertoire configuré. Mettre ``acceptPathTraversal True`` dans les configurations qui reçoivent ces chemins d'une
+source de confiance et en dépendent.
+
 3.04.00
 -------
 
