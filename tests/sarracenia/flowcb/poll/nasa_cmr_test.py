@@ -78,3 +78,43 @@ def test_poll_passes_configured_timeout_to_catalogue_and_md5(mocker):
         'method': 'md5',
         'value': 'd41d8cd98f00b204e9800998ecf8427e',
     }
+
+
+def test_poll_logs_and_skips_a_collection_that_times_out(mocker, caplog):
+    """A timed out catalogue request is logged and the next collection is still polled."""
+    options = make_options(timeout=17)
+    options.collectionConceptId = ['C123', 'C456']
+    poll = sarracenia.flowcb.poll.nasa_cmr.Nasa_cmr(options)
+
+    catalogue = {'items': [{'umm': {'RelatedUrls': [
+        {'Type': 'GET DATA', 'Description': 'Download data', 'URL': 'https://podaac.example.com/data/file.nc'},
+    ]}}]}
+
+    def fake_get(url, **kwargs):
+        if 'C123' in url:
+            raise sarracenia.flowcb.poll.nasa_cmr.requests.exceptions.ReadTimeout('Read timed out.')
+        return FakeCatalogueResponse(catalogue)
+
+    mocker.patch('sarracenia.flowcb.poll.nasa_cmr.requests.get', side_effect=fake_get)
+
+    gathered = poll.poll()
+
+    assert len(gathered) == 1
+    errors = [r.getMessage() for r in caplog.records if r.levelname == 'ERROR']
+    assert any('C123' in e and 'Read timed out' in e for e in errors)
+
+
+def test_poll_logs_and_skips_a_catalogue_that_is_not_json(mocker, caplog):
+    import json
+    options = make_options(timeout=17)
+    poll = sarracenia.flowcb.poll.nasa_cmr.Nasa_cmr(options)
+
+    class HtmlResponse:
+        def json(self):
+            raise json.JSONDecodeError('Expecting value', '<html>', 0)
+
+    mocker.patch('sarracenia.flowcb.poll.nasa_cmr.requests.get', return_value=HtmlResponse())
+
+    assert poll.poll() == []
+    errors = [r.getMessage() for r in caplog.records if r.levelname == 'ERROR']
+    assert any('C123' in e and 'Expecting value' in e for e in errors)

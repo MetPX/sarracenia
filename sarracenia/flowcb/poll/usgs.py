@@ -46,6 +46,8 @@ import pandas as pd
 import paramiko
 import sarracenia
 from sarracenia.flowcb import FlowCB
+import http.client
+import urllib.error
 import urllib.request
 
 logger = logging.getLogger(__name__)
@@ -91,9 +93,25 @@ class Usgs(FlowCB):
                 file_cnt += 1
                 logger.debug('getting: %s', self.o.pollUrl.format(stns))
 
-                status_code = urllib.request.urlopen(
-                    self.o.pollUrl.format(stns),
-                    timeout=self.o.timeout).getcode()
+                try:
+                    status_code = urllib.request.urlopen(
+                        self.o.pollUrl.format(stns),
+                        timeout=self.o.timeout).getcode()
+                except urllib.error.HTTPError as e:
+                    # urlopen raises on any status other than 2xx, so a 403 ends up here, not in status_code
+                    if e.code == 403:
+                        logger.error(
+                            '''poll_usgs: USGS has determined your usage is excessive and \
+							blocked your IP. Use the contact form on their site to be \
+							unblocked.''')
+                        return gathered_messages
+                    logger.error(f"could not get {self.o.pollUrl.format(stns)}: {e}, skipping those sites")
+                    logger.debug("Exception details:", exc_info=True)
+                    continue
+                except (OSError, http.client.HTTPException) as e:
+                    logger.error(f"could not get {self.o.pollUrl.format(stns)}: {e}, skipping those sites")
+                    logger.debug("Exception details:", exc_info=True)
+                    continue
                 if status_code == 200:
                     logger.info(f"poll_usgs file updated {self.o.pollUrl.format(stns)}")
 
@@ -103,30 +121,36 @@ class Usgs(FlowCB):
                         f'usgs_{run_time}_sites{file_cnt}.xml',
                         self.o)
                     gathered_messages.append(m)
-                elif status_code == 403:
-                    logger.error(
-                        '''poll_usgs: USGS has determined your usage is excessive and \
-							blocked your IP. Use the contact form on their site to be \
-							unblocked.''')
                 else:
                     logger.debug('poll_usgs file not found: %s', self.o.pollUrl.format(stns))
         else:  # Get stations one at a time
             for site in self.sitecodes:
                 logger.debug('getting: %s', self.o.pollUrl.format(site))
-                status_code = urllib.request.urlopen(
-                    self.o.pollUrl.format(site),
-                    timeout=self.o.timeout).getcode()
+                try:
+                    status_code = urllib.request.urlopen(
+                        self.o.pollUrl.format(site),
+                        timeout=self.o.timeout).getcode()
+                except urllib.error.HTTPError as e:
+                    # urlopen raises on any status other than 2xx, so a 403 ends up here, not in status_code
+                    if e.code == 403:
+                        logger.error(
+                            '''poll_usgs: USGS has determined your usage is excessive and \
+							blocked your IP. Use the contact form on their site to be \
+							unblocked.''')
+                        return gathered_messages
+                    logger.error(f"could not get {self.o.pollUrl.format(site)}: {e}, skipping site {site}")
+                    logger.debug("Exception details:", exc_info=True)
+                    continue
+                except (OSError, http.client.HTTPException) as e:
+                    logger.error(f"could not get {self.o.pollUrl.format(site)}: {e}, skipping site {site}")
+                    logger.debug("Exception details:", exc_info=True)
+                    continue
                 if status_code == 200:
                     logger.info(f"poll_usgs file updated {self.o.pollUrl.format(site)}")
                     self.o.msg.new_baseurl = self.o.pollUrl.format(site)
                     m = sarracenia.Message.fromFileInfo(
                         f'usgs_{run_time}_{site}.xml', self.o)
                     gathered_messages.append(m)
-                elif status_code == 403:
-                    logger.error(
-                        '''poll_usgs: USGS has determined your usage is excessive and \
-							blocked your IP. Use the contact form on their site to be \
-							unblocked.''')
                 else:
                     logger.debug('poll_usgs file not found: %s', self.o.pollUrl.format(site))
         return gathered_messages

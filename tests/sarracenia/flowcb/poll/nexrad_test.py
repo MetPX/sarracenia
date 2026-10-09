@@ -67,3 +67,35 @@ def test_poll_passes_configured_timeout_to_station_list(mocker):
         'https://www.aviationweather.gov/docs/metar/stations.txt'
     assert mock_urlopen.call_args[1].get('timeout') == 17
     assert len(gathered) == 1
+
+
+def test_poll_logs_and_returns_nothing_when_station_list_times_out(mocker, caplog):
+    """Without the station list there is nothing to poll: log it and return no messages."""
+    import socket
+    options = make_options(timeout=17)
+    poll = sarracenia.flowcb.poll.nexrad.Nexrad(options)
+    poll.metrics = {'transferRxBytes': 0}
+
+    mocker.patch('sarracenia.flowcb.poll.nexrad.urllib.request.urlopen',
+                 side_effect=socket.timeout('timed out'))
+    client = mocker.patch('sarracenia.flowcb.poll.nexrad.boto3.client')
+
+    assert poll.poll() == []
+    client.assert_not_called()
+    errors = [r.getMessage() for r in caplog.records if r.levelname == 'ERROR']
+    assert any('stations.txt' in e and 'timed out' in e for e in errors)
+
+
+def test_poll_logs_and_returns_nothing_on_a_bad_http_response(mocker, caplog):
+    """http.client errors are not OSError, they are caught too."""
+    import http.client
+    options = make_options(timeout=17)
+    poll = sarracenia.flowcb.poll.nexrad.Nexrad(options)
+    poll.metrics = {'transferRxBytes': 0}
+
+    mocker.patch('sarracenia.flowcb.poll.nexrad.urllib.request.urlopen',
+                 side_effect=http.client.BadStatusLine('garbage'))
+
+    assert poll.poll() == []
+    errors = [r.getMessage() for r in caplog.records if r.levelname == 'ERROR']
+    assert any('stations.txt' in e and 'garbage' in e for e in errors)

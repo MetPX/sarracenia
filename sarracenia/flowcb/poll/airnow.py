@@ -30,6 +30,7 @@ class Airnow(FlowCB):
         sleep = self.o.scheduled_interval
 
         gathered_messages = []
+        URL = getattr(self.o, 'pollUrl', None)
         try:
             for Hours in range(1, 3):
                 last_hour_date_time = datetime.datetime.now() - datetime.timedelta(
@@ -62,7 +63,7 @@ class Airnow(FlowCB):
 
                     logger.info(f'mtime: {mtime}  last_pollL {last_poll}')
         except Exception as e:
-            logger.error(f"Poll failed: {e}")
+            logger.error(f"Poll failed for {URL}: {e}")
             logger.debug("Exception details:", exc_info=True)
         
         return gathered_messages

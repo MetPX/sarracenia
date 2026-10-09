@@ -148,11 +148,18 @@ class Eumetsat(sarracenia.flowcb.FlowCB):
             for i in range(0, n_hours):
                 req_url = url_head.replace(self._cid_placeholder, cid) + t_str[i] + url_tail
                 logger.info(f"polling URL {req_url}")
-                resp = requests.get(req_url, timeout=self.o.timeout)
-                if not resp or "products" not in resp.json().keys():
+                try:
+                    resp = requests.get(req_url, timeout=self.o.timeout)
+                    body = resp.json() if resp else {}
+                except (requests.exceptions.RequestException, ValueError) as e:
+                    # ValueError: a body that isn't json (e.g. an html error page), older requests don't wrap it
+                    logger.error(f"could not get {req_url}: {e}, skipping this hour")
+                    logger.debug("Exception details:", exc_info=True)
+                    continue
+                if "products" not in body:
                     logger.warning(f"Something went wrong: no products found at {req_url}")
                 else:
-                    for item in resp.json()['products']:
+                    for item in body['products']:
                         if 'links' in item:
                             for link in item['links']:
                                 # Looking for the "Product details" link
@@ -168,8 +175,15 @@ class Eumetsat(sarracenia.flowcb.FlowCB):
             if self.stop_requested:
                 logger.info("Stop requested. Stopping.")
                 break
-            details_page = requests.get(details_link, timeout=self.o.timeout)
-            msgs = self.msgs_from_details_page(details_page.json())
+            try:
+                details_page = requests.get(details_link, timeout=self.o.timeout)
+                details = details_page.json()
+            except (requests.exceptions.RequestException, ValueError) as e:
+                # ValueError: a body that isn't json (e.g. an html error page), older requests don't wrap it
+                logger.error(f"could not get {details_link}: {e}, skipping this product")
+                logger.debug("Exception details:", exc_info=True)
+                continue
+            msgs = self.msgs_from_details_page(details)
             logger.debug('created %s message(s) from 1 details_link %s', len(msgs), details_link)
             gathered_messages += msgs
             

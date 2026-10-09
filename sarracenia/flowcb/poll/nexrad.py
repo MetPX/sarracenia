@@ -31,6 +31,7 @@ import logging
 import paramiko
 import sarracenia
 from sarracenia.flowcb import FlowCB
+import http.client
 import urllib.request
 
 logger = logging.getLogger(__name__)
@@ -64,17 +65,20 @@ class Nexrad(FlowCB):
         # Currently only scrapes US weather station ICAOs, but can be adjusted to pull
         # from Canada/worldwide sites.
         ICAOs = set()
-        with urllib.request.urlopen(
-                'https://www.aviationweather.gov/docs/metar/stations.txt',
-                timeout=self.o.timeout
-        ) as f:
-            lines = f.readlines()
-            self.metrics['transferRxBytes'] += len(lines)
-            for line in lines:
-                line = line.decode("utf-8", "ignore")
-                if len(line) > 80:
-                    if line.endswith("US\n") and line[65] == 'X':
-                        if line[20:24] != "    ": ICAOs.add(line[20:24])
+        stations_url = 'https://www.aviationweather.gov/docs/metar/stations.txt'
+        try:
+            with urllib.request.urlopen(stations_url, timeout=self.o.timeout) as f:
+                lines = f.readlines()
+        except (OSError, http.client.HTTPException) as e:
+            logger.error(f"could not get the station list {stations_url}: {e}, nothing polled this time")
+            logger.debug("Exception details:", exc_info=True)
+            return []
+        self.metrics['transferRxBytes'] += len(lines)
+        for line in lines:
+            line = line.decode("utf-8", "ignore")
+            if len(line) > 80:
+                if line.endswith("US\n") and line[65] == 'X':
+                    if line[20:24] != "    ": ICAOs.add(line[20:24])
 
         # Not all sites from the Nexrad data set are covered from the official source
         #(some foreign US bases are included in the NEXRAD dataset), so add the missing ones from this list:

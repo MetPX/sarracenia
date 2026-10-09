@@ -215,7 +215,7 @@ class Odata(sarracenia.flowcb.FlowCB):
                     url = None # stop the loop
 
             except Exception as e:
-                logger.error(f"Error while polling URL: {url}")
+                logger.error(f"Error while polling URL: {url} ({e})")
                 logger.debug("Exception details:", exc_info=True)
                 url = None
         
