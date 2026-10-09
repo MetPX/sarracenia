@@ -71,3 +71,193 @@ def test_msg_rejected_when_sundew_extension_already_present():
     assert(len(flow.worklist.incoming) == 0)
     assert(len(flow.worklist.rejected) == 0)
     assert(msg not in flow.worklist.incoming)
+
+
+def __traversal_flow(lines):
+    options = __make_fake_config(lines=lines)
+    flow = sarracenia.flow.Flow(options)
+    flow.have_vip = True
+    return flow
+
+
+def __inline_message(relPath, **extra):
+    message = sarracenia.Message()
+    message["pubTime"] = "20261008T120000.123"
+    message["baseUrl"] = "none://"
+    message["relPath"] = relPath
+    message["size"] = 8
+    message["content"] = {"encoding": "utf-8", "value": "payload\n"}
+    message["identity"] = {"method": "arbitrary", "value": relPath}
+    message.update(extra)
+    return message
+
+
+def test_filter_rejects_relpath_escaping_directory_when_mirroring(tmp_path):
+    root = tmp_path / "data" / "root"
+    root.mkdir(parents=True)
+    flow = __traversal_flow(["download True", "mirror True", f"directory {root}", "accept .*"])
+    flow.worklist.incoming.append(__inline_message("../../escape/evil.txt"))
+    flow.worklist.incoming.append(__inline_message("a/../../../escape2/evil.txt"))
+    flow.worklist.incoming.append(__inline_message("a/b/ok.txt"))
+
+    flow.filter()
+    flow.work()
+
+    assert [m["new_file"] for m in flow.worklist.ok] == ["ok.txt"]
+    assert (root / "a" / "b" / "ok.txt").read_text() == "payload\n"
+    assert not (tmp_path / "escape").exists()
+    assert not (tmp_path / "escape2").exists()
+
+
+def test_filter_rejects_rename_escaping_directory(tmp_path):
+    root = tmp_path / "data" / "root"
+    root.mkdir(parents=True)
+    flow = __traversal_flow(["download True", "mirror True", f"directory {root}", "accept .*"])
+    flow.worklist.incoming.append(__inline_message("sub/a.txt", rename="../../escape3/renamed.txt"))
+
+    flow.filter()
+    flow.work()
+
+    assert flow.worklist.ok == []
+    assert not (tmp_path / "escape3").exists()
+
+
+def test_filter_ignores_dotdot_in_directory_part_without_mirror(tmp_path):
+    root = tmp_path / "data" / "root"
+    root.mkdir(parents=True)
+    flow = __traversal_flow(["download True", "mirror False", f"directory {root}", "accept .*"])
+    flow.worklist.incoming.append(__inline_message("../../escape/evil.txt"))
+
+    flow.filter()
+    flow.work()
+
+    assert (root / "evil.txt").read_text() == "payload\n"
+    assert not (tmp_path / "escape").exists()
+
+
+def test_filter_accepts_escaping_relpath_with_acceptPathTraversal(tmp_path):
+    root = tmp_path / "data" / "root"
+    root.mkdir(parents=True)
+    flow = __traversal_flow(["download True", "mirror True", "acceptPathTraversal True",
+                                       f"directory {root}", "accept .*"])
+    flow.worklist.incoming.append(__inline_message("../../escape/evil.txt"))
+
+    flow.filter()
+    flow.work()
+
+    assert (tmp_path / "escape" / "evil.txt").read_text() == "payload\n"
+
+
+def test_filter_rejects_filename_dotdot_without_mirror(tmp_path, caplog):
+    root = tmp_path / "data" / "root"
+    root.mkdir(parents=True)
+    flow = __traversal_flow(["download True", "mirror False", f"directory {root}", "accept .*"])
+    flow.worklist.incoming.append(__inline_message("a/.."))
+
+    flow.filter()
+
+    assert flow.worklist.incoming == []
+    assert len([r for r in caplog.records if r.getMessage().startswith("rejecting a/..:")]) == 1
+
+
+def test_filter_rejects_dotdot_substituted_into_directory(tmp_path):
+    # ${0} is the whole matched url, so the message's relPath ends up in the directory even without mirror
+    root = tmp_path / "data" / "root"
+    root.mkdir(parents=True)
+    flow = __traversal_flow(["download True", "mirror False", f"directory {root}/${{0}}",
+                                       "accept none://(.*)/[^/]+$"])
+    flow.worklist.incoming.append(__inline_message("../../../x/evil.txt"))
+    flow.worklist.incoming.append(__inline_message("a/b/ok.txt"))
+
+    flow.filter()
+    flow.work()
+
+    assert [m["new_file"] for m in flow.worklist.ok] == ["ok.txt"]
+    assert not (tmp_path / "x").exists()
+
+
+def test_filter_allows_dotdot_from_the_configured_directory(tmp_path):
+    # a '..' written by the operator in the directory option is not the message's doing
+    root = tmp_path / "data" / "elsewhere" / ".." / "root"
+    (tmp_path / "data" / "root").mkdir(parents=True)
+    flow = __traversal_flow(["download True", "mirror True", f"directory {root}", "accept .*"])
+    flow.worklist.incoming.append(__inline_message("a/ok.txt"))
+    flow.worklist.incoming.append(__inline_message("../escape/evil.txt"))
+
+    flow.filter()
+    flow.work()
+
+    assert [m["new_file"] for m in flow.worklist.ok] == ["ok.txt"]
+    assert (tmp_path / "data" / "root" / "a" / "ok.txt").read_text() == "payload\n"
+    assert not (tmp_path / "data" / "escape").exists()
+
+
+@pytest.mark.parametrize("lines", [
+    ["post_baseDir {tmp}/data/elsewhere/../root"],
+    ["baseDir {tmp}/data/elsewhere/..", "directory ${{BD}}/root"],
+    ["baseDir {tmp}/data/elsewhere/..", "post_baseDir ${{BD}}/root", "directory ${{PBD}}"],
+])
+def test_filter_allows_dotdot_from_the_configured_base_directory(tmp_path, lines):
+    # the base directory can come from post_baseDir, ${BD} or ${PBD}, nested or not: all configuration
+    (tmp_path / "data" / "root").mkdir(parents=True)
+    lines = ["download True", "mirror True"] + [l.format(tmp=tmp_path) for l in lines] + ["accept .*"]
+    flow = __traversal_flow(lines)
+    flow.worklist.incoming.append(__inline_message("a/ok.txt"))
+    flow.worklist.incoming.append(__inline_message("../escape/evil.txt"))
+
+    flow.filter()
+
+    assert [m["new_file"] for m in flow.worklist.incoming] == ["ok.txt"]
+    assert flow.worklist.incoming[0]["new_dir"].endswith("/elsewhere/../root/a")
+
+
+def test_filter_rejects_absolute_filename_from_message(tmp_path, caplog):
+    root = tmp_path / "data" / "root"
+    root.mkdir(parents=True)
+    victim = tmp_path / "victim.txt"
+    flow = __traversal_flow(["download True", "mirror False", f"directory {root}",
+                                       "filename SENDER", "accept .*"])
+    flow.worklist.incoming.append(__inline_message("sub/plain.txt", sundew_extension=f"SENDER={victim}"))
+
+    flow.filter()
+    flow.work()
+
+    assert flow.worklist.ok == []
+    assert not victim.exists()
+    assert len([r for r in caplog.records if "is absolute" in r.getMessage()]) == 1
+
+
+def test_filter_skips_the_check_when_not_downloading(tmp_path):
+    # a shovel or post relays the path as is, the subscriber at the other end does its own check
+    flow = __traversal_flow(["download False", "mirror True", "accept .*"])
+    flow.worklist.incoming.append(__inline_message("a/../b/ok.txt"))
+
+    flow.filter()
+
+    assert [m["new_file"] for m in flow.worklist.incoming] == ["ok.txt"]
+
+
+def test_filter_rejects_when_no_file_name_can_be_derived(tmp_path, caplog):
+    root = tmp_path / "data" / "root"
+    root.mkdir(parents=True)
+    flow = __traversal_flow(["download True", "mirror False", f"directory {root}", "filename SENDER", "accept .*"])
+    flow.worklist.incoming.append(__inline_message("sub/plain.txt"))
+
+    flow.filter()
+
+    assert flow.worklist.incoming == []
+    assert len([r for r in caplog.records if "could not derive a file name" in r.getMessage()]) == 1
+
+
+def test_filter_keeps_relpath_ending_in_slash_with_filename_option(tmp_path):
+    # issue #1503: a relPath ending in '/' gives an empty file name, do_download fixes it later
+    root = tmp_path / "data" / "root"
+    root.mkdir(parents=True)
+    flow = __traversal_flow(["download True", "mirror True", f"directory {root}", "filename WHATFN", "accept .*"])
+    flow.worklist.incoming.append(__inline_message("sub/name/"))
+    flow.worklist.incoming.append(__inline_message("sub/../../escape/"))
+
+    flow.filter()
+
+    assert [m["new_file"] for m in flow.worklist.incoming] == [""]
+    assert flow.worklist.incoming[0]["new_dir"] == f"{root}/sub/name"

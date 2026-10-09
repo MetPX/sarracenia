@@ -430,6 +430,22 @@ It's named  */this/20160123/pattern/RAW_MERGER_GRIB/directory* if the notificati
 **20150813161959.854 http://this.pump.com/ relative/path/to/20160123_product_RAW_MERGER_GRIB_from_CMC**
 
 
+acceptPathTraversal: <boolean> (default: False)
+-----------------------------------------------
+
+The path a file is written to is built from the configured *directory* and
+*filename* options and from the notification message: the relative path when
+*mirror* is set, the *rename* field when downloading, and the values substituted
+for ${0}, ${CCCC}, ${BUP}, ${SOURCE} and the like. By default, a message is
+rejected when the resulting path contains more *..* components than the
+configured *directory* does, since they can resolve to a location outside of it
+(overwriting files one level up, for example). An absolute file name coming from
+the message (*filename SENDER* with a SENDER=/... extension, for instance) is
+rejected for the same reason. The check applies to the components that write
+files (subscribe, sarra, sender). Set *acceptPathTraversal True* to accept such
+paths anyway, when the upstream source is trusted and relies on them. The paths
+in *fileOp* (rename, link) are not covered by this check.
+
 acceptSizeWrong: <boolean> (default: False)
 -------------------------------------------
 
