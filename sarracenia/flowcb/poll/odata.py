@@ -190,7 +190,7 @@ class Odata(sarracenia.flowcb.FlowCB):
         while url:
             logger.info(f"Polling URL: {url}")
             try:
-                r = requests.get(url)
+                r = requests.get(url, timeout=self.o.timeout)
                 data = r.json()
 
                 # https://documentation.dataspace.copernicus.eu/APIs/ReleaseNotes.html#odata-catalog-api-updates
@@ -215,7 +215,7 @@ class Odata(sarracenia.flowcb.FlowCB):
                     url = None # stop the loop
 
             except Exception as e:
-                logger.error(f"Error while polling URL: {url}")
+                logger.error(f"Error while polling URL: {url} ({e})")
                 logger.debug("Exception details:", exc_info=True)
                 url = None
         
