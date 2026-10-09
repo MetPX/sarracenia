@@ -1,6 +1,5 @@
 import logging
 import sarracenia
-import gzip
 import uuid
 from sarracenia.postformat import PostFormat
 from datetime import datetime, timezone
@@ -38,22 +37,29 @@ class NavCanada(PostFormat):
                 epoch: 1772657588 (string or int)
                 ISO:   2026-08-18T08:13:08.399Z or # 2026-08-18T08:13:08.399
         """
-        if isinstance(time, str):
-            time = time.replace('Z', '')
-            if 'T' in time and ':' in time and '-' in time:
-                dt = datetime.strptime(time, '%Y-%m-%dT%H:%M:%S.%f')
-                return dt.strftime("%Y%m%dT%H%M%S.%f")[:-3]
-            else:
-                try:
-                    dt = datetime.fromtimestamp(int(time), tz=timezone.utc)
+        try:
+            if isinstance(time, str):
+                time = time.replace('Z', '')
+                if 'T' in time and ':' in time and '-' in time and '.' in time:
+                    dt = datetime.strptime(time, '%Y-%m-%dT%H:%M:%S.%f')
                     return dt.strftime("%Y%m%dT%H%M%S.%f")[:-3]
-                except Exception as e:
-                    # ERROR message below will be logged
-                    logger.debug(f"{e}", exc_info=True)
+                elif 'T' in time and ':' in time and '-' in time:
+                    dt = datetime.strptime(time, '%Y-%m-%dT%H:%M:%S')
+                    return dt.strftime("%Y%m%dT%H%M%S.%f")[:-3]
+                else:
+                    try:
+                        dt = datetime.fromtimestamp(int(time), tz=timezone.utc)
+                        return dt.strftime("%Y%m%dT%H%M%S.%f")[:-3]
+                    except Exception as e:
+                        # ERROR message below will be logged
+                        logger.debug(f"{e}", exc_info=True)
 
-        elif isinstance(time, int):
-            dt = datetime.fromtimestamp(time, tz=timezone.utc)
-            return dt.strftime("%Y%m%dT%H%M%S.%f")[:-3]
+            elif isinstance(time, int):
+                dt = datetime.fromtimestamp(time, tz=timezone.utc)
+                return dt.strftime("%Y%m%dT%H%M%S.%f")[:-3]
+        except Exception as e:
+            logger.error(f"Time parsing failed: {time} reason: {e}")
+            logger.debug("Exception details:", exc_info=True)
 
         logger.error(f"unsupported time format: {time}, USING CURRENT TIME")
         return sarracenia.nowstr()
@@ -166,9 +172,9 @@ class NavCanada(PostFormat):
 
             returns: body, headers, content_type
 
-            body: inline content in FIXME encoding
+            body: inline content in UTF-8 encoding
 
-            headers: see PDF doc for now
+            headers: see PDF doc
         """
 
         # NAVCANADA broker requires topic:// prefix, rather than hardcoding that, we'll add it in the configured
@@ -235,7 +241,7 @@ class NavCanada(PostFormat):
         if 'mtime' in sr3_msg:
             mtime = NavCanada.__sarra_timestr_to_dt(sr3_msg['mtime'])
             try:
-                headers['FILE_MTIME'] = mtime.isoformat()[:-3] + 'Z'
+                headers['FILE_MTIME'] = NavCanada.__dt_to_nc_timestr(mtime)
             except Exception as e:
                 logger.warning(f"failed to parse mtime {sr3_msg['mtime']} {e}")
 
@@ -247,7 +253,7 @@ class NavCanada(PostFormat):
                 pubTime = datetime.now()
         else:
             pubTime = datetime.now()
-        headers['MSG_PUBLISH_TIME'] = pubTime.isoformat()[:-3] + 'Z'
+        headers['MSG_PUBLISH_TIME'] = NavCanada.__dt_to_nc_timestr(pubTime)
 
         headers['UUID'] = str(uuid.uuid4())
 
@@ -255,10 +261,10 @@ class NavCanada(PostFormat):
         if 'content' in sr3_msg and sr3_msg['content'] and sr3_msg['content']['encoding'] == 'utf-8':
             raw_body = sr3_msg['content']['value']
         elif 'content' in sr3_msg and sr3_msg['content'] and sr3_msg['content']['encoding'] != 'utf-8':
-            logger.error(f"cannot export to NAV CANADA format; content is not UTF-8 encoded for {sr3_msg.getIDStr()}")
+            logger.error(f"cannot export to NAV CANADA format; content is not UTF-8 encoded for {sr3_msg}")
             return None, None, None
         else:
-            logger.error(f"inline content missing from {sr3_msg.getIDStr()}")
+            logger.error(f"inline content missing from {sr3_msg}")
             return None, None, None
 
         # NAV CANADA requires that embedded content is <30 MB but leave it up to the person
@@ -298,3 +304,10 @@ class NavCanada(PostFormat):
         # so use only the first 22 characters
         dt = datetime.strptime(sarra_time_str[:22], "%Y%m%dT%H%M%S.%f")
         return dt
+
+    @staticmethod
+    def __dt_to_nc_timestr(dt):
+        """ convert a datetime object to NAV CANADA's time string.
+            e.g. 2026-10-08T17:42:38.456Z
+        """
+        return dt.strftime('%Y-%m-%dT%H:%M:%S.%f')[:-3] + 'Z'
