@@ -86,6 +86,7 @@ def test_schedules():
      logger.info( f"default schedule (should be 300 second interval) {me.appointments=}" )
      assert( len(me.appointments) == 0 ) 
 
+     me.next_gather_time = None
      me.calc_next_gather_time( sample_time )
      how_long = me.next_gather_time - sample_time
      logger.info( f" {how_long.total_seconds()=} until next poll. " )
@@ -106,6 +107,7 @@ def test_schedules():
      now=datetime.datetime.now(datetime.timezone.utc )
      sample_time= datetime.datetime.combine(now,sample_time)
 
+     me.next_gather_time = None
      me.calc_next_gather_time( sample_time )
      how_long = me.next_gather_time - sample_time
      logger.info( f" {how_long.total_seconds()=} until next poll. " )
@@ -120,6 +122,7 @@ def test_schedules():
      assert( len(me.appointments) == 0 ) 
 
      logger.info( f"pretending the time is 00:05 today" )
+     me.next_gather_time = None
      me.calc_next_gather_time( sample_time )
      how_long = me.next_gather_time - sample_time
      logger.info( f" {how_long.total_seconds()=} until next poll. " )
@@ -136,6 +139,7 @@ def test_schedules():
      assert( len(me.appointments) == 2 ) 
 
      logger.info( f"pretending the time is 00:05 today" )
+     me.next_gather_time = None
      me.calc_next_gather_time( sample_time )
      how_long = me.next_gather_time - sample_time
      logger.info( f" {how_long.total_seconds()=} until next poll. " )
@@ -153,6 +157,7 @@ def test_schedules():
      assert( len(me.appointments) == 4 ) 
 
      logger.info( f"pretending the time is 00:05 today" )
+     me.next_gather_time = None
      me.calc_next_gather_time( sample_time )
      how_long = me.next_gather_time - sample_time
      logger.info( f" {how_long.total_seconds()=} until next poll. " )
@@ -172,6 +177,7 @@ def test_schedules():
      assert( len(me.appointments) == 2 ) 
 
      logger.info( f"pretending the time is 00:05 today" )
+     me.next_gather_time = None
      me.calc_next_gather_time( sample_time )
      how_long = me.next_gather_time - sample_time
      logger.info( f" {how_long.total_seconds()=} until next poll. " )
@@ -191,6 +197,7 @@ def test_schedules():
      assert( len(me.appointments) == 48 ) 
 
      logger.info( f"pretending the time is 00:05 today" )
+     me.next_gather_time = None
      me.calc_next_gather_time( sample_time )
      how_long = me.next_gather_time - sample_time
      logger.info( f" {how_long.total_seconds()=} until next poll. " )
