@@ -52,7 +52,8 @@ class Amqp1ClientBase:
         self.password = self.o['broker'].url.password
         self.anonymous = (self.username == 'anonymous' and self.password == 'anonymous')
 
-        self.connection_name = f"metpx-sr3_v{sarracenia.__version__}-{self.o['component']}_{self.o['config']}"
+        self.connection_name = f"sr3_v{sarracenia.__version__}-{self.o['component']}_"
+        self.connection_name += f"{self.o['config']}_i{self.o['no']}"
         self.connection_name += "-SUB" if is_subscriber else "-PUB"
         logger.debug(f"connection name: {self.connection_name}")
 
@@ -434,7 +435,7 @@ class AMQ1(Moth):
         self._raw_msg_q = None
         self._ack_q = None
 
-    def _msgRawToDict(self, raw_msg) -> sarracenia.Message:
+    def _msgRawToDict(self, raw_msg, ack_id=-1) -> sarracenia.Message:
         """ Convert AMQP1.0 raw message to sr3 message (dictionary)
         """
         # convert memory view where possible
@@ -495,6 +496,11 @@ class AMQ1(Moth):
         # for decoding AMQP1 messages, we map the Application Properties to "headers"
         # the data (Message Payload/body), if present, is mapped to "payload"
         message = PostFormat.importAny(raw_msg.body, app_properties, content_type, self.o)
+        if not message:
+            logger.error('Decode failed, discarding message')
+            if ack_id is not None and ack_id >= 0:
+                self.__ack_id(ack_id)
+            return None
 
         # FIXME: don't really understand why we do this in every moth implementation and not somewhere else.
         message['local_offset'] = 0
@@ -670,7 +676,7 @@ class AMQ1(Moth):
             else:
                 # self.metrics['rxByteCount'] += len(raw_msg.body)
                 try:
-                    msg = self._msgRawToDict(raw_msg)
+                    msg = self._msgRawToDict(raw_msg, ack_id=ack_id)
                     # ack_id can be 0, need to specifically check that it's not None
                     if ack_id is not None and msg is not None:
                         msg['ack_id'] = { 'tag': ack_id,
@@ -788,7 +794,12 @@ class AMQ1(Moth):
 
             # convert sr3 message to desired raw format (e.g. SWIM, NAVCANADA)
             # (NOTE: set post_format swim or post_format navcanada in config file)
-            raw_body, properties, content_type = PostFormat.exportAny(sr3_msg, version, self.o['topicPrefix'], self.o)
+            raw_body, properties, content_type = rval = PostFormat.exportAny(sr3_msg, version,
+                                                                                self.o['topicPrefix'], self.o)
+
+            if None in rval:
+                logger.error(f"Failed to export message to format: {version}, cannot publish")
+                return False
 
             if raw_body is not None and len(raw_body) <= 0:
                 logger.warning(f"message body is empty (properties: {properties})")

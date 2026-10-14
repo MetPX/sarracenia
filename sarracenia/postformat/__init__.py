@@ -125,11 +125,7 @@ class PostFormat:
 # test for wis, navcanada and swim first, because v03 may claim all other JSON.
 # for navcanada and swim, the content type reflects the content type of the embedded data (not the message)
 import sarracenia.postformat.wis
-# not including NAV CANADA in public code yet
-try:
-    import sarracenia.postformat.navcanada
-except Exception:
-    pass
+import sarracenia.postformat.navcanada
 import sarracenia.postformat.swim
 import sarracenia.postformat.v03
 # v02 will claim any messages where the body/payload is string and not JSON
