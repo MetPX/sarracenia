@@ -72,7 +72,9 @@ détails séparés par des virgules (voir les exemples ci-dessus).
 
 Détails pris en charge :
 
-- ``ssh_keyfile=<path>`` - (SFTP) Chemin du SSH keyfile
+- ``ssh_keyfile=<path>`` - (SFTP) Chemin du SSH keyfile. Pour SFTP, préférer plutôt une entrée
+  dans ``~/.ssh/config``, voir `SFTP et ~/.ssh/config`_ plus bas. ``ssh_keyfile`` n'est pas
+  vu par la commande ``scp`` utilisée pour les transferts accélérés.
 - ``passive`` - (FTP) Utiliser le mode passif
 - ``active`` - (FTP) Utiliser le mode actif
 - ``binary`` - (FTP) Utiliser le mode binaire
@@ -104,6 +106,71 @@ Note::
  son équivalent encodé par URL peut être fourni. Dans le dernier exemple, **%2f** signifie que le
  mot de passe réel est: **/dot8**. L’avant-dernier mot de passe est : **De:olonize**.
  ( %3a étant la valeur encodée url pour un caractère deux-points. )
+
+SFTP et ~/.ssh/config
+---------------------
+
+Pour SFTP, mettre les paramètres de connexion dans ``~/.ssh/config`` plutôt que dans
+``credentials.conf``, et omettre complètement l'entrée dans ``credentials.conf``.
+
+Sarracenia a deux façons de transférer un fichier par SFTP. Les transferts ordinaires
+utilisent la bibliothèque paramiko, que Sarracenia configure à partir de ``credentials.conf``.
+Les transferts plus gros que ``accelThreshold`` sont confiés à la commande ``scp`` (voir
+``accelScpCommand``). ``scp`` lit ``~/.ssh/config`` et ne connaît pas ``credentials.conf``,
+donc tout ce qui n'est inscrit que là lui est invisible. Une clé indiquée par ``ssh_keyfile``
+fonctionne pour les transferts ordinaires et manque silencieusement aux transferts accélérés,
+ce qui se présente comme une configuration qui fonctionne jusqu'à ce qu'un fichier dépasse
+``accelThreshold``.
+
+Les paramètres dans ``~/.ssh/config`` évitent ce problème, parce que les deux chemins les
+lisent : ``scp`` nativement, et paramiko parce que Sarracenia cherche lui-même l'hôte dans
+``~/.ssh/config`` et en prend ``HostName``, ``User``, ``Port`` et ``IdentityFile``. Ce sont
+les quatre seuls paramètres qu'il lit, et seulement le premier ``IdentityFile``. Tout autre
+paramètre de la section, comme ``IdentitiesOnly`` ci-dessous, ne s'applique qu'à ``scp``.
+
+Définir une section qui nomme l'hôte, le compte et la clé::
+
+    Host weather-pump
+        HostName sftp.example.com
+        User sarra
+        IdentityFile ~/.ssh/id_ecdsa_weather_pump
+        IdentitiesOnly yes
+
+Puis utiliser l'alias comme nom d'hôte dans l'URL::
+
+    sendTo sftp://weather-pump/
+
+et ne rien ajouter à ``credentials.conf`` pour celui-ci.
+
+Un alias ne fonctionne que là où l'URL vient de la configuration : ``sendTo`` pour un sender
+et ``pollUrl`` pour un poll. Lorsqu'un subscriber ou un sarra télécharge, l'hôte vient du
+``baseUrl`` dans le message de notification, donc le ``Host`` de la section doit être le nom
+d'hôte annoncé par l'éditeur, ou il doit y avoir une entrée correspondante dans
+``credentials.conf``. Un alias défini seulement localement n'a aucun effet sur les
+téléchargements.
+
+L'alias est une étiquette, pas un nom d'hôte, donc un serveur accessible de plusieurs façons
+peut avoir une section par façon, chacune avec son propre alias, et pour un serveur qui
+déménage, il suffit de modifier sa section.
+
+Ne pas mettre de numéro de port dans l'URL. Donner plutôt le port dans la section::
+
+    Host weather-pump-alt
+        HostName sftp.example.com
+        Port 2222
+        User sarra
+        IdentityFile ~/.ssh/id_ecdsa_weather_pump
+
+Un port dans l'URL n'est pas transmis correctement à ``scp``, donc un transfert accéléré vers
+``sftp://sarra@host:2222/`` échoue alors qu'un transfert ordinaire vers la même URL réussit.
+
+Note::
+ Sarracenia ne consulte ``~/.ssh/config`` que lorsque l'identifiant ne répond pas déjà à la
+ question : lorsqu'aucun utilisateur n'est connu, ou lorsque ni clé ni mot de passe n'a été
+ fourni. Une entrée de ``credentials.conf`` qui contient un utilisateur et un secret (un mot
+ de passe ou un ``ssh_keyfile``) a priorité et la section n'est pas lue. Omettre l'entrée
+ est la façon fiable de faire appliquer ``~/.ssh/config``.
+
 
 VOIR AUSSI
 ==========
