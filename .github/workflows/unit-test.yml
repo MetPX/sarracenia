@@ -72,7 +72,7 @@ jobs:
       #     junitxml-title: Test Results
 
       - name: Upload pytest junit results
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: results-junit
           path: tests/junit/test-results.xml
@@ -80,7 +80,7 @@ jobs:
         if: ${{ always() }}
       
       - name: Upload pytest HTML report
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: results-report
           path: tests/report.html
@@ -88,7 +88,7 @@ jobs:
         if: ${{ always() }}
       
       - name: Upload code coverage report (HTML)
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: coverage-report
           path: tests/coverage/html_report
@@ -96,7 +96,7 @@ jobs:
         if: ${{ always() }}
 
       - name: Upload code coverage report (LCOV)
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: coverage-lcov
           path: tests/coverage/coverage.lcov
@@ -104,7 +104,7 @@ jobs:
         if: ${{ always() }}
         
       - name: Upload code coverage report (XML)
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: coverage-xml
           path: tests/coverage/coverage.xml
