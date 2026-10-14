@@ -238,9 +238,10 @@ class NavCanada(PostFormat):
         else:
             headers['FILE_NAME'] = relPath_split[-1]
 
+        # mtime is optional
         if 'mtime' in sr3_msg:
-            mtime = NavCanada.__sarra_timestr_to_dt(sr3_msg['mtime'])
             try:
+                mtime = NavCanada.__sarra_timestr_to_dt(sr3_msg['mtime'])
                 headers['FILE_MTIME'] = NavCanada.__dt_to_nc_timestr(mtime)
             except Exception as e:
                 logger.warning(f"failed to parse mtime {sr3_msg['mtime']} {e}")
@@ -261,7 +262,8 @@ class NavCanada(PostFormat):
         if 'content' in sr3_msg and sr3_msg['content'] and sr3_msg['content']['encoding'] == 'utf-8':
             raw_body = sr3_msg['content']['value']
         elif 'content' in sr3_msg and sr3_msg['content'] and sr3_msg['content']['encoding'] != 'utf-8':
-            logger.error(f"cannot export to NAV CANADA format; content is not UTF-8 encoded for {sr3_msg}")
+            logger.error("cannot export to NAV CANADA format; content is not UTF-8 encoded for "
+                         + f"{sr3_msg.get('baseUrl', '')} {sr3_msg.get('relPath', '')}")
             return None, None, None
         else:
             logger.error(f"inline content missing from {sr3_msg}")
