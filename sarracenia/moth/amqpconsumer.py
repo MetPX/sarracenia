@@ -67,6 +67,8 @@ class AMQPConsumer(AMQP):
                     self._max_sleep = self.o['sleep']
             # if scheduled_interval is not known, use a small timeout and let Flow code handle sleeping/timing    
             else:
+                logger.debug("scheduled_interval is not in use, using sleep %.2f for max AMQP Consumer drain timeout",
+                             self.o['sleep'])
                 self._max_sleep = self.o['sleep']
 
             # polls are usually not in spamming mode
