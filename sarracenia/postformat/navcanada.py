@@ -90,6 +90,21 @@ class NavCanada(PostFormat):
                 'MSG_ORIGINATOR':           'NCFILESHARESERVICE'
                 },
 
+            Example WOS (JSON) Message:
+            Message(address='ODEX/CZEG/CYEG/CYEG/WOS/V2',
+                    properties={
+                    'DESTINATION_TYPE': 'Topic',
+                    'MSG_TYPE': 'WOS',
+                    'MSG_ORIGINATOR': 'ODEX',
+                    'FIR': 'CZEG',
+                    'SITE_ID': 'CYEG',
+                    'SENSOR_ID': 'CYEG',
+                    'DESTINATION': 'CYEG',
+                    'MSG_UUID': 'cd3d0c8c-68dd-4b10-b5f4-b5f5d08d8278',
+                    'MSG_PUBLISH_TIME': '2026-10-14T19:47:24.000363Z',
+                    'OBSERVATION_TIME': '2026-10-14T19:47:00.000000Z'},
+                    body='{ json stuff here }')
+
         """
         msg = sarracenia.Message()
         msg["_format"] = __name__.split('.')[-1].lower()
@@ -107,6 +122,7 @@ class NavCanada(PostFormat):
             logger.error("message missing MSG_PUBLISH_TIME, using current time")
             msg['pubTime'] = sarracenia.nowstr()
 
+        # build relPath
         # NOTE: we currently do not expect to receive messages with URLs from NC, inline data only
         msg['relPath'] = ''
         # build relPath from DESTINATION and NCFILESHARE_FILE_NAME, so we can at least have a file path and
@@ -119,6 +135,9 @@ class NavCanada(PostFormat):
             msg['relPath'] += headers['NCFILESHARE_FILE_NAME']
         elif 'FILE_NAME' in headers:
             msg['relPath'] += headers['FILE_NAME']
+        # if there's no FILE_NAME, we can end up with a relPath that ends in /, get rid of that
+        if msg['relPath'][-1] == '/':
+            msg['relPath'] = msg['relPath'].rstrip('/')
 
         # if we can't get a useful relPath then we can't download the data
         if len(msg['relPath']) == 0:
