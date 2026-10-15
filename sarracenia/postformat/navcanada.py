@@ -41,24 +41,27 @@ class NavCanada(PostFormat):
             Example inputs:
                 epoch: 1772657588 (string or int)
                 ISO:   2026-08-18T08:13:08.399Z or # 2026-08-18T08:13:08.399
-                With timezone: 2026-10-15T12:50:11.989626+00:00 reason: unconverted data remains: +00:00
+                With timezone: 2026-10-15T12:50:11.989626+00:00
         """
         try:
             if isinstance(time, str):
                 time = time.replace('Z', '')
-                if 'T' in time and ':' in time and '-' in time and '.' in time:
+                if 'T' in time and ':' in time and '-' in time and '.' in time and '+' in time:
+                    dt = datetime.strptime(time, '%Y-%m-%dT%H:%M:%S.%f%z')
+                elif 'T' in time and ':' in time and '-' in time and '.' in time:
                     dt = datetime.strptime(time, '%Y-%m-%dT%H:%M:%S.%f')
-                    return dt.strftime("%Y%m%dT%H%M%S.%f")[:-3]
                 elif 'T' in time and ':' in time and '-' in time:
                     dt = datetime.strptime(time, '%Y-%m-%dT%H:%M:%S')
-                    return dt.strftime("%Y%m%dT%H%M%S.%f")[:-3]
                 else:
                     try:
                         dt = datetime.fromtimestamp(int(time), tz=timezone.utc)
-                        return dt.strftime("%Y%m%dT%H%M%S.%f")[:-3]
                     except Exception as e:
                         # ERROR message below will be logged
                         logger.debug(f"{e}", exc_info=True)
+                        dt = None
+                if dt is not None:
+                    dt = dt.astimezone(timezone.utc) # convert to UTC
+                    return dt.strftime("%Y%m%dT%H%M%S.%f")[:-3]
 
             elif isinstance(time, int):
                 dt = datetime.fromtimestamp(time, tz=timezone.utc)
@@ -157,7 +160,7 @@ class NavCanada(PostFormat):
         elif 'FILE_NAME' in headers:
             msg['relPath'] += headers['FILE_NAME']
         # if there's no FILE_NAME, we can end up with a relPath that ends in /, get rid of that
-        if msg['relPath'][-1] == '/':
+        if len(msg['relPath']) > 0 and msg['relPath'][-1] == '/':
             msg['relPath'] = msg['relPath'].rstrip('/')
         # some messages include the topic:// in DESTINATION
         if 'topic://' in msg['relPath']:
