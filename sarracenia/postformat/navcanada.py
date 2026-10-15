@@ -32,6 +32,7 @@ class NavCanada(PostFormat):
                                             or headers['MSG_TYPE'].startswith("TAC-") ))
                 # we don't know all of NC's MSG_TYPE possibilities, so add a fallback on other known things in the msg
                 or ('MSG_TYPE' in headers and 'MSG_UUID' in headers)
+                or ('MSG_TYPE' in headers and 'MSG_PUBLISH_TIME' in headers)
                 )
 
     @staticmethod
