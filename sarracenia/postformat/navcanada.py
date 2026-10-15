@@ -41,6 +41,7 @@ class NavCanada(PostFormat):
             Example inputs:
                 epoch: 1772657588 (string or int)
                 ISO:   2026-08-18T08:13:08.399Z or # 2026-08-18T08:13:08.399
+                With timezone: 2026-10-15T12:50:11.989626+00:00 reason: unconverted data remains: +00:00
         """
         try:
             if isinstance(time, str):
@@ -207,7 +208,8 @@ class NavCanada(PostFormat):
         # baseUrl is mandatory and sr3 will crash without it
         msg['baseUrl'] = "none://"
 
-        msg['topic'] = headers['amqp1_address'].replace("topic://", "")
+        if 'amqp1_address' in headers and headers['amqp1_address']:
+            msg['topic'] = headers['amqp1_address'].replace("topic://", "")
 
         return msg
 
