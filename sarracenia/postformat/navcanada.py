@@ -306,25 +306,6 @@ class NavCanada(PostFormat):
         # for NAVCANADA, the message body is the data itself
         contentType = sr3_msg.get('contentType', 'text/plain')
 
-        # Set additional properties for IWXXM data
-        if 'iwxxm' in raw_body:
-            # schema
-            ns_start = raw_body.find('xmlns:iwxxm="')
-            if ns_start > 0:
-                try:
-                    schema_ns = raw_body[ns_start:].split('"')[1]
-                    schema_ver = schema_ns.split('/')[-1]
-                    headers['MSG_NAMESPACE'] = schema_ns
-                    if schema_ver.count('.') < 2:
-                        schema_ver += '.0'
-                    headers['MSG_SCHEMA_VERSION'] = schema_ver
-                except Exception as e:
-                    logger.debug(f"Could not set schema namespace {e}")
-            # AMHS filename needed for IWXXM data
-            headers['AMHS_FILENAME'] = headers['FILE_NAME']
-        else:
-            headers['MSG_VERSION'] = 'V1'
-
         # Allow plugins to set and/or override properties in the exported message.
         # For example: sr3_msg['navcan_properties_override'] = { 'AMHS_FILENAME': 'something' }
         # will either set or overwrite the AMHS_FILENAME header.
