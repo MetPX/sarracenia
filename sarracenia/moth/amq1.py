@@ -498,6 +498,7 @@ class AMQ1(Moth):
         message = PostFormat.importAny(raw_msg.body, app_properties, content_type, self.o)
         if not message:
             logger.error('Decode failed, discarding message')
+            logger.debug('Message: %s', raw_msg)
             if ack_id is not None and ack_id >= 0:
                 self.__ack_id(ack_id)
             return None

@@ -31,7 +31,7 @@ class NavCanada(PostFormat):
         return ( ('MSG_TYPE' in headers and (headers['MSG_TYPE'] in ['NCFILESHARE', NavCanada.MSG_TYPE] 
                                             or headers['MSG_TYPE'].startswith("TAC-") ))
                 # we don't know all of NC's MSG_TYPE possibilities, so add a fallback on other known things in the msg
-                or ('MSG_TYPE' in headers and 'MSG_UUID' in headers and 'MSG_PUBLISH_TIME' in headers)
+                or ('MSG_TYPE' in headers and 'MSG_UUID' in headers)
                 )
 
     @staticmethod
@@ -75,6 +75,11 @@ class NavCanada(PostFormat):
             headers is the app properties from the AMQP1.0 message.
             body is the data itself (inline content).
 
+            There are multiple message formats from NC. This code is trying to do the bare minimum to import
+            a usable sr3 message. An internal plugin will be used for additional path derivation/renaming, etc.
+            as required. The plugin can be easily modified without needing to release and deploy a new version
+            of sr3.
+
             Example App Properties:
             properties={
                 'NCFILESHARE_FILE_NAME':    'SPCN61_CZUM_042052__CZUM_41605:CZUM:SP:CZUM:Direct',
@@ -92,7 +97,7 @@ class NavCanada(PostFormat):
 
             Example WOS (JSON) Message:
             Message(address='ODEX/CZEG/CYEG/CYEG/WOS/V2',
-                    properties={
+                properties={
                     'DESTINATION_TYPE': 'Topic',
                     'MSG_TYPE': 'WOS',
                     'MSG_ORIGINATOR': 'ODEX',
@@ -103,7 +108,21 @@ class NavCanada(PostFormat):
                     'MSG_UUID': 'cd3d0c8c-68dd-4b10-b5f4-b5f5d08d8278',
                     'MSG_PUBLISH_TIME': '2026-10-14T19:47:24.000363Z',
                     'OBSERVATION_TIME': '2026-10-14T19:47:00.000000Z'},
-                    body='{ json stuff here }')
+                body='{ json stuff here }')
+
+            Example METCAM message:
+            Message(priority=4, id=2,
+                properties={
+                    'UUID': 'a5fa5a52-7ae5-4511-901c-e1f1dd334616',
+                    'MSG_ID': 'CYXH_N_2026-10-15T09:00:13.404091+00:00',
+                    'DESTINATION': 'topic://METCAM/REPORT/V2/CYXH/N/PUBLIC/JSON/',
+                    'MSG_PUBLISH_TIME': '2026-10-15T09:00:13.404091+00:00',
+                    'MSG_TYPE': 'METCAM_REPORT',
+                    'MSG_ORIGINATOR': 'METCAM_ADMIN',
+                    'DESTINATION_TYPE': 'Topic',
+                    'MSG_METCAM_PAYLOAD_TYPE': 'JSON',
+                    'METCAM_ORIGINATOR_ADDRESS': 'METCAM_ADMIN'},
+                body='{ json stuff here }')
 
         """
         msg = sarracenia.Message()
@@ -138,6 +157,9 @@ class NavCanada(PostFormat):
         # if there's no FILE_NAME, we can end up with a relPath that ends in /, get rid of that
         if msg['relPath'][-1] == '/':
             msg['relPath'] = msg['relPath'].rstrip('/')
+        # some messages include the topic:// in DESTINATION
+        if 'topic://' in msg['relPath']:
+            msg['relPath'] = msg['relPath'].replace('topic://', '')
 
         # if we can't get a useful relPath then we can't download the data
         if len(msg['relPath']) == 0:
