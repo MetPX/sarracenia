@@ -234,25 +234,6 @@ class NavCanada(PostFormat):
             'DESTINATION_TYPE': 'Topic',
         }
 
-        # A plugin is used to set the message type to one of the following:
-        # TAC-FA - Aviation Area Forecasts
-        # TAC-FB - Forecast upper winds and temperatures
-        # TAC-FD - Wind and temperatures aloft forecasts
-        # TAC-FN - Space Weather Advisories
-        # TAC-FT - Aviation Terminal Forecasts
-        # TAC-SA - Hourly aviation weather reports
-        # TAC-SM - Main hour synoptic reports
-        # TAC-SP - Special aviation weather reports
-        # TAC-UA - Pilot weather reports
-        # TAC-WA - AIRMET messages and/or US flight advisories
-        # TAC-WS - SIGMET messages - WSCNxx, WCCNxx (tropical cyclone)
-        # TAC-WC - Tropical Cyclone messages
-        # TAC-WV - VA SIGMET messages
-        # This is so we can just change the plugin if we need to support different msg types, without needing
-        # to release a whole new version of sr3.
-        if 'navcan_msg_type' in sr3_msg:
-            headers['MSG_TYPE'] = sr3_msg['navcan_msg_type']
-
         # Set topic / DESTINATION
         # Normally, this message format will be used in combination with a plugin that sets msg['topic']
         # and topicDerive will return that value. When topic is returned from the message, the topicPrefix is
@@ -325,8 +306,9 @@ class NavCanada(PostFormat):
         # for NAVCANADA, the message body is the data itself
         contentType = sr3_msg.get('contentType', 'text/plain')
 
-        # Set schema info when the data is IWXXM
+        # Set additional properties for IWXXM data
         if 'iwxxm' in raw_body:
+            # schema
             ns_start = raw_body.find('xmlns:iwxxm="')
             if ns_start > 0:
                 try:
@@ -338,8 +320,35 @@ class NavCanada(PostFormat):
                     headers['MSG_SCHEMA_VERSION'] = schema_ver
                 except Exception as e:
                     logger.debug(f"Could not set schema namespace {e}")
+            # AMHS filename needed for IWXXM data
+            headers['AMHS_FILENAME'] = headers['FILE_NAME']
         else:
             headers['MSG_VERSION'] = 'V1'
+
+        # Allow plugins to set and/or override properties in the exported message.
+        # For example: sr3_msg['navcan_properties_override'] = { 'AMHS_FILENAME': 'something' }
+        # will either set or overwrite the AMHS_FILENAME header.
+        # A plugin is used to set the message type to one of the following:
+        # TAC-FA - Aviation Area Forecasts
+        # TAC-FB - Forecast upper winds and temperatures
+        # TAC-FD - Wind and temperatures aloft forecasts
+        # TAC-FN - Space Weather Advisories
+        # TAC-FT - Aviation Terminal Forecasts
+        # TAC-SA - Hourly aviation weather reports
+        # TAC-SM - Main hour synoptic reports
+        # TAC-SP - Special aviation weather reports
+        # TAC-UA - Pilot weather reports
+        # TAC-WA - AIRMET messages and/or US flight advisories
+        # TAC-WS - SIGMET messages - WSCNxx, WCCNxx (tropical cyclone)
+        # TAC-WC - Tropical Cyclone messages
+        # TAC-WV - VA SIGMET messages
+        # This is so we can just change the plugin if we need to support different msg types, without needing
+        # to release a whole new version of sr3.
+        if 'navcan_properties_override' in sr3_msg:
+            if isinstance(sr3_msg['navcan_properties_override'], dict):
+                headers.update(sr3_msg['navcan_properties_override'])
+            else:
+                logger.error("navcan_properties_override is defined but is not a dict")
 
         return raw_body, headers, contentType
 
