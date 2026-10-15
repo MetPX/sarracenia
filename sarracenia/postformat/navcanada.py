@@ -172,7 +172,7 @@ class NavCanada(PostFormat):
 
         # if we can't get a useful relPath then we can't download the data
         if len(msg['relPath']) == 0:
-            logger.error("could not derive relPath from incoming message")
+            logger.error(f"could not derive relPath from incoming message with properties: {headers}")
             return None
 
         # File mtime, have seen both '1772657588' and '2026-06-22T18:49:40.445Z' format.
