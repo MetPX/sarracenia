@@ -33,6 +33,7 @@ class NavCanada(PostFormat):
                 # we don't know all of NC's MSG_TYPE possibilities, so add a fallback on other known things in the msg
                 or ('MSG_TYPE' in headers and 'MSG_UUID' in headers)
                 or ('MSG_TYPE' in headers and 'MSG_PUBLISH_TIME' in headers)
+                or ('MSG_PUBLISH_TIME' in headers and 'MSG_UUID' in headers)
                 )
 
     @staticmethod
