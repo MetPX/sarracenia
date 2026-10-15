@@ -47,6 +47,9 @@ class NavCanada(PostFormat):
             if isinstance(time, str):
                 time = time.replace('Z', '')
                 if 'T' in time and ':' in time and '-' in time and '.' in time and '+' in time:
+                    # python3.6 doesn't work when there are colons in the timezone, remove it
+                    if time[-3] == ':':
+                        time = ''.join( time.rsplit(':',1) )
                     dt = datetime.strptime(time, '%Y-%m-%dT%H:%M:%S.%f%z')
                 elif 'T' in time and ':' in time and '-' in time and '.' in time:
                     dt = datetime.strptime(time, '%Y-%m-%dT%H:%M:%S.%f')
