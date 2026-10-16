@@ -159,6 +159,7 @@ class NavCanada(PostFormat):
             msg['relPath'] += headers['DESTINATION']
         elif 'amqp1_address' in headers:
             logger.debug("DESTINATION was missing, falling back to amqp1_address: %s", headers['amqp1_address'])
+            msg['relPath'] += headers['amqp1_address']
 
         if len(msg['relPath']) > 0 and msg['relPath'][-1] != '/':
             msg['relPath'] += '/'
