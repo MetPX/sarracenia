@@ -157,12 +157,18 @@ class NavCanada(PostFormat):
         # name to work with (mirror) when writing the data from the message.
         if 'DESTINATION' in headers:
             msg['relPath'] += headers['DESTINATION']
+        elif 'amqp1_address' in headers:
+            logger.debug("DESTINATION was missing, falling back to amqp1_address: %s", headers['amqp1_address'])
+
         if len(msg['relPath']) > 0 and msg['relPath'][-1] != '/':
             msg['relPath'] += '/'
+
         if 'NCFILESHARE_FILE_NAME' in headers:
             msg['relPath'] += headers['NCFILESHARE_FILE_NAME']
         elif 'FILE_NAME' in headers:
             msg['relPath'] += headers['FILE_NAME']
+
+
         # if there's no FILE_NAME, we can end up with a relPath that ends in /, get rid of that
         if len(msg['relPath']) > 0 and msg['relPath'][-1] == '/':
             msg['relPath'] = msg['relPath'].rstrip('/')
