@@ -123,34 +123,22 @@ and paramiko because Sarracenia looks the host up in ``~/.ssh/config`` itself an
 reads, and only the first ``IdentityFile``. Anything else in the stanza, such as
 ``IdentitiesOnly`` below, applies to ``scp`` only.
 
-Define a stanza naming the host, the account and the key::
+Define a stanza for the server's host name, with the account and the key::
 
-    Host weather-pump
-        HostName sftp.example.com
+    Host sftp.example.com
         User sarra
         IdentityFile ~/.ssh/id_ecdsa_weather_pump
         IdentitiesOnly yes
 
-Then use the alias as the host name in the URL::
+Use the same host name in the URL::
 
-    sendTo sftp://weather-pump/
+    sendTo sftp://sftp.example.com/
 
 and add nothing to ``credentials.conf`` for it.
 
-An alias only works where the URL comes from the configuration: ``sendTo`` on a sender and
-``pollUrl`` on a poll. When a subscriber or sarra downloads, the host comes from the
-``baseUrl`` in the notification message, so the stanza's ``Host`` has to be the host name
-the publisher announces, or there has to be a matching ``credentials.conf`` entry. An alias
-defined only locally has no effect on downloads.
-
-The alias is a label, not a host name, so a server reachable several ways can have one
-stanza per way, each with its own alias, and a server that moves only needs its stanza
-edited.
-
 Do not put a port number in the URL. Give the port in the stanza instead::
 
-    Host weather-pump-alt
-        HostName sftp.example.com
+    Host sftp.example.com
         Port 2222
         User sarra
         IdentityFile ~/.ssh/id_ecdsa_weather_pump
@@ -164,6 +152,12 @@ Note::
  A ``credentials.conf`` entry carrying a user and a secret (a password or an
  ``ssh_keyfile``) takes precedence and the stanza is not read. Omitting the entry is the
  reliable way to have ``~/.ssh/config`` apply.
+
+Note::
+ Avoid aliases, a ``Host`` name that is not the server's host name with ``HostName``
+ giving the real one. The alias ends up in the ``baseUrl`` of the messages a poll
+ publishes, so anything downloading from them needs the same stanza to reach the server.
+ Use the server's host name as the ``Host``.
 
 
 SEE ALSO

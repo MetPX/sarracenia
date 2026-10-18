@@ -128,35 +128,22 @@ lisent : ``scp`` nativement, et paramiko parce que Sarracenia cherche lui-même 
 les quatre seuls paramètres qu'il lit, et seulement le premier ``IdentityFile``. Tout autre
 paramètre de la section, comme ``IdentitiesOnly`` ci-dessous, ne s'applique qu'à ``scp``.
 
-Définir une section qui nomme l'hôte, le compte et la clé::
+Définir une section pour le nom d'hôte du serveur, avec le compte et la clé::
 
-    Host weather-pump
-        HostName sftp.example.com
+    Host sftp.example.com
         User sarra
         IdentityFile ~/.ssh/id_ecdsa_weather_pump
         IdentitiesOnly yes
 
-Puis utiliser l'alias comme nom d'hôte dans l'URL::
+Utiliser le même nom d'hôte dans l'URL::
 
-    sendTo sftp://weather-pump/
+    sendTo sftp://sftp.example.com/
 
 et ne rien ajouter à ``credentials.conf`` pour celui-ci.
 
-Un alias ne fonctionne que là où l'URL vient de la configuration : ``sendTo`` pour un sender
-et ``pollUrl`` pour un poll. Lorsqu'un subscriber ou un sarra télécharge, l'hôte vient du
-``baseUrl`` dans le message de notification, donc le ``Host`` de la section doit être le nom
-d'hôte annoncé par l'éditeur, ou il doit y avoir une entrée correspondante dans
-``credentials.conf``. Un alias défini seulement localement n'a aucun effet sur les
-téléchargements.
-
-L'alias est une étiquette, pas un nom d'hôte, donc un serveur accessible de plusieurs façons
-peut avoir une section par façon, chacune avec son propre alias, et pour un serveur qui
-déménage, il suffit de modifier sa section.
-
 Ne pas mettre de numéro de port dans l'URL. Donner plutôt le port dans la section::
 
-    Host weather-pump-alt
-        HostName sftp.example.com
+    Host sftp.example.com
         Port 2222
         User sarra
         IdentityFile ~/.ssh/id_ecdsa_weather_pump
@@ -170,6 +157,12 @@ Note::
  fourni. Une entrée de ``credentials.conf`` qui contient un utilisateur et un secret (un mot
  de passe ou un ``ssh_keyfile``) a priorité et la section n'est pas lue. Omettre l'entrée
  est la façon fiable de faire appliquer ``~/.ssh/config``.
+
+Note::
+ Éviter les alias, c'est-à-dire un ``Host`` qui n'est pas le nom d'hôte du serveur, avec
+ ``HostName`` qui donne le vrai. L'alias se retrouve dans le ``baseUrl`` des messages
+ qu'un poll publie, donc tout ce qui télécharge à partir de ces messages a besoin de la
+ même section pour joindre le serveur. Utiliser le nom d'hôte du serveur comme ``Host``.
 
 
 VOIR AUSSI
