@@ -1489,6 +1489,8 @@ class sr_GlobalState:
 
         filtered_users = []
 
+        self._read_configs()
+
         for config in self.filtered_configurations:
 
             (c, cfg) = config.split(os.sep)
