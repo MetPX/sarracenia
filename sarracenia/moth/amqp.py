@@ -383,6 +383,7 @@ class AMQP(Moth):
             return
 
         subscription=self.o['subscriptions'][self.o['subscription_index']]
+        old_subscription=self.o['old_subscriptions'][self.o['subscription_index']]
         queue=subscription['queue']
         broker=subscription['broker']
 
@@ -441,7 +442,7 @@ class AMQP(Moth):
                         if exchange:
                             self.management_channel.queue_bind(queue['name'], exchange, topic)
 
-                for b in subscription['bindings_to_remove']:
+                for b in old_subscription['bindings_to_remove']:
                     if 'exchange' in b:
                         exchange = b['exchange'] 
                     else:
