@@ -218,6 +218,27 @@ class Https(Transfer):
         rw_length = self.read_writelocal(remote_file, self.http, local_file,
                                          local_offset, length, exactLength)
 
+        # When the server closes before sending all of Content-Length, http.client
+        # returns a short read instead of raising IncompleteRead, so check it here.
+        # A chunked reply has no Content-Length to check, and http.client does raise
+        # IncompleteRead when one is cut short.
+        if self.http.getheader('Transfer-Encoding'):
+            return rw_length
+        try:
+            expected = int(self.http.getheader('Content-Length'))
+        except (TypeError, ValueError):
+            return rw_length
+
+        # read_write() stops at length on purpose, e.g. the first inplace block is
+        # requested without a Range header, so the reply is the whole file.
+        if exactLength and 0 < length < expected:
+            expected = length
+
+        if rw_length < expected:
+            logger.error('incomplete download of %s, got %d of %d bytes announced '
+                         'by the server', self.__url_redir_str(), rw_length, expected)
+            return -1
+
         return rw_length
 
     def getAccelerated(self, msg, remote_file, local_file, length, remote_offset=0, exactLength=False ):
