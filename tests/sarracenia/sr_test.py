@@ -554,52 +554,6 @@ def test_disable_returns_when_leftovers_exist():
     sr._tag_progress.assert_not_called()
 
 
-# =========================================================================== #
-# ============================== Unit tests for stop() ====================== #
-# =========================================================================== #
-
-def make_stop_sr(leftovers, filtered_configurations):
-    sr = object.__new__(sarracenia.sr.sr_GlobalState)
-    sr.leftovers = leftovers
-    sr._action_all_configs = False
-    sr.filtered_configurations = filtered_configurations
-    sr._check_sanitizing = Mock(return_value=False)
-    sr._clean_missing_proc_state = Mock()
-    sr.procs = {}
-    return sr
-
-
-def test_stop_ignores_unmatched_wildcard_when_configs_match(capsys):
-    sr = make_stop_sr(["poll/*"], ["watch/active"])
-
-    sr.stop()
-
-    sr._clean_missing_proc_state.assert_called_once()
-    assert "no procs running" in capsys.readouterr().out
-
-
-def test_stop_reports_unmatched_wildcards_when_no_configs_match(caplog):
-    sr = make_stop_sr(["poll/*", "watch/*"], [])
-
-    sr.stop()
-
-    sr._clean_missing_proc_state.assert_not_called()
-    assert "configuration not found" in caplog.text
-
-
-def test_stop_reports_unmatched_exact_config_even_when_wildcard_matches(caplog):
-    sr = make_stop_sr(["watch/mising", "poll/*"], ["poll/active"])
-
-    sr.stop()
-
-    sr._clean_missing_proc_state.assert_not_called()
-    assert "watch/mising" in caplog.text
-
-# =========================================================================== #
-# ============================== End of Tests =============================== #
-# =========================================================================== #
-
-
 
 # =========================================================================== #
 # ================ Unit tests for sarracenia.sr.SR._statehost_dir() ========= #
@@ -666,6 +620,53 @@ def test_enable_and_disable_use_statehost_directory(tmp_path):
     marker = state_dir / "disabled"
     assert marker.exists()
     assert marker.read_text()
+
+# =========================================================================== #
+# ============================== End of Tests =============================== #
+# =========================================================================== #
+
+
+
+# =========================================================================== #
+# ==================== Unit tests for stop() - ISSUES1765 =================== #
+# =========================================================================== #
+
+def make_stop_sr(leftovers, filtered_configurations):
+    sr = object.__new__(sarracenia.sr.sr_GlobalState)
+    sr.leftovers = leftovers
+    sr._action_all_configs = False
+    sr.filtered_configurations = filtered_configurations
+    sr._check_sanitizing = Mock(return_value=False)
+    sr._clean_missing_proc_state = Mock()
+    sr.procs = {}
+    return sr
+
+
+def test_stop_ignores_unmatched_wildcard_when_configs_match(capsys):
+    sr = make_stop_sr(["poll/*"], ["watch/active"])
+
+    sr.stop()
+
+    sr._clean_missing_proc_state.assert_called_once()
+    assert "no procs running" in capsys.readouterr().out
+
+
+def test_stop_reports_unmatched_wildcards_when_no_configs_match(caplog):
+    sr = make_stop_sr(["poll/*", "watch/*"], [])
+
+    sr.stop()
+
+    sr._clean_missing_proc_state.assert_not_called()
+    assert "configuration not found" in caplog.text
+
+
+def test_stop_reports_unmatched_exact_config_even_when_wildcard_matches(caplog):
+    sr = make_stop_sr(["watch/mising", "poll/*"], ["poll/active"])
+
+    sr.stop()
+
+    sr._clean_missing_proc_state.assert_not_called()
+    assert "watch/mising" in caplog.text
 
 # =========================================================================== #
 # ============================== End of Tests =============================== #
