@@ -43,6 +43,7 @@ class NavCanada(PostFormat):
                 epoch: 1772657588 (string or int)
                 ISO:   2026-08-18T08:13:08.399Z or # 2026-08-18T08:13:08.399
                 With timezone: 2026-10-15T12:50:11.989626+00:00
+                something else: 2026-10-27 20:15:25
         """
         try:
             if isinstance(time, str):
@@ -56,6 +57,8 @@ class NavCanada(PostFormat):
                     dt = datetime.strptime(time, '%Y-%m-%dT%H:%M:%S.%f')
                 elif 'T' in time and ':' in time and '-' in time:
                     dt = datetime.strptime(time, '%Y-%m-%dT%H:%M:%S')
+                elif ' ' in time and ':' in time:
+                    dt = datetime.strptime(time, '%Y-%m-%d %H:%M:%S')
                 else:
                     try:
                         dt = datetime.fromtimestamp(int(time), tz=timezone.utc)
