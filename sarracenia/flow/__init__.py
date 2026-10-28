@@ -594,6 +594,7 @@ class Flow:
 
                 if not stopping:
                     self.gather()
+                    self._runCallbacksWorklist('after_gather')
 
                 last_gather_len = len(self.worklist.incoming)
                 if (last_gather_len == 0):
@@ -1189,8 +1190,6 @@ class Flow:
             if len(new_incoming) > 0:
                 self.worklist.incoming.extend(new_incoming)
                 so_far += len(new_incoming)
-
-            self._runCallbacksWorklist('after_gather')
 
             # if we gathered enough with a subset of plugins then return.
             if not keep_going or (so_far >= self.o.batch):
