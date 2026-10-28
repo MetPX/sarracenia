@@ -1632,7 +1632,7 @@ report_back and report_exchange
 For each download, by default, an amqp report message is sent back to the broker.
 This is done with option :
 
-- **report_back <boolean>        (default: True)** 
+- **report_back <boolean>        (default: False)** 
 - **report_exchange <report_exchangename> (default: xreport|xs_*username* )**
 
 When a report is generated, it is sent to the configured *report_exchange*. Administrative

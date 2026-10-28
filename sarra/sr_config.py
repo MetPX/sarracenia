@@ -815,7 +815,7 @@ class sr_config:
         self.realpath_post        = False
         self.realpath_filter      = False
         self.reconnect            = False
-        self.reportback           = True
+        self.reportback           = False
         self.restore              = False
         self.restore_queue        = None
 
@@ -2484,7 +2484,7 @@ class sr_config:
 
                 elif words0 in ['report_back','reportback','rb']:  # See: sr_subscribe.1
                      if (words1 is None) or words[0][0:1] == '-' : 
-                        self.reportback = True
+                        self.reportback = False
                         n = 1
                      else :
                         self.reportback = self.isTrue(words1)

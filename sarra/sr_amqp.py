@@ -160,6 +160,10 @@ class HostConnect:
             except Exception as err:
                 self.logger.error("AMQP cannot connect to {} with {}".format(self.host, err))
                 self.logger.debug('Exception details: ', exc_info=True)
+                try:
+                    self.close()
+                except:
+                    pass
 
                 if not self.loop:
                     self.logger.error("giving up. Failed to connect to broker")
@@ -573,6 +577,33 @@ class Queue:
                     last_exchange_name = exchange_name
                     bound += 1
                     continue
+                # https://github.com/MetPX/sarracenia/issues/1449
+                # need to reconnect to the broker when one of these exceptions occurs
+                except (BrokenPipeError, ConnectionResetError):
+                    self.logger.error("lost connection to broker, attempting to reconnect")
+                    self.hc.reconnect()
+                except amqp.exceptions.NotFound as err:
+                    # this is ugly, but if the queue doesn't exist, it needs to be created otherwise binding will fail
+                    # restart from the beginning by calling itself again
+                    if "Queue.bind: (404) NOT_FOUND - no queue" in str(err):
+                        self.logger.error("bind queue: %s failed because queue does not exist %s"
+                                  % (self.name, err))
+                        self.logger.debug('Exception details:', exc_info=True)
+                        self.build()
+                        return
+                    elif "Queue.bind: (404) NOT_FOUND - no exchange" in str(err):
+                        self.logger.error("bind queue: %s to exchange: %s failed because exchange does not exist %s"
+                                  % (self.name, exchange_name, err))
+                        self.logger.debug('Exception details:', exc_info=True)
+                        # we don't declare exchanges in a subscriber, that's the publisher's responsibility
+                        # need to sit here and retry until the exchange gets created or permissions get fixed
+                    else:
+                        self.logger.error("bind queue: %s to exchange: %s with key: %s failed with %s"
+                                  % (self.name, exchange_name, exchange_key, err))
+                        # FIXME unsuitable error msg: The exception is too broad to conclude this is a permission issue
+                        self.logger.error("Permission issue with %s@%s or exchange %s not found."
+                                      % (self.hc.user, self.hc.host, exchange_name))
+                        self.logger.debug('Exception details:', exc_info=True)
                 except Exception as err:
                     self.logger.error("bind queue: %s to exchange: %s with key: %s failed with %s"
                                   % (self.name, exchange_name, exchange_key, err))
@@ -584,6 +615,8 @@ class Queue:
                 time.sleep(backoff)
                 if backoff < 60:
                     backoff *= 2
+                bound = 0 # restart binding from the beginning
+                break # out of for loop
 
         self.logger.debug("queue build done")
 

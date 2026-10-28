@@ -611,7 +611,7 @@ class sr_subscribe(sr_instances):
 
         print("\nAMQP reporting to broker:")
         if self.program_name == 'sr_sarra':
-           print("\treportback              <boolean>       (default: true)")
+           print("\treportback              <boolean>       (default: false)")
         else :
            print("\treportback              <boolean>       (default: false)")
 
