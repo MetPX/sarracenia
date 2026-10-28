@@ -14,7 +14,7 @@ from sarracenia.postformat.navcanada import NavCanada
     ['NCFILESHARE', NavCanada.MSG_TYPE, 'TAC-SA', 'TAC-FT'],
 )
 def test_mine_supported_types(msg_type):
-    assert NavCanada.mine(None, {'MSG_TYPE': msg_type}, None, None)
+    assert NavCanada.mine(None, {'MSG_TYPE': msg_type, 'MSG_UUID': 'fdsa'}, None, None)
 
 
 def test_mine_unsupported_type():
