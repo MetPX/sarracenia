@@ -177,6 +177,7 @@ class Subscriptions(list):
 
             jl.append(jd)
             
+        # print(f"jl variable: {jl}")
         if badness:
            return
 
