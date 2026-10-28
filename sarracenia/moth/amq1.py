@@ -874,3 +874,13 @@ class AMQ1(Moth):
             self.client_thread = None
         # FIXME metrics stuff
         self.broker = None
+
+    def getCleanUp(self) -> None:
+        """ Not sure what to do here yet, but the function gets called by sr3 when cleanup is called.
+        """
+        logger.error("AMQP 1.0 getCleanUp not implemented")
+
+    def putCleanUp(self) -> None:
+        """ Not sure what to do here yet.
+        """
+        logger.error("AMQP 1.0 putCleanUp not implemented")
