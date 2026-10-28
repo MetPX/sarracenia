@@ -28,7 +28,7 @@ class NavCanada(PostFormat):
                 data from the headers to determine if we've received a SWIM format message.
             content_type is the content type of payload/data itself, also useless here
         """
-        return ('MSG_TYPE' in headers and (headers['MSG_TYPE'] in ['NCFILESHARE', NavCanada.MSG_TYPE] 
+        return headers and ('MSG_TYPE' in headers and (headers['MSG_TYPE'] in ['NCFILESHARE', NavCanada.MSG_TYPE] 
                                             or headers['MSG_TYPE'].startswith("TAC-") ) )
     @staticmethod
     def parseNavCanTime(time):
