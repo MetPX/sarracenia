@@ -1592,7 +1592,7 @@ RAPPORTS
 Pour chaque téléchargement, par défaut, un message de rapport amqp est renvoyé au courtier.
 Ceci est fait avec l'option :
 
-- **report_back <booléen> (par défaut : True)**. 
+- **report_back <booléen> (par défaut : False)**. 
 - **rapport_exchange <report_exchangename> (par défaut : xreport|xs_username* )**
 
 Lorsqu'un rapport est généré, il est envoyé au *report_exchange* configuré. 
