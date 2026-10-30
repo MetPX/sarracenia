@@ -498,6 +498,7 @@ class AMQ1(Moth):
         message = PostFormat.importAny(raw_msg.body, app_properties, content_type, self.o)
         if not message:
             logger.error('Decode failed, discarding message')
+            logger.debug('Message: %s', raw_msg)
             if ack_id is not None and ack_id >= 0:
                 self.__ack_id(ack_id)
             return None
@@ -873,3 +874,13 @@ class AMQ1(Moth):
             self.client_thread = None
         # FIXME metrics stuff
         self.broker = None
+
+    def getCleanUp(self) -> None:
+        """ Not sure what to do here yet, but the function gets called by sr3 when cleanup is called.
+        """
+        logger.error("AMQP 1.0 getCleanUp not implemented")
+
+    def putCleanUp(self) -> None:
+        """ Not sure what to do here yet.
+        """
+        logger.error("AMQP 1.0 putCleanUp not implemented")
