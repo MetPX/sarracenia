@@ -218,6 +218,16 @@ class Https(Transfer):
         rw_length = self.read_writelocal(remote_file, self.http, local_file,
                                          local_offset, length, exactLength)
 
+        # http.client counts Content-Length down in http.length, and when the server
+        # closes early it returns a short read instead of raising IncompleteRead.
+        # (a redirect to ftp:// gives a response without it.)
+        # With exactLength, read_write() can stop before the end on purpose.
+        remaining = getattr(self.http, 'length', None)
+        if remaining and (not exactLength or rw_length < length):
+            logger.error('incomplete download of %s, got %d bytes, %d short of '
+                         'Content-Length', self.__url_redir_str(), rw_length, remaining)
+            return -1
+
         return rw_length
 
     def getAccelerated(self, msg, remote_file, local_file, length, remote_offset=0, exactLength=False ):
