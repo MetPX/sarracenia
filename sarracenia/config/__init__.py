@@ -2180,6 +2180,10 @@ class Config:
                     self.scheduled_interval = self.sleep
                     self.sleep=1
 
+        if self.sleep > self.sleepMax:
+            logger.warning(f"{component}/{config} sleep {self.sleep}s > sleepMax {self.sleepMax}s." +
+                           "sleepMax should be increased")
+
         if self.runStateThreshold_hung < self.housekeeping:
             logger.warning( f"{component}/{config} runStateThreshold_hung {self.runStateThreshold_hung} set lower than housekeeping {self.housekeeping}. sr3 sanity might think this flow is hung and kill it too quickly.")
 
