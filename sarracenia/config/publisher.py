@@ -63,12 +63,16 @@ class Publisher(dict):
         if hasattr(options,'tlsRigour') :
             self['tlsRigour'] = options.tlsRigour
     
-        if hasattr(options,'post_format') :
+        if hasattr(options, 'post_format') and options.post_format is not None:
             self['format'] = options.post_format
-        elif hasattr(options,'post_topicPrefix') and options.post_topicPrefix[0] in [ 'v02', 'v03' ]:
+        elif hasattr(options, 'post_topicPrefix') and options.post_topicPrefix \
+                and options.post_topicPrefix[0] in ['v02', 'v03']:
             self['format'] = options.post_topicPrefix[0]
         else:
             self['format'] = 'v03'
+
+        # exportAny and exportMine expect 'post_format' in the options dict
+        self['post_format'] = self['format']
 
         if hasattr(options,'post_topicPrefix') and options.post_topicPrefix:
             self['topicPrefix'] = options.post_topicPrefix
