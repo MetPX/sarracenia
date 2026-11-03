@@ -116,25 +116,31 @@ class Wis(PostFormat):
             # See https://wmo-im.github.io/wis2-notification-message/standard/wis2-notification-message-STABLE.html#_1_17_links section I.
             # TODO: Read metadata held inside additional links fields?
             if 'links' in GeoJSONBody:
-                urlstr = GeoJSONBody['links'][0]['href']
-                url = urllib.parse.urlparse( urlstr )
-                msg['size']  = GeoJSONBody['links'][0]['length']
-                if 'type' in GeoJSONBody['links'][0]:
-                    msg['contentType']  = GeoJSONBody['links'][0]['type']
-                # We may want to keep using the links field for plugins. We don't want to repost this field however. 
-                # It will get re-created from the poster configuration if WIS2 post_format is used.
-                msg['links'] = GeoJSONBody['links']
-                msg['_deleteOnPost'] |= set( ['links' ])
+                # Incoming WIS2 messages can have multiple links. Filter through these.
+                for link in GeoJSONBody['links']:
+                    # For now, we don't care about any incoming metadata. We just want to download the source file.
+                    # Don't include deletion links.
+                    if link['rel'] in ['canonical', 'update']:
+                        urlstr = link['href']
+                        url = urllib.parse.urlparse( urlstr )
+                        if 'length' in link:
+                            msg['size']  = link['length']
+                        if 'type' in link:
+                            msg['contentType']  = link['type']
+                        # We may want to keep using the links field for plugins. We don't want to repost this field however.
+                        # It will get re-created from the poster configuration if WIS2 post_format is used.
+                        msg['links'] = GeoJSONBody['links']
+                        msg['_deleteOnPost'] |= set( ['links' ])
 
-                msg['baseUrl'] = url.scheme + '://' + url.netloc
-                msg['retrievePath' ] = urlstr[len(msg['baseUrl']):] 
+                        msg['baseUrl'] = url.scheme + '://' + url.netloc
+                        msg['retrievePath' ] = urlstr[len(msg['baseUrl']):]
 
-                # The topic normally doesn't hold the filename inside its structure. It is however present in the href link, to fetch the data.
-                # Extract this filename value when possible.
-                if url.path.split('/')[-1] != '':
-                    if msg['relPath'][-1] != '/':
-                        msg['relPath'] += '/'
-                    msg['relPath'] += url.path.split('/')[-1]
+                        # The topic normally doesn't hold the filename inside its structure. It is however present in the href link, to fetch the data.
+                        # Extract this filename value when possible.
+                        if url.path.split('/')[-1] != '':
+                            if msg['relPath'][-1] != '/':
+                                msg['relPath'] += '/'
+                            msg['relPath'] += url.path.split('/')[-1]
             else:
                 logger.warning( 'Invalid message. Missing links field (WMO mandatory field)' )
 
