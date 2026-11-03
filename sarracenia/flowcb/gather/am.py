@@ -64,7 +64,7 @@ Author:
     André LeBlanc, ANL, Autumn 2022
 """
 
-import logging, socket, struct, time, sys, os, signal, ipaddress, urllib.parse, getpass, psutil
+import logging, socket, struct, time, sys, os, ipaddress, urllib.parse, getpass, psutil
 import re
 from base64 import b64encode
 from random import randint
@@ -113,9 +113,8 @@ class Am(FlowCB):
         self.s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         self.s.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
 
-        # Add signal handler
-        ## Override outer signal handler with a default one to exit correctly.
-        signal.signal(signal.SIGTERM, signal.SIG_DFL)
+        # Let the parent flow's signal handler manage graceful shutdown.
+        # Previously overrode with SIG_DFL which bypassed all cleanup.
 
  
     def __WaitForRemoteConnections__(self) -> NoReturn:
