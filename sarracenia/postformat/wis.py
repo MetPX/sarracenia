@@ -109,9 +109,10 @@ class Wis(PostFormat):
             #elif 'properties' in GeoJSONBody and ('data_id' in GeoJSONBody['properties']):
             #    msg['relPath'] = GeoJSONBody['properties']['data_id']
             else:
-                logger.error( 'Invalid message. All MQTT streams should be accompanied with a topic.')
-                return msg
+                logger.error('Invalid message. All MQTT streams should be accompanied with a topic.')
+                return None
            
+            source_rel_acquired = 0
             # Links can only hold ONE value of 'canonical', 'update' or 'deletion'. All other links provided are not references to the source data.
             # See https://wmo-im.github.io/wis2-notification-message/standard/wis2-notification-message-STABLE.html#_1_17_links section I.
             # TODO: Read metadata held inside additional links fields?
@@ -133,7 +134,7 @@ class Wis(PostFormat):
                         msg['_deleteOnPost'] |= set( ['links' ])
 
                         msg['baseUrl'] = url.scheme + '://' + url.netloc
-                        msg['retrievePath' ] = urlstr[len(msg['baseUrl']):]
+                        msg['retrievePath'] = urlstr[len(msg['baseUrl']):]
 
                         # The topic normally doesn't hold the filename inside its structure. It is however present in the href link, to fetch the data.
                         # Extract this filename value when possible.
@@ -141,6 +142,12 @@ class Wis(PostFormat):
                             if msg['relPath'][-1] != '/':
                                 msg['relPath'] += '/'
                             msg['relPath'] += url.path.split('/')[-1]
+                        source_rel_acquired = 1
+                # If there are no 'update' or 'canonical' links, log an error and don't return a message.
+                if not source_rel_acquired:
+                    logger.warning("Incoming WIS2 message is missing either a 'canonical' or 'update' field. Discarding message.")
+                    return None
+
             else:
                 logger.warning( 'Invalid message. Missing links field (WMO mandatory field)' )
 

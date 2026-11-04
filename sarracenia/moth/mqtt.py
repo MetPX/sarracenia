@@ -633,6 +633,12 @@ class MQTT(Moth):
                 [ headers.update({k:v}) for k,v in mqttMessage.properties.UserProperty ]
             message = PostFormat.importAny( mqttMessage.payload.decode('utf-8'), headers, mqttMessage.properties.ContentType, self.o)
 
+            if not message:
+                logger.error("Not able to import message. Discarding message")
+                self.metrics['rxBadCount'] += 1
+                return None
+
+
         except Exception as ex:
             logger.error( f"ignored malformed message: {mqttMessage.payload}" )
             logger.error( f"decode error: {ex}" )
