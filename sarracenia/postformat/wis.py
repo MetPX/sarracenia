@@ -164,18 +164,10 @@ class Wis(PostFormat):
                 if literal in body:
                     GeoJSONBody[literal] = body[literal]
 
-            if 'topic' in body:
-                topic = body['topic'].split('/')
-            elif 'topic' in options:
-                topic=options['topic'].split('/')
-            else:
-                topic= []
+            # Use common method to extract topic
+            topic = PostFormat.topicDerive( body, options )
 
             headers = { 'topic' : topic }
-            """
-                  topicPrefix and body['subtopic'] could be used to build a topic...
-
-            """
             for h in body:
                 if h not in [ 'contentType', 'geometry', 'properties', 'size', 'baseUrl', 'relPath', 'retrievePath', 'subtopic', 'pubTime', 'to_clusters', 'from_cluster', 'filename', 'sundew_extension', 'mtime', 'atime', 'mode', 'identity', 'topic' ]:
                     GeoJSONBody['properties'][h] = body[h]
@@ -200,8 +192,9 @@ class Wis(PostFormat):
                     'rel': 'canonical',
                     #'type': 'unknown',, mime content-type of data, not available in message.
                     'href': url,
-                    'length': body['size']
                 }]
+                if 'size' in body:
+                    GeoJSONBody['links'][0]['length'] = body['size']
                 if 'contentType' in body:
                     GeoJSONBody['links'][0]['type'] = body['contentType']
 
