@@ -14,6 +14,7 @@ import logging
 
 from sarracenia.flowcb import FlowCB
 from sarracenia.featuredetection import features
+from sarracenia.identity import Identity
 
 
 # class sarra/retry
@@ -163,8 +164,48 @@ class Retry(FlowCB):
         mlist = self.post_retry.get(qty)
 
         logger.debug('loading from %s: qty=%s ... got: %s', self.post_retry_name, qty, len(mlist))
-        if len(mlist) > 0:
-            worklist.ok.extend(mlist)
+        for message in mlist:
+            try:
+                current = self.__post_retry_matches_file(message)
+            except OSError as error:
+                # An unavailable file is not evidence that it was replaced.
+                logger.warning('cannot verify post retry %s: %s; keeping it queued',
+                               message.get('new_path'), error)
+                self.__set_isRetry(message)
+                self.post_retry.put(self.__filter_by_retry_count([message]))
+                continue
+            if current:
+                worklist.ok.append(message)
+            else:
+                reason = 'post retry content no longer matches the local file'
+                logger.warning('%s: %s', reason, message['new_path'])
+                message.setReport(410, reason)
+                worklist.rejected.append(message)
+
+    def __post_retry_matches_file(self, message):
+        """Do not replay an old content identity for a replaced local file.
+
+        Only a downloaded whole file with a content checksum can be checked
+        here. A sender's new_path is remote, and forwarders do not necessarily
+        have any local file. File operations and block identities describe
+        something other than a complete ordinary file.
+        """
+        method = message.get('identity', {}).get('method')
+        if (not getattr(self.o, 'download', False)
+                or (getattr(self.o, 'flowMain', None) or self.o.component) == 'sender'
+                or not message.get('new_path')
+                or 'fileOp' in message or 'blocks' in message or 'content' in message
+                or method not in ('md5', 'sha512')):
+            return True
+
+        # A different size is already a replacement; skip hashing the body.
+        if 'size' in message and os.stat(message['new_path']).st_size != int(message['size']):
+            return False
+
+        # Read the body, not a cached xattr: replacement may preserve mtime.
+        identity = Identity.factory(method)
+        identity.update_file(message['new_path'])
+        return identity.value == message['identity']['value']
 
     def after_post(self, worklist) -> None:
         """
