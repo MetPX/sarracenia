@@ -109,32 +109,45 @@ class Wis(PostFormat):
             #elif 'properties' in GeoJSONBody and ('data_id' in GeoJSONBody['properties']):
             #    msg['relPath'] = GeoJSONBody['properties']['data_id']
             else:
-                logger.error( 'Invalid message. All MQTT streams should be accompanied with a topic.')
-                return msg
+                logger.error('Invalid message. All MQTT streams should be accompanied with a topic.')
+                return None
            
+            source_rel_acquired = 0
             # Links can only hold ONE value of 'canonical', 'update' or 'deletion'. All other links provided are not references to the source data.
             # See https://wmo-im.github.io/wis2-notification-message/standard/wis2-notification-message-STABLE.html#_1_17_links section I.
             # TODO: Read metadata held inside additional links fields?
             if 'links' in GeoJSONBody:
-                urlstr = GeoJSONBody['links'][0]['href']
-                url = urllib.parse.urlparse( urlstr )
-                msg['size']  = GeoJSONBody['links'][0]['length']
-                if 'type' in GeoJSONBody['links'][0]:
-                    msg['contentType']  = GeoJSONBody['links'][0]['type']
-                # We may want to keep using the links field for plugins. We don't want to repost this field however. 
-                # It will get re-created from the poster configuration if WIS2 post_format is used.
-                msg['links'] = GeoJSONBody['links']
-                msg['_deleteOnPost'] |= set( ['links' ])
+                # Incoming WIS2 messages can have multiple links. Filter through these.
+                for link in GeoJSONBody['links']:
+                    # For now, we don't care about any incoming metadata. We just want to download the source file.
+                    # Don't include deletion links.
+                    if link['rel'] in ['canonical', 'update']:
+                        urlstr = link['href']
+                        url = urllib.parse.urlparse( urlstr )
+                        if 'length' in link:
+                            msg['size']  = link['length']
+                        if 'type' in link:
+                            msg['contentType']  = link['type']
+                        # We may want to keep using the links field for plugins. We don't want to repost this field however.
+                        # It will get re-created from the poster configuration if WIS2 post_format is used.
+                        msg['links'] = GeoJSONBody['links']
+                        msg['_deleteOnPost'] |= set( ['links' ])
 
-                msg['baseUrl'] = url.scheme + '://' + url.netloc
-                msg['retrievePath' ] = urlstr[len(msg['baseUrl']):] 
+                        msg['baseUrl'] = url.scheme + '://' + url.netloc
+                        msg['retrievePath'] = urlstr[len(msg['baseUrl']):]
 
-                # The topic normally doesn't hold the filename inside its structure. It is however present in the href link, to fetch the data.
-                # Extract this filename value when possible.
-                if url.path.split('/')[-1] != '':
-                    if msg['relPath'][-1] != '/':
-                        msg['relPath'] += '/'
-                    msg['relPath'] += url.path.split('/')[-1]
+                        # The topic normally doesn't hold the filename inside its structure. It is however present in the href link, to fetch the data.
+                        # Extract this filename value when possible.
+                        if url.path.split('/')[-1] != '':
+                            if msg['relPath'][-1] != '/':
+                                msg['relPath'] += '/'
+                            msg['relPath'] += url.path.split('/')[-1]
+                        source_rel_acquired = 1
+                # If there are no 'update' or 'canonical' links, log an error and don't return a message.
+                if not source_rel_acquired:
+                    logger.warning("Incoming WIS2 message is missing either a 'canonical' or 'update' field. Discarding message.")
+                    return None
+
             else:
                 logger.warning( 'Invalid message. Missing links field (WMO mandatory field)' )
 
@@ -151,18 +164,10 @@ class Wis(PostFormat):
                 if literal in body:
                     GeoJSONBody[literal] = body[literal]
 
-            if 'topic' in body:
-                topic = body['topic'].split('/')
-            elif 'topic' in options:
-                topic=options['topic'].split('/')
-            else:
-                topic= []
+            # Use common method to extract topic
+            topic = PostFormat.topicDerive( body, options )
 
             headers = { 'topic' : topic }
-            """
-                  topicPrefix and body['subtopic'] could be used to build a topic...
-
-            """
             for h in body:
                 if h not in [ 'contentType', 'geometry', 'properties', 'size', 'baseUrl', 'relPath', 'retrievePath', 'subtopic', 'pubTime', 'to_clusters', 'from_cluster', 'filename', 'sundew_extension', 'mtime', 'atime', 'mode', 'identity', 'topic' ]:
                     GeoJSONBody['properties'][h] = body[h]
@@ -187,8 +192,9 @@ class Wis(PostFormat):
                     'rel': 'canonical',
                     #'type': 'unknown',, mime content-type of data, not available in message.
                     'href': url,
-                    'length': body['size']
                 }]
+                if 'size' in body:
+                    GeoJSONBody['links'][0]['length'] = body['size']
                 if 'contentType' in body:
                     GeoJSONBody['links'][0]['type'] = body['contentType']
 
