@@ -28,31 +28,46 @@ class NavCanada(PostFormat):
                 data from the headers to determine if we've received a SWIM format message.
             content_type is the content type of payload/data itself, also useless here
         """
-        return headers and ('MSG_TYPE' in headers and (headers['MSG_TYPE'] in ['NCFILESHARE', NavCanada.MSG_TYPE] 
-                                            or headers['MSG_TYPE'].startswith("TAC-") ) )
+        # we don't know all the possible MSG_TYPEs, so we just check if that property exists. Not all NavCan
+        # messages even have a MSG_TYPE, in that case,  check for some other known properties.
+        return headers and ( ('MSG_TYPE' in headers and 'MSG_UUID' in headers) or
+                             ('MSG_TYPE' in headers and 'MSG_PUBLISH_TIME' in headers) or
+                             ('MSG_PUBLISH_TIME' in headers and 'MSG_UUID' in headers)
+                           )
+
     @staticmethod
     def parseNavCanTime(time):
         """ parse any NAV CANADA time format into an sr3 time string (YYYYmmddTHHMMSS.sss)
             Example inputs:
                 epoch: 1772657588 (string or int)
                 ISO:   2026-08-18T08:13:08.399Z or # 2026-08-18T08:13:08.399
+                With timezone: 2026-10-15T12:50:11.989626+00:00
+                something else: 2026-10-27 20:15:25
         """
         try:
             if isinstance(time, str):
                 time = time.replace('Z', '')
-                if 'T' in time and ':' in time and '-' in time and '.' in time:
+                if 'T' in time and ':' in time and '-' in time and '.' in time and '+' in time:
+                    # python3.6 doesn't work when there are colons in the timezone, remove it
+                    if time[-3] == ':':
+                        time = ''.join( time.rsplit(':',1) )
+                    dt = datetime.strptime(time, '%Y-%m-%dT%H:%M:%S.%f%z')
+                elif 'T' in time and ':' in time and '-' in time and '.' in time:
                     dt = datetime.strptime(time, '%Y-%m-%dT%H:%M:%S.%f')
-                    return dt.strftime("%Y%m%dT%H%M%S.%f")[:-3]
                 elif 'T' in time and ':' in time and '-' in time:
                     dt = datetime.strptime(time, '%Y-%m-%dT%H:%M:%S')
-                    return dt.strftime("%Y%m%dT%H%M%S.%f")[:-3]
+                elif ' ' in time and ':' in time:
+                    dt = datetime.strptime(time, '%Y-%m-%d %H:%M:%S')
                 else:
                     try:
                         dt = datetime.fromtimestamp(int(time), tz=timezone.utc)
-                        return dt.strftime("%Y%m%dT%H%M%S.%f")[:-3]
                     except Exception as e:
                         # ERROR message below will be logged
                         logger.debug(f"{e}", exc_info=True)
+                        dt = None
+                if dt is not None:
+                    dt = dt.astimezone(timezone.utc) # convert to UTC
+                    return dt.strftime("%Y%m%dT%H%M%S.%f")[:-3]
 
             elif isinstance(time, int):
                 dt = datetime.fromtimestamp(time, tz=timezone.utc)
@@ -71,6 +86,11 @@ class NavCanada(PostFormat):
             headers is the app properties from the AMQP1.0 message.
             body is the data itself (inline content).
 
+            There are multiple message formats from NC. This code is trying to do the bare minimum to import
+            a usable sr3 message. An internal plugin will be used for additional path derivation/renaming, etc.
+            as required. The plugin can be easily modified without needing to release and deploy a new version
+            of sr3.
+
             Example App Properties:
             properties={
                 'NCFILESHARE_FILE_NAME':    'SPCN61_CZUM_042052__CZUM_41605:CZUM:SP:CZUM:Direct',
@@ -85,6 +105,35 @@ class NavCanada(PostFormat):
                 'MSG_VERSION':              'V1',
                 'MSG_ORIGINATOR':           'NCFILESHARESERVICE'
                 },
+
+            Example WOS (JSON) Message:
+            Message(address='ODEX/CZEG/CYEG/CYEG/WOS/V2',
+                properties={
+                    'DESTINATION_TYPE': 'Topic',
+                    'MSG_TYPE': 'WOS',
+                    'MSG_ORIGINATOR': 'ODEX',
+                    'FIR': 'CZEG',
+                    'SITE_ID': 'CYEG',
+                    'SENSOR_ID': 'CYEG',
+                    'DESTINATION': 'CYEG',
+                    'MSG_UUID': 'cd3d0c8c-68dd-4b10-b5f4-b5f5d08d8278',
+                    'MSG_PUBLISH_TIME': '2026-10-14T19:47:24.000363Z',
+                    'OBSERVATION_TIME': '2026-10-14T19:47:00.000000Z'},
+                body='{ json stuff here }')
+
+            Example METCAM message:
+            Message(priority=4, id=2,
+                properties={
+                    'UUID': 'a5fa5a52-7ae5-4511-901c-e1f1dd334616',
+                    'MSG_ID': 'CYXH_N_2026-10-15T09:00:13.404091+00:00',
+                    'DESTINATION': 'topic://METCAM/REPORT/V2/CYXH/N/PUBLIC/JSON/',
+                    'MSG_PUBLISH_TIME': '2026-10-15T09:00:13.404091+00:00',
+                    'MSG_TYPE': 'METCAM_REPORT',
+                    'MSG_ORIGINATOR': 'METCAM_ADMIN',
+                    'DESTINATION_TYPE': 'Topic',
+                    'MSG_METCAM_PAYLOAD_TYPE': 'JSON',
+                    'METCAM_ORIGINATOR_ADDRESS': 'METCAM_ADMIN'},
+                body='{ json stuff here }')
 
         """
         msg = sarracenia.Message()
@@ -103,22 +152,36 @@ class NavCanada(PostFormat):
             logger.error("message missing MSG_PUBLISH_TIME, using current time")
             msg['pubTime'] = sarracenia.nowstr()
 
+        # build relPath
         # NOTE: we currently do not expect to receive messages with URLs from NC, inline data only
         msg['relPath'] = ''
         # build relPath from DESTINATION and NCFILESHARE_FILE_NAME, so we can at least have a file path and
         # name to work with (mirror) when writing the data from the message.
         if 'DESTINATION' in headers:
             msg['relPath'] += headers['DESTINATION']
+        elif 'amqp1_address' in headers:
+            logger.debug("DESTINATION was missing, falling back to amqp1_address: %s", headers['amqp1_address'])
+            msg['relPath'] += headers['amqp1_address']
+
         if len(msg['relPath']) > 0 and msg['relPath'][-1] != '/':
             msg['relPath'] += '/'
+
         if 'NCFILESHARE_FILE_NAME' in headers:
             msg['relPath'] += headers['NCFILESHARE_FILE_NAME']
         elif 'FILE_NAME' in headers:
             msg['relPath'] += headers['FILE_NAME']
 
+
+        # if there's no FILE_NAME, we can end up with a relPath that ends in /, get rid of that
+        if len(msg['relPath']) > 0 and msg['relPath'][-1] == '/':
+            msg['relPath'] = msg['relPath'].rstrip('/')
+        # some messages include the topic:// in DESTINATION
+        if 'topic://' in msg['relPath']:
+            msg['relPath'] = msg['relPath'].replace('topic://', '')
+
         # if we can't get a useful relPath then we can't download the data
         if len(msg['relPath']) == 0:
-            logger.error("could not derive relPath from incoming message")
+            logger.error(f"could not derive relPath from incoming message with properties: {headers}")
             return None
 
         # File mtime, have seen both '1772657588' and '2026-06-22T18:49:40.445Z' format.
@@ -161,7 +224,8 @@ class NavCanada(PostFormat):
         # baseUrl is mandatory and sr3 will crash without it
         msg['baseUrl'] = "none://"
 
-        msg['topic'] = headers['amqp1_address'].replace("topic://", "")
+        if 'amqp1_address' in headers and headers['amqp1_address']:
+            msg['topic'] = headers['amqp1_address'].replace("topic://", "")
 
         return msg
 
@@ -188,25 +252,6 @@ class NavCanada(PostFormat):
             'MSG_ORIGINATOR':   clean_topicPrefix.split('/')[0], # should be ECCC when publishing to NC
             'DESTINATION_TYPE': 'Topic',
         }
-
-        # A plugin is used to set the message type to one of the following:
-        # TAC-FA - Aviation Area Forecasts
-        # TAC-FB - Forecast upper winds and temperatures
-        # TAC-FD - Wind and temperatures aloft forecasts
-        # TAC-FN - Space Weather Advisories
-        # TAC-FT - Aviation Terminal Forecasts
-        # TAC-SA - Hourly aviation weather reports
-        # TAC-SM - Main hour synoptic reports
-        # TAC-SP - Special aviation weather reports
-        # TAC-UA - Pilot weather reports
-        # TAC-WA - AIRMET messages and/or US flight advisories
-        # TAC-WS - SIGMET messages - WSCNxx, WCCNxx (tropical cyclone)
-        # TAC-WC - Tropical Cyclone messages
-        # TAC-WV - VA SIGMET messages
-        # This is so we can just change the plugin if we need to support different msg types, without needing
-        # to release a whole new version of sr3.
-        if 'navcan_msg_type' in sr3_msg:
-            headers['MSG_TYPE'] = sr3_msg['navcan_msg_type']
 
         # Set topic / DESTINATION
         # Normally, this message format will be used in combination with a plugin that sets msg['topic']
@@ -280,21 +325,30 @@ class NavCanada(PostFormat):
         # for NAVCANADA, the message body is the data itself
         contentType = sr3_msg.get('contentType', 'text/plain')
 
-        # Set schema info when the data is IWXXM
-        if 'iwxxm' in raw_body:
-            ns_start = raw_body.find('xmlns:iwxxm="')
-            if ns_start > 0:
-                try:
-                    schema_ns = raw_body[ns_start:].split('"')[1]
-                    schema_ver = schema_ns.split('/')[-1]
-                    headers['MSG_NAMESPACE'] = schema_ns
-                    if schema_ver.count('.') < 2:
-                        schema_ver += '.0'
-                    headers['MSG_SCHEMA_VERSION'] = schema_ver
-                except Exception as e:
-                    logger.debug(f"Could not set schema namespace {e}")
-        else:
-            headers['MSG_VERSION'] = 'V1'
+        # Allow plugins to set and/or override properties in the exported message.
+        # For example: sr3_msg['navcan_properties_override'] = { 'AMHS_FILENAME': 'something' }
+        # will either set or overwrite the AMHS_FILENAME header.
+        # A plugin is used to set the message type to one of the following:
+        # TAC-FA - Aviation Area Forecasts
+        # TAC-FB - Forecast upper winds and temperatures
+        # TAC-FD - Wind and temperatures aloft forecasts
+        # TAC-FN - Space Weather Advisories
+        # TAC-FT - Aviation Terminal Forecasts
+        # TAC-SA - Hourly aviation weather reports
+        # TAC-SM - Main hour synoptic reports
+        # TAC-SP - Special aviation weather reports
+        # TAC-UA - Pilot weather reports
+        # TAC-WA - AIRMET messages and/or US flight advisories
+        # TAC-WS - SIGMET messages - WSCNxx, WCCNxx (tropical cyclone)
+        # TAC-WC - Tropical Cyclone messages
+        # TAC-WV - VA SIGMET messages
+        # This is so we can just change the plugin if we need to support different msg types, without needing
+        # to release a whole new version of sr3.
+        if 'navcan_properties_override' in sr3_msg:
+            if isinstance(sr3_msg['navcan_properties_override'], dict):
+                headers.update(sr3_msg['navcan_properties_override'])
+            else:
+                logger.error("navcan_properties_override is defined but is not a dict")
 
         return raw_body, headers, contentType
 

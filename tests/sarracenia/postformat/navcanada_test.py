@@ -14,7 +14,7 @@ from sarracenia.postformat.navcanada import NavCanada
     ['NCFILESHARE', NavCanada.MSG_TYPE, 'TAC-SA', 'TAC-FT'],
 )
 def test_mine_supported_types(msg_type):
-    assert NavCanada.mine(None, {'MSG_TYPE': msg_type}, None, None)
+    assert NavCanada.mine(None, {'MSG_TYPE': msg_type, 'MSG_UUID': 'fdsa'}, None, None)
 
 
 def test_mine_unsupported_type():
@@ -28,6 +28,11 @@ def test_mine_unsupported_type():
         ('2026-08-18T08:13:08Z',     '20260818T081308.000'),
         (0,                          '19700101T000000.000'),
         ('1772657588',               '20260304T205308.000'),
+        ('2026-10-15T12:50:11.989626+0000', '20261015T125011.989'),
+        ('2026-10-15T12:50:11.989626+0500', '20261015T075011.989'),
+        ('2026-10-15T12:50:11.989626+00:00', '20261015T125011.989'),
+        ('2026-10-15T12:50:11.989626+05:00', '20261015T075011.989'),
+        ('2026-10-27 20:15:25',      '20261027T201525.000'),
     ],
 )
 def test_parse_navcan_time(value, expected):

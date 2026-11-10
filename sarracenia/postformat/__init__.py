@@ -57,11 +57,15 @@ class PostFormat:
        """
         for sc in PostFormat.__subclasses__():
             #logger.info( f" sc={sc}, scct={sc.content_type()}, content_type={content_type} " )
-            if sc.mine(payload, headers, content_type, options ):
-                return sc.importMine(payload, headers, options )
-        return None
+            try:
+                if sc.mine(payload, headers, content_type, options ):
+                    return sc.importMine(payload, headers, options )
+            except Exception as e:
+                logger.error(f"{sc} crashed ({e}) while trying to import raw message with content_type: {content_type}")
+                logger.debug("Failed message headers: %s. Exception details:", headers, exc_info=True)
 
-        pass
+        logger.error(f"failed to import raw message with content_type: {content_type}, headers: {headers}")
+        return None
 
     @staticmethod
     def exportAny(msg, post_format='v03', topicPrefix=[ 'v03' ], options={ 'post_format': 'v03', 'topicPrefix':'v03' } ) -> (str, dict, str):
