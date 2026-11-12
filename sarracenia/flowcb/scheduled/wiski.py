@@ -61,6 +61,8 @@ class Wiski(Scheduled):
        wiski_ts_name   -- list of timeseries to ingest
        wiski_return_fields -- Fields of data to retrieve and to be included in resulted file.
        wiski_reject_parameterTypeName -- Parameters to reject from a given station (example 'Battery Voltage')
+       wiski_datasource -- The WISKI protocol can alternate between data sources via this HTTPs field. It defaults to 0 when not specified.
+                           This allows us to toggle between sources from the source server.
 
        inherits the following settings from Scheduled (interval overrides the other two.)
 
@@ -102,6 +104,7 @@ class Wiski(Scheduled):
         self.o.add_option( 'wiski_reject_parameterTypeName', 'list', [] )
         self.o.add_option( 'wiski_return_fields', 'list' , ['Timestamp','Value'])
         self.o.add_option( 'wiski_json', 'flag' , False)
+        self.o.add_option( 'wiski_datasource', 'count' , 0)
         
         self.ts_length = datetime.timedelta( seconds=self.o.wiski_ts_length )
         
@@ -176,7 +179,15 @@ class Wiski(Scheduled):
             now = datetime.datetime.fromtimestamp(time.time(),datetime.timezone.utc)
             self.housekeeping_needed = ((now-start_time).total_seconds() >= self.o.housekeeping)
         
-        k = KIWIS(self.main_url, headers=headers )
+        # If wiski_datasource = 0, don't specify the field.
+        # This was done to prevent failures if ever future WISKI sources don't support the datasource field.
+        # I couldn't find documentation that stated datasource is a mandatory WISKI field, even though a client stated that it did.
+        # The caveat of this is that a source that can't omit the datasource field will fail on datasource=0.
+        if hasattr(self.o,'wiski_datasource') and self.o.wiski_datasource > 0:
+            k = KIWIS(self.main_url+f"?datasource={self.o.wiski_datasource}", headers=headers )
+        else:
+            k = KIWIS(self.main_url, headers=headers )
+
 
         now = datetime.datetime.fromtimestamp(time.time(),datetime.timezone.utc)
         then = now - self.ts_length
