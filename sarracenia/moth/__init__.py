@@ -30,7 +30,9 @@ __default_options = {
     },
     'messageAgeMax': 0,
     'topicPrefix': ['v03'],
-    'tlsRigour': 'normal'
+    'tlsRigour': 'normal',
+    'sleep': 0.1,
+    'sleepMax': 10.0,
 }
 
 def default_options() -> dict:
@@ -357,6 +359,33 @@ class Moth():
         logging.basicConfig(format=self.o['logFormat'],
                             level=getattr(logging, self.o['logLevel'].upper()))
         logger.debug(' Maximum interval exponential back off of connecting to broker: %s ', eboIntervalMaximum)
+
+        # For protocols where messages are pushed to clients (everything but AMQP 0.9.1 basic_get polling),
+        # configure a timeout used for blocking operations using the sleep and sleepMax options.
+
+        # In polls, a large timeout (relative to scheduled_interval) could interfere with scheduling, so keep it small
+        if component in self.o and self.o['component'] == 'poll':
+            # when scheduled_interval is known, maximum drain_timeout is whichever is lower:
+            # sleepMax option or scheduled_interval/2
+            if 'scheduled_interval' in self.o and self.o['scheduled_interval']:
+                try:
+                    sched_int = float(self.o['scheduled_interval'])
+                    self._max_sleep = min(sched_int/2 , self.o['sleepMax'])
+                except Exception:
+                    logger.debug("invalid scheduled_interval: %s", self.o['scheduled_interval'])
+                    self._max_sleep = self.o['sleep']
+            # if scheduled_interval is not known, use a small timeout and let Flow code handle sleeping/timing
+            else:
+                logger.debug("scheduled_interval is not in use, using sleep %.2f for blocking timeout", self.o['sleep'])
+                self._max_sleep = self.o['sleep']
+
+            # polls are usually not in spamming mode
+            self._min_sleep = self.o['sleep']
+        else:
+            self._max_sleep = self.o['sleepMax']
+            # using *2 because when Flow loop is in "spamming" mode, it increases the stime before sleeping
+            self._min_sleep = self.o['sleep'] * 2 if self.o['sleep'] > 0 else 0.1
+        self._drain_timeout = self._min_sleep
 
     def ack(self, message: sarracenia.Message ) -> bool:
         """

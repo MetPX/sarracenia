@@ -53,32 +53,6 @@ class AMQPConsumer(AMQP):
         self._request_consumer_tag = '' # TODO set to something useful
         self._active_consumer_tag = None
 
-        # use sleep and sleepMax options to set the timeout used for drain_events
-        # for polls, a large drain_timeout (relative to scheduled_interval) could interfere with scheduling
-        if self.o['component'] == 'poll':
-            # when scheduled_interval is known, maximum drain_timeout is whichever is lower:
-            # sleepMax option or scheduled_interval/2
-            if 'scheduled_interval' in self.o and self.o['scheduled_interval']:
-                try:
-                    sched_int = float(self.o['scheduled_interval'])
-                    self._max_sleep = min(sched_int/2 , self.o['sleepMax'])
-                except Exception:
-                    logger.debug("invalid scheduled_interval: %s", self.o['scheduled_interval'])
-                    self._max_sleep = self.o['sleep']
-            # if scheduled_interval is not known, use a small timeout and let Flow code handle sleeping/timing    
-            else:
-                logger.debug("scheduled_interval is not in use, using sleep %.2f for max AMQP Consumer drain timeout",
-                             self.o['sleep'])
-                self._max_sleep = self.o['sleep']
-
-            # polls are usually not in spamming mode
-            self._min_sleep = self.o['sleep']
-        else:
-            self._max_sleep = self.o['sleepMax']
-            # using *2 because when Flow loop is in "spamming" mode, it increases the stime before sleeping
-            self._min_sleep = self.o['sleep'] * 2 if self.o['sleep'] > 0 else 0.1
-        self._drain_timeout = self._min_sleep
-
         # control log level in config file:
         # set sarracenia.moth.amqpconsumer.AMQPConsumer.logLevel debug
         me = f"{__class__.__module__}.{__class__.__name__}"
