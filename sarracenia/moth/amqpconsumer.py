@@ -105,25 +105,36 @@ class AMQPConsumer(AMQP):
             if not self.connection:
                 return None
 
-            # trigger incoming event processing
-            try:
-                self.connection.drain_events(timeout=0.1) # TODO configurable timeout?
-            except TimeoutError:
-                pass
-            # In newer Python versions, socket.timeout is "a deprecated alias of TimeoutError", but it's not on
-            # older versions (3.6) and needs to be handled separately
-            except socket.timeout:
-                pass
+            # trigger incoming event processing when we don't already have messages waiting to be processed
+            if self._raw_msg_q.qsize() <= 0:
+                try:
+                    self.connection.drain_events(timeout=self._drain_timeout)
+                    # Using drain_timeout here effectively overrides the sleep code in Flow. It's better to "sleep"
+                    # here (using timeout) because drain_events will return as soon as a message is received.
+                    # Sleeping in Flow can't be interrupted, so we don't want to sleep there when we can use this
+                    # timeout instead because sleeping delays message processing.
+                except TimeoutError:
+                    pass
+                # In newer Python versions, socket.timeout is "a deprecated alias of TimeoutError", but it's not on
+                # older versions (3.6) and needs to be handled separately
+                except socket.timeout:
+                    pass
 
             try:
                 # don't block waiting for the queue to be available, better to just try again later
                 raw_msg = self._raw_msg_q.get_nowait()
             except queue.Empty:
                 raw_msg = None
+                # no messages received, increase timeout for the next time
+                self._drain_timeout *= 2
+                if self._drain_timeout > self._max_sleep:
+                    self._drain_timeout = self._max_sleep
             
             if (raw_msg is None) and (self.connection.connected):
                 return None
             else:
+                # received a message from the AMQP queue, so reset drain timeout
+                self._drain_timeout = self._min_sleep
                 self.metrics['rxByteCount'] += len(raw_msg.body)
                 try: 
                     msg = self._msgRawToDict(raw_msg)
