@@ -1722,7 +1722,7 @@ class Config:
         elif k in ['no-import']:
             self._parse_v3unplugin(v)
         elif k in ['inflight', 'lock']:
-            if v[:-1].isnumeric():
+            if v[:1].isnumeric():
                 vv = durationToSeconds(v)
                 setattr(self, k, vv)
                 self.fileAgeMin = vv
