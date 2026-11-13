@@ -226,6 +226,7 @@ class MQTT(Moth):
         userdata.subscribe_mutex.acquire()
 
         s=userdata.o['subscriptions'][userdata.o['subscription_index']]
+        old_s=userdata.o['old_subscriptions'][userdata.o['subscription_index']]
         queue=s['queue']
         broker=s['broker']
 
@@ -235,7 +236,7 @@ class MQTT(Moth):
             logger.info( f"request to subscribe to: {binding_dict['topic']}, mid={mid} "
                     f"qos={queue['qos']} sent: {paho.mqtt.client.error_string(res)}" )
 
-        for binding_dict in s['bindings_to_remove']:
+        for binding_dict in old_s['bindings_to_remove']:
             (res, mid) = client.unsubscribe(binding_dict['topic'])
             userdata.subscribe_in_progress += 1
             logger.info( f"request to unsubscribe from: {binding_dict['topic']}, mid={mid} " \
