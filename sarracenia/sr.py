@@ -1869,17 +1869,18 @@ class sr_GlobalState:
                         continue
 
                     print(f"deleting: {f} is: {q['name']} @ {broker.url.hostname}")
-                    qdc = sarracenia.moth.Moth.subFactory(
-                        {
+                    odict = o.dictify()
+                    odict.update({
                             'broker': broker,
                             'dry_run': self.options.dry_run,
                             'credentials': o.credentials,
-                            'echangeDeclare': False,
+                            'exchangeDeclare': False,
                             'subscription_index': 0,
                             'subscriptions' : [ s ],
                             'message_strategy': { 'stubborn':True },
-                            'tlsRigour': q['tlsRigour']
+                            'tlsRigour': q['tlsRigour'],
                         })
+                    qdc = sarracenia.moth.Moth.subFactory(odict)
                     qdc.getSetup()
                     qdc.getCleanUp()
                     qdc.close()
