@@ -37,6 +37,7 @@ import logging
 import os
 import sarracenia
 from sarracenia.flowcb import FlowCB
+import http.client
 import urllib.request
 import xml.etree.ElementTree as ET
 
@@ -77,8 +78,13 @@ class Noaa_hydrometric(FlowCB):
 
         else:
             # Grab station site codes from https://opendap.co-ops.nos.noaa.gov/stations/stationsXML.jsp
-            tree = ET.parse(urllib.request.urlopen\
-               ('https://opendap.co-ops.nos.noaa.gov/stations/stationsXML.jsp'))
+            stations_url = 'https://opendap.co-ops.nos.noaa.gov/stations/stationsXML.jsp'
+            try:
+                tree = ET.parse(urllib.request.urlopen(stations_url, timeout=self.o.timeout))
+            except (OSError, http.client.HTTPException) as e:
+                logger.error(f"could not get the station list {stations_url}: {e}, nothing polled this time")
+                logger.debug("Exception details:", exc_info=True)
+                return []
             root = tree.getroot()
             for child in root:
                 sitecodes.append(child.attrib['ID'])
@@ -90,24 +96,34 @@ class Noaa_hydrometric(FlowCB):
             retrievePath = self.o.retrievePathPattern.format(site, 'water_temperature')
             url = self.o.pollUrl + retrievePath
             logger.info(f'polling {site}, polling: {url}')
-            # Water temp request
-            resp = urllib.request.urlopen(url).getcode()
-            logger.info(f"poll_noaa file posted: {url} %s")
             mtime = datetime.datetime.utcnow().strftime('%Y%m%d_%H%M')
+            # Water temp request
+            try:
+                resp = urllib.request.urlopen(url, timeout=self.o.timeout).getcode()
+            except (OSError, http.client.HTTPException) as e:
+                logger.error(f"could not get {url}: {e}, skipping the water temperature for site {site}")
+                logger.debug("Exception details:", exc_info=True)
+            else:
+                logger.info(f"poll_noaa file posted: {url} %s")
 
-            fname = f'noaa_{mtime}_{site}_WT.csv'
-            m = sarracenia.Message.fromFileInfo(fname, self.o)
-            m['identity'] = self.identity
-            m['retrievePath'] = retrievePath
-            m['new_file'] = fname
+                fname = f'noaa_{mtime}_{site}_WT.csv'
+                m = sarracenia.Message.fromFileInfo(fname, self.o)
+                m['identity'] = self.identity
+                m['retrievePath'] = retrievePath
+                m['new_file'] = fname
 
-            incoming_message_list.append(m)
+                incoming_message_list.append(m)
 
             # Water level request
             retrievePath = self.o.retrievePathPattern.format(
                 site, 'water_level') + '&datum=STND'
             url = self.o.pollUrl + retrievePath
-            resp = urllib.request.urlopen(url).getcode()
+            try:
+                resp = urllib.request.urlopen(url, timeout=self.o.timeout).getcode()
+            except (OSError, http.client.HTTPException) as e:
+                logger.error(f"could not get {url}: {e}, skipping the water level for site {site}")
+                logger.debug("Exception details:", exc_info=True)
+                continue
             logger.info(f"poll_noaa file posted: {url}")
 
             fname = f'noaa_{mtime}_{site}_WL.csv'
