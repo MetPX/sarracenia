@@ -2545,7 +2545,7 @@ class Config:
         def __call__(self, parser, namespace, values, option_string):
 
             if values == 'None':
-                namespace.subscriptions = []
+                namespace.subscriptions = Subscriptions()
 
             resolved_qn = namespace._resolveQueueName(namespace.component,namespace.config)
 
