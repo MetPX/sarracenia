@@ -2120,9 +2120,11 @@ class Config:
                 self.subscriptions.append(Subscription(self, self.queueName, resolved_queueName, [ '#' ]))
 
         self.subscriptions.finalize(self.old_subscriptions)
-        if self.action in [ 'start', 'foreground', 'declare' ] and \
-                (not hasattr(self,'no') or self.no < 2) and  \
+        if self.action in [ 'start', 'restart', 'foreground', 'declare' ] and \
+                not hasattr(self,'no') and \
                 len(self.subscriptions) > 0:
+            # logger.critical(f"Old subscriptions: {self.old_subscriptions}")
+            # logger.critical(f"New subscriptions: {self.subscriptions}")
             self.subscriptions.write(self.subscriptionsPath)
             self._writeQueueFile(self.subscriptions[0]['queue']['name'])
 

@@ -338,6 +338,7 @@ class sr_GlobalState:
                         cfgbody.applyComponentDefaults( c )
                         cfgbody.addComponentDefaultInc( c )
                         cfgbody.parse_file(cfg,c)
+                        # print(f"Component: {c}, Config {cfg}")
                         cfgbody.finalize(c, cfg)
                         self.configs[c][cbase]['options'] = cfgbody
 
@@ -1487,6 +1488,8 @@ class sr_GlobalState:
             return
 
         filtered_users = []
+
+        self._read_configs()
 
         for config in self.filtered_configurations:
 
