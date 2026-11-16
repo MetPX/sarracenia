@@ -40,38 +40,24 @@ def exec_rabbitmqadmin(url, options, simulate=False):
         command += ' ' + options
 
         logger.debug('command = %s', command)
-        if sys.version_info.major < 3 or (sys.version_info.major == 3
-                                          and sys.version_info.minor < 5):
-            if logger: logger.debug("using subprocess.getstatusoutput")
+        cmdlin = command.replace("'", '')
+        cmdlst = cmdlin.split()
+        if logger:
+            logger.debug('using subprocess.run cmdlst=%s', ' '.join(cmdlst))
 
-            if simulate:
-                print(f"dry_run: {' '.join(command)}")
-                return 0, None
+        if simulate:
+            print(f"dry_run: {cmdlin}")
+            return 0, None
 
-            return subprocess.getstatusoutput(command)
-        else:
-            cmdlin = command.replace("'", '')
-            cmdlst = cmdlin.split()
-            if logger:
-                logger.debug('using subprocess.run cmdlst=%s', ' '.join(cmdlst))
-
-            if simulate:
-                print(f"dry_run: {cmdlin}")
-                return 0, None
-
-            rclass = subprocess.run(cmdlst, stdout=subprocess.PIPE)
-            if rclass.returncode == 0:
-                output = rclass.stdout
-                if type(output) == bytes: output = output.decode("utf-8")
-                return rclass.returncode, output
-            return rclass.returncode, None
+        rclass = subprocess.run(cmdlst, stdout=subprocess.PIPE)
+        if rclass.returncode == 0:
+            output = rclass.stdout
+            if type(output) == bytes: output = output.decode("utf-8")
+            return rclass.returncode, output
+        return rclass.returncode, None
     except:
-        if sys.version_info.major < 3 or (sys.version_info.major == 3
-                                          and sys.version_info.minor < 5):
-            if logger: logger.error( f"trying run command {command}" )
-        else:
-            if logger:
-                logger.error( f"trying run command {' '.join(cmdlst)}" )
+        if logger:
+            logger.error(f"trying run command {' '.join(cmdlst)}")
         if logger: logger.debug('Exception details:', exc_info=True)
 
     return 0, None

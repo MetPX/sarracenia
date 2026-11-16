@@ -1,3 +1,30 @@
+metpx-sr3 (3.04.00rc1) unstable; urgency=medium
+
+  * #1196 add support for per-component defaults (e.g. poll/default.inc)
+  * fix #1754: better handling for messages with no size (prevents a crash
+    when sender used fileSizeMax and a msg with no size was received)
+  * fix #1748: crash when inflight file gets deleted
+  * adds support for ingesting and publishing NAV CANADA messages
+  * improvements to AMQP 1.0 support
+  * removed old special cases for Python <= 3.5 (oldest supported is 3.6)
+  * email plugin (poll and download) improvements
+  * fix bug in gather/file.py that was causing restart_server tests to fail
+  * improved sr3 CLI output: print message when a config is disabled (#1764)
+  * fix #1782: sr3 enable did not enable configs when statehost was in use
+  * #1788: sleep refactoring, adds sleepMax option and fixes bugs causing
+    longer sleeps than intended
+  * fix #1503: in special cases where the relPath ended in /, do_download
+    could crash
+  * fix #1801: after_gather plugins were executed multiple times
+  * fix: crashes when some PostFormat received headers=None
+  * partial fix #1804: detect some cases where HTTP returns less data than
+    expected based on the Content-Length header
+  * improvements for WIS2 and MQTT support
+  * fix #1819: numeric inflight <10 not parsed correctly
+  * add support for different WISKI datasources
+
+ -- Reid Sunderland <reid.sunderland@ssc-spc.gc.ca>  Mon, 16 Nov 2026 18:27:32 +0000
+
 metpx-sr3 (3.03.01) unstable; urgency=medium
 
   * fix #1760 prevent resource library from running on Windows
