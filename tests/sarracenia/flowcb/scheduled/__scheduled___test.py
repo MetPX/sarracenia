@@ -1,201 +1,206 @@
 import datetime
 import logging
 import pytest
+import types
 from tests.conftest import *
-#from unittest.mock import Mock
 
 import sarracenia.config
 import sarracenia.flowcb.scheduled
-import time
 
 logger = logging.getLogger(__name__)
 
+UTC = datetime.timezone.utc
+DAY = datetime.date(2026, 1, 15)
+
+
+def at(hour, minute, second=0, days=0):
+    """ a time on DAY (or days after it), UTC """
+    return datetime.datetime.combine(DAY + datetime.timedelta(days=days),
+                                     datetime.time(hour, minute, second, tzinfo=UTC))
+
 
 def build_options():
-     o = sarracenia.config.default_config()
-     o.component = 'flow'
-     o.config = 'ex1'
-     o.action = 'start'
+    o = sarracenia.config.default_config()
+    o.component = 'flow'
+    o.config = 'ex1'
+    o.action = 'start'
 
-     o.parse_line( o.component, o.config, "flow/ex1", 1, "no 1" )
-     o.parse_line( o.component, o.config, "", 1, "no 1" )
-     o.finalize()
-     return o
-
-def test_schedules():
-
-     options= build_options()
-     options.scheduled_time=[ "12:40", "7:37" ]
-
-     today=datetime.datetime.fromtimestamp(time.time(),datetime.timezone.utc)
-     midnight=datetime.time(0,0,tzinfo=datetime.timezone.utc)
-     midnight= datetime.datetime.combine(today,midnight)
-     
-
-     me=sarracenia.flowcb.scheduled.Scheduled(options)
-     me.update_appointments(midnight)
-     assert( len(me.appointments) == 2 ) 
-
-     logger.info( f"set two appointments at specific times: {me.appointments=} {len(me.appointments)=}" )
-     logger.info( f" {len(me.appointments)=}" )
- 
-
-     options = build_options()
-     options.scheduled_hour= [ '1','3','5',' 7',' 9',' 13','21','23']
-     options.scheduled_minute= [ '1,3,5',' 7',' 9',' 13',' 15',' 51','53' ]
-
-     me=sarracenia.flowcb.scheduled.Scheduled(options)
-     me.update_appointments(midnight)
-
-     logger.info( f"set 72 appointments" )
-     assert( len(me.appointments) == 72 ) 
-
-     #logger.error( f" {me.appointments=} {len(me.appointments)=}" )
-     #logger.error( f" HOHO {len(me.appointments)=}" )
-
-     """
-       this should work? but does not... dunno why... worth fixing but not part of #1206
-
-       seems to barf on only having 1 scheduled hour... so maybe you need both?
-     """
-     #options = build_options()
-     #options.scheduled_hour= [ '1' ]
-     #options.scheduled_minute= []
-     #me=sarracenia.flowcb.scheduled.Scheduled(options)
-     #me.update_appointments(midnight)
-     #assert( len(me.appointments) == 1 ) 
-
-     #logger.error( f" {me.appointments=} {len(me.appointments)=}" )
-     #logger.error( f" HOHO {len(me.appointments)=}" )
-     
-     """
-         with both hour and minute specified... it works.
-
-     """
-     options = build_options()
-     options.scheduled_hour= []
-     options.scheduled_minute= []
-     options.scheduled_time= []
-     me=sarracenia.flowcb.scheduled.Scheduled(options)
-     me.update_appointments(midnight)
-
-     sample_time= datetime.time(hour=12, minute=5, tzinfo=datetime.timezone.utc )
-     now=datetime.datetime.now(datetime.timezone.utc )
-     sample_time= datetime.datetime.combine(now,sample_time)
-
-     logger.info( f"default schedule (should be 300 second interval) {me.appointments=}" )
-     assert( len(me.appointments) == 0 ) 
-
-     me.calc_next_gather_time( sample_time )
-     how_long = me.next_gather_time - sample_time
-     logger.info( f" {how_long.total_seconds()=} until next poll. " )
-     assert( how_long.total_seconds() <= 300 )
+    o.parse_line(o.component, o.config, "flow/ex1", 1, "no 1")
+    o.parse_line(o.component, o.config, "", 1, "no 1")
+    o.finalize()
+    return o
 
 
-     logger.info( f"1 appointment at 01:01 each day..." )
-     options = build_options()
-     options = build_options()
-     options.scheduled_hour= [ '1' ]
-     options.scheduled_minute= [ '1' ]
-     me=sarracenia.flowcb.scheduled.Scheduled(options)
-     me.update_appointments(midnight)
-     assert( len(me.appointments) == 1 ) 
+class Clock:
+    """
+       replaces the clock the scheduled module reads (datetime.datetime.now and time.time),
+       so the tests give the same result whatever time of day they run. Set clock.now to move it.
+    """
 
-     logger.info( f"pretending the time is 00:05 today" )
-     sample_time= datetime.time(hour=0, minute=5, tzinfo=datetime.timezone.utc )
-     now=datetime.datetime.now(datetime.timezone.utc )
-     sample_time= datetime.datetime.combine(now,sample_time)
+    def __init__(self, monkeypatch, now):
+        self.now = now
+        clock = self
 
-     me.calc_next_gather_time( sample_time )
-     how_long = me.next_gather_time - sample_time
-     logger.info( f" {how_long.total_seconds()=} until next poll. " )
-     assert( how_long.total_seconds() == 3360 )
+        class FakeDatetime(datetime.datetime):
+            @classmethod
+            def now(cls, tz=None):
+                return clock.now
 
-     options = build_options()
-     options.scheduled_interval= [ 3600 ]
-     options.scheduled_hour= [ ]
-     options.scheduled_minute= [ ]
-     me=sarracenia.flowcb.scheduled.Scheduled(options)
-     me.update_appointments(midnight)
-     assert( len(me.appointments) == 0 ) 
-
-     logger.info( f"pretending the time is 00:05 today" )
-     me.calc_next_gather_time( sample_time )
-     how_long = me.next_gather_time - sample_time
-     logger.info( f" {how_long.total_seconds()=} until next poll. " )
-     assert( how_long.total_seconds() == 3600 )
-
-     #logger.error( f" {me.appointments=} {len(me.appointments)=}" )
-     #logger.error( f" HOHO {len(me.appointments)=}" )
-     
-     options.scheduled_hour= []
-     options.scheduled_minute= []
-     options.scheduled_time=[ "12:40", "7:37" ]
-     me=sarracenia.flowcb.scheduled.Scheduled(options)
-     me.update_appointments(midnight)
-     assert( len(me.appointments) == 2 ) 
-
-     logger.info( f"pretending the time is 00:05 today" )
-     me.calc_next_gather_time( sample_time )
-     how_long = me.next_gather_time - sample_time
-     logger.info( f" {how_long.total_seconds()=} until next poll. " )
-     assert( how_long.total_seconds() == 3600 )
+        monkeypatch.setattr(sarracenia.flowcb.scheduled, 'datetime',
+                            types.SimpleNamespace(datetime=FakeDatetime, time=datetime.time,
+                                                  timedelta=datetime.timedelta, timezone=datetime.timezone))
+        monkeypatch.setattr(sarracenia.flowcb.scheduled, 'time',
+                            types.SimpleNamespace(time=lambda: clock.now.timestamp()))
 
 
-     logger.info( f"Setting 4 appointments: 2:02, 4:02, 12:40, 7:37 ...")
-     options= build_options()
-     options.scheduled_hour= [ "2", "4" ]
-     options.scheduled_minute= [ "2" ]
-     options.scheduled_time=[ "12:40", "7:37" ]
-     me=sarracenia.flowcb.scheduled.Scheduled(options)
-     me.update_appointments(midnight)
+@pytest.fixture
+def clock(monkeypatch):
+    return Clock(monkeypatch, at(0, 5))
 
-     assert( len(me.appointments) == 4 ) 
 
-     logger.info( f"pretending the time is 00:05 today" )
-     me.calc_next_gather_time( sample_time )
-     how_long = me.next_gather_time - sample_time
-     logger.info( f" {how_long.total_seconds()=} until next poll. " )
-     assert( how_long.total_seconds() == 7020 )
+def scheduled(hour=[], minute=[], time=[], interval=0):
+    o = build_options()
+    o.scheduled_hour = hour
+    o.scheduled_minute = minute
+    o.scheduled_time = time
+    o.scheduled_interval = interval
+    return sarracenia.flowcb.scheduled.Scheduled(o)
 
-     """
-       expect appointments at 2:00, and 4:00
-     """
-     logger.info( f"setting two appointments at 2:00, and 4:00 today" )
-     options= build_options()
-     options.scheduled_hour= [ "2", "4" ]
-     options.scheduled_minute= [ ]
-     options.scheduled_time=[ ]
-     me=sarracenia.flowcb.scheduled.Scheduled(options)
-     me.update_appointments(midnight)
 
-     assert( len(me.appointments) == 2 ) 
+def gathers_at(me, clock, when):
+    clock.now = when
+    gathered, messages = me.gather(1)
+    return gathered
 
-     logger.info( f"pretending the time is 00:05 today" )
-     me.calc_next_gather_time( sample_time )
-     how_long = me.next_gather_time - sample_time
-     logger.info( f" {how_long.total_seconds()=} until next poll. " )
-     assert( how_long.total_seconds() == 6900 )
 
-     """
-       expect appointments at :02, and :04 every hour.
-     """
-     logger.info( f"setting appointments at :02, and :04 every hour" )
-     options= build_options()
-     options.scheduled_minute= [ "2", "4" ]
-     options.scheduled_hour= [ ]
-     options.scheduled_time=[ ]
-     me=sarracenia.flowcb.scheduled.Scheduled(options)
-     me.update_appointments(midnight)
+def test_update_appointments(clock):
+    midnight = at(0, 0)
 
-     assert( len(me.appointments) == 48 ) 
+    me = scheduled(time=["12:40", "7:37"])
+    me.update_appointments(midnight)
+    assert me.appointments == [at(7, 37), at(12, 40)]
 
-     logger.info( f"pretending the time is 00:05 today" )
-     me.calc_next_gather_time( sample_time )
-     how_long = me.next_gather_time - sample_time
-     logger.info( f" {how_long.total_seconds()=} until next poll. " )
-     assert( how_long.total_seconds() == 3420 )
+    me = scheduled(hour=['1', '3', '5', ' 7', ' 9', ' 13', '21', '23'],
+                   minute=['1,3,5', ' 7', ' 9', ' 13', ' 15', ' 51', '53'])
+    me.update_appointments(midnight)
+    assert len(me.appointments) == 72
 
-     #logger.error( f" {me.appointments=} {len(me.appointments)=}" )
-     #logger.error( f" HOHO {len(me.appointments)=}" )
- 
+    me = scheduled(hour=["2", "4"], minute=["2"], time=["12:40", "7:37"])
+    me.update_appointments(midnight)
+    assert me.appointments == [at(2, 2), at(4, 2), at(7, 37), at(12, 40)]
+
+    me = scheduled(hour=["2", "4"])
+    me.update_appointments(midnight)
+    assert me.appointments == [at(2, 0), at(4, 0)]
+
+    me = scheduled(minute=["2", "4"])
+    me.update_appointments(midnight)
+    assert len(me.appointments) == 48
+
+    # appointments already passed today are left out
+    me.update_appointments(at(0, 5))
+    assert me.appointments[0] == at(1, 2)
+    assert len(me.appointments) == 46
+
+    me = scheduled()
+    me.update_appointments(midnight)
+    assert me.appointments == []
+
+
+@pytest.mark.parametrize("schedule,expected", [
+    (dict(hour=['1'], minute=['1']), [at(1, 1), at(1, 1, days=1)]),
+    (dict(hour=["2", "4"], minute=["2"], time=["12:40", "7:37"]),
+     [at(2, 2), at(4, 2), at(7, 37), at(12, 40), at(2, 2, days=1)]),
+    (dict(hour=["2", "4"]), [at(2, 0), at(4, 0), at(2, 0, days=1)]),
+    (dict(minute=["2", "4"]), [at(1, 2), at(1, 4), at(2, 2)]),
+    (dict(), [at(0, 10), at(0, 15), at(0, 20)]),
+])
+def test_gather_follows_schedule(clock, schedule, expected):
+    """ starting at 00:05, gather only when each appointment comes up, not a second before """
+    me = scheduled(**schedule)
+    assert not gathers_at(me, clock, at(0, 5))
+
+    for when in expected:
+        assert not gathers_at(me, clock, when - datetime.timedelta(seconds=1))
+        assert gathers_at(me, clock, when)
+        assert not gathers_at(me, clock, when)
+
+
+def test_gather_scheduled_interval(clock):
+    """ with scheduled_interval, gather right away when started, then once per interval """
+    me = scheduled(interval=3600)
+    assert gathers_at(me, clock, at(0, 5))
+    assert not gathers_at(me, clock, at(1, 4, 59))
+    assert gathers_at(me, clock, at(1, 5))
+    assert not gathers_at(me, clock, at(1, 5))
+
+
+def test_gather_scheduled_interval_overrides_appointments(clock):
+    me = scheduled(time=["12:40", "7:37"], interval=3600)
+    assert gathers_at(me, clock, at(0, 5))
+    assert gathers_at(me, clock, at(1, 5))
+    assert gathers_at(me, clock, at(2, 5))
+
+
+def test_gather_late_runs_once(clock):
+    """ a flow that wakes up after several appointments went by gathers once, then waits for the next one """
+    me = scheduled(hour=["2", "4"], minute=["2"], time=["12:40", "7:37"])
+    assert gathers_at(me, clock, at(5, 0))
+    assert not gathers_at(me, clock, at(5, 0))
+    assert not gathers_at(me, clock, at(7, 36, 59))
+    assert gathers_at(me, clock, at(7, 37))
+
+
+def test_gather_late_on_another_appointment_runs_once(clock):
+    """ waking up late exactly on a later appointment counts as that appointment, not a second gather """
+    me = scheduled(hour=["2", "4"], minute=["2"], time=["12:40", "7:37"])
+    assert gathers_at(me, clock, at(4, 2))
+    assert not gathers_at(me, clock, at(4, 2))
+    assert gathers_at(me, clock, at(7, 37))
+
+
+def test_calc_next_gather_time(clock):
+    """ calc_next_gather_time is called right after a gather, the appointment just used is dropped """
+    me = scheduled(hour=["2", "4"], minute=["2"], time=["12:40", "7:37"])
+    assert me.next_gather_time == at(2, 2)
+    assert me.appointments == [at(2, 2), at(4, 2), at(7, 37), at(12, 40)]
+
+    me.calc_next_gather_time(at(2, 2))
+    assert me.next_gather_time == at(4, 2)
+    assert me.appointments == [at(4, 2), at(7, 37), at(12, 40)]
+
+    # late by more than one appointment: the ones that went by are dropped too
+    me.calc_next_gather_time(at(8, 0))
+    assert me.next_gather_time == at(12, 40)
+    assert me.appointments == [at(12, 40)]
+
+    # none left today: the schedule starts over tomorrow
+    me.calc_next_gather_time(at(12, 40))
+    assert me.next_gather_time == at(2, 2, days=1)
+    assert me.appointments == [at(2, 2, days=1), at(4, 2, days=1), at(7, 37, days=1), at(12, 40, days=1)]
+
+
+def test_calc_next_gather_time_after_missed_appointments(clock):
+    me = scheduled(hour=["2", "4"], minute=["2"], time=["12:40", "7:37"])
+    me.calc_next_gather_time(at(13, 0))
+    assert me.next_gather_time == at(2, 2, days=1)
+
+
+def test_calc_next_gather_time_defaults_to_now(clock):
+    me = scheduled(hour=["2", "4"], minute=["2"])
+    clock.now = at(3, 0)
+    me.calc_next_gather_time()
+    assert me.next_gather_time == at(4, 2)
+
+
+def test_calc_next_gather_time_interval(clock):
+    me = scheduled(interval=3600)
+    me.calc_next_gather_time(at(1, 0))
+    assert me.next_gather_time == at(2, 0)
+
+
+def test_calc_next_gather_time_default_wait(clock):
+    me = scheduled()
+    assert me.next_gather_time == at(0, 10)
+    me.calc_next_gather_time(at(1, 0))
+    assert me.next_gather_time == at(1, 5)
