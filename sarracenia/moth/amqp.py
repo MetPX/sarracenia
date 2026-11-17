@@ -199,7 +199,7 @@ class AMQP(Moth):
 
         # timeout option is a float and default is 0.0. basic_publish wants int or None for no timeout
         try:
-            if timeout in self.o and self.o['timeout']:
+            if 'timeout' in self.o and self.o['timeout']:
                 self.timeout = int(self.o['timeout'])
             else:
                 self.timeout = None
