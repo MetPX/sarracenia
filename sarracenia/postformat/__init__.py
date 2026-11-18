@@ -57,11 +57,15 @@ class PostFormat:
        """
         for sc in PostFormat.__subclasses__():
             #logger.info( f" sc={sc}, scct={sc.content_type()}, content_type={content_type} " )
-            if sc.mine(payload, headers, content_type, options ):
-                return sc.importMine(payload, headers, options )
-        return None
+            try:
+                if sc.mine(payload, headers, content_type, options ):
+                    return sc.importMine(payload, headers, options )
+            except Exception as e:
+                logger.error(f"{sc} crashed ({e}) while trying to import raw message with content_type: {content_type}")
+                logger.debug("Failed message headers: %s. Exception details:", headers, exc_info=True)
 
-        pass
+        logger.error(f"failed to import raw message with content_type: {content_type}, headers: {headers}")
+        return None
 
     @staticmethod
     def exportAny(msg, post_format='v03', topicPrefix=[ 'v03' ], options={ 'post_format': 'v03', 'topicPrefix':'v03' } ) -> (str, dict, str):
@@ -125,11 +129,7 @@ class PostFormat:
 # test for wis, navcanada and swim first, because v03 may claim all other JSON.
 # for navcanada and swim, the content type reflects the content type of the embedded data (not the message)
 import sarracenia.postformat.wis
-# not including NAV CANADA in public code yet
-try:
-    import sarracenia.postformat.navcanada
-except Exception:
-    pass
+import sarracenia.postformat.navcanada
 import sarracenia.postformat.swim
 import sarracenia.postformat.v03
 # v02 will claim any messages where the body/payload is string and not JSON

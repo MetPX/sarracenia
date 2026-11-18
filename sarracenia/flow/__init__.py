@@ -594,6 +594,7 @@ class Flow:
 
                 if not stopping:
                     self.gather()
+                    self._runCallbacksWorklist('after_gather')
 
                 last_gather_len = len(self.worklist.incoming)
                 if (last_gather_len == 0):
@@ -1186,8 +1187,6 @@ class Flow:
             if len(new_incoming) > 0:
                 self.worklist.incoming.extend(new_incoming)
                 so_far += len(new_incoming)
-
-            self._runCallbacksWorklist('after_gather')
 
             # if we gathered enough with a subset of plugins then return.
             if not keep_going or (so_far >= self.o.batch):
@@ -1940,7 +1939,8 @@ class Flow:
 
             if not 'new_file' in msg or not msg['new_file']:
                 # issue #1503 move a little to the right to deal with when directory path ends in /
-                if len(msg['new_dir']) < 2 or ('fileOp' not in msg and 'directory' in msg['fileOp']): 
+                # only a directory fileOp can take its name from new_dir, anything else has no file to write.
+                if len(msg['new_dir']) < 2 or 'fileOp' not in msg or 'directory' not in msg['fileOp']:
                     self.reject(msg, 422, f"new_file message field missing, do not know name of file to write. skipping." )
                     continue
                 msg['new_file'] = os.path.basename(msg['new_dir'])

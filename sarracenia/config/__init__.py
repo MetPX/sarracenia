@@ -1722,7 +1722,7 @@ class Config:
         elif k in ['no-import']:
             self._parse_v3unplugin(v)
         elif k in ['inflight', 'lock']:
-            if v[:-1].isnumeric():
+            if v[:1].isnumeric():
                 vv = durationToSeconds(v)
                 setattr(self, k, vv)
                 self.fileAgeMin = vv
@@ -2119,7 +2119,10 @@ class Config:
             if ((len(self.subscriptions) == 0) and hasattr(self, 'exchange')):
                 self.subscriptions.append(Subscription(self, self.queueName, resolved_queueName, [ '#' ]))
 
+        if not isinstance(self.subscriptions, Subscriptions):
+            self.subscriptions = Subscriptions(self.subscriptions)
         self.subscriptions.finalize(self.old_subscriptions)
+
         if self.action in [ 'start', 'foreground', 'declare' ] and \
                 (not hasattr(self,'no') or self.no < 2) and  \
                 len(self.subscriptions) > 0:
@@ -2549,7 +2552,7 @@ class Config:
         def __call__(self, parser, namespace, values, option_string):
 
             if values == 'None':
-                namespace.subscriptions = []
+                namespace.subscriptions = Subscriptions()
 
             resolved_qn = namespace._resolveQueueName(namespace.component,namespace.config)
 
