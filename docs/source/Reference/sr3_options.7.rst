@@ -1945,6 +1945,14 @@ The default value is 0, which means there is no limit on the number of retries
 This option works alongside **retry_ttl**; the message will be discarded
 whichever limit is reached first.
 
+Before retrying an announcement for a locally downloaded whole file with an
+MD5 or SHA512 identity, Sarracenia checks its current content. If the content
+no longer matches, the old announcement is rejected with a report instead of
+advertising the old checksum for the replacement file. If the file cannot be
+read, the announcement stays queued under the normal retry limits. This check
+does not apply to message-only forwarding, remote sender targets, file
+operations, blocks, self-contained inline content or non-content identities.
+
 
 retryEmptyBeforeExit: <boolean> (default: False)
 ------------------------------------------------
