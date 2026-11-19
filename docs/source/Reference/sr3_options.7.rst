@@ -1079,6 +1079,17 @@ housekeeping <interval> (default: 300 seconds)
 The **housekeeping** option sets how often to execute periodic processing as determined by
 the list of on_housekeeping plugins. By default, it prints a log message every houskeeping interval.
 
+cleanup_age <duration> (default: 0)
+-----------------------------------
+
+For **watch** components, a non-zero **cleanup_age** enables periodic removal of regular files
+under the configured watch paths when their modification time is older than this duration.
+The scan is recursive and runs at each **housekeeping** interval. A value of 0 disables cleanup.
+Symbolic links and symbolic-link directories are not followed or removed.
+
+Files removed by cleanup may also produce delete notifications if **delete** is enabled in
+**fileEvents**.
+
 httpsSafeQuote <str> (default '/+')
 -----------------------------------
 

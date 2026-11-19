@@ -164,7 +164,7 @@ duration_options = [
     'expire', 'housekeeping', 'logRotateInterval', 'fileAgeMax', 'fileAgeMin', 
     'messageAgeMax', 'post_messageAgeMax', 'metrics_writeInterval', \
     'runStateThreshold_idle', 'runStateThreshold_lag', 'retry_ttl', 'runStateThreshold_hung',
-    'sleep', 'sleepMax', 'timeout', 'varTimeOffset'
+    'sleep', 'sleepMax', 'timeout', 'varTimeOffset', 'cleanup_age'
 ]
 
 list_options = [ 'amqp_queue_args', 'path', 'vip' ]
