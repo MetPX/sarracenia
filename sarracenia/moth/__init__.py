@@ -364,7 +364,7 @@ class Moth():
         # configure a timeout used for blocking operations using the sleep and sleepMax options.
 
         # In polls, a large timeout (relative to scheduled_interval) could interfere with scheduling, so keep it small
-        if component in self.o and self.o['component'] == 'poll':
+        if 'component' in self.o and self.o['component'] == 'poll':
             # when scheduled_interval is known, maximum drain_timeout is whichever is lower:
             # sleepMax option or scheduled_interval/2
             if 'scheduled_interval' in self.o and self.o['scheduled_interval']:
