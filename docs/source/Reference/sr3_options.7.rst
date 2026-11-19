@@ -93,11 +93,14 @@ sequence #2::
 
 
 .. note::
-   FIXME: does this match only files ending in 'gif' or should we add a $ to it?
-   will it match something like .gif2 ? is there an assumed .* at the end?
+   Patterns are regular expressions. Python flows use Python ``re`` patterns
+   and call ``Pattern.match()`` against the filtering string. The C components
+   use POSIX regular expressions with ``regexec()``. There is no implicit
+   ``.*`` at the end of a pattern, so use ``$`` when the match must reach the
+   end of the filtered value.
 
 
-In sequence #1, all files ending in 'gif' are rejected. In sequence #2, the
+In sequence #1, all files whose filtered value matches ``.*\.gif`` are rejected. In sequence #2, the
 accept .* (which accepts everything) is encountered before the reject statement,
 so the reject has no effect. Some options have global scope, rather than being
 interpreted in order. For thoses cases, the last declaration overrides the
@@ -308,9 +311,10 @@ accept, reject and acceptUnmatched
 - **acceptUnmatched   <boolean> (default: True)**
 
 The  **accept**  and  **reject**  options process regular expressions (regexp).
-The regexp is applied to the the notification message's URL for a match.
+They are interpreted in order, and the first matching **accept** or **reject**
+rule wins.
 
-If the notification message's URL of a file matches a **reject**  pattern, the notification message
+If the filtered value for a notification message matches a **reject**  pattern, the notification message
 is acknowledged as consumed to the broker and skipped.
 
 One that matches an **accept** pattern is processed by the component.
@@ -336,18 +340,43 @@ sequence #2::
   reject .*\.gif
 
 
-In sequence #1, all files ending in 'gif' are rejected.  In sequence #2, the accept .* (which
-accepts everything) is encountered before the reject statement, so the reject has no effect.
+In sequence #1, all files whose filtered value matches ``.*\.gif`` are rejected.
+In sequence #2, the ``accept .*`` rule is encountered first and accepts
+everything, so the later reject statement has no effect.
+
+Python flows build a temporary filtering string from ``baseUrl + relPath``. When
+a ``sundew_extension`` header is present, and the URL has fewer than three
+colons, that temporary filtering string may have ``:<sundew_extension>``
+appended for legacy compatibility. The notification URL itself is not modified.
+The C components do not append the separate ``sundew_extension`` header:
+``cpost`` filters the pathname and ``cpump`` filters ``relPath``.
+
+Because Python flow matching starts at the beginning of the filtering string,
+filters that look for text anywhere in that string usually begin with ``.*``.
+There is no implicit ``.*`` at the end of the pattern. For example::
+
+  accept .*\.csv$
+  # matches only a filtered value ending in .csv
+
+  accept .*\.csv:.*
+  # matches a Python flow filtering string with a Sundew extension after .csv
+
+  accept .*\.csv$|.*\.csv:
+  # matches either a plain .csv ending or a .csv followed by an extension boundary
+
+Prefer filtering on the path when possible. Treat ``sundew_extension`` as legacy
+compatibility metadata and include it in filters only when the path alone is not
+specific enough.
 
 It is best practice to use server side filtering to reduce the number of notification messages sent
 to the component to a small superset of what is relevant, and perform only a fine-tuning with the
 client side mechanisms, saving bandwidth and processing for all. More details on how
 to apply the directives follow:
 
-The  **accept**  and  **reject**  options use regular expressions (regexp) to match URL.
+The  **accept**  and  **reject**  options use regular expressions (regexp) to match the filtered value.
 These options are processed sequentially.
-The URL of a file that matches a  **reject**  pattern is not published.
-Files matching an  **accept**  pattern are published.
+Files whose filtered value matches a  **reject**  pattern are not published.
+Files whose filtered value matches an  **accept**  pattern are published.
 Again a *rename*  can be added to the *accept* option... matching products
 for that *accept* option would get renamed as described... unless the *accept* matches
 one file, the *rename* option should describe a directory into which the files
@@ -735,10 +764,10 @@ Combined with  **accept** / **reject**  options, the user can select the
 files of interest and their directories of residence (see the  **mirror**
 option for more directory settings).
 
-The  **accept**  and  **reject**  options use regular expressions (regexp) to match URL.
+The  **accept**  and  **reject**  options use regular expressions (regexp) to match the filtered value.
 These options are processed sequentially.
-The URL of a file that matches a  **reject**  pattern is never downloaded.
-One that matches an  **accept**  pattern is downloaded into the directory
+Files whose filtered value matches a  **reject**  pattern are never downloaded.
+One whose filtered value matches an  **accept**  pattern is downloaded into the directory
 declared by the closest  **directory**  option above the matching  **accept** option.
 **acceptUnmatched** is used to decide what to do when no reject or accept clauses matched.
 
@@ -2147,16 +2176,27 @@ shim_skip_parent_open_files (EXPERIMENTAL)
   whether the parent process has the same file open, and does not
   post if that is the case. (default: True)
 
-sleep <time>
-------------
+sleep <time> (default: 0.1s)
+----------------------------
 
-The time to wait between generating events. When files are written frequently, it is counter productive
+The minimum time to wait between runs through the Flow loop when there are no messages to be processed. sr3 will
+automatically increase the sleep time between iterations, up to ``sleepMax`` to minimize CPU usage while it is
+waiting for messages. It is very rare that the sleep time would need to be adjusted.
+
+When files are written frequently, it is counter productive
 to produce a post for every change, as it can produce a continuous stream of changes where the transfers
 cannot be done quickly enough to keep up. In such circumstances, one can group all changes made to a file
 in *sleep* time, and produce a single post.
 
 When sleep is set > 0 for use with a *poll* it has the effect to setting *scheduled_interval*  to that value
 for compatibility reasons.  It is better for poll to use *scheduled* settings explicitly going forward.
+
+sleepMax <time> (default: 10s)
+------------------------------
+
+Maximum amount of time to sleep before checking if new messages are available for ingest. For extremely
+time sensitive flows with sporadic message reception, ``sleepMax`` can be reduced to minimize message lag
+at the cost of increased CPU usage while the process is idle.
 
 statehost <False|True> ( default: False )
 -----------------------------------------

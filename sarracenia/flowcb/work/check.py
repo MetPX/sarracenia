@@ -59,14 +59,17 @@ class Check(FlowCB):
                 continue
 
             logger.info(f"identity     {msg['identity']} " )
-            logger.info(f"filesize   {msg['size']} ")
+            if 'size' in msg:
+                logger.info(f"filesize   {msg['size']} ")
     
             lstat = os.stat(local_file)
-            fsiz = lstat[stat.ST_SIZE]
+
+            if 'size' in msg:
+                fsiz = lstat[stat.ST_SIZE]
     
-            if fsiz != msg['size']:
-                logger.error( f"filesize differ (corrupted ?)  lf {fsiz:d}  msg {msg['size']:d}" )
-                self.size_mismatches+=1
+                if fsiz != msg['size']:
+                    logger.error( f"filesize differ (corrupted ?)  lf {fsiz:d}  msg {msg['size']:d}" )
+                    self.size_mismatches+=1
     
             self.o.post_baseUrl = msg['baseUrl']
             self.o.identity_method = msg['identity']['method']

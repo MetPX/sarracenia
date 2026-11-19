@@ -58,6 +58,7 @@ default_options = {
     'messageRateMax': 0,
     'messageRateMin': 0,
     'sleep': 0.1,
+    'sleepMax': 10.0,
     'topicPrefix': ['v03'],
     'topicCopy': False,
     'vip': []
@@ -593,6 +594,7 @@ class Flow:
 
                 if not stopping:
                     self.gather()
+                    self._runCallbacksWorklist('after_gather')
 
                 last_gather_len = len(self.worklist.incoming)
                 if (last_gather_len == 0):
@@ -651,8 +653,10 @@ class Flow:
                 else:
                     self.runCallbacksTime('please_stop')
 
-            if spamming and (current_sleep < 5):
+            if spamming:
                 current_sleep *= 2
+            if current_sleep > self.o.sleepMax:
+                current_sleep = self.o.sleepMax
 
             self.metrics['flow']['current_sleep'] = current_sleep
 
@@ -678,9 +682,6 @@ class Flow:
             if (current_sleep > 0):
                 if elapsed < current_sleep:
                     stime += current_sleep - elapsed
-                    if stime > 60:  # if sleeping for a long time, debug output is good...
-                        logger.debug(
-                           f"sleeping for more than 60 seconds: {stime:.2f} seconds. Elapsed since wakeup: {elapsed:.2f} Sleep setting: {self.o.sleep:.2f} ")
                 else:
                     logger.debug('worked too long to sleep!')
                     last_time = now
@@ -689,17 +690,14 @@ class Flow:
             if not self._stop_requested and (stime > 0):
                 # dividing into small sleeps so exit processing happens faster
                 # bug #595, still relatively low cpu usage in increment sized chunks.
-                if 5 < stime:
-                    increment=5
-                else:
-                    increment=stime
                 while (stime > 0):
-                    logger.debug('sleeping for %.2f', increment)
+                    increment = min(5, stime)
+                    logger.debug('sleeping for %.2fs (stime=%.2fs)', increment, stime)
                     time.sleep(increment)
                     if self._stop_requested:
                         break
                     else:
-                        stime -= 5 
+                        stime -= increment
                     # Run housekeeping during long sleeps
                     now_for_hk = nowflt()
                     if now_for_hk > next_housekeeping:
@@ -1193,8 +1191,6 @@ class Flow:
                 self.worklist.incoming.extend(new_incoming)
                 so_far += len(new_incoming)
 
-            self._runCallbacksWorklist('after_gather')
-
             # if we gathered enough with a subset of plugins then return.
             if not keep_going or (so_far >= self.o.batch):
                 return
@@ -1376,7 +1372,8 @@ class Flow:
     def write_inline_file(self, msg) -> bool:
         """
            write local file based on a message with inlined content.
-
+           
+           side effect: msg['size'] will be set to the correct size of the downloaded file.
         """
         # make sure directory exists, create it if not
         if not os.path.isdir(msg['new_dir']):
@@ -1401,6 +1398,7 @@ class Flow:
             data = b64decode(msg['content']['value'])
         else:
             data = msg['content']['value'].encode(msg['content']['encoding'])
+
 
         if self.o.identity_method.startswith('cod,'):
             algo_method = self.o.identity_method[4:]
@@ -1427,16 +1425,22 @@ class Flow:
             'value': onfly_algo.value
         }
 
-        if ((msg['size'] > 0) and len(data) != msg['size']):
+        if ('size' in msg) and (msg['size'] > 0) and len(data) != msg['size']:
             if self.o.acceptSizeWrong:
                 logger.warning(
                     "acceptSizeWrong data size is (%d bytes) vs. expected: (%d bytes)"
                     % (len(data), msg['size']))
+                # size mismatches should not be propagated downstream. Downstream should see the correct size.
+                msg['size'] = len(data)
             else:
                 logger.warning(
                     "decoded data size (%d bytes) does not have expected size: (%d bytes)"
                     % (len(data), msg['size']))
                 return False
+        else:
+            # If there is not size in the message, then it cannot mismatch? Alternative would be it always mismatches, which would be useless.
+            # so need to assume that if the size field is missing, then whatever size is received is correct.
+            msg['size'] = len(data)
 
         data_algo.update(data)
 
@@ -1938,7 +1942,8 @@ class Flow:
 
             if not 'new_file' in msg or not msg['new_file']:
                 # issue #1503 move a little to the right to deal with when directory path ends in /
-                if len(msg['new_dir']) < 2 or ('fileOp' not in msg and 'directory' in msg['fileOp']): 
+                # only a directory fileOp can take its name from new_dir, anything else has no file to write.
+                if len(msg['new_dir']) < 2 or 'fileOp' not in msg or 'directory' not in msg['fileOp']:
                     self.reject(msg, 422, f"new_file message field missing, do not know name of file to write. skipping." )
                     continue
                 msg['new_file'] = os.path.basename(msg['new_dir'])
@@ -1984,7 +1989,7 @@ class Flow:
 
             # all non-files taken care of above... rest of routine is normal file download.
 
-            if self.o.fileSizeMax > 0 and msg['size'] > self.o.fileSizeMax:
+            if self.o.fileSizeMax > 0 and 'size' in msg and msg['size'] > self.o.fileSizeMax:
                 self.reject(msg, 413, f"Payload Too Large {msg.getIDStr()}")
                 continue
 
@@ -3064,7 +3069,7 @@ class Flow:
                 self.reject(msg, 422, f"new_file message field missing, do not know name of file to write. skipping." )
                 continue
 
-            if self.o.fileSizeMax > 0 and msg['size'] > self.o.fileSizeMax: 
+            if 'size' in msg and self.o.fileSizeMax > 0 and msg['size'] > self.o.fileSizeMax: 
                 self.reject(msg, 413, f"Payload Too Large {msg.getIDStr()}") 
                 continue
 

@@ -95,10 +95,14 @@ séquence #2::
 
 
 .. note::
-   FIXME: cela ne correspond-il qu'aux fichiers se terminant par 'gif' ou devrions-nous y ajouter un $ ?
-   cela correspondra-t-il à quelque chose comme .gif2 ? y a-t-il un .* supposé à la fin ?
+   Les modèles sont des expressions régulières. Les flux Python utilisent les
+   expressions régulières Python ``re`` et appellent ``Pattern.match()`` sur la
+   chaîne de filtrage. Les composants C utilisent les expressions régulières
+   POSIX avec ``regexec()``. Il n'y a pas de ``.*`` implicite à la fin d'un
+   modèle; utilisez donc ``$`` lorsque la correspondance doit atteindre la fin
+   de la valeur filtrée.
 
-Dans la séquence #1, tous les fichiers se terminant par 'gif' sont rejetés. Dans la séquence #2, le
+Dans la séquence #1, tous les fichiers dont la valeur filtrée correspond à ``.*\.gif`` sont rejetés. Dans la séquence #2, le
 accept .* (qui accepte tout) est lu avant la déclaration du rejet,
 donc le rejet n’a aucun effet. Certaines options ont une portée globale, plutôt que d’être
 interprété dans l’ordre. Dans ces cas, la dernière déclaration remplace celle qu'il y avait plus tôt dans le fichier..
@@ -304,9 +308,10 @@ accept, reject et acceptUnmatched
 - **acceptUnmatched   <booléen> (défaut: True)**
 
 Les options **accept** et **reject** traitent les expressions régulières (regexp).
-Le regexp est appliqué à l’URL du message d'annonce pour trouver une correspondance.
+Elles sont interprétées dans l'ordre, et la première règle **accept** ou
+**reject** qui correspond est appliquée.
 
-Si l’URL d’un fichier correspond à un modèle **reject**, le message d'annonce
+Si la valeur filtrée d'un message d'annonce correspond à un modèle **reject**, le message d'annonce
 est reconnu comme consommé par le courtier et est ignoré.
 
 Celui qui correspond à un modèle **accept** est traité par le composant.
@@ -332,18 +337,45 @@ séquence #2::
   reject .*\.gif
 
 
-Dans la séquence #1, tous les fichiers se terminant par 'gif' sont rejetés.  Dans la séquence #2,
-le accept .* (qui accepte tout) est lu avant la déclaration de reject, de sorte que le reject n’a aucun effet.
+Dans la séquence #1, tous les fichiers dont la valeur filtrée correspond à ``.*\.gif`` sont rejetés. Dans la séquence #2,
+la règle ``accept .*`` est lue en premier et accepte tout, de sorte que le reject n’a aucun effet.
+
+Les flux Python construisent une chaîne de filtrage temporaire à partir de
+``baseUrl + relPath``. Lorsqu'un en-tête ``sundew_extension`` est présent, et
+que l'URL contient moins de trois deux-points, cette chaîne de filtrage
+temporaire peut recevoir ``:<sundew_extension>`` à la fin pour compatibilité
+ancienne. L'URL du message d'annonce elle-même n'est pas modifiée. Les
+composants C n'ajoutent pas l'en-tête séparé ``sundew_extension``: ``cpost``
+filtre le nom de chemin et ``cpump`` filtre ``relPath``.
+
+Comme la correspondance des flux Python commence au début de la chaîne de
+filtrage, les filtres qui cherchent du texte n'importe où dans cette chaîne
+commencent généralement par ``.*``. Il n'y a pas de ``.*`` implicite à la fin
+du modèle. Par exemple::
+
+  accept .*\.csv$
+  # correspond seulement à une valeur filtrée se terminant par .csv
+
+  accept .*\.csv:.*
+  # correspond à une chaîne de filtrage Python avec une extension Sundew après .csv
+
+  accept .*\.csv$|.*\.csv:
+  # correspond soit à une fin .csv simple, soit à .csv suivi d'une limite d'extension
+
+Préférez filtrer sur le chemin lorsque c'est possible. Traitez
+``sundew_extension`` comme une métadonnée de compatibilité ancienne et
+incluez-la dans les filtres seulement lorsque le chemin seul n'est pas assez
+spécifique.
 
 Il est recommandé d’utiliser le filtrage côté serveur pour réduire le nombre d’annonces envoyées au composant,
 et a la place, envoyer un sur ensemble de ce qui est pertinent, et de seulement régler les mécanismes côté client,
 économisant du bandwidth et du traitement pour tous. Plus de détails sur les directives:
 
 Les options **accept** et **reject** utilisent des expressions régulières (regexp) pour trouver
-une correspondance avec l’URL.
+une correspondance avec la valeur filtrée.
 Ces options sont traitées séquentiellement.
-L’URL d’un fichier qui correspond à un modèle **reject** n’est pas publiée.
-Les fichiers correspondant à un modèle **accept** sont publiés.
+Les fichiers dont la valeur filtrée correspond à un modèle **reject** ne sont pas publiés.
+Les fichiers dont la valeur filtrée correspond à un modèle **accept** sont publiés.
 Encore une fois, un *rename* peut être ajouté à l’option *accept*... les produits qui correspondent
 a l'option *accept* seront renommé comme décrit... à moins que le *accept* corresponde à
 un fichier, l’option *rename* doit décrire un répertoire dans lequel les fichiers
@@ -730,10 +762,10 @@ Combiné avec les options **accept** / **reject**, l’utilisateur peut sélecti
 les fichiers d’intérêt et leurs répertoires de résidence (voir le **mirror**
 pour plus de paramètres de répertoire).
 
-Les options **accept** et **reject** utilisent des expressions régulières (regexp) pour trouver une correspondance avec l’URL.
+Les options **accept** et **reject** utilisent des expressions régulières (regexp) pour trouver une correspondance avec la valeur filtrée.
 Ces options sont traitées séquentiellement.
-L’URL d’un fichier qui correspond à un modèle **reject** n’est jamais téléchargée.
-Celui qui correspond à un modèle **accept** est téléchargé dans le répertoire
+Les fichiers dont la valeur filtrée correspond à un modèle **reject** ne sont jamais téléchargés.
+Celui dont la valeur filtrée correspond à un modèle **accept** est téléchargé dans le répertoire
 déclaré par l’option **directory** la plus proche au-dessus de l’option **accept** correspondante.
 **acceptUnmatched** est utilisé pour décider quoi faire lorsque aucune clause de rejet ou d’acceptation corresponde.
 
@@ -2119,10 +2151,14 @@ shim_skip_parent_open_files (EXPERIMENTAL)
 L’option shim_skip_ppid_open_files signifie qu’un processus vérifie si le processus parent a le même fichier
 ouvert et ne poste pas si c’est le cas. (défaut: Vrai)
 
-sleep <intervalle>
-------------------
+sleep <intervalle> ( défaut: 0.1s )
+-----------------------------------
 
-Temps d’attente entre la génération d’événements. Lorsqu'on écrit fréquemment à des fichiers, c’est inutile
+Il s'agit de la durée minimale d'attente entre deux exécutions de la boucle de flux lorsqu'aucun message n'est à traiter. sr3
+augmentera automatiquement le temps de pause entre les itérations, jusqu'à la limite ``sleepMax``, afin de réduire la charge CPU
+pendant l'attente de messages. Il est très rare qu'il soit nécessaire de modifier ce paramètre.
+
+Lorsqu'on écrit fréquemment à des fichiers, c’est inutile
 de produire un poste pour chaque changement, car il peut produire un flux continu de changements où les transferts
 ne peut pas être fait assez rapidement pour suivre le rythme.  Dans de telles circonstances, on peut regrouper toutes
 les modifications apportées à un fichier pendant le temps de *sleep*, et produire un seul poste.
@@ -2132,6 +2168,13 @@ définir *scheduled_interval*, pour des raisons de compatibilité.
 Il est préférable que le sonde utilise explicitement les paramètres *scheduled_interval*,
 *scheduled_hour*, et/ou *scheduled_minute* plutôt que *sleep*.
 
+sleepMax <intervalle> ( défaut : 10 s )
+---------------------------------------
+
+Durée maximale de pause avant de vérifier si de nouveaux messages sont disponibles pour l'ingestion. Pour les flux
+extrêmement sensibles au facteur temps et caractérisés par une réception sporadique de messages, on peut réduire
+``sleepMax`` afin de minimiser le délai de traitement des messages, au prix d'une consommation CPU accrue lorsque
+le processus est inactif.
 
 statehost <booléen> ( défaut: False )
 -------------------------------------

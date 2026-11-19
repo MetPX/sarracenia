@@ -236,11 +236,11 @@ class Subscriptions(list):
                 if s['queue']['name'] != os['queue']['name']:
                      continue 
                 q_bad=[]
-                for x in [ 'auto_delete', 'durable', 'expire', 'prefetch' ]:
+                for x in [ 'auto_delete', 'durable', 'expire' ]:
                     if x not in s['queue'] or x not in os['queue']:
                         continue
                     if s['queue'][x] != os['queue'][x]:
-                       logger.critical( f"INVARIANT queue parameter {x} changed, lossy message queue cleanup required to implement" )
+                       logger.critical( f"INVARIANT queue parameter '{x}' changed, lossy message queue cleanup required to implement" )
                        q_bad.append(x)
                 s['queue']['mismatch'] = q_bad
 

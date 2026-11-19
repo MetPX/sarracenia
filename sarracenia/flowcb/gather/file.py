@@ -505,7 +505,7 @@ class File(FlowCB):
         else:  ## partstr=i
             return bssetting
 
-    def wakeup(self):
+    def wakeup(self, messages):
         #logger.debug("wakeup")
 
         # FIXME: Tiny potential for events to be dropped during copy.
@@ -525,7 +525,6 @@ class File(FlowCB):
 
         # loop on all events
 
-        messages = []
         for key in self.cur_events:
             event_done=False
             event, src, dst = self.cur_events[key]
@@ -711,7 +710,7 @@ class File(FlowCB):
             messages = []
 
         if self.primed:
-            return (True, self.wakeup())
+            return (True, self.wakeup(messages))
 
         cwd = os.getcwd()
 
