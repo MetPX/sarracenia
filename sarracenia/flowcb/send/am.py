@@ -32,7 +32,7 @@ Author:
     André LeBlanc, ANL, Autumn 2022
 """
 
-import logging, socket, struct, time, signal, sys, os
+import logging, socket, struct, time, sys, os
 import urllib.parse
 from sarracenia.flowcb import FlowCB
 
@@ -63,9 +63,8 @@ class Am(FlowCB):
         self.s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         self.s.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 2)
 
-        # Add signal handler
-        ## Override outer signal handler with a default one to exit correctly.
-        signal.signal(signal.SIGTERM, signal.SIG_DFL)
+        # Let the parent flow's signal handler manage graceful shutdown.
+        # Previously overrode with SIG_DFL which bypassed all cleanup.
 
 
     def wrapbulletin(self, sarra_msg): 
