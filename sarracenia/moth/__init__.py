@@ -271,6 +271,8 @@ class Moth():
             props['broker'] = broker
             if 'exchange' in publisher:
                 props['exchange'] = publisher['exchange']
+            if 'format' in publisher:
+                props['format'] = publisher['format']
 
         elif not props['broker']:
             logger.error('no broker specified')
@@ -347,6 +349,8 @@ class Moth():
                     self.o['exchange'] = publisher['exchange']
                 if 'topicPrefix' in publisher:
                     self.o['topicPrefix'] = publisher['topicPrefix']
+                if 'format' in publisher:
+                    self.o['format'] = publisher['format']
 
         # apply settings from props.
         if 'settings' in self.o:
