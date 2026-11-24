@@ -2327,7 +2327,7 @@ class sr_GlobalState:
         if len(self.leftovers) > 0 and not self._action_all_configs:
             logging.error( f"{self.leftovers} configuration not found" )
             return
-        
+
         count=0
         while self._check_sanitizing():
             if self.please_stop:
@@ -2443,8 +2443,14 @@ class sr_GlobalState:
         """
 
         if len(self.leftovers) > 0 and not self._action_all_configs:
-            logging.error( f"{self.leftovers} configuration not found" )
-            return
+            missing_exact = [
+                pattern for pattern in self.leftovers
+                if not any(char in pattern for char in '*?[')
+            ]
+            if missing_exact or not self.filtered_configurations:
+                missing = missing_exact or self.leftovers
+                logging.error( f"{missing} configuration not found" )
+                return
 
         count=0
         while self._check_sanitizing():

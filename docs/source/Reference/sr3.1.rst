@@ -28,6 +28,11 @@ When sr3 is started up, it reads the entire configuration tree, and the status o
 can be queried with, for example *sr3 status*. When *component/config* is given it is to
 have sr3 operate on a subset of all the configurations present.
 
+The *stop* action accepts wildcard patterns for *component/config*. An unmatched
+wildcard does not prevent matching configurations from being stopped, but *stop*
+reports an error if no configurations match or if an explicitly named configuration
+does not exist.
+
 * If you already familiar in general with Sarracenia, and are looking for information about 
   specific options or directives, best to look at `sr3 Options (7) <sr3_options.7.html>`_
 * To more easily get started, have a look at `the Subscriber Guide on github <../How2Guides/subscriber.html>`_
@@ -246,4 +251,3 @@ SEE ALSO
 **Home Page:**
 
 `https://metpx.github.io/sarracenia <https://metpx.github.io/sarracenia>`_ - Sarracenia: a real-time pub/sub data sharing management toolkit
-
