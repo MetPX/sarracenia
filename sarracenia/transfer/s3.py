@@ -96,7 +96,15 @@ class S3(Transfer):
             if details:
                 url = details.url
 
-            self.bucket = details.url.hostname
+            # handle URIs like s3://arn:partition:service:region:account-id:resource/resource-name
+            netloc = url.netloc.rsplit('@', 1)[-1]
+            if netloc.startswith('arn:'):
+                # first part of the path is part of the ARN
+                path_parts = url.path.lstrip('/').split('/', 1)
+                self.bucket = netloc + '/' + path_parts[0]
+            # normal s3://bucket-name
+            else:
+                self.bucket = details.url.hostname
 
             if url.username != '':
                 self.client_args['aws_access_key_id'] = url.username
@@ -172,8 +180,23 @@ class S3(Transfer):
                 response = self.client.head_bucket(Bucket=self.bucket)
                 exists = True
                 logger.debug('bucket exists: %s', response)
-            except botocore.exceptions.ClientError:
-                exists = False
+            except botocore.exceptions.ClientError as e:
+                status_code = e.response.get("ResponseMetadata", {}).get("HTTPStatusCode", 0)
+                # 403 Forbidden means that we don't have permission to head_bucket, but the bucket
+                # may actually exist, and we might still be able to download files from it. If we
+                # get 403, assume the bucket exists and do not try to create it below.
+                if status_code == 403:
+                    logger.warning(f"Cannot determine if bucket exists: {e}")
+                    if 'x-amz-bucket-region' in e.response.get("ResponseMetadata", {}).get("HTTPHeaders", ""):
+                        response = e.response
+                    exists = True
+                elif status_code == 404:
+                    logger.debug(f"Bucket does not exist: {e}")
+                    exists = False
+                else:
+                    logger.warning(f"Unknown error when checking if bucket exists: {e}")
+                    logger.debug("Exception details:", exc_info=True)
+                    exists = False
             
             # try to create the bucket if it doesn't exist
             if not exists:
@@ -193,6 +216,7 @@ class S3(Transfer):
                 except:
                     loc = 'Unknown Location'
                 logger.info(f"Connected to bucket {self.bucket} in {loc}")
+                self.connected = True
 
             return exists
 
