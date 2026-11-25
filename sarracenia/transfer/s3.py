@@ -187,6 +187,8 @@ class S3(Transfer):
                 # get 403, assume the bucket exists and do not try to create it below.
                 if status_code == 403:
                     logger.warning(f"Cannot determine if bucket exists: {e}")
+                    if 'x-amz-bucket-region' in e.response.get("ResponseMetadata", {}).get("HTTPHeaders", ""):
+                        response = e.response
                     exists = True
                 elif status_code == 404:
                     logger.debug(f"Bucket does not exist: {e}")
@@ -214,6 +216,7 @@ class S3(Transfer):
                 except:
                     loc = 'Unknown Location'
                 logger.info(f"Connected to bucket {self.bucket} in {loc}")
+                self.connected = True
 
             return exists
 
