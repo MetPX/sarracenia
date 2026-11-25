@@ -96,7 +96,15 @@ class S3(Transfer):
             if details:
                 url = details.url
 
-            self.bucket = details.url.hostname
+            # handle URIs like s3://arn:partition:service:region:account-id:resource/resource-name
+            netloc = url.netloc.rsplit('@', 1)[-1]
+            if netloc.startswith('arn:'):
+                # first part of the path is part of the ARN
+                path_parts = url.path.lstrip('/').split('/', 1)
+                self.bucket = netloc + '/' + path_parts[0]
+            # normal s3://bucket-name
+            else:
+                self.bucket = details.url.hostname
 
             if url.username != '':
                 self.client_args['aws_access_key_id'] = url.username
